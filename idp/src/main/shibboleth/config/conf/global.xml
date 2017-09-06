@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+                           
+       default-init-method="initialize"
+       default-destroy-method="destroy">
+
+  <bean id="eidas.CountryConfig" class="se.elegnamnden.eidas.idp.connector.config.CountryConfig" p:countries-ref="eidas.CountryList" scope="singleton" />
+
+  <util:list id="eidas.CountryList">
+    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="AT">
+      <property name="nameMap">
+        <util:map>
+          <entry key="en" value="Austria" />
+          <entry key="sv" value="Österrike" />
+        </util:map>
+      </property>
+    </bean>
+    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="CZ">
+      <property name="nameMap">
+        <util:map>
+          <entry key="en" value="Czech Republic" />
+          <entry key="sv" value="Tjeckien" />
+        </util:map>
+      </property>
+    </bean>
+    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="EE">
+      <property name="nameMap">
+        <util:map>
+          <entry key="en" value="Estonia" />
+          <entry key="sv" value="Estland" />
+        </util:map>
+      </property>
+    </bean>
+    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="FR">
+      <property name="nameMap">
+        <util:map>
+          <entry key="en" value="France" />
+          <entry key="sv" value="Frankrike" />
+        </util:map>
+      </property>
+    </bean>    
+    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="DE">
+      <property name="nameMap">
+        <util:map>
+          <entry key="en" value="Germany" />
+          <entry key="sv" value="Tyskland" />
+        </util:map>
+      </property>
+    </bean>    
+    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="IS">
+      <property name="nameMap">
+        <util:map>
+          <entry key="en" value="Iceland" />
+          <entry key="sv" value="Island" />
+        </util:map>
+      </property>
+    </bean>
+    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="NL">
+      <property name="nameMap">
+        <util:map>
+          <entry key="en" value="Netherlands" />
+          <entry key="sv" value="Nederländerna" />
+        </util:map>
+      </property>      
+    </bean>    
+    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="NO">
+      <property name="nameMap">
+        <util:map>
+          <entry key="en" value="Norway" />
+          <entry key="sv" value="Norge" />
+        </util:map>
+      </property>      
+    </bean>
+    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="XX">
+      <property name="nameMap">
+        <util:map>
+          <entry key="en" value="XX Test Country" />
+          <entry key="sv" value="XX Testland" />
+        </util:map>
+      </property>      
+    </bean>
+  </util:list>
+    
+    
+</beans>

@@ -51,9 +51,6 @@
       <util:list>
         <bean class="se.litsec.opensaml.saml2.metadata.build.spring.KeyDescriptorFactoryBean" p:use="SIGNING" p:certificateResource="%{idp.signing.cert}" />
         <bean class="se.litsec.opensaml.saml2.metadata.build.spring.KeyDescriptorFactoryBean" p:use="ENCRYPTION" p:certificateResource="%{idp.encryption.cert}" />
-        <!-- 
-          <bean class="se.litsec.opensaml.saml2.metadata.build.spring.KeyDescriptorFactoryBean" p:use="ENCRYPTION" p:certificate="%{idp.encryption.cert.2}" />
-         -->
       </util:list>
     </property>
     

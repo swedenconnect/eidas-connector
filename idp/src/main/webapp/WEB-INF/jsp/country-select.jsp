@@ -4,74 +4,61 @@
 <%@taglib prefix ="form" uri ="http://www.springframework.org/tags/form"%>
 <!DOCTYPE html>
 
-<!-- TODO: Just a placeholder -->
-
 <html>
   <head>
-    <title><spring:message code="sweid.ui.title" /></title>
-    <meta name="viewport" content="width=device-width, initial-scale=2">
+    <jsp:include page="c-htmlHead.jsp" />
+        
+    <title><spring:message code="connector.ui.title" /></title>
     
-    <c:set var="contextPath" value="${pageContext.request.contextPath}" />
-    
-    <link rel="stylesheet" href="${contextPath}/bootstrap-3.3.4-dist/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="<c:url value='/css/authbsstyle.css' />"/>
+    <!--<c:set var="contextPath" value="${pageContext.request.contextPath}" />-->
+
+    <link rel="stylesheet" type="text/css" href="<c:url value='/js/bs-select/css/bootstrap-select.min.css' />" /> 
+    <link rel="stylesheet" type="text/css" href="<c:url value='/css/authbsstyle.css' /> "/>
     
   </head>
   <body>
   
-    <div style="padding: 20px">
-      <div id="mainContainer" class="container">
-        <table>
-          <tr>
-            <td><img height="70" src="${contextPath}/images/idpLogo.png"/></td>
-            <td style="padding-left: 30px;vertical-align: bottom">
-              <h2><spring:message code="sweid.ui.title" /></h2>
-            </td>
-          </tr>
-        </table>
-        
-        <br/>
-
-        <div class="panel-group">
-          <div class="panel panel-primary">
-            <div class="panel-heading" id="requesterHeading">
-              <spring:message code="sweid.ui.loginRequest" />
-            </div>
-            <div class="panel-body" id="spinfo">SP info</div>
-          </div>
-          
-          
-          <div class="panel-default">
-            <div class="panel-body">
-              <spring:message code='sweid.ui.auth.select-user-option-text' var="selectUserOptionText" />
-              
-              <form:form modelAttribute="authenticationResult" action="/idp/profile/extauth/simulatedAuth" method="POST" class="form-horizontal" role="form">              
-                <div class="form-group">
-                  <form:select path="selectedUser" class="form-control">
-                    <form:option value="NONE" label="${selectUserOptionText}" />
-                    <form:options items="${staticUsers}" itemLabel="uiDisplayName" itemValue="personalIdentityNumber" />    
-                  </form:select>                  
-                </div>
-                
-                <form:errors path="*" cssClass="form-group alert alert-danger" element="div" />
-                
-                <input type="hidden" name="authenticationKey" value="${authenticationKey}" />
-                
-                <button type="submit" class="btn btn-danger" name="action" value="cancel"><spring:message code='sweid.ui.cancelBtn' /></button>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <button type="submit" class="btn btn-primary" name="action" value="ok"><spring:message code='sweid.ui.loginBtn' /></button>
-                
-                <!-- 
-                <input class="btn btn-danger" type="submit" value="<spring:message code='sweid.ui.cancelBtn' />" />&nbsp;&nbsp;&nbsp;&nbsp;
-                <input class="btn btn-primary" type="submit" value="<spring:message code='sweid.ui.loginBtn' />" />
-                -->
-              </form:form>
-            </div>
-          </div>
+    <div class="container">
+      <div class="panel panel-default" style="margin-top: 20px">
+        <div class="panel-heading" style="padding-top: 0px;padding-bottom: 0px">
+          <jsp:include page="header.jsp"/>
         </div>
-      </div>
+        <div class="panel-body">
+          <div class="col-sm-6">
+            <form action="/idp/profile/extauth/proxyauth" method="POST" id="formTab3">
+              <div class="form-group form-group-sm">
+                <label for="countryInp"><spring:message code="connector.ui.choose-country" /></label>
+                <select class="form-control selectpicker" id="selectCountryInp" name="selectedCountry" data-native-menu="false" onchange="storeCountry();">
+                  <c:forEach items="{countries}" var="country">
+                    <c:set var="flag" value="${country.realCountry ? country.code : 'EU'}" />
+                    <option value="${country.code}" data-content="<img src='img/flags/${flag}'>&nbsp;&nbsp;${country.name}" />
+                  </c:forEach>               
+                </select>
+              </div>
+              <button id="submit_tab3" type="submit" class="btn btn-primary btn-lg btn-block" name="action" value="authenticate">Authenticate</button>
+              <input type="hidden" name="authenticationKey" value="${authenticationKey}" />
+            </form>
+           </div>
+           <div class="col-sm-6">
+             <div class='panel panel-default'>
+               <div class='panel-body' style="min-height: 300px">
+                 <h4 style="color: #204d74">Information</h4>
+                 <div style="color: #666">
+                   <p><b>A Swedish service provider</b> has requested authentication of your identity using an eID from another country outside of Sweden.</p>
+                   <p>In order to transfer you to the electronic identification service in your home country, you must select <b>the country where your eID was issued</b>.</p>
+                 </div>
+               </div>
+             </div>
+           </div>                        
+         </div>
+       </div>
+       <div class='panel panel-footer'>
+         <div class="panel-body">
+           <jsp:include page="footer.jsp"/>
+         </div>
+       </div>                                            
     </div>
-    <div id="testuserDiv"></div>
-    </body>
+  
+  </body>
     
 </html>
