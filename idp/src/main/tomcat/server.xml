@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- managed by puppet -->
+<Server port="8056" shutdown="SHUTDOWN">
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+  <!--
+    <Listener className="org.apache.catalina.core.JasperListener" />
+  -->
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+
+  <GlobalNamingResources>
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+              description="User database that can be updated and saved"
+              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+              pathname="conf/tomcat-users.xml" />
+  </GlobalNamingResources>
+
+  <Service name="Catalina">
+    <Connector port="${tomcat.tls.port}" protocol="HTTP/1.1"
+               server=" "
+               connectionTimeout="20000"
+               acceptCount="100"
+               minSpareThreads="5"
+               maxThreads="200"
+               scheme="https"
+               secure="true"
+               SSLEnabled="true"
+               sslProtocol="TLS"
+               keystoreFile="${tomcat.tls.keystore}"
+               keystorePass="${tomcat.tls.password}"
+               keyAlias="${tomcat.tls.alias}"
+               allowTrace="false"
+               maxHttpHeaderSize="65536"
+               xpoweredBy="false"
+               maxPostSize="100000"
+               compression="on"/>
+              <!--Added maxPostSize as recommended for Shibboleth  https://wiki.shibboleth.net/confluence/display/IDP30/ApacheTomcat8 -->
+
+    <Engine name="Catalina" defaultHost="localhost">
+      <Realm className="org.apache.catalina.realm.LockOutRealm"
+             failureCount="3" lockOutTime="600" cacheSize="1000"
+             cacheRemovalWarningTime="3600" >
+        <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+               resourceName="UserDatabase"/>
+      </Realm>
+
+      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false" >
+      
+        <Valve className="org.apache.catalina.valves.RemoteIpValve"
+               remoteIpHeader="X-Forwarded-For" />
+               
+        <!-- begränsa access till webappen, tills vidare med regex för RFC1918-adresser
+             Update 2013-12-19: tillåt IPv6 ::1 för t.ex. curl mot localhost /jenhag -->
+        <!-- <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+                allow="((^127\.0\.0\.1)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)).*?|::1|0:0:0:0:0:0:0:1" />
+         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+                prefix="localhost_access_log." suffix=".txt"
+                pattern="%h %l %u %t &quot;%r&quot; %s %b %D" />
+         <Valve className="org.apache.catalina.valves.RemoteIpValve"
+                internalProxies="((^127\.0\.0\.1)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)).*?|::1|0:0:0:0:0:0:0:1"
+                remoteIpHeader="X-Forwarded-For" />-->
+                
+                
+      </Host>
+
+    </Engine>
+  </Service>
+</Server>
