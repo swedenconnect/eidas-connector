@@ -1,0 +1,487 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>se.elegnamnden.eidas.idp</groupId>
+  <artifactId>eidas-connector-base-parent</artifactId>
+  <packaging>pom</packaging>
+  <version>1.0.0-SNAPSHOT</version>
+
+  <name>eIDAS :: Parent POM for the Swedish eIDAS connector</name>
+  <description>Parent POM for the Swedish eIDAS connector IdP</description>
+  <url>https://github.com/elegnamnden/eidas-connector</url>
+
+  <licenses>
+    <license>
+      <name>GNU General Public License, Version 3</name>
+      <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+      <distribution>repo</distribution>
+      <comments>A free, copyleft license for software and other kinds of works</comments>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:https://github.com/elegnamnden/eidas-connector.git</connection>
+    <developerConnection>scm:https://github.com/elegnamnden/eidas-connector.git</developerConnection>
+    <url>https://github.com/elegnamnden/eidas-connector/tree/master</url>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>Stefan Santesson</name>
+      <email>stefan@aaa-sec.com</email>
+      <organization>3xA Security AB</organization>
+      <organizationUrl>http://aaa-sec.com</organizationUrl>
+    </developer>
+    <developer>
+      <name>Martin Lindström</name>
+      <email>martin.lindstrom@litsec.se</email>
+      <organization>Litsec AB</organization>
+      <organizationUrl>http://www.litsec.se</organizationUrl>
+    </developer>
+  </developers>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <java.version>1.8</java.version>
+
+    <!-- Versions on dependencies -->
+    <shibboleth-base-package.version>1.0.0-SNAPSHOT</shibboleth-base-package.version>
+    <shibboleth.version>3.3.1</shibboleth.version>
+    <shibboleth.java-support.version>7.3.0</shibboleth.java-support.version>
+    <opensaml.version>3.3.0</opensaml.version>
+    <opensaml-ext.version>0.9</opensaml-ext.version>
+    <opensaml.swedish-eid.version>0.9</opensaml.swedish-eid.version>
+    <opensaml.eidas.version>1.0.2</opensaml.eidas.version>
+    <spring.version>4.3.2.RELEASE</spring.version>
+    <spring.webflow.version>2.4.4.RELEASE</spring.webflow.version>
+    <spring.mobile.version>1.1.4.RELEASE</spring.mobile.version>
+
+    <joda-time.version>2.9</joda-time.version>
+    <slf4j.version>1.7.12</slf4j.version>
+    <junit.version>4.12</junit.version>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>shibboleth</id>
+      <name>Shibboleth Maven Repo</name>
+      <url>https://build.shibboleth.net/nexus/content/repositories/releases</url>
+    </repository>
+  </repositories>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
+  <dependencyManagement>
+
+    <dependencies>
+
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>3.1.0</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <!-- Shibboleth and OpenSAML extensions -->
+      <dependency>
+        <groupId>se.litsec.sweid.idp</groupId>
+        <artifactId>shibboleth-base</artifactId>
+        <version>${shibboleth-base-package.version}</version>
+        <type>zip</type>
+      </dependency>
+
+      <dependency>
+        <groupId>se.litsec.sweid.idp</groupId>
+        <artifactId>shibboleth-authn-support</artifactId>
+        <version>${shibboleth-base-package.version}</version>
+        <type>jar</type>
+      </dependency>
+
+      <dependency>
+        <groupId>se.litsec.sweid.idp</groupId>
+        <artifactId>shibboleth-attribute-support</artifactId>
+        <version>${shibboleth-base-package.version}</version>
+        <type>jar</type>
+      </dependency>
+
+      <dependency>
+        <groupId>se.litsec.sweid.idp</groupId>
+        <artifactId>shibboleth-metadata-support</artifactId>
+        <version>${shibboleth-base-package.version}</version>
+        <type>jar</type>
+      </dependency>
+
+      <dependency>
+        <groupId>se.litsec.opensaml</groupId>
+        <artifactId>opensaml3-ext</artifactId>
+        <version>${opensaml-ext.version}</version>
+        <type>jar</type>
+        <scope>compile</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>se.litsec.opensaml.sweid</groupId>
+        <artifactId>swedish-eid-opensaml3</artifactId>
+        <version>${opensaml.swedish-eid.version}</version>
+        <type>jar</type>
+        <scope>compile</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>se.litsec.eidas</groupId>
+        <artifactId>eidas-opensaml3</artifactId>
+        <version>${opensaml.eidas.version}</version>
+        <type>jar</type>
+        <scope>compile</scope>
+      </dependency>
+
+      <!-- OpenSAML -->
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-core</artifactId>
+        <version>${opensaml.version}</version>
+        <type>jar</type>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-saml-api</artifactId>
+        <version>${opensaml.version}</version>
+        <type>jar</type>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-saml-impl</artifactId>
+        <version>${opensaml.version}</version>
+        <type>jar</type>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-profile-api</artifactId>
+        <version>${opensaml.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-profile-impl</artifactId>
+        <version>${opensaml.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-xmlsec-api</artifactId>
+        <version>${opensaml.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-messaging-api</artifactId>
+        <version>${opensaml.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-messaging-impl</artifactId>
+        <version>${opensaml.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <!-- Shibboleth -->
+      <dependency>
+        <groupId>net.shibboleth.utilities</groupId>
+        <artifactId>java-support</artifactId>
+        <version>${shibboleth.java-support.version}</version>
+        <type>jar</type>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.shibboleth.idp</groupId>
+        <artifactId>idp-authn-api</artifactId>
+        <version>${shibboleth.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.shibboleth.idp</groupId>
+        <artifactId>idp-authn-impl</artifactId>
+        <version>${shibboleth.version}</version>
+        <scope>provided</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-expression</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>net.shibboleth.idp</groupId>
+        <artifactId>idp-saml-api</artifactId>
+        <version>${shibboleth.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.shibboleth.idp</groupId>
+        <artifactId>idp-profile-api</artifactId>
+        <version>${shibboleth.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.shibboleth.idp</groupId>
+        <artifactId>idp-attribute-api</artifactId>
+        <version>${shibboleth.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.shibboleth.idp</groupId>
+        <artifactId>idp-attribute-resolver-api</artifactId>
+        <version>${shibboleth.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.shibboleth.idp</groupId>
+        <artifactId>idp-attribute-resolver-impl</artifactId>
+        <version>${shibboleth.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.shibboleth.idp</groupId>
+        <artifactId>idp-attribute-resolver-spring</artifactId>
+        <version>${shibboleth.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.shibboleth.idp</groupId>
+        <artifactId>idp-session-api</artifactId>
+        <version>${shibboleth.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.shibboleth.idp</groupId>
+        <artifactId>idp-session-impl</artifactId>
+        <version>${shibboleth.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.shibboleth.idp</groupId>
+        <artifactId>idp-ui</artifactId>
+        <version>${shibboleth.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <!-- Spring -->
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>${spring.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${spring.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-beans</artifactId>
+        <version>${spring.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>${spring.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.webflow</groupId>
+        <artifactId>spring-webflow</artifactId>
+        <version>${spring.webflow.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.mobile</groupId>
+        <artifactId>spring-mobile-device</artifactId>
+        <version>${spring.mobile.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <!-- Misc -->
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>${joda-time.version}</version>
+        <type>jar</type>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.4</version>
+        <type>jar</type>
+        <scope>provided</scope>
+      </dependency>
+
+      <!-- For logging -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+        <type>jar</type>
+        <scope>provided</scope>
+      </dependency>
+
+      <!-- For testing -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+        <type>jar</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>${spring.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${slf4j.version}</version>
+        <type>jar</type>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+        <scope>test</scope>
+        <type>jar</type>
+      </dependency>
+
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.16</version>
+        <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.jms</groupId>
+            <artifactId>jms</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jdmk</groupId>
+            <artifactId>jmxtools</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jmx</groupId>
+            <artifactId>jmxri</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+    </dependencies>
+
+  </dependencyManagement>
+
+  <build>
+
+    <pluginManagement>
+
+      <plugins>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.6.2</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.0.2</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.0.0</version>
+          <configuration>
+            <filesets>
+              <fileset>
+                <directory>test-output</directory>
+              </fileset>
+            </filesets>
+          </configuration>
+        </plugin>
+
+      </plugins>
+
+    </pluginManagement>
+
+  </build>
+
+  <modules>
+    <module>sp</module>
+    <module>idp</module>
+  </modules>
+
+</project>
