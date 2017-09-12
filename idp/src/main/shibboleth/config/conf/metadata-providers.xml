@@ -38,13 +38,13 @@
 
     <MetadataProvider id="FederationMetadata"
                       xsi:type="FileBackedHTTPMetadataProvider"
-                      backingFile="%{idp.home}/metadata/cached-metadata.xml"
+                      backingFile="%{idp.home}/metadata/cache/cached-metadata.xml"
                       metadataURL="%{idp.metadata.federation.url}"
                       disregardTLSCertificate="true"        
                       maxRefreshDelay="PT10M"
-                      backupFileInitNextRefreshDelay="5000"
+                      backupFileInitNextRefreshDelay="5000"                      
                       failFastInitialization="false"> 
-        <MetadataFilter xsi:type="RequiredValidUntil" maxValidityInterval="P7D"/>
+        <!-- <MetadataFilter xsi:type="RequiredValidUntil" maxValidityInterval="P14D" /> -->
         <MetadataFilter xsi:type="SignatureValidation" requireSignedRoot="true" certificateFile="%{idp.metadata.federation.validation-certificate}" />
         <MetadataFilter xsi:type="EntityRoleWhiteList">
             <RetainedRole>md:SPSSODescriptor</RetainedRole>

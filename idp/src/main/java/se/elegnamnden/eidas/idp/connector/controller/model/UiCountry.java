@@ -20,8 +20,6 @@
  */
 package se.elegnamnden.eidas.idp.connector.controller.model;
 
-import se.elegnamnden.eidas.idp.connector.config.EuropeCountry;
-
 /**
  * Represents a country when used in views.
  * 
@@ -32,22 +30,16 @@ public class UiCountry implements Comparable<UiCountry> {
 
   private String code;
   private String name;
-
-  public UiCountry(String code) {
-    this(code, null);
-  }
+  private boolean realCountry = true;
 
   public UiCountry(String code, String name) {
+    this(code, name, true);
+  }
+  
+  public UiCountry(String code, String name, boolean realCountry) {
     this.code = code;
     this.name = name;
-    if (this.name == null) {
-      try {
-        this.name = EuropeCountry.valueOf(code).getShortEnglishName();
-      }
-      catch (Exception ex) {
-        this.name = code + " Test Country";
-      }
-    }
+    this.realCountry = realCountry;
   }
   
   public String getCode() {
@@ -57,14 +49,9 @@ public class UiCountry implements Comparable<UiCountry> {
   public String getName() {
     return this.name;
   }
-
+  
   public boolean isRealCountry() {
-    for (EuropeCountry e : EuropeCountry.values()) {
-      if (e.getIsoCode().equals(this.code)) {
-        return true;
-      }
-    }
-    return false;
+    return this.realCountry;
   }
 
   @Override

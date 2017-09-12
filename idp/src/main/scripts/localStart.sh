@@ -20,7 +20,7 @@ IDP_HOME=$BASE_DIR_WIN/target/shibboleth
 #
 IDP_SERVER_SCHEME=https
 IDP_SERVER_HOSTNAME=localhost
-IDP_SERVER_PORT=9160
+IDP_SERVER_PORT=9200
 IDP_SERVER_PORT_SUFFIX=":${IDP_SERVER_PORT}"
 IDP_SERVER_SERVLET_NAME=idp
 
@@ -36,7 +36,7 @@ IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFF
 #
 # Tomcat settings
 #
-TOMCAT_TLS_PORT=9160
+TOMCAT_TLS_PORT=9200
 TOMCAT_HOSTNAME=$IDP_SERVER_HOSTNAME
 TOMCAT_TLS_KEYSTORE=$TOMCAT_HOME/conf/tls-test-localhost.jks
 TOMCAT_TLS_PASSWORD=secret
@@ -45,16 +45,16 @@ TOMCAT_TLS_ALIAS=localhost
 #
 # IdP settings
 #
-IDP_ENTITY_ID=https://idp.svelegtest.se/idpref
+IDP_ENTITY_ID=https://eunode.eidastest.se/idp2
 
 TEST_SP_METADATA=https://localhost:8443/svelegtest-sp/metadata/all-metadata.xml
 
-IDP_CREDENTIALS=$IDP_HOME/credentials/$IDP_SERVER_SERVLET_NAME
+IDP_CREDENTIALS=$IDP_HOME/credentials
 
 export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.sealer.storeResource=$IDP_CREDENTIALS/sealer.jks \
 -Didp.sealer.versionResource=$IDP_CREDENTIALS/sealer.kver \
--Didp.sealer.password=JeiferDRIoOplYy89 \
+-Didp.sealer.password=3eifrUFrujUefIo8FJN4 \
 -Didp.signing.key=$IDP_CREDENTIALS/idp-signing.key \
 -Didp.signing.cert=$IDP_CREDENTIALS/idp-signing.crt \
 -Didp.encryption.key=$IDP_CREDENTIALS/idp-encryption.key \

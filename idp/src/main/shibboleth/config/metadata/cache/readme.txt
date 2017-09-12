@@ -1,0 +1,1 @@
+Contains cached metadata files.

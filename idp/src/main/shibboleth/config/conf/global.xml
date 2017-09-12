@@ -12,82 +12,21 @@
        default-init-method="initialize"
        default-destroy-method="destroy">
 
-  <bean id="eidas.CountryConfig" class="se.elegnamnden.eidas.idp.connector.config.CountryConfig" p:countries-ref="eidas.CountryList" scope="singleton" />
-
-  <util:list id="eidas.CountryList">
-    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="AT">
-      <property name="nameMap">
-        <util:map>
-          <entry key="en" value="Austria" />
-          <entry key="sv" value="Österrike" />
-        </util:map>
-      </property>
-    </bean>
-    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="CZ">
-      <property name="nameMap">
-        <util:map>
-          <entry key="en" value="Czech Republic" />
-          <entry key="sv" value="Tjeckien" />
-        </util:map>
-      </property>
-    </bean>
-    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="EE">
-      <property name="nameMap">
-        <util:map>
-          <entry key="en" value="Estonia" />
-          <entry key="sv" value="Estland" />
-        </util:map>
-      </property>
-    </bean>
-    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="FR">
-      <property name="nameMap">
-        <util:map>
-          <entry key="en" value="France" />
-          <entry key="sv" value="Frankrike" />
-        </util:map>
-      </property>
-    </bean>    
-    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="DE">
-      <property name="nameMap">
-        <util:map>
-          <entry key="en" value="Germany" />
-          <entry key="sv" value="Tyskland" />
-        </util:map>
-      </property>
-    </bean>    
-    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="IS">
-      <property name="nameMap">
-        <util:map>
-          <entry key="en" value="Iceland" />
-          <entry key="sv" value="Island" />
-        </util:map>
-      </property>
-    </bean>
-    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="NL">
-      <property name="nameMap">
-        <util:map>
-          <entry key="en" value="Netherlands" />
-          <entry key="sv" value="Nederländerna" />
-        </util:map>
-      </property>      
-    </bean>    
-    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="NO">
-      <property name="nameMap">
-        <util:map>
-          <entry key="en" value="Norway" />
-          <entry key="sv" value="Norge" />
-        </util:map>
-      </property>      
-    </bean>
-    <bean class="se.elegnamnden.eidas.idp.connector.config.CountryName" c:isoCode="XX">
-      <property name="nameMap">
-        <util:map>
-          <entry key="en" value="XX Test Country" />
-          <entry key="sv" value="XX Testland" />
-        </util:map>
-      </property>      
-    </bean>
+  <!-- eIDAS metadata -->
+  <bean id="eidas.MetadataConfig" class="se.elegnamnden.eidas.metadataconfig.MetadataConfig" scope="singleton"
+    c:dataDirectory="%{idp.metadata.eidas.cache-directory}"
+    c:metadataListUrl="%{idp.metadata.eidas.service-list.url}"
+    c:metadataListCertFile="%{idp.metadata.eidas.service-list.validation-certificate}"
+    c:metadataUrl="%{idp.metadata.eidas.federation.url}"
+    c:metadataCertFile="%{idp.metadata.eidas.federation.validation-certificate}"
+    c:mwParamList-ref="eidas.mwParamList" />
+    
+  <util:list id="eidas.mwParamList">
+    <bean class="se.elegnamnden.eidas.metadataconfig.data.MiddleWareParams"
+      c:entityID="https://demw.eidastest.se" c:serviceUrlPrefix="https://demw.eidastest.se" />
   </util:list>
+    
+    
     
     
 </beans>

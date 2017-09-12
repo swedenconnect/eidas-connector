@@ -53,6 +53,12 @@
   <dependencies>
   
     <dependency>
+      <groupId>se.elegnamnden.eidas</groupId>
+      <artifactId>metadataconfig</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+  
+    <dependency>
       <groupId>se.litsec.opensaml</groupId>
       <artifactId>opensaml3-ext</artifactId>
       <scope>provided</scope>
@@ -67,7 +73,6 @@
     <dependency>
       <groupId>se.litsec.eidas</groupId>
       <artifactId>eidas-opensaml3</artifactId>
-      <scope>provided</scope>
     </dependency>
     
     <dependency>
