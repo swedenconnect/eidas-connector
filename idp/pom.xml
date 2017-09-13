@@ -13,7 +13,7 @@
   </parent>
 
   <name>eIDAS :: Swedish eIDAS connector</name>
-  <description>PSwedish eIDAS connector IdP</description>
+  <description>Swedish eIDAS connector IdP</description>
   <url>https://github.com/elegnamnden/eidas-connector</url>
   
   <licenses>
@@ -61,13 +61,11 @@
     <dependency>
       <groupId>se.litsec.opensaml</groupId>
       <artifactId>opensaml3-ext</artifactId>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>se.litsec.opensaml.sweid</groupId>
       <artifactId>swedish-eid-opensaml3</artifactId>
-      <scope>provided</scope>
     </dependency>      
 
     <dependency>
@@ -78,19 +76,16 @@
     <dependency>
       <groupId>se.litsec.sweid.idp</groupId>
       <artifactId>shibboleth-authn-support</artifactId>
-      <scope>provided</scope>
     </dependency>
     
     <dependency>
       <groupId>se.litsec.sweid.idp</groupId>
       <artifactId>shibboleth-attribute-support</artifactId>
-      <scope>provided</scope>
     </dependency>
     
     <dependency>
       <groupId>se.litsec.sweid.idp</groupId>
       <artifactId>shibboleth-metadata-support</artifactId>
-      <scope>provided</scope>
     </dependency>
     
     <dependency>
@@ -101,10 +96,8 @@
     <dependency>
       <groupId>jstl</groupId>
       <artifactId>jstl</artifactId>
-      <version>1.2</version>
     </dependency>
     
-    <!-- For some reason the scope gets set to runtime so we need to add this explicitly -->
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
