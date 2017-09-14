@@ -58,6 +58,7 @@
     parent="sweid.AbstractExternalAuthenticationController"
     p:authenticatorName="%{idp.authn.external-authn.name}" 
     p:metadataConfig-ref="eidas.MetadataConfig"
+    p:signMessageDecrypter-ref="swedish-eid.SignMessageDecryptionService"
     p:messageSource-ref="messageSource" />
     
     

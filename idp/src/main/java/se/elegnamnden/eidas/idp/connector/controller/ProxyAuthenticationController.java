@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.opensaml.profile.context.ProfileRequestContext;
+import org.opensaml.xmlsec.encryption.support.DecryptionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -51,6 +52,9 @@ import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import se.elegnamnden.eidas.idp.connector.controller.model.UiCountry;
 import se.elegnamnden.eidas.metadataconfig.MetadataConfig;
 import se.litsec.shibboleth.idp.authn.controller.AbstractExternalAuthenticationController;
+import se.litsec.shibboleth.idp.subsystem.signservice.SignMessageDecryptionService;
+import se.litsec.swedisheid.opensaml.saml2.signservice.dss.Message;
+import se.litsec.swedisheid.opensaml.saml2.signservice.dss.SignMessage;
 
 /**
  * The main controller for the Shibboleth external authentication flow implementing proxy functionality against the
@@ -83,6 +87,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   /** Configurator for eIDAS metadata. */
   private MetadataConfig metadataConfig;
 
+  /** The SignMessageDecrypter service. */
+  private SignMessageDecryptionService signMessageDecrypter;
+
   /** The Spring message source holding localized UI message strings. */
   private MessageSource messageSource;
 
@@ -96,11 +103,29 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   @Override
   protected ModelAndView doExternalAuthentication(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String key,
       ProfileRequestContext<?, ?> profileRequestContext) throws ExternalAuthenticationException, IOException {
-    
+
     // Selected country from earlier session.
     //
     final String selectedCountry = this.getSelectedCountry(httpRequest);
     log.debug("Selected country from previous session: {}", selectedCountry != null ? selectedCountry : "none");
+
+    // TMP
+    if (this.isSignatureServicePeer(profileRequestContext)) {
+      SignMessage signMessage = this.getSignMessage(profileRequestContext);
+      if (signMessage.getEncryptedMessage() != null) {
+        log.debug("SignMessage is available and encrypted. Decrypting ...");
+        try {
+          Message msg = this.signMessageDecrypter.decrypt(signMessage);
+          log.debug("Decrypted SignMessage: {}", msg.getContent());
+        }
+        catch (DecryptionException e) {
+          log.error("Failed to decrypt SignMessage", e);
+        }
+      }
+      else {
+        log.debug("SignMessage is available in cleartext: {}", signMessage.getMessage().getContent());
+      }
+    }
 
     // The first step is to prompt the user for which country to direct to.
     // If the request is made by a signature service and the selected country is known, we skip
@@ -118,10 +143,10 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     if (selectedCountry != null) {
       modelAndView.addObject("selectedCountry", selectedCountry);
     }
-    
-//    LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(httpRequest);
-//    localeResolver.setLocale(httpRequest, httpResponse, Locale.forLanguageTag("en"));
-    
+
+    // LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(httpRequest);
+    // localeResolver.setLocale(httpRequest, httpResponse, Locale.forLanguageTag("en"));
+
     return modelAndView;
   }
 
@@ -185,7 +210,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     //
     List<String> isoCodes = Arrays.asList("AT", "CZ", "EE", "FR", "DE", "IS", "NL", "NO", "XX"); // this.metadataConfig.getProxyServiceCountryList();
     // Arrays.asList("AT", "CZ", "EE", "FR", "DE", "IS", "NL", "NO", "XX")
-    
 
     // We want to avoid locale based sorting in the view, so we'll provide a sorted list based on each
     // country's localized display name.
@@ -209,7 +233,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
         }
       }
 
-      if (displayName != null) {      
+      if (displayName != null) {
         countries.add(new UiCountry(code, displayName));
       }
       else {
@@ -237,7 +261,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     return countries;
   }
-  
+
   /** {@inheritDoc} */
   @Override
   public String getAuthenticatorName() {
@@ -285,6 +309,16 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     this.selectedCountryCookieName = selectedCountryCookieName;
   }
 
+  /**
+   * Assigns the sign message decrypter
+   * 
+   * @param signMessageDecrypter
+   *          the decrypter
+   */
+  public void setSignMessageDecrypter(SignMessageDecryptionService signMessageDecrypter) {
+    this.signMessageDecrypter = signMessageDecrypter;
+  }
+
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
@@ -292,11 +326,12 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     Assert.hasText(this.authenticatorName, "The property 'authenticatorName' must be assigned");
     Assert.notNull(this.metadataConfig, "The property 'metadataConfig' must be assigned");
     Assert.notNull(this.messageSource, "The property 'messageSource' must be assigned");
+    Assert.notNull(this.signMessageDecrypter, "The property 'signMessageDecrypter' must be assigned");
     if (!StringUtils.hasText(this.selectedCountryCookieName)) {
       this.selectedCountryCookieName = DEFAULT_SELECTED_COUNTRY_COOKIE_NAME;
       log.debug("Name of cookie that holds selected country was not given - defaulting to {}", this.selectedCountryCookieName);
     }
-    
+
     // TMP code since the metadata config is not set up as it should be
     this.metadataConfig.recache();
   }
