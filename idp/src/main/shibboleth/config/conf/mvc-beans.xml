@@ -52,13 +52,15 @@
     Path: /idp/profile/extauth 
    -->
   <bean id="sweid.AbstractExternalAuthenticationController" class="se.litsec.shibboleth.idp.authn.controller.sweid.AbstractExternalAuthenticationController"
-    abstract="true" p:attributeToIdMapping-ref="sweid.SAML2AttributeNameToIdMapperService" p:flowName="authn/External" />
+    abstract="true" 
+    p:attributeToIdMapping-ref="sweid.SAML2AttributeNameToIdMapperService"
+    p:signMessageDecrypter-ref="swedish-eid.SignMessageDecryptionService" 
+    p:flowName="authn/External" />
     
   <bean id="eidas.ProxyAuthenticationController" class="se.elegnamnden.eidas.idp.connector.controller.ProxyAuthenticationController" 
     parent="sweid.AbstractExternalAuthenticationController"
     p:authenticatorName="%{idp.authn.external-authn.name}" 
-    p:metadataConfig-ref="eidas.MetadataConfig"
-    p:signMessageDecrypter-ref="swedish-eid.SignMessageDecryptionService"
+    p:metadataConfig-ref="eidas.MetadataConfig"    
     p:messageSource-ref="messageSource" />
     
     

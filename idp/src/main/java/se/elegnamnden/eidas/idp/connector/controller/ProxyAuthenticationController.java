@@ -52,7 +52,6 @@ import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import se.elegnamnden.eidas.idp.connector.controller.model.UiCountry;
 import se.elegnamnden.eidas.metadataconfig.MetadataConfig;
 import se.litsec.shibboleth.idp.authn.controller.AbstractExternalAuthenticationController;
-import se.litsec.shibboleth.idp.subsystem.signservice.SignMessageDecryptionService;
 import se.litsec.swedisheid.opensaml.saml2.signservice.dss.Message;
 import se.litsec.swedisheid.opensaml.saml2.signservice.dss.SignMessage;
 
@@ -87,9 +86,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   /** Configurator for eIDAS metadata. */
   private MetadataConfig metadataConfig;
 
-  /** The SignMessageDecrypter service. */
-  private SignMessageDecryptionService signMessageDecrypter;
-
   /** The Spring message source holding localized UI message strings. */
   private MessageSource messageSource;
 
@@ -115,7 +111,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       if (signMessage.getEncryptedMessage() != null) {
         log.debug("SignMessage is available and encrypted. Decrypting ...");
         try {
-          Message msg = this.signMessageDecrypter.decrypt(signMessage);
+          Message msg = this.decryptSignMessage(signMessage);
           log.debug("Decrypted SignMessage: {}", msg.getContent());
         }
         catch (DecryptionException e) {
@@ -309,24 +305,13 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     this.selectedCountryCookieName = selectedCountryCookieName;
   }
 
-  /**
-   * Assigns the sign message decrypter
-   * 
-   * @param signMessageDecrypter
-   *          the decrypter
-   */
-  public void setSignMessageDecrypter(SignMessageDecryptionService signMessageDecrypter) {
-    this.signMessageDecrypter = signMessageDecrypter;
-  }
-
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
     super.afterPropertiesSet();
     Assert.hasText(this.authenticatorName, "The property 'authenticatorName' must be assigned");
     Assert.notNull(this.metadataConfig, "The property 'metadataConfig' must be assigned");
-    Assert.notNull(this.messageSource, "The property 'messageSource' must be assigned");
-    Assert.notNull(this.signMessageDecrypter, "The property 'signMessageDecrypter' must be assigned");
+    Assert.notNull(this.messageSource, "The property 'messageSource' must be assigned");    
     if (!StringUtils.hasText(this.selectedCountryCookieName)) {
       this.selectedCountryCookieName = DEFAULT_SELECTED_COUNTRY_COOKIE_NAME;
       log.debug("Name of cookie that holds selected country was not given - defaulting to {}", this.selectedCountryCookieName);
