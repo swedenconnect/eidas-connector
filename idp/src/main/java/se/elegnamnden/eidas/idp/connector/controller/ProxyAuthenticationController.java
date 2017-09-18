@@ -146,7 +146,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     return modelAndView;
   }
 
-  @RequestMapping(value = "/extauth/proxyauth", method = RequestMethod.POST)
+  @RequestMapping(value = "/proxyauth", method = RequestMethod.POST)
   public ModelAndView processAuthentication(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
       @RequestParam("action") String action,
       @RequestParam("selectedCountry") String selectedCountry) throws ExternalAuthenticationException, IOException {
@@ -190,7 +190,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    */
   private void saveSelectedCountry(HttpServletResponse httpResponse, String selectedCountry) {
     Cookie cookie = new Cookie(this.selectedCountryCookieName, selectedCountry);
-    cookie.setPath("/idp/");
+    cookie.setPath("/idp");
     httpResponse.addCookie(cookie);
   }
 
@@ -318,7 +318,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     }
 
     // TMP code since the metadata config is not set up as it should be
-    this.metadataConfig.recache();
+    // this.metadataConfig.recache();
   }
 
 }

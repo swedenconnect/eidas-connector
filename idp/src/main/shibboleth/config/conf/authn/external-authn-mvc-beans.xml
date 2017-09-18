@@ -13,24 +13,7 @@
                            
        default-init-method="initialize"
        default-destroy-method="destroy">
-
-    <!--
-    Use this file to define any custom MVC beans needed. Its contents are imported
-    by system/conf/mvc-beans.xml, which configures a lot of the low-level Spring Web
-    behavior of the IdP. You can ignore this file otherwise.
-    -->
-    
-  <mvc:interceptors> 
-  
-    <bean id="webContentInterceptor" class="org.springframework.web.servlet.mvc.WebContentInterceptor"
-      p:cacheSeconds="0" 
-      p:useExpiresHeader="true" 
-      p:useCacheControlHeader="true"
-      p:useCacheControlNoStore="true"
-      p:alwaysMustRevalidate="true" />
-
-  </mvc:interceptors>
-  
+       
   <bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver"
     p:cookieName="idpUiLanguage"
     p:cookieDomain="%{idp.cookie.domain:}"
@@ -38,30 +21,22 @@
     p:cookieSecure="%{idp.cookie.secure:false}"
     p:cookiePath="%{idp.cookie.path:}"
     p:cookieMaxAge="%{idp.cookie.maxAge:31536000}"
-    p:defaultLocale="sv" />
+    p:defaultLocale="sv" />       
 
   <!--
-    Controller for publishing the IdP metadata.
-    Path: /idp/profile/metadata 
-   -->
-  <bean id="sweid.MetadataPublishingController" class="se.litsec.shibboleth.idp.metadata.controller.MetadataPublishingController" 
-    p:metadataContainer-ref="sweid.IdpMetadataContainer" />
-    
-  <!--
     Abstract base controller for external authentication controllers.
-    Path: /idp/profile/extauth 
+    Path: /idp/extauth 
    -->
   <bean id="sweid.AbstractExternalAuthenticationController" class="se.litsec.shibboleth.idp.authn.controller.sweid.AbstractExternalAuthenticationController"
     abstract="true" 
     p:attributeToIdMapping-ref="sweid.SAML2AttributeNameToIdMapperService"
-    p:signMessageDecrypter-ref="swedish-eid.SignMessageDecryptionService" 
+    p:signMessageDecrypter-ref="sweid.SignMessageDecryptionService" 
     p:flowName="authn/External" />
     
   <bean id="eidas.ProxyAuthenticationController" class="se.elegnamnden.eidas.idp.connector.controller.ProxyAuthenticationController" 
     parent="sweid.AbstractExternalAuthenticationController"
     p:authenticatorName="%{idp.authn.external-authn.name}" 
     p:metadataConfig-ref="eidas.MetadataConfig"    
-    p:messageSource-ref="messageSource" />
-    
-    
+    p:messageSource-ref="messageSource" />    
+        
 </beans>

@@ -14,6 +14,7 @@
 
   <!-- eIDAS metadata -->
   <bean id="eidas.MetadataConfig" class="se.elegnamnden.eidas.metadataconfig.MetadataConfig" scope="singleton"
+    init-method="recache"
     c:dataDirectory="%{idp.metadata.eidas.cache-directory}"
     c:metadataListUrl="%{idp.metadata.eidas.service-list.url}"
     c:metadataListCertFile="%{idp.metadata.eidas.service-list.validation-certificate}"

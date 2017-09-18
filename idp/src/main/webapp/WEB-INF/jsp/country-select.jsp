@@ -23,7 +23,7 @@
         </div>
         <div class="panel-body">
           <div class="col-sm-6">
-            <form action="/idp/profile/extauth/proxyauth" method="POST" id="formTab3">
+            <form action="/idp/extauth/proxyauth" method="POST" id="formTab3">
               <div class="form-group form-group-sm">
                 <label for="countryInp"><spring:message code="connector.ui.choose-country" /></label>
                 <select class="form-control selectpicker" id="selectCountryInp" name="selectedCountry" data-native-menu="false">                
@@ -54,7 +54,7 @@
            <div class="col-sm-6">
              <!-- 
              <div id="changeLanguage">
-               <form action="/idp/profile/extauth/language" method="POST">
+               <form action="/idp/extauth/language" method="POST">
                  
                </form>
              </div>
