@@ -33,6 +33,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.opensaml.profile.context.ProfileRequestContext;
+import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.xmlsec.encryption.support.DecryptionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,9 +50,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import se.elegnamnden.eidas.idp.connector.controller.model.UiCountry;
+import se.elegnamnden.eidas.idp.connector.service.AuthenticationContextService;
+import se.elegnamnden.eidas.idp.connector.sp.AuthnRequestInput;
+import se.elegnamnden.eidas.idp.connector.sp.ProxyAuthenticationServiceProvider;
+import se.elegnamnden.eidas.idp.connector.sp.ProxyAuthenticationServiceProviderException;
 import se.elegnamnden.eidas.metadataconfig.MetadataConfig;
+import se.elegnamnden.eidas.metadataconfig.data.EndPointConfig;
+import se.litsec.opensaml.saml2.authentication.RequestHttpObject;
 import se.litsec.shibboleth.idp.authn.controller.AbstractExternalAuthenticationController;
 import se.litsec.swedisheid.opensaml.saml2.signservice.dss.Message;
 import se.litsec.swedisheid.opensaml.saml2.signservice.dss.SignMessage;
@@ -83,8 +92,14 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   /** The name of the authenticator. */
   private String authenticatorName;
 
+  /** The ProxyIdP Service Provider. */
+  private ProxyAuthenticationServiceProvider serviceProvider;
+
   /** Configurator for eIDAS metadata. */
   private MetadataConfig metadataConfig;
+
+  /** Service for handling of Authentication Context URIs. */
+  private AuthenticationContextService authenticationContextService;
 
   /** The Spring message source holding localized UI message strings. */
   private MessageSource messageSource;
@@ -160,6 +175,59 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     log.debug("User selected country '{}'", selectedCountry);
     this.saveSelectedCountry(httpResponse, selectedCountry);
 
+    // Get hold of all information needed for the foreign endpoint.
+    //
+    EndPointConfig endPointConfig = this.metadataConfig.getProxySeriveConfig(selectedCountry);
+    if (endPointConfig == null) {
+      log.error("No endpoint found for country '{}'", selectedCountry);
+      this.error(httpRequest, httpResponse, AuthnEventIds.INVALID_AUTHN_CTX);
+      return null;
+    }
+
+    final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
+
+    // Match assurance levels and calculate which LoA URI to use in the request.
+    //
+    String loaUriToRequest = this.authenticationContextService.getEidasAuthnContextURI(
+      this.getRequestedAuthnContextClassRefs(context), endPointConfig.getAssuranceCertifications(), endPointConfig
+        .isSupportsNonNotifiedConcept());
+    if (loaUriToRequest == null) {
+      log.info("AuthnRequest did not contain a matching requested Authn Context URI");
+      this.error(httpRequest, httpResponse, AuthnEventIds.INVALID_AUTHN_CTX);
+      return null;
+    }
+
+    // Next, generate an AuthnRequest and redirect or post the user there.
+    //
+    AuthnRequestInput spInput = new AuthnRequestInput();
+    spInput.setRelayState(this.getRelayState(context));
+    spInput.setRequestedLevelOfAssurance(loaUriToRequest);
+    
+    try {
+      RequestHttpObject<AuthnRequest> authnRequest = this.serviceProvider.generateAuthnRequest(endPointConfig, spInput);
+      
+      if (SAMLConstants.POST_METHOD.equals(authnRequest.getMethod())) {
+        ModelAndView modelAndView = new ModelAndView("post-request");
+        modelAndView.addObject("action", authnRequest.getSendUrl());
+        modelAndView.addAllObjects(authnRequest.getRequestParameters());
+        return modelAndView;
+      }
+      else { // GET
+        return new ModelAndView("redirect:" + authnRequest.getSendUrl());
+      }
+    }
+    catch (ProxyAuthenticationServiceProviderException e) {
+      log.error("Error while creating eIDAS AuthnContext - {}", e.getMessage(), e);
+      this.error(httpRequest, httpResponse, AuthnEventIds.REQUEST_UNSUPPORTED); // TODO: change
+      return null;
+    }
+  }
+
+  @RequestMapping(value = "/saml2/post", method = RequestMethod.POST)
+  public ModelAndView samlResponse(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+      @RequestParam("SAMLResponse") String samlResponse,
+      @RequestParam("RelayState") String relayState) throws ExternalAuthenticationException, IOException {
+
     return null;
   }
 
@@ -205,7 +273,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Ask the metadata configurator about which countries that have an eIDAS Proxy service registered.
     //
     List<String> isoCodes = Arrays.asList("AT", "CZ", "EE", "FR", "DE", "IS", "NL", "NO", "XX"); // this.metadataConfig.getProxyServiceCountryList();
-    // Arrays.asList("AT", "CZ", "EE", "FR", "DE", "IS", "NL", "NO", "XX")
 
     // We want to avoid locale based sorting in the view, so we'll provide a sorted list based on each
     // country's localized display name.
@@ -275,6 +342,16 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   }
 
   /**
+   * Assigns the Proxy IdP service provider.
+   * 
+   * @param serviceProvider
+   *          the SP instance to assign
+   */
+  public void setServiceProvider(ProxyAuthenticationServiceProvider serviceProvider) {
+    this.serviceProvider = serviceProvider;
+  }
+
+  /**
    * Assigns the configurator object holding information about the eIDAS metadata.
    * 
    * @param metadataConfig
@@ -282,6 +359,16 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    */
   public void setMetadataConfig(MetadataConfig metadataConfig) {
     this.metadataConfig = metadataConfig;
+  }
+
+  /**
+   * Assigns the service for handling Authentication Context URI:s.
+   * 
+   * @param authenticationContextService
+   *          the authentication context service
+   */
+  public void setAuthenticationContextService(AuthenticationContextService authenticationContextService) {
+    this.authenticationContextService = authenticationContextService;
   }
 
   /**
@@ -311,14 +398,15 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     super.afterPropertiesSet();
     Assert.hasText(this.authenticatorName, "The property 'authenticatorName' must be assigned");
     Assert.notNull(this.metadataConfig, "The property 'metadataConfig' must be assigned");
-    Assert.notNull(this.messageSource, "The property 'messageSource' must be assigned");    
+    Assert.notNull(this.messageSource, "The property 'messageSource' must be assigned");
+    Assert.notNull(this.authenticationContextService, "The property 'authenticationContextService' must be assigned");
     if (!StringUtils.hasText(this.selectedCountryCookieName)) {
       this.selectedCountryCookieName = DEFAULT_SELECTED_COUNTRY_COOKIE_NAME;
       log.debug("Name of cookie that holds selected country was not given - defaulting to {}", this.selectedCountryCookieName);
     }
-
-    // TMP code since the metadata config is not set up as it should be
-    // this.metadataConfig.recache();
+    
+    // TMP
+    this.metadataConfig.recache();
   }
 
 }

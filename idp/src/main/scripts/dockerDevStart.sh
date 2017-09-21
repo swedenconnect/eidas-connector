@@ -69,6 +69,17 @@ IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFF
 : ${IDP_METADATA_SIGNING_KEY:=$IDP_CREDENTIALS/metadata-signing.key}
 : ${IDP_METADATA_SIGNING_CERT:=$IDP_CREDENTIALS/metadata-signing.crt}
 
+#
+# SP settings
+#
+: ${SP_ENTITY_ID:=https://eunode.eidastest.se/sp}
+
+: ${SP_CREDENTIALS:=$IDP_HOME/credentials/sp}
+: ${SP_SIGNING_KEY:=$SP_CREDENTIALS/sp-signing.key}
+: ${SP_SIGNING_CERT:=$IDP_CREDENTIALS/sp-signing.crt}
+#: ${SP_METADATA_SIGNING_KEY:=$SP_CREDENTIALS/sp-metadata-signing.key}
+#: ${SP_METADATA_SIGNING_CERT:=$SP_CREDENTIALS/sp-metadata-signing.crt}
+
 
 TEST_SP_METADATA=https://docker.for.mac.localhost:8443/svelegtest-sp/metadata/all-metadata.xml
 
@@ -104,6 +115,9 @@ export JAVA_OPTS="\
           -Didp.encryption.cert=$IDP_ENCRYPTION_CERT \
           -Didp.metadata.signing.key=$IDP_METADATA_SIGNING_KEY \
           -Didp.metadata.signing.cert=$IDP_METADATA_SIGNING_CERT \
+          -Didp.sp.entityID=$SP_ENTITY_ID \
+          -Didp.sp.signing.key=$SP_SIGNING_KEY \
+          -Didp.sp.signing.cert=SP_SIGNING_CERT \
           -Didp.baseurl=$IDP_BASE_URL \
           -Didp.litsec.loglevel=${IDP_LITSEC_LOGLEVEL} \
           -Didp.test.sp.metadata=${TEST_SP_METADATA} \

@@ -14,7 +14,7 @@
 
   <!-- eIDAS metadata -->
   <bean id="eidas.MetadataConfig" class="se.elegnamnden.eidas.metadataconfig.MetadataConfig" scope="singleton"
-    init-method="recache"
+    init-method="recache" depends-on="shibboleth.OpenSAMLConfig"
     c:dataDirectory="%{idp.metadata.eidas.cache-directory}"
     c:metadataListUrl="%{idp.metadata.eidas.service-list.url}"
     c:metadataListCertFile="%{idp.metadata.eidas.service-list.validation-certificate}"
@@ -26,5 +26,28 @@
     <bean class="se.elegnamnden.eidas.metadataconfig.data.MiddleWareParams"
       c:entityID="https://demw.eidastest.se" c:serviceUrlPrefix="https://demw.eidastest.se" />
   </util:list>
-    
+  
+  <!-- Connector services -->
+  
+  <bean id="eidas.AuthenticationContextService" class="se.elegnamnden.eidas.idp.connector.service.AuthenticationContextService" scope="singleton"
+    p:loaMappings-ref="eidas.LevelOfAssuranceMappings" 
+    p:authnContextweightMap-ref="shibboleth.AuthenticationPrincipalWeightMap" />
+  
+  <bean id="eidas.LevelOfAssuranceMappings" class="se.elegnamnden.eidas.mapping.loa.StaticLevelOfAssuranceMappings" scope="singleton" />
+  
+  <!-- Connector SP -->
+  
+  <!-- TODO: move the connector SP into a reloadable Spring subsystem so that we get support for reloading of keys etc. -->
+  
+  <bean id="eidas.ProxyAuthenticationServiceProvider" class="se.elegnamnden.eidas.idp.connector.sp.impl.ProxyAuthenticationServiceProviderImpl" scope="singleton"
+    p:entityID="%{idp.sp.entityID}" 
+    p:name="%{idp.sp.name}"
+    p:signingCredentials-ref="eidas.SpSigningCredential" />
+  
+  <bean id="eidas.SpSigningCredential" class="net.shibboleth.idp.profile.spring.factory.BasicX509CredentialFactoryBean"
+    p:privateKeyResource="%{idp.sp.signing.key}"
+    p:certificateResource="%{idp.sp.signing.cert}"
+    p:entityId="%{idp.sp.entityID}" />  
+  
+      
 </beans>

@@ -36,7 +36,9 @@
     <!-- =========================================================== -->
     
     <logger name="se.litsec" level="DEBUG" />
-    <logger name="se.elegnamnden" level="DEBUG" />
+    <logger name="se.elegnamnden.eidas.idp" level="TRACE" />
+    <logger name="se.elegnamnden" level="DEBUG" />    
+    
         
     <logger name="org.springframework.web" level="WARN" />
     <logger name="org.springframework.webflow" level="WARN" />    

@@ -46,6 +46,7 @@ TOMCAT_TLS_ALIAS=localhost
 # IdP settings
 #
 IDP_ENTITY_ID=https://eunode.eidastest.se/idp2
+SP_ENTITY_ID=https://eunode.eidastest.se/sp
 
 TEST_SP_METADATA=https://localhost:8443/svelegtest-sp/metadata/all-metadata.xml
 
@@ -61,6 +62,9 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.encryption.cert=$IDP_CREDENTIALS/idp-encryption.crt \
 -Didp.metadata.signing.key=$IDP_CREDENTIALS/metadata-signing.key \
 -Didp.metadata.signing.cert=$IDP_CREDENTIALS/metadata-signing.crt \
+-Didp.sp.entityID=$SP_ENTITY_ID \
+-Didp.sp.signing.key=$IDP_CREDENTIALS/sp/sp-signing.key \
+-Didp.sp.signing.cert=$IDP_CREDENTIALS/sp/sp-signing.crt \
 -Didp.home=$IDP_HOME \
 -Didp.envflag=dev \
 -Djava.net.preferIPv4Stack=true \
