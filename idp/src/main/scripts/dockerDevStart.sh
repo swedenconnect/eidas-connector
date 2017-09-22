@@ -58,7 +58,7 @@ IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFF
 #
 : ${IDP_ENTITY_ID:=https://idp.svelegtest.se/idpref}
 
-: ${IDP_CREDENTIALS:=$IDP_HOME/credentials/$IDP_SERVER_SERVLET_NAME}
+: ${IDP_CREDENTIALS:=$IDP_HOME/credentials}
 : ${IDP_SEALER_STORE_RESOURCE:=$IDP_CREDENTIALS/sealer.jks}
 : ${IDP_SEALER_PASSWORD:=JeiferDRIoOplYy89}
 : ${IDP_SEALER_VERSION_RESOURCES:=$IDP_CREDENTIALS/sealer.kver}
@@ -77,8 +77,10 @@ IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFF
 : ${SP_CREDENTIALS:=$IDP_HOME/credentials/sp}
 : ${SP_SIGNING_KEY:=$SP_CREDENTIALS/sp-signing.key}
 : ${SP_SIGNING_CERT:=$IDP_CREDENTIALS/sp-signing.crt}
-#: ${SP_METADATA_SIGNING_KEY:=$SP_CREDENTIALS/sp-metadata-signing.key}
-#: ${SP_METADATA_SIGNING_CERT:=$SP_CREDENTIALS/sp-metadata-signing.crt}
+: ${SP_ENCRYPTION_KEY:=$SP_CREDENTIALS/sp-signing.key}
+: ${SP_ENCRYPTION_CERT:=$IDP_CREDENTIALS/sp-signing.crt}
+: ${SP_METADATA_SIGNING_KEY:=$IDP_CREDENTIALS/metadata-signing.key}
+: ${SP_METADATA_SIGNING_CERT:=$IDP_CREDENTIALS/metadata-signing.crt}
 
 
 TEST_SP_METADATA=https://docker.for.mac.localhost:8443/svelegtest-sp/metadata/all-metadata.xml
@@ -117,7 +119,11 @@ export JAVA_OPTS="\
           -Didp.metadata.signing.cert=$IDP_METADATA_SIGNING_CERT \
           -Didp.sp.entityID=$SP_ENTITY_ID \
           -Didp.sp.signing.key=$SP_SIGNING_KEY \
-          -Didp.sp.signing.cert=SP_SIGNING_CERT \
+          -Didp.sp.signing.cert=$SP_SIGNING_CERT \
+          -Didp.sp.encryption.key=$SP_ENCRYPTION_KEY \
+          -Didp.sp.encryption.cert=$SP_ENCRYPTION_CERT \
+          -Didp.sp.metadata.signing.key=$SP_METADATA_SIGNING_KEY \
+          -Didp.sp.metadata.signing.cert=$SP_METADATA_SIGNING_CERT \          
           -Didp.baseurl=$IDP_BASE_URL \
           -Didp.litsec.loglevel=${IDP_LITSEC_LOGLEVEL} \
           -Didp.test.sp.metadata=${TEST_SP_METADATA} \

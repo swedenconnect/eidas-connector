@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+                           
+       default-init-method="initialize"
+       default-destroy-method="destroy">
+       
+  <!--
+    Configuration file for the SP metadata. 
+   -->
+            
+  <!--
+    eidas.SpMetadata - The SAML EntityDescriptor for the metadata for the SP part of the proxy IdP. 
+   -->
+  <bean id="eidas.SpMetadata" class="se.litsec.opensaml.saml2.metadata.build.spring.SpEntityDescriptorFactoryBean" scope="singleton" depends-on="shibboleth.OpenSAMLConfig"
+    c:resource="%{idp.home}/metadata/sp-metadata.xml">
+    
+    <!-- entityID -->
+    <property name="entityID" value="%{idp.sp.entityID}" />
+    
+    <property name="wantAssertionsSigned" value="%{idp.sp.metadata.wantAssertionsSigned}" />
+    <property name="authnRequestsSigned" value="%{idp.sp.metadata.authnRequestsSigned}" />
+
+    <!-- Key descriptors (will be changed to a dynamically reloadable bean) -->    
+    <property name="keyDescriptors">
+      <util:list>
+        <bean class="se.litsec.opensaml.saml2.metadata.build.spring.KeyDescriptorFactoryBean" p:use="SIGNING" p:certificateResource="%{idp.sp.signing.cert}" />
+        <bean class="se.litsec.opensaml.saml2.metadata.build.spring.KeyDescriptorFactoryBean" p:use="ENCRYPTION" p:certificateResource="%{idp.sp.encryption.cert}">
+          <property name="encryptionMethods">
+            <bean parent="shibboleth.CommaDelimStringArray" c:_0="#{'%{idp.sp.metadata.encryption-methods:}'.trim()}" />
+          <!-- 
+            <util:list>
+              <value>http://www.w3.org/2009/xmlenc11#aes128-gcm</value>
+              <value>http://www.w3.org/2009/xmlenc11#aes192-gcm</value>
+              <value>http://www.w3.org/2009/xmlenc11#aes256-gcm</value>
+            </util:list>
+            -->
+          </property>
+        </bean>
+      </util:list>
+    </property>
+    
+    <property name="assertionConsumerServices">
+      <util:list>
+        <bean class="se.litsec.opensaml.saml2.metadata.build.spring.AssertionConsumerServiceFactoryBean">
+          <property name="binding">
+            <util:constant static-field="org.opensaml.saml.common.xml.SAMLConstants.SAML2_POST_BINDING_URI" />
+          </property>
+          <property name="location" value="%{idp.sp.baseurl}/saml2/post" />
+          <property name="index" value="0" />
+          <property name="isDefault" value="true" />
+        </bean>
+      </util:list>
+    </property>
+    
+  </bean>
+  
+  <!--
+    The credential used to sign the metadata. 
+   -->
+  <bean id="eidas.SpMetadataSigningCredential" class="net.shibboleth.idp.profile.spring.factory.BasicX509CredentialFactoryBean"
+    p:privateKeyResource="%{idp.sp.metadata.signing.key}"
+    p:certificateResource="%{idp.sp.metadata.signing.cert}"
+    p:entityId="%{idp.sp.entityID}" />
+    
+  <!--
+    The container wrapping the metadata and is used for publishing. 
+   -->
+  <bean id="eidas.SpMetadataContainer" class="se.litsec.opensaml.saml2.metadata.EntityDescriptorContainer" scope="singleton"
+    c:descriptor-ref="eidas.SpMetadata"
+    c:signatureCredentials-ref="eidas.SpMetadataSigningCredential" />
+
+    
+</beans>

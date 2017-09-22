@@ -126,4 +126,6 @@
     c:descriptor-ref="sweid.IdpMetadata"
     c:signatureCredentials-ref="sweid.MetadataSigningCredential" />
     
+  <import resource="sp-metadata-config.xml "/>
+    
 </beans>

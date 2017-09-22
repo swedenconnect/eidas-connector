@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xml="http://www.w3.org/XML/1998/namespace"
+  xmlns:mdui="urn:oasis:names:tc:SAML:metadata:ui" entityID="dummy">
+  
+  <Extensions>
+    <alg:DigestMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#sha384"/>
+    <alg:DigestMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmlenc#sha512"/>
+    <alg:DigestMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+    <alg:SigningMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha512"/>
+    <alg:SigningMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+    <alg:SigningMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256"/>
+  </Extensions>  
+
+  <SPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
+    <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+    <AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://eunode.eidastest.se/Connector/AssertionConsumer" index="0" isDefault="true" />          
+  </SPSSODescriptor>
+  
+  <Organization>
+    <OrganizationName xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:lang="en">Swedish E-Identification Board</OrganizationName>
+    <OrganizationDisplayName xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:lang="en">Swedish eID Connector</OrganizationDisplayName>
+    <OrganizationURL xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:lang="en">http://eidasweb.se</OrganizationURL>
+  </Organization>
+
+  <ContactPerson contactType="support">
+    <Company>Swedish E-Identification Board</Company>
+    <GivenName>Customer support</GivenName>
+    <EmailAddress>support@example.com</EmailAddress>
+  </ContactPerson>
+  <ContactPerson contactType="technical">
+    <Company>Swedish E-Identification Board</Company>
+    <GivenName>Technical support</GivenName>
+    <EmailAddress>support@example.com</EmailAddress>
+  </ContactPerson>
+
+</EntityDescriptor>

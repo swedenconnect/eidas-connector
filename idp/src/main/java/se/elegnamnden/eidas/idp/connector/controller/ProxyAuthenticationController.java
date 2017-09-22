@@ -272,7 +272,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     // Ask the metadata configurator about which countries that have an eIDAS Proxy service registered.
     //
-    List<String> isoCodes = Arrays.asList("AT", "CZ", "EE", "FR", "DE", "IS", "NL", "NO", "XX"); // this.metadataConfig.getProxyServiceCountryList();
+    List<String> isoCodes = this.metadataConfig.getProxyServiceCountryList();
 
     // We want to avoid locale based sorting in the view, so we'll provide a sorted list based on each
     // country's localized display name.

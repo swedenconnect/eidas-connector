@@ -20,7 +20,8 @@
     c:metadataListCertFile="%{idp.metadata.eidas.service-list.validation-certificate}"
     c:metadataUrl="%{idp.metadata.eidas.federation.url}"
     c:metadataCertFile="%{idp.metadata.eidas.federation.validation-certificate}"
-    c:mwParamList-ref="eidas.mwParamList" />
+    c:mwParamList-ref="eidas.mwParamList" 
+    p:allowSignatureIgnore="true" />  <!-- TMP -->
     
   <util:list id="eidas.mwParamList">
     <bean class="se.elegnamnden.eidas.metadataconfig.data.MiddleWareParams"

@@ -65,6 +65,10 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.sp.entityID=$SP_ENTITY_ID \
 -Didp.sp.signing.key=$IDP_CREDENTIALS/sp/sp-signing.key \
 -Didp.sp.signing.cert=$IDP_CREDENTIALS/sp/sp-signing.crt \
+-Didp.sp.encryption.key=$IDP_CREDENTIALS/sp/sp-signing.key \
+-Didp.sp.encryption.cert=$IDP_CREDENTIALS/sp/sp-signing.crt \
+-Didp.sp.metadata.signing.key=$IDP_CREDENTIALS/metadata-signing.key \
+-Didp.sp.metadata.signing.cert=$IDP_CREDENTIALS/metadata-signing.crt \
 -Didp.home=$IDP_HOME \
 -Didp.envflag=dev \
 -Djava.net.preferIPv4Stack=true \
