@@ -35,13 +35,6 @@
         <bean class="se.litsec.opensaml.saml2.metadata.build.spring.KeyDescriptorFactoryBean" p:use="ENCRYPTION" p:certificateResource="%{idp.sp.encryption.cert}">
           <property name="encryptionMethods">
             <bean parent="shibboleth.CommaDelimStringArray" c:_0="#{'%{idp.sp.metadata.encryption-methods:}'.trim()}" />
-          <!-- 
-            <util:list>
-              <value>http://www.w3.org/2009/xmlenc11#aes128-gcm</value>
-              <value>http://www.w3.org/2009/xmlenc11#aes192-gcm</value>
-              <value>http://www.w3.org/2009/xmlenc11#aes256-gcm</value>
-            </util:list>
-            -->
           </property>
         </bean>
       </util:list>

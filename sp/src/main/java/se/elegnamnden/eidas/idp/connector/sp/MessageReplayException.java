@@ -20,21 +20,25 @@
  */
 package se.elegnamnden.eidas.idp.connector.sp;
 
-public class ProxyAuthenticationServiceProviderException extends Exception {
+/**
+ * Exception class that indicates a message replay attack.
+ * 
+ * @author Martin Lindström (martin.lindstrom@litsec.se)
+ * @author Stefan Santesson (stefan@aaa-sec.com)
+ */
+public class MessageReplayException extends ResponseProcessingException {
 
-  private static final long serialVersionUID = -3339610060646511392L;
+  /** For serializing. */
+  private static final long serialVersionUID = -2681141524740588382L;
 
-
-  public ProxyAuthenticationServiceProviderException(String message) {
+  /**
+   * Constructor taking an error message.
+   * 
+   * @param message
+   *          the error message
+   */  
+  public MessageReplayException(String message) {
     super(message);
-  }
-
-  public ProxyAuthenticationServiceProviderException(Throwable cause) {
-    super(cause);
-  }
-
-  public ProxyAuthenticationServiceProviderException(String message, Throwable cause) {
-    super(message, cause);
   }
 
 }

@@ -20,34 +20,13 @@
  */
 package se.elegnamnden.eidas.idp.connector.sp;
 
+import se.litsec.opensaml.saml2.common.request.AuthnRequestGenerator;
+
 /**
- * Input for the proxy server SP when generating an AuthnRequest.
+ * Specialization of the {@link AuthnRequestGenerator} interface.
  * 
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  * @author Stefan Santesson (stefan@aaa-sec.com)
  */
-public class AuthnRequestInput {
-  
-  /** The RelayState from the AuthnRequest. */
-  private String relayState;
-  
-  /** The requested level of assurance URI. Only one is specified since eIDAS uses "minimum" matching. */
-  private String requestedLevelOfAssurance;
-    
-  public String getRelayState() {
-    return this.relayState;
-  }
-
-  public void setRelayState(String relayState) {
-    this.relayState = relayState;
-  }
-  
-  public String getRequestedLevelOfAssurance() {
-    return this.requestedLevelOfAssurance;
-  }
-
-  public void setRequestedLevelOfAssurance(String requestedLevelOfAssurance) {
-    this.requestedLevelOfAssurance = requestedLevelOfAssurance;
-  }
-  
+public interface EidasAuthnRequestGenerator extends AuthnRequestGenerator<EidasAuthnRequestGeneratorInput> {
 }

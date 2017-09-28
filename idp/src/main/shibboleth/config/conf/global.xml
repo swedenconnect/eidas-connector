@@ -11,7 +11,7 @@
                            
        default-init-method="initialize"
        default-destroy-method="destroy">
-
+              
   <!-- eIDAS metadata -->
   <bean id="eidas.MetadataConfig" class="se.elegnamnden.eidas.metadataconfig.MetadataConfig" scope="singleton"
     init-method="recache" depends-on="shibboleth.OpenSAMLConfig"
@@ -21,7 +21,7 @@
     c:metadataUrl="%{idp.metadata.eidas.federation.url}"
     c:metadataCertFile="%{idp.metadata.eidas.federation.validation-certificate}"
     c:mwParamList-ref="eidas.mwParamList" 
-    p:allowSignatureIgnore="true" />  <!-- TMP -->
+    p:ignoreSignatureValidation="%{idp.metadata.eidas.ignore-signature-validation:false}" />
     
   <util:list id="eidas.mwParamList">
     <bean class="se.elegnamnden.eidas.metadataconfig.data.MiddleWareParams"
@@ -36,19 +36,47 @@
   
   <bean id="eidas.LevelOfAssuranceMappings" class="se.elegnamnden.eidas.mapping.loa.StaticLevelOfAssuranceMappings" scope="singleton" />
   
+  <bean id="eidas.AttributeProcessingService" class="se.elegnamnden.eidas.idp.connector.service.AttributeProcessingService" scope="singleton">
+    <property name="attributeMappings">
+      <bean class="se.elegnamnden.eidas.mapping.attributes.impl.NaturalPersonStaticAttributeMappings" />
+    </property>
+  </bean>
+  
   <!-- Connector SP -->
   
   <!-- TODO: move the connector SP into a reloadable Spring subsystem so that we get support for reloading of keys etc. -->
-  
-  <bean id="eidas.ProxyAuthenticationServiceProvider" class="se.elegnamnden.eidas.idp.connector.sp.impl.ProxyAuthenticationServiceProviderImpl" scope="singleton"
-    p:entityID="%{idp.sp.entityID}" 
+      
+  <bean id="eidas.AuthnRequestGenerator" class="se.elegnamnden.eidas.idp.connector.sp.impl.EidasAuthnRequestGeneratorImpl" scope="singleton"
+    c:entityID="%{idp.sp.entityID}" 
     p:name="%{idp.sp.name}"
     p:signingCredentials-ref="eidas.SpSigningCredential" />
+    
+  <bean id="eidas.ResponseProcessor" class="se.elegnamnden.eidas.idp.connector.sp.impl.ResponseProcessorImpl" scope="singleton"
+    p:encryptionCredentials-ref="eidas.SpEncryptionCredentials"
+    p:messageReplayChecker-ref="eidas.MessageReplayChecker" 
+    p:responseProfileValidator-ref="eidas.ResponseProfileValidator" />
+    
+  <bean id="eidas.AbstractValidator" class="se.litsec.opensaml.common.validation.AbstractObjectValidator" abstract="true"
+    p:strictValidation="%{idp.sp.strict-validation:false}" />
+      
+  <bean id="eidas.ResponseProfileValidator" class="se.elegnamnden.eidas.idp.connector.sp.validation.EidasResponseProfileValidator" scope="singleton"
+    parent="eidas.AbstractValidator" />
+    
+  <bean id="eidas.MessageReplayChecker" class="se.elegnamnden.eidas.idp.connector.sp.impl.MessageReplayCheckerImpl" scope="singleton"
+    p:replayCache-ref="shibboleth.ReplayCache"
+    p:replayCacheExpiration="%{idp.policy.messageLifetime:PT5M}"
+    p:replayCacheName="eidas-sp" />
   
   <bean id="eidas.SpSigningCredential" class="net.shibboleth.idp.profile.spring.factory.BasicX509CredentialFactoryBean"
     p:privateKeyResource="%{idp.sp.signing.key}"
     p:certificateResource="%{idp.sp.signing.cert}"
     p:entityId="%{idp.sp.entityID}" />  
-  
-      
+    
+  <util:list id="eidas.SpEncryptionCredentials">
+    <bean class="net.shibboleth.idp.profile.spring.factory.BasicX509CredentialFactoryBean"
+      p:privateKeyResource="%{idp.sp.encryption.key}"
+      p:certificateResource="%{idp.sp.encryption.cert}"
+      p:entityId="%{idp.sp.entityID}" />  
+  </util:list>
+        
 </beans>

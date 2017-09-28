@@ -46,7 +46,7 @@ TOMCAT_TLS_ALIAS=localhost
 # IdP settings
 #
 IDP_ENTITY_ID=https://eunode.eidastest.se/idp2
-SP_ENTITY_ID=https://eunode.eidastest.se/sp
+SP_ENTITY_ID=https://eunode.eidastest.se/connector-sp
 
 TEST_SP_METADATA=https://localhost:8443/svelegtest-sp/metadata/all-metadata.xml
 

@@ -20,19 +20,34 @@
  */
 package se.elegnamnden.eidas.idp.connector.sp;
 
-import org.opensaml.saml.saml2.core.AuthnRequest;
-
-import se.elegnamnden.eidas.metadataconfig.data.EndPointConfig;
-import se.litsec.opensaml.saml2.authentication.RequestHttpObject;
+import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 
 /**
- * Defines the interface for a Service Provider used by a Proxy IdP.
+ * Interface for a SAML response processor.
  * 
  * @author Martin Lindström (martin.lindstrom@litsec.se)
+ * @author Stefan Santesson (stefan@aaa-sec.com)
  */
-public interface ProxyAuthenticationServiceProvider {
+public interface ResponseProcessor {
 
-  RequestHttpObject<AuthnRequest> generateAuthnRequest(EndPointConfig endpoint, AuthnRequestInput input)
-      throws ProxyAuthenticationServiceProviderException;
+  void processSamlResponse(String samlResponse, String relayState, ResponseProcessingInput input, IdpMetadataResolver idpMetadataResolver)
+      throws ResponseProcessingException;
+
+  /**
+   * Functional interface for obtaining the metadata for the issuing IdP.
+   */
+  @FunctionalInterface
+  public interface IdpMetadataResolver {
+
+    /**
+     * Returns the metadata {@code EntityDescriptor} for the given entityID.
+     * 
+     * @param entityID
+     *          the IdP entityID
+     * @return an {@code EntityDescriptor} object, or {@code null} if no metadata record can be found
+     */
+    EntityDescriptor getIdpMetadata(String entityID);
+
+  }
 
 }
