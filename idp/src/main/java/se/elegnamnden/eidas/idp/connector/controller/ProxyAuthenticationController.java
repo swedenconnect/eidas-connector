@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.xmlsec.encryption.support.DecryptionException;
 import org.slf4j.Logger;
@@ -60,10 +61,12 @@ import se.elegnamnden.eidas.idp.connector.sp.EidasAuthnRequestGenerator;
 import se.elegnamnden.eidas.idp.connector.sp.EidasAuthnRequestGeneratorInput;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingException;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingInput;
+import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingResult;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessor;
-import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessor.IdpMetadataResolver;
+import se.elegnamnden.eidas.idp.connector.sp.ResponseStatusErrorException;
 import se.elegnamnden.eidas.metadataconfig.MetadataConfig;
 import se.elegnamnden.eidas.metadataconfig.data.EndPointConfig;
+import se.litsec.eidas.opensaml.common.EidasLoaEnum;
 import se.litsec.opensaml.saml2.common.request.RequestGenerationException;
 import se.litsec.opensaml.saml2.common.request.RequestHttpObject;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
@@ -353,22 +356,35 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     ResponseProcessingInput input = this.createResponseProcessingInput(context, httpRequest);
     EndPointConfig idpEndpoint = this.metadataConfig.getProxyServiceConfig(input.getCountry());
     
-    // this.serviceProvider.processAuthnResponse(samlResponse, relayState, input, idpEndpoint);
     try {
-      IdpMetadataResolver idpMetadataResolver = (entityID) -> {
+      PeerMetadataResolver idpMetadataResolver = (entityID) -> {
         return (entityID.equals(idpEndpoint.getEntityID())) ? idpEndpoint.getMetadataRecord() : null;
       };
       
-      this.responseProcessor.processSamlResponse(samlResponse, relayState, input, idpMetadataResolver);
+      ResponseProcessingResult result = this.responseProcessor.processSamlResponse(samlResponse, relayState, input, idpMetadataResolver);
       log.debug("Successfully processed SAML response");
+      
+      // Transform the eIDAS attributes to attributes according to the Swedish eID Framework.
+      //
+      List<Attribute> attributes = result.getAttributes();
+      
+      // Map Loa
+      
+      // TODO: Add additional attributes
+      
+      this.success(httpRequest, httpResponse, "xx", attributes, EidasLoaEnum.LOA_SUBSTANTIAL.getUri(), result.getAuthnInstant(), null);
+      return null;
     }
     catch (ResponseProcessingException e) {
       log.error("Error while processing eIDAS response - {}", e.getMessage(), e);
-      this.error(httpRequest, httpResponse, AuthnEventIds.REQUEST_UNSUPPORTED); // TODO: change
+      this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION); // TODO: change
       return null;
     }
-    
-    return null;
+    catch (ResponseStatusErrorException e) {
+      log.info("Received non successful status: {}", e.getMessage());
+      this.error(httpRequest, httpResponse, e.getStatus());
+      return null;
+    }    
   }
 
   private ResponseProcessingInput createResponseProcessingInput(ProfileRequestContext<?, ?> context, HttpServletRequest httpRequest)
@@ -382,6 +398,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     if (proxyContext == null) {
       throw new ExternalAuthenticationException("No ProxyIdpAuthenticationContext available");
     }
+    
+    final String relayState = this.getRelayState(context);
         
     return new ResponseProcessingInput() {
       @Override
@@ -391,7 +409,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
       @Override
       public String getRelayState() {
-        return getRelayState();
+        return relayState;
       }
 
       @Override

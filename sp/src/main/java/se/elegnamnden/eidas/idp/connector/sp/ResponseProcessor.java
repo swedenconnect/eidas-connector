@@ -20,7 +20,7 @@
  */
 package se.elegnamnden.eidas.idp.connector.sp;
 
-import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
 
 /**
  * Interface for a SAML response processor.
@@ -30,24 +30,7 @@ import org.opensaml.saml.saml2.metadata.EntityDescriptor;
  */
 public interface ResponseProcessor {
 
-  void processSamlResponse(String samlResponse, String relayState, ResponseProcessingInput input, IdpMetadataResolver idpMetadataResolver)
-      throws ResponseProcessingException;
-
-  /**
-   * Functional interface for obtaining the metadata for the issuing IdP.
-   */
-  @FunctionalInterface
-  public interface IdpMetadataResolver {
-
-    /**
-     * Returns the metadata {@code EntityDescriptor} for the given entityID.
-     * 
-     * @param entityID
-     *          the IdP entityID
-     * @return an {@code EntityDescriptor} object, or {@code null} if no metadata record can be found
-     */
-    EntityDescriptor getIdpMetadata(String entityID);
-
-  }
+  ResponseProcessingResult processSamlResponse(String samlResponse, String relayState, ResponseProcessingInput input, PeerMetadataResolver peerMetadataResolver)
+      throws ResponseStatusErrorException, ResponseProcessingException;
 
 }

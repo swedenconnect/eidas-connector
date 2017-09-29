@@ -62,7 +62,7 @@
   <bean id="eidas.ResponseProfileValidator" class="se.elegnamnden.eidas.idp.connector.sp.validation.EidasResponseProfileValidator" scope="singleton"
     parent="eidas.AbstractValidator" />
     
-  <bean id="eidas.MessageReplayChecker" class="se.elegnamnden.eidas.idp.connector.sp.impl.MessageReplayCheckerImpl" scope="singleton"
+  <bean id="eidas.MessageReplayChecker" class="se.litsec.opensaml.saml2.common.response.MessageReplayCheckerImpl" scope="singleton"
     p:replayCache-ref="shibboleth.ReplayCache"
     p:replayCacheExpiration="%{idp.policy.messageLifetime:PT5M}"
     p:replayCacheName="eidas-sp" />

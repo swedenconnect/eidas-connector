@@ -155,8 +155,8 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
+    super.afterPropertiesSet();
     Assert.notNull(this.getSigningCredentials(), "Property 'signingCredentials' must be assigned");
-    Assert.hasText(this.getName(), "Property 'name' must be assigned");
 
     if (this.preferredBinding == null) {
       this.preferredBinding = DEFAULT_PREFERRED_BINDING;

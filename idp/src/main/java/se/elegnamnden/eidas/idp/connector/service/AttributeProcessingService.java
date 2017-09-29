@@ -20,6 +20,7 @@
  */
 package se.elegnamnden.eidas.idp.connector.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -28,8 +29,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
@@ -44,8 +48,33 @@ import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSet;
  */
 public class AttributeProcessingService implements InitializingBean {
 
+  /** Logging instance. */
+  private final Logger log = LoggerFactory.getLogger(AttributeProcessingService.class);
+
   /** Mappings between eIDAS and Swedish eID attributes. */
   private AttributeMappings attributeMappings;
+
+  /**
+   * Converts a list of eIDAS attributes into a list of Swedish eID attributes.
+   * 
+   * @param eidasAttributes
+   *          list of eIDAS attributes
+   * @return list of Swedish eID attributes
+   */
+  public List<Attribute> toSwedishEidAttributes(List<Attribute> eidasAttributes) {
+    List<Attribute> swedishAttributes = new ArrayList<>();
+    for (Attribute eidasAttribute : eidasAttributes) {
+      Optional<Attribute> swedishAttribute = this.attributeMappings.toSwedishEidAttribute(eidasAttribute);
+      if (swedishAttribute.isPresent()) {
+        swedishAttributes.add(swedishAttribute.get());
+      }
+      else {
+        log.warn("No mapping exists for eIDAS attribute '{}'", eidasAttribute.getName());
+      }
+    }
+
+    return swedishAttributes;
+  }
 
   /**
    * Given an attribute set implemented by the IdP, a list of eIDAS {@code RequestedAttribute} objects are returned.

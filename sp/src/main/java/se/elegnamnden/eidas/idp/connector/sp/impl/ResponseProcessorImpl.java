@@ -30,7 +30,10 @@ import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.common.assertion.ValidationResult;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.criterion.RoleDescriptorCriterion;
+import org.opensaml.saml.saml2.core.Assertion;
+import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Response;
+import org.opensaml.saml.saml2.core.StatusCode;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
 import org.opensaml.saml.security.impl.MetadataCredentialResolver;
@@ -54,14 +57,18 @@ import org.w3c.dom.Attr;
 import net.shibboleth.utilities.java.support.codec.Base64Support;
 import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
-import se.elegnamnden.eidas.idp.connector.sp.MessageReplayChecker;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingException;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingInput;
+import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingResult;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessor;
+import se.elegnamnden.eidas.idp.connector.sp.ResponseStatusErrorException;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseValidationException;
 import se.elegnamnden.eidas.idp.connector.sp.SignatureValidationException;
 import se.litsec.opensaml.common.validation.ValidatorException;
+import se.litsec.opensaml.saml2.common.response.MessageReplayChecker;
+import se.litsec.opensaml.saml2.common.response.MessageReplayException;
 import se.litsec.opensaml.saml2.common.response.ResponseProfileValidator;
+import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
 import se.litsec.opensaml.utils.ObjectUtils;
 
 /**
@@ -98,43 +105,60 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
 
   /** {@inheritDoc} */
   @Override
-  public void processSamlResponse(String samlResponse, String relayState, ResponseProcessingInput input,
-      IdpMetadataResolver idpMetadataResolver)
-          throws ResponseProcessingException {
+  public ResponseProcessingResult processSamlResponse(String samlResponse, String relayState, ResponseProcessingInput input,
+      PeerMetadataResolver peerMetadataResolver) throws ResponseStatusErrorException, ResponseProcessingException {
 
     try {
-    // Step 1: Decode the SAML response message.
-    //
-    Response response = this.decodeResponse(samlResponse);
+      // Step 1: Decode the SAML response message.
+      //
+      Response response = this.decodeResponse(samlResponse);
 
-    log.trace("SAMLResponse:{}", samlResponse);
+      if (log.isTraceEnabled()) {
+        log.trace("[{}] Decoded Response: {}", logId(response), ObjectUtils.toStringSafe(response));
+      }
 
-    if (log.isTraceEnabled()) {
-      log.trace("Decoded Response: {}", ObjectUtils.toStringSafe(response));
-    }
+      // Step 2: Validate the Response against the SAML profile in use.
+      //
+      this.validateResponseAgainstProfile(response);
 
-    // Step 2: Validate the Response against the SAML profile in use.
-    //
-    this.validateResponseAgainstProfile(response);
+      // Step 3: Make sure this isn't a replay attack
+      //
+      this.messageReplayChecker.checkReplay(response);
 
-    // Step 3: Make sure this isn't a replay attack
-    //
-    this.messageReplayChecker.checkReplay(response);
+      // Step 4. Verify the Response signature
+      //
+      this.validateSignature(response, peerMetadataResolver.getMetadata(response.getIssuer().getValue()));
+      log.debug("Signature on Response was successfully validated [{}]", logId(response));
 
-    // Step 4. Verify the Response signature
-    //
-    this.validateSignature(response, idpMetadataResolver.getIdpMetadata(response.getIssuer().getValue()));
-    log.debug("Signature on Response message '{}' was successfully validated", response.getID());
+      // Step 5. Verify that this response belongs to the AuthnRequest that we sent.
+      //
+      this.validateAgainstRequest(response, relayState, input);
 
-    // Step 5. Verify that this response belongs to the AuthnRequest that we sent.
-    //
-    // TODO
-
-    // Step 6. Check Status.
-    //
+      // Step 6. Check Status
+      //
+      if (!StatusCode.SUCCESS.equals(response.getStatus().getStatusCode().getValue())) {
+        log.info("Authentication failed with status '{}' [{}]", ResponseStatusErrorException.statusToString(response.getStatus()), logId(response));
+        throw new ResponseStatusErrorException(response.getStatus(), response.getID());
+      }
+      
+      // Step 7. Decrypt assertion
+      //
+      Assertion assertion = this.decryptAssertion(response);
+      
+      // Step 8. Validate the assertion
+      //
+      
+      // TODO
+      
+      // And finally, build the result.
+      //
+      return new ResponseProcessingResultImpl(assertion);      
     }
     catch (ValidatorException e) {
       throw new ResponseProcessingException("Validation of Response message failed: " + e.getMessage(), e);
+    }
+    catch (MessageReplayException e) {
+      throw new ResponseProcessingException("Message replay: " + e.getMessage(), e);
     }
   }
 
@@ -274,8 +298,74 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
 
   }
 
-  protected void validateAgainstRequest(Response response, ResponseProcessingInput input) throws ResponseValidationException {
+  /**
+   * Validates the received response message against the AuthnRequest that was sent.
+   * 
+   * @param response
+   *          the response
+   * @param input
+   *          the response processing input
+   * @throws ResponseValidationException
+   *           for validation errors
+   */
+  protected void validateAgainstRequest(Response response, String relayState, ResponseProcessingInput input) throws ResponseValidationException {
+    
+    final AuthnRequest authnRequest = input.getAuthnRequest();
+    if (authnRequest == null) {
+      String msg = String.format("No AuthnRequest available when processing Response [%s]", logId(response));
+      log.error("{}", msg);
+      throw new ResponseValidationException(msg);
+    }
+    
+    // Is it the response that we are expecting?
+    //
+    if (!response.getInResponseTo().equals(authnRequest.getID())) {
+      String msg = String.format("Expected Response message for AuthnRequest with ID '%s', but this Response is for '%s' [%s]", authnRequest.getID(), response.getID(), logId(response));
+      log.info(msg);
+      throw new ResponseValidationException(msg);
+    }
+    
+    // Does the relayState variables match?
+    //
+    boolean relayStateMatch = (relayState == null && input.getRelayState() == null)
+        || (relayState != null && relayState.equals(input.getRelayState()))
+        || (input.getRelayState() != null && input.getRelayState().equals(relayState));
+    
+    if (!relayStateMatch) {
+      String msg = String.format("RelayState variable received with response (%s) does not match the sent one (%s)", relayState, input.getRelayState());
+      log.error("{} [{}]", msg, logId(response));
+//      throw new ResponseValidationException(msg);
+    }
 
+    // Did we receive it on the correct location?
+    //
+    if (response.getDestination() != null && input.getReceiveURL() != null) { 
+      if (!response.getDestination().equals(input.getReceiveURL())) {
+        String msg = String.format(
+          "Destination attribute (%s) of Response does not match URL on which response was received (%s)", response.getDestination(), input.getReceiveURL());
+        log.error("{} [{}]", msg, logId(response));
+        throw new ResponseValidationException(msg);
+      }
+    }
+
+    // Make checks to ensure that the IssueInstant of the Response makes sense.
+//    if (response.getIssueInstant() != null) {
+//      DateTime now = this.getNow(responseProcessingInput);
+//      long clockSkew = this.getAllowedClockSkew(responseProcessingInput);
+//      if (!this.verifyIssueInstant(response.getIssueInstant(), now.getMillis(), clockSkew)) {
+//        String msg = String.format(
+//          "Validation of the issueInstant of the response failed [issueInstant: %s - current time: %s - max allowed age: %d milliseconds - allowed clock skew: %d milliseconds]",
+//          response.getIssueInstant().toString(), now.toString(), this.maxAgeResponse, clockSkew);
+//        logger.error(String.format("%s [logId]", msg, logId));
+//        throw new ResponseProcessingException(msg, response);
+//      }
+//    }
+  }
+  
+  protected Assertion decryptAssertion(Response response) {
+    
+    // TMP
+    return response.getAssertions().get(0);
   }
 
   /**
@@ -313,5 +403,10 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
   public void afterPropertiesSet() throws Exception {
     this.initialize();
   }
+  
+  private static String logId(Response response) {
+    return String.format("response-id:'%s'", response.getID() != null ? response.getID() : "<empty>");
+  }
+  
 
 }
