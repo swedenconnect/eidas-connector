@@ -52,7 +52,7 @@
     p:signingCredentials-ref="eidas.SpSigningCredential" />
     
   <bean id="eidas.ResponseProcessor" class="se.elegnamnden.eidas.idp.connector.sp.impl.ResponseProcessorImpl" scope="singleton"
-    p:encryptionCredentials-ref="eidas.SpEncryptionCredentials"
+    p:decrypter-ref="eidas.Decrypter"
     p:messageReplayChecker-ref="eidas.MessageReplayChecker" 
     p:responseProfileValidator-ref="eidas.ResponseProfileValidator" />
     
@@ -78,5 +78,47 @@
       p:certificateResource="%{idp.sp.encryption.cert}"
       p:entityId="%{idp.sp.entityID}" />  
   </util:list>
-        
+  
+  <bean id="eidas.Decrypter" class="se.litsec.opensaml.xmlsec.SAMLObjectDecrypter" scope="singleton">
+    <constructor-arg name="decryptionConfiguration">
+      <bean parent="shibboleth.BasicDecryptionConfiguration"
+        p:KEKKeyInfoCredentialResolver-ref="eidas.KeyEncryptionCredentialResolver"
+        p:encryptedKeyResolver-ref="eidas.EncryptedKeyResolver" />
+    </constructor-arg>
+  </bean>
+  
+  <bean id="eidas.KeyEncryptionCredentialResolver" class="org.opensaml.xmlsec.keyinfo.impl.ChainingKeyInfoCredentialResolver">
+    <constructor-arg>
+      <list>
+        <bean class="org.opensaml.xmlsec.keyinfo.impl.LocalKeyInfoCredentialResolver">
+          <constructor-arg name="localCredentialResolver">
+            <bean class="org.opensaml.xmlsec.keyinfo.impl.CollectionKeyInfoCredentialResolver"
+              c:credentials-ref="eidas.SpEncryptionCredentials" />
+          </constructor-arg>
+          <constructor-arg name="keyInfoProviders">
+            <list>
+              <bean class="org.opensaml.xmlsec.keyinfo.impl.provider.RSAKeyValueProvider" />
+              <bean class="org.opensaml.xmlsec.keyinfo.impl.provider.DSAKeyValueProvider" />
+              <bean class="org.opensaml.xmlsec.keyinfo.impl.provider.DEREncodedKeyValueProvider" />
+              <bean class="org.opensaml.xmlsec.keyinfo.impl.provider.InlineX509DataProvider" />
+            </list>
+          </constructor-arg>
+        </bean>
+        <bean class="org.opensaml.xmlsec.keyinfo.impl.StaticKeyInfoCredentialResolver"
+          c:credentials-ref="eidas.SpEncryptionCredentials" />
+      </list>
+    </constructor-arg>
+  </bean>
+  
+  <bean id="eidas.EncryptedKeyResolver" class="org.opensaml.xmlsec.encryption.support.ChainingEncryptedKeyResolver" c:recipient="%{idp.sp.entityID}">
+    <constructor-arg name="encKeyResolvers">
+      <list>
+        <bean class="org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver" />
+        <bean class="org.opensaml.saml.saml2.encryption.EncryptedElementTypeEncryptedKeyResolver" />
+        <bean class="org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver" />
+        <bean class="org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver" />
+      </list>
+    </constructor-arg>
+  </bean>  
+          
 </beans>

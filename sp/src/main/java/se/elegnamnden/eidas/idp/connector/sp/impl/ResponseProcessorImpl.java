@@ -21,7 +21,6 @@
 package se.elegnamnden.eidas.idp.connector.sp.impl;
 
 import java.io.ByteArrayInputStream;
-import java.util.List;
 
 import org.opensaml.core.xml.io.UnmarshallingException;
 import org.opensaml.messaging.decoder.MessageDecodingException;
@@ -41,8 +40,8 @@ import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
 import org.opensaml.security.SecurityException;
 import org.opensaml.security.credential.UsageType;
 import org.opensaml.security.criteria.UsageCriterion;
-import org.opensaml.security.x509.X509Credential;
 import org.opensaml.xmlsec.config.DefaultSecurityConfigurationBootstrap;
+import org.opensaml.xmlsec.encryption.support.DecryptionException;
 import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.SignaturePrevalidator;
@@ -70,6 +69,7 @@ import se.litsec.opensaml.saml2.common.response.MessageReplayException;
 import se.litsec.opensaml.saml2.common.response.ResponseProfileValidator;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
 import se.litsec.opensaml.utils.ObjectUtils;
+import se.litsec.opensaml.xmlsec.SAMLObjectDecrypter;
 
 /**
  * Response processor for eIDAS SAML Response messages.
@@ -82,8 +82,8 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
   /** Logging instance. */
   private final Logger log = LoggerFactory.getLogger(ResponseProcessorImpl.class);
 
-  /** The encryption credentials for the SP. */
-  private List<X509Credential> encryptionCredentials;
+  /** The decrypter instance. */
+  private SAMLObjectDecrypter decrypter;
 
   /** The replay checker. */
   private MessageReplayChecker messageReplayChecker;
@@ -137,28 +137,32 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
       // Step 6. Check Status
       //
       if (!StatusCode.SUCCESS.equals(response.getStatus().getStatusCode().getValue())) {
-        log.info("Authentication failed with status '{}' [{}]", ResponseStatusErrorException.statusToString(response.getStatus()), logId(response));
+        log.info("Authentication failed with status '{}' [{}]", ResponseStatusErrorException.statusToString(response.getStatus()), logId(
+          response));
         throw new ResponseStatusErrorException(response.getStatus(), response.getID());
       }
-      
+
       // Step 7. Decrypt assertion
       //
-      Assertion assertion = this.decryptAssertion(response);
-      
+      Assertion assertion = this.decrypter.decrypt(response.getEncryptedAssertions().get(0), Assertion.class);
+
       // Step 8. Validate the assertion
       //
-      
+
       // TODO
-      
+
       // And finally, build the result.
       //
-      return new ResponseProcessingResultImpl(assertion);      
+      return new ResponseProcessingResultImpl(assertion);
     }
     catch (ValidatorException e) {
       throw new ResponseProcessingException("Validation of Response message failed: " + e.getMessage(), e);
     }
     catch (MessageReplayException e) {
       throw new ResponseProcessingException("Message replay: " + e.getMessage(), e);
+    }
+    catch (DecryptionException e) {
+      throw new ResponseProcessingException("Failed to decrypt assertion: " + e.getMessage(), e);
     }
   }
 
@@ -170,7 +174,7 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
    *           for initialization errors
    */
   public void initialize() throws Exception {
-    Assert.notEmpty(this.encryptionCredentials, "Property 'encryptionCredentials' must be assigned");
+    Assert.notNull(this.decrypter, "Property 'decrypter' must be assigned");
     Assert.notNull(this.messageReplayChecker, "Property 'messageReplayChecker' must be assigned");
     Assert.notNull(this.responseProfileValidator, "Property 'responseProfileValidator' must be assigned");
 
@@ -308,74 +312,73 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
    * @throws ResponseValidationException
    *           for validation errors
    */
-  protected void validateAgainstRequest(Response response, String relayState, ResponseProcessingInput input) throws ResponseValidationException {
-    
+  protected void validateAgainstRequest(Response response, String relayState, ResponseProcessingInput input)
+      throws ResponseValidationException {
+
     final AuthnRequest authnRequest = input.getAuthnRequest();
     if (authnRequest == null) {
       String msg = String.format("No AuthnRequest available when processing Response [%s]", logId(response));
       log.error("{}", msg);
       throw new ResponseValidationException(msg);
     }
-    
+
     // Is it the response that we are expecting?
     //
     if (!response.getInResponseTo().equals(authnRequest.getID())) {
-      String msg = String.format("Expected Response message for AuthnRequest with ID '%s', but this Response is for '%s' [%s]", authnRequest.getID(), response.getID(), logId(response));
+      String msg = String.format("Expected Response message for AuthnRequest with ID '%s', but this Response is for '%s' [%s]", authnRequest
+        .getID(), response.getID(), logId(response));
       log.info(msg);
       throw new ResponseValidationException(msg);
     }
-    
+
     // Does the relayState variables match?
     //
     boolean relayStateMatch = (relayState == null && input.getRelayState() == null)
         || (relayState != null && relayState.equals(input.getRelayState()))
         || (input.getRelayState() != null && input.getRelayState().equals(relayState));
-    
+
     if (!relayStateMatch) {
-      String msg = String.format("RelayState variable received with response (%s) does not match the sent one (%s)", relayState, input.getRelayState());
+      String msg = String.format("RelayState variable received with response (%s) does not match the sent one (%s)", relayState, input
+        .getRelayState());
       log.error("{} [{}]", msg, logId(response));
-//      throw new ResponseValidationException(msg);
+      throw new ResponseValidationException(msg);
     }
 
     // Did we receive it on the correct location?
     //
-    if (response.getDestination() != null && input.getReceiveURL() != null) { 
+    if (response.getDestination() != null && input.getReceiveURL() != null) {
       if (!response.getDestination().equals(input.getReceiveURL())) {
         String msg = String.format(
-          "Destination attribute (%s) of Response does not match URL on which response was received (%s)", response.getDestination(), input.getReceiveURL());
+          "Destination attribute (%s) of Response does not match URL on which response was received (%s)", response.getDestination(), input
+            .getReceiveURL());
         log.error("{} [{}]", msg, logId(response));
         throw new ResponseValidationException(msg);
       }
     }
 
     // Make checks to ensure that the IssueInstant of the Response makes sense.
-//    if (response.getIssueInstant() != null) {
-//      DateTime now = this.getNow(responseProcessingInput);
-//      long clockSkew = this.getAllowedClockSkew(responseProcessingInput);
-//      if (!this.verifyIssueInstant(response.getIssueInstant(), now.getMillis(), clockSkew)) {
-//        String msg = String.format(
-//          "Validation of the issueInstant of the response failed [issueInstant: %s - current time: %s - max allowed age: %d milliseconds - allowed clock skew: %d milliseconds]",
-//          response.getIssueInstant().toString(), now.toString(), this.maxAgeResponse, clockSkew);
-//        logger.error(String.format("%s [logId]", msg, logId));
-//        throw new ResponseProcessingException(msg, response);
-//      }
-//    }
-  }
-  
-  protected Assertion decryptAssertion(Response response) {
-    
-    // TMP
-    return response.getAssertions().get(0);
+    // if (response.getIssueInstant() != null) {
+    // DateTime now = this.getNow(responseProcessingInput);
+    // long clockSkew = this.getAllowedClockSkew(responseProcessingInput);
+    // if (!this.verifyIssueInstant(response.getIssueInstant(), now.getMillis(), clockSkew)) {
+    // String msg = String.format(
+    // "Validation of the issueInstant of the response failed [issueInstant: %s - current time: %s - max allowed age: %d
+    // milliseconds - allowed clock skew: %d milliseconds]",
+    // response.getIssueInstant().toString(), now.toString(), this.maxAgeResponse, clockSkew);
+    // logger.error(String.format("%s [logId]", msg, logId));
+    // throw new ResponseProcessingException(msg, response);
+    // }
+    // }
   }
 
   /**
-   * Assigns the encryption credentials for the SP.
+   * Assigns the decrypter instance.
    * 
-   * @param encryptionCredentials
-   *          encryption credentials
+   * @param decrypter
+   *          the decrypter
    */
-  public void setEncryptionCredentials(List<X509Credential> encryptionCredentials) {
-    this.encryptionCredentials = encryptionCredentials;
+  public void setDecrypter(SAMLObjectDecrypter decrypter) {
+    this.decrypter = decrypter;
   }
 
   /**
@@ -403,10 +406,9 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
   public void afterPropertiesSet() throws Exception {
     this.initialize();
   }
-  
+
   private static String logId(Response response) {
     return String.format("response-id:'%s'", response.getID() != null ? response.getID() : "<empty>");
   }
-  
 
 }
