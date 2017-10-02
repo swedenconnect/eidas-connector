@@ -36,11 +36,15 @@
   
   <bean id="eidas.LevelOfAssuranceMappings" class="se.elegnamnden.eidas.mapping.loa.StaticLevelOfAssuranceMappings" scope="singleton" />
   
-  <bean id="eidas.AttributeProcessingService" class="se.elegnamnden.eidas.idp.connector.service.AttributeProcessingService" scope="singleton">
+  <bean id="eidas.AttributeProcessingService" class="se.elegnamnden.eidas.idp.connector.service.AttributeProcessingServiceImpl" scope="singleton">
     <property name="attributeMappings">
       <bean class="se.elegnamnden.eidas.mapping.attributes.impl.NaturalPersonStaticAttributeMappings" />
     </property>
+    <property name="attributeAuthority" ref="eidas.AAService" />
   </bean>
+  
+  <bean id="eidas.AAService" class="se.elegnamnden.eidas.idp.connector.aaclient.mock.AttributeAuthorityMockImpl" scope="singleton"
+    p:aaUrl="%{idp.aa.url}" />
   
   <!-- Connector SP -->
   

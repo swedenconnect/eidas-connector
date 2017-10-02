@@ -55,7 +55,8 @@ import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import se.elegnamnden.eidas.idp.connector.controller.model.UiCountry;
-import se.elegnamnden.eidas.idp.connector.service.AttributeProcessingService;
+import se.elegnamnden.eidas.idp.connector.service.AttributeProcessingException;
+import se.elegnamnden.eidas.idp.connector.service.AttributeProcessingServiceImpl;
 import se.elegnamnden.eidas.idp.connector.service.AuthenticationContextService;
 import se.elegnamnden.eidas.idp.connector.sp.EidasAuthnRequestGenerator;
 import se.elegnamnden.eidas.idp.connector.sp.EidasAuthnRequestGeneratorInput;
@@ -66,7 +67,6 @@ import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessor;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseStatusErrorException;
 import se.elegnamnden.eidas.metadataconfig.MetadataConfig;
 import se.elegnamnden.eidas.metadataconfig.data.EndPointConfig;
-import se.litsec.eidas.opensaml.common.EidasLoaEnum;
 import se.litsec.opensaml.saml2.common.request.RequestGenerationException;
 import se.litsec.opensaml.saml2.common.request.RequestHttpObject;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
@@ -75,6 +75,7 @@ import se.litsec.shibboleth.idp.authn.context.ProxyIdpAuthenticationContext;
 import se.litsec.shibboleth.idp.authn.controller.AbstractExternalAuthenticationController;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSet;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSetConstants;
+import se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI;
 import se.litsec.swedisheid.opensaml.saml2.signservice.dss.Message;
 import se.litsec.swedisheid.opensaml.saml2.signservice.dss.SignMessage;
 
@@ -122,7 +123,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   private AuthenticationContextService authenticationContextService;
 
   /** Service for handling mappings of attributes. */
-  private AttributeProcessingService attributeProcessingService;
+  private AttributeProcessingServiceImpl attributeProcessingService;
 
   /** The Spring message source holding localized UI message strings. */
   private MessageSource messageSource;
@@ -364,25 +365,31 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       ResponseProcessingResult result = this.responseProcessor.processSamlResponse(samlResponse, relayState, input, idpMetadataResolver);
       log.debug("Successfully processed SAML response");
       
-      // Transform the eIDAS attributes to attributes according to the Swedish eID Framework.
+      // Perform the attribute relase ...
       //
-      List<Attribute> attributes = result.getAttributes();
+      List<Attribute> attributes = this.attributeProcessingService.performAttributeRelease(result);
       
-      // Map Loa
+      // Map LoA.
+      // 
+      // TODO
       
-      // TODO: Add additional attributes
-      
-      this.success(httpRequest, httpResponse, "xx", attributes, EidasLoaEnum.LOA_SUBSTANTIAL.getUri(), result.getAuthnInstant(), null);
+      this.success(httpRequest, httpResponse, this.attributeProcessingService.getPrincipal(attributes), attributes, 
+        LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, result.getAuthnInstant(), null);
       return null;
     }
     catch (ResponseProcessingException e) {
-      log.error("Error while processing eIDAS response - {}", e.getMessage(), e);
+      log.warn("Error while processing eIDAS response - {}", e.getMessage(), e);
       this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION); // TODO: change
       return null;
     }
     catch (ResponseStatusErrorException e) {
       log.info("Received non successful status: {}", e.getMessage());
       this.error(httpRequest, httpResponse, e.getStatus());
+      return null;
+    }
+    catch (AttributeProcessingException e) {
+      log.warn("Error during attribute release process - {}", e.getMessage(), e);
+      this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION); // TODO: change
       return null;
     }    
   }
@@ -582,7 +589,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    * @param attributeProcessingService
    *          the attribute processing service
    */
-  public void setAttributeProcessingService(AttributeProcessingService attributeProcessingService) {
+  public void setAttributeProcessingService(AttributeProcessingServiceImpl attributeProcessingService) {
     this.attributeProcessingService = attributeProcessingService;
   }
 

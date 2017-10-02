@@ -18,22 +18,31 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package se.elegnamnden.eidas.idp.connector.sp.validation;
+package se.elegnamnden.eidas.idp.connector.aaclient;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
 
-import se.litsec.swedisheid.opensaml.saml2.validation.SwedishEidResponseProfileValidator;
+import org.opensaml.saml.saml2.core.Attribute;
 
 /**
- * Validator that ensures that a {@code Response} element is valid according to the eIDAS Framework.
+ * Defines the interface for an Attribute Authority that is used by the eIDAS connector.
  * 
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  * @author Stefan Santesson (stefan@aaa-sec.com)
  */
-public class EidasResponseProfileValidator extends SwedishEidResponseProfileValidator {
+public interface AttributeAuthority {
 
-  /** Logging instance. */
-  private final Logger log = LoggerFactory.getLogger(EidasResponseProfileValidator.class);
+  /**
+   * Resolves the supplied id to a list (possibly empty) of attributes.
+   * 
+   * @param id
+   *          the identifier to supply as input to the attribute query
+   * @param country
+   *          the country from which the attributes were originally obtained (before conversion)
+   * @return a list of resolved attributes
+   * @throws AttributeAuthorityException
+   *           for errors during communication with the attribute authority
+   */
+  List<Attribute> resolveAttributes(String id, String country) throws AttributeAuthorityException;
 
 }

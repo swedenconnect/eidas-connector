@@ -18,22 +18,32 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package se.elegnamnden.eidas.idp.connector.sp.validation;
+package se.elegnamnden.eidas.idp.connector.aaclient.mock;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import se.litsec.swedisheid.opensaml.saml2.validation.SwedishEidResponseProfileValidator;
+import lombok.Data;
+import lombok.ToString;
 
 /**
- * Validator that ensures that a {@code Response} element is valid according to the eIDAS Framework.
+ * Represents a response message from the mocked AA service.
  * 
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  * @author Stefan Santesson (stefan@aaa-sec.com)
  */
-public class EidasResponseProfileValidator extends SwedishEidResponseProfileValidator {
-
-  /** Logging instance. */
-  private final Logger log = LoggerFactory.getLogger(EidasResponseProfileValidator.class);
+@Data
+@ToString
+public class AAResponse {
+  
+  private String provisionalId;
+  
+  private String pidQuality;
+  
+  @JsonInclude(Include.NON_NULL)
+  private String personalIdNumber;
+  
+  @JsonInclude(Include.NON_NULL)
+  private String personalIdNumberBinding;
 
 }

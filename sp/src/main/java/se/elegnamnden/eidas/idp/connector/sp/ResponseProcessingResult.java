@@ -77,6 +77,13 @@ public interface ResponseProcessingResult {
   String getIssuer();
 
   /**
+   * Returns the country identifier for the country in which the IdP resides.
+   * 
+   * @return the country identifier
+   */
+  String getCountry();
+
+  /**
    * Returns the {@code NameID} for the subject.
    * 
    * @return the nameID

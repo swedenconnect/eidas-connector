@@ -145,6 +145,9 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
       // Step 7. Decrypt assertion
       //
       Assertion assertion = this.decrypter.decrypt(response.getEncryptedAssertions().get(0), Assertion.class);
+      if (log.isTraceEnabled()) {
+        log.trace("[{}] Decrypted Assertion: {}", logId(response), ObjectUtils.toStringSafe(assertion));
+      }
 
       // Step 8. Validate the assertion
       //
@@ -153,7 +156,7 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
 
       // And finally, build the result.
       //
-      return new ResponseProcessingResultImpl(assertion);
+      return new ResponseProcessingResultImpl(assertion, input.getCountry());
     }
     catch (ValidatorException e) {
       throw new ResponseProcessingException("Validation of Response message failed: " + e.getMessage(), e);

@@ -18,22 +18,39 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package se.elegnamnden.eidas.idp.connector.sp.validation;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import se.litsec.swedisheid.opensaml.saml2.validation.SwedishEidResponseProfileValidator;
+package se.elegnamnden.eidas.idp.connector.service;
 
 /**
- * Validator that ensures that a {@code Response} element is valid according to the eIDAS Framework.
+ * Exception class for handling attribute processing errors.
  * 
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  * @author Stefan Santesson (stefan@aaa-sec.com)
  */
-public class EidasResponseProfileValidator extends SwedishEidResponseProfileValidator {
+public class AttributeProcessingException extends Exception {
 
-  /** Logging instance. */
-  private final Logger log = LoggerFactory.getLogger(EidasResponseProfileValidator.class);
+  /** For serializing. */
+  private static final long serialVersionUID = 5068351261017514311L;
+
+  /**
+   * Constructor that initializes the exception with an error message.
+   * 
+   * @param message
+   *          the error message
+   */  
+  public AttributeProcessingException(String message) {
+    super(message);
+  }
+
+  /**
+   * Constructor that initializes the exception with an error message and an underlying cause.
+   * 
+   * @param message
+   *          the error message
+   * @param cause
+   *          the cause of the error
+   */  
+  public AttributeProcessingException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
 }

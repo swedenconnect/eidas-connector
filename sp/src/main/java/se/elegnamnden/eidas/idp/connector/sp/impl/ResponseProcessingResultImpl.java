@@ -41,14 +41,20 @@ public class ResponseProcessingResultImpl implements ResponseProcessingResult {
   /** The assertion. */
   private Assertion assertion;
 
+  /** The country. */
+  private String country;
+
   /**
    * Constructor.
    * 
    * @param assertion
    *          the {@code Assertion}
+   * @param country
+   *          the country code for the country in which the IdP that issued the assertion resides
    */
-  public ResponseProcessingResultImpl(Assertion assertion) {
+  public ResponseProcessingResultImpl(Assertion assertion, String country) {
     this.assertion = assertion;
+    this.country = country;
   }
 
   /** {@inheritDoc} */
@@ -65,7 +71,7 @@ public class ResponseProcessingResultImpl implements ResponseProcessingResult {
     }
     catch (NullPointerException e) {
       return Collections.emptyList();
-    }      
+    }
   }
 
   /** {@inheritDoc} */
@@ -87,7 +93,7 @@ public class ResponseProcessingResultImpl implements ResponseProcessingResult {
     }
     catch (NullPointerException e) {
       return null;
-    }    
+    }
   }
 
   /** {@inheritDoc} */
@@ -110,6 +116,12 @@ public class ResponseProcessingResultImpl implements ResponseProcessingResult {
     catch (NullPointerException e) {
       return null;
     }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String getCountry() {
+    return this.country;
   }
 
 }

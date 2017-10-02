@@ -20,61 +20,45 @@
  */
 package se.elegnamnden.eidas.idp.connector.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
 
-import se.elegnamnden.eidas.mapping.attributes.AttributeMappings;
+import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingResult;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSet;
 
 /**
- * Service that handles attribute processing and mappings.
+ * Interface for a service that handles attribute processing.
  * 
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  * @author Stefan Santesson (stefan@aaa-sec.com)
  */
-public class AttributeProcessingService implements InitializingBean {
-
-  /** Logging instance. */
-  private final Logger log = LoggerFactory.getLogger(AttributeProcessingService.class);
-
-  /** Mappings between eIDAS and Swedish eID attributes. */
-  private AttributeMappings attributeMappings;
+public interface AttributeProcessingService {
 
   /**
-   * Converts a list of eIDAS attributes into a list of Swedish eID attributes.
+   * Given a list of attributes, the method will locate the attribute that is the primary attribute holding the
+   * principal's name.
    * 
-   * @param eidasAttributes
-   *          list of eIDAS attributes
-   * @return list of Swedish eID attributes
+   * @param attributes
+   *          a list of attributes
+   * @return the principal name
+   * @throws AttributeProcessingException
+   *           if no matching attribute is found
    */
-  public List<Attribute> toSwedishEidAttributes(List<Attribute> eidasAttributes) {
-    List<Attribute> swedishAttributes = new ArrayList<>();
-    for (Attribute eidasAttribute : eidasAttributes) {
-      Optional<Attribute> swedishAttribute = this.attributeMappings.toSwedishEidAttribute(eidasAttribute);
-      if (swedishAttribute.isPresent()) {
-        swedishAttributes.add(swedishAttribute.get());
-      }
-      else {
-        log.warn("No mapping exists for eIDAS attribute '{}'", eidasAttribute.getName());
-      }
-    }
+  String getPrincipal(List<Attribute> attributes) throws AttributeProcessingException;
 
-    return swedishAttributes;
-  }
+  /**
+   * Given a response result, the implementation will perform an attribute release process including transforming eIDAS
+   * attributes into national eID definitions of attributes, possibly add extra attributes to release and so on.
+   * 
+   * @param responseResult
+   *          the result from the authentication at the foreign IdP
+   * @return a list of attributes to be released to the relying party
+   * @throws AttributeProcessingException
+   *           if errors occur during the attribute release process
+   */
+  List<Attribute> performAttributeRelease(ResponseProcessingResult responseResult) throws AttributeProcessingException;
 
   /**
    * Given an attribute set implemented by the IdP, a list of eIDAS {@code RequestedAttribute} objects are returned.
@@ -83,17 +67,7 @@ public class AttributeProcessingService implements InitializingBean {
    *          the implemented attribute set
    * @return a list of eIDAS requested attributes
    */
-  public List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromAttributeSet(AttributeSet attributeSet) {
-    if (attributeSet == null || attributeSet.getRequiredAttributes() == null) {
-      return Collections.emptyList();
-    }
-    return Arrays.asList(attributeSet.getRequiredAttributes())
-      .stream()
-      .map(t -> this.attributeMappings.toEidasRequestedAttribute(t))
-      .filter(Optional::isPresent)
-      .map(Optional::get)
-      .collect(Collectors.toList());
-  }
+  List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromAttributeSet(AttributeSet attributeSet);
 
   /**
    * Given the peer metadata entry the method checks if the metadata specifies any requsted attributes under its
@@ -106,44 +80,6 @@ public class AttributeProcessingService implements InitializingBean {
    *          already present attributes
    * @return a list of eIDAS requested attributes
    */
-  public List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromMetadata(EntityDescriptor peerMetadata,
-      List<se.litsec.eidas.opensaml.ext.RequestedAttribute> alreadyRequested) {
-
-    if (peerMetadata == null) {
-      return Collections.emptyList();
-    }
-    SPSSODescriptor descriptor = peerMetadata.getSPSSODescriptor(SAMLConstants.SAML20P_NS);
-    if (descriptor == null || descriptor.getAttributeConsumingServices().isEmpty()) {
-      return Collections.emptyList();
-    }
-
-    Predicate<se.litsec.eidas.opensaml.ext.RequestedAttribute> noDuplicate = r -> alreadyRequested.stream().noneMatch(a -> a.getName()
-      .equals(r.getName()));
-
-    return descriptor.getAttributeConsumingServices()
-      .get(0)
-      .getRequestAttributes()
-      .stream()
-      .map(r -> this.attributeMappings.toEidasRequestedAttribute(r))
-      .filter(Optional::isPresent)
-      .map(Optional::get)
-      .filter(noDuplicate)
-      .collect(Collectors.toList());
-  }
-
-  /**
-   * Assigns mappings between eIDAS and Swedish eID attributes.
-   * 
-   * @param attributeMappings
-   *          attribute mapper bean
-   */
-  public void setAttributeMappings(AttributeMappings attributeMappings) {
-    this.attributeMappings = attributeMappings;
-  }
-
-  @Override
-  public void afterPropertiesSet() throws Exception {
-    Assert.notNull(this.attributeMappings, "Property 'attributeMappings' must be assigned");
-  }
-
+  List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromMetadata(EntityDescriptor peerMetadata,
+      List<se.litsec.eidas.opensaml.ext.RequestedAttribute> alreadyRequested);
 }
