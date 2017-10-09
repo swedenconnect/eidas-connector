@@ -19,7 +19,9 @@
     <div class="container">
       <div class="panel panel-default" style="margin-top: 20px">
         <div class="panel-heading" style="padding-top: 0px;padding-bottom: 0px">
-           <jsp:include page="header.jsp"/>
+           <jsp:include page="header.jsp">
+            <jsp:param value="connector.ui.subtitle" name="titleCode" />
+           </jsp:include>
         </div>
         <div class="panel-body">
           <div class="col-sm-6">
@@ -38,16 +40,6 @@
               <button type="submit" class="btn btn-primary btn-md btn-block" name="action" value="authenticate"><spring:message code='connector.ui.button.authenticate' /></button>
               <br />
               <button type="submit" class="btn btn-default btn-sm" name="action" value="cancel"><spring:message code='connector.ui.button.cancel' /></button>
-              <!-- 
-              <div class="row">
-                <div class="col-6 col-sm-3" style="padding-right: 1px;">
-                  <button type="submit" class="btn btn-default btn-md btn-block" name="action" value="cancel"><spring:message code='connector.ui.button.cancel' /></button>
-                </div>
-                <div class="col-6 col-sm-9" style="padding-left: 1px;">
-                  <button type="submit" class="btn btn-primary btn-md btn-block" name="action" value="authenticate"><spring:message code='connector.ui.button.authenticate' /></button>
-                </div>
-              </div>
-              -->
               <input type="hidden" name="authenticationKey" value="${authenticationKey}" />
             </form>
            </div>

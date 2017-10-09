@@ -44,7 +44,7 @@
   <bean id="sweid.AbstractExternalAuthenticationController" class="se.litsec.shibboleth.idp.authn.controller.sweid.AbstractExternalAuthenticationController"
     abstract="true" 
     p:attributeToIdMapping-ref="sweid.SAML2AttributeNameToIdMapperService"
-    p:signMessageDecrypter-ref="sweid.SignMessageDecryptionService" 
+    p:signMessageService-ref="eidas.SignMessageService" 
     p:flowName="authn/External" />
     
   <bean id="eidas.ProxyAuthenticationController" class="se.elegnamnden.eidas.idp.connector.controller.ProxyAuthenticationController" 
@@ -54,7 +54,6 @@
     p:authnRequestGenerator-ref="eidas.AuthnRequestGenerator"
     p:responseProcessor-ref="eidas.ResponseProcessor"
     p:metadataConfig-ref="eidas.MetadataConfig"
-    p:authenticationContextService-ref="eidas.AuthenticationContextService"
     p:attributeProcessingService-ref="eidas.AttributeProcessingService"
     p:messageSource-ref="messageSource" />    
         

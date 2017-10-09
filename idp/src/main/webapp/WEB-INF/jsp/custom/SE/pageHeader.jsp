@@ -10,7 +10,7 @@
     </td>
     <td style="padding: 0px; margin: 0px; text-align: center">
       <h1 style="margin-top: 0; padding-top: 0"><spring:message code="connector.ui.title" /></h1>
-      <h4><spring:message code="connector.ui.subtitle" /></h4>
+      <h4><spring:message code="${param.titleCode}" /></h4>
     </td>
     <td style="text-align: right"><img src="<c:url value='/custom/SE/se-eu4.png' />" height="120" style="margin-bottom: 5px"></td>
   </tr>

@@ -43,6 +43,7 @@ import se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthen
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  * @author Stefan Santesson (stefan@aaa-sec.com)
  */
+@Deprecated
 public class AuthenticationContextService implements InitializingBean {
 
   /** Logging instance. */

@@ -36,7 +36,6 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AuthnRequest;
-import org.opensaml.xmlsec.encryption.support.DecryptionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -51,13 +50,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
+
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
+import se.elegnamnden.eidas.idp.connector.controller.model.SignMessageConsent;
 import se.elegnamnden.eidas.idp.connector.controller.model.UiCountry;
 import se.elegnamnden.eidas.idp.connector.service.AttributeProcessingException;
 import se.elegnamnden.eidas.idp.connector.service.AttributeProcessingService;
-import se.elegnamnden.eidas.idp.connector.service.AuthenticationContextService;
 import se.elegnamnden.eidas.idp.connector.service.EidasAuthnContextService;
 import se.elegnamnden.eidas.idp.connector.sp.EidasAuthnRequestGenerator;
 import se.elegnamnden.eidas.idp.connector.sp.EidasAuthnRequestGeneratorInput;
@@ -73,12 +75,12 @@ import se.litsec.opensaml.saml2.common.request.RequestHttpObject;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
 import se.litsec.shibboleth.idp.authn.ExternalAutenticationErrorCodeException;
 import se.litsec.shibboleth.idp.authn.context.ProxyIdpAuthenticationContext;
+import se.litsec.shibboleth.idp.authn.context.SignMessageContext;
+import se.litsec.shibboleth.idp.authn.context.strategy.AuthenticationContextLookup;
+import se.litsec.shibboleth.idp.authn.context.strategy.ProxyIdpAuthenticationContextLookup;
 import se.litsec.shibboleth.idp.authn.controller.AbstractExternalAuthenticationController;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSet;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSetConstants;
-import se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI;
-import se.litsec.swedisheid.opensaml.saml2.signservice.dss.Message;
-import se.litsec.swedisheid.opensaml.saml2.signservice.dss.SignMessage;
 
 /**
  * The main controller for the Shibboleth external authentication flow implementing proxy functionality against the
@@ -99,6 +101,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   /** Symbolic name for the action parameter value of "authenticate". */
   public static final String ACTION_AUTHENTICATE = "authenticate";
 
+  /** Symbolic name for OK. */
+  public static final String ACTION_OK = "ok";
+
   /** The default locale. */
   public static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
 
@@ -107,6 +112,13 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
   /** Logging instance. */
   private final Logger log = LoggerFactory.getLogger(ProxyAuthenticationController.class);
+
+  /** Strategy that gives us the AuthenticationContext. */
+  @SuppressWarnings("rawtypes") private static Function<ProfileRequestContext, AuthenticationContext> authenticationContextLookupStrategy = new AuthenticationContextLookup();
+
+  /** Strategy used to locate the SignMessageContext. */
+  @SuppressWarnings("rawtypes") private static Function<ProfileRequestContext, ProxyIdpAuthenticationContext> proxyIdpAuthenticationContextLookupStrategy = Functions
+    .compose(new ProxyIdpAuthenticationContextLookup(), authenticationContextLookupStrategy);
 
   /** The name of the authenticator. */
   private String authenticatorName;
@@ -122,9 +134,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
   /** Configurator for eIDAS metadata. */
   private MetadataConfig metadataConfig;
-
-  /** Service for handling of Authentication Context URIs. */
-  private AuthenticationContextService authenticationContextService;
 
   /** Service for handling mappings of attributes. */
   private AttributeProcessingService attributeProcessingService;
@@ -148,29 +157,11 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     final String selectedCountry = this.getSelectedCountry(httpRequest);
     log.debug("Selected country from previous session: {}", selectedCountry != null ? selectedCountry : "none");
 
-    // TMP
-    if (this.isSignatureServicePeer(profileRequestContext)) {
-      SignMessage signMessage = this.getSignMessage(profileRequestContext);
-      if (signMessage.getEncryptedMessage() != null) {
-        log.debug("SignMessage is available and encrypted. Decrypting ...");
-        try {
-          Message msg = this.decryptSignMessage(signMessage);
-          log.debug("Decrypted SignMessage: {}", msg.getContent());
-        }
-        catch (DecryptionException e) {
-          log.error("Failed to decrypt SignMessage", e);
-        }
-      }
-      else {
-        log.debug("SignMessage is available in cleartext: {}", signMessage.getMessage().getContent());
-      }
-    }
-
     // The first step is to prompt the user for which country to direct to.
     // If the request is made by a signature service and the selected country is known, we skip
     // the "select country" view.
     //
-    if (this.isSignatureServicePeer(profileRequestContext) && selectedCountry != null) {
+    if (this.signMessageService.isSignatureServicePeer(profileRequestContext) && selectedCountry != null) {
       log.info("Request is from a signature service. Will default to previously selected country: '{}'", selectedCountry);
       return this.processAuthentication(httpRequest, httpResponse, ACTION_AUTHENTICATE, selectedCountry);
     }
@@ -213,8 +204,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     }
 
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
-    
-    // Prepate the AuthnContext ...
+
+    // Prepare the AuthnContext ...
     this.eidasAuthnContextService.setSupportsNonNotifiedConcept(context, endPoint.isSupportsNonNotifiedConcept());
 
     // Next, generate an AuthnRequest and redirect or post the user there.
@@ -275,7 +266,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     // Match assurance levels and calculate which LoA URI to use in the request.
     //
-    spInput.setRequestedLevelOfAssurance(this.eidasAuthnContextService.getSendAuthnContextClassRef(context, endPoint.getAssuranceCertifications()));
+    spInput.setRequestedLevelOfAssurance(this.eidasAuthnContextService.getSendAuthnContextClassRef(context, endPoint
+      .getAssuranceCertifications()));
 
     // Relay state
     spInput.setRelayState(this.getRelayState(context));
@@ -317,7 +309,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // when we process the response.
     proxyContext.addAdditionalData("country", endpoint.getCountry());
 
-    AuthenticationContext authenticationContext = this.authenticationContextLookupStrategy.apply(context);
+    AuthenticationContext authenticationContext = authenticationContextLookupStrategy.apply(context);
     if (authenticationContext == null) {
       throw new ExternalAuthenticationException("No AuthenticationContext available");
     }
@@ -370,17 +362,18 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       //
       List<Attribute> attributes = this.attributeProcessingService.performAttributeRelease(result);
 
-      // Map LoA.
-      //
-      String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(context, result.getAuthnContextClassUri(), false);
+      ProxyIdpAuthenticationContext proxyContext = proxyIdpAuthenticationContextLookupStrategy.apply(context);
+      if (proxyContext == null) {
+        throw new ExternalAuthenticationException("No ProxyIdpAuthenticationContext available");
+      }
+      proxyContext.addAdditionalData("result", result);
+      proxyContext.addAdditionalData("attributes", attributes);
 
-      this.success(httpRequest, httpResponse, this.attributeProcessingService.getPrincipal(attributes), attributes,
-        loaToIssue, result.getAuthnInstant(), null);
-      return null;
+      return this.completeAuthentication(httpRequest, httpResponse, null);
     }
     catch (ResponseProcessingException e) {
       log.warn("Error while processing eIDAS response - {}", e.getMessage(), e);
-      this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION); // TODO: change
+      this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION);
       return null;
     }
     catch (ResponseStatusErrorException e) {
@@ -390,24 +383,78 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     }
     catch (AttributeProcessingException e) {
       log.warn("Error during attribute release process - {}", e.getMessage(), e);
-      this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION); // TODO: change
+      this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION);
+      return null;
+    }
+  }
+
+  @RequestMapping(value = "/proxyauth/complete", method = RequestMethod.POST)
+  public ModelAndView completeAuthentication(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+      @RequestParam(value = "action", required = false) String action) throws ExternalAuthenticationException, IOException {
+
+    // Pick up the context from the session. If the request is stale, we'll get an exception.
+    //
+    final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
+    
+    ProxyIdpAuthenticationContext proxyContext = proxyIdpAuthenticationContextLookupStrategy.apply(context);
+
+    ResponseProcessingResult result = (ResponseProcessingResult) proxyContext.getAdditionalData("result");
+    @SuppressWarnings("unchecked")
+    List<Attribute> attributes = (List<Attribute>) proxyContext.getAdditionalData("attributes");
+    if (result == null || attributes == null) {
+      throw new ExternalAuthenticationException("No result in ProxyIdpAuthenticationContext");
+    }
+    
+    // If 'action' is null we were called internally.
+    if (action == null) {
+
+      SignMessageContext signMessageContext = signMessageService.getSignMessageContext(context);
+      if (signMessageContext != null) {
+        ModelAndView modelAndView = new ModelAndView("sign-consent");        
+        if (signMessageContext.isDisplayMessage()) {
+          modelAndView.addObject("signMessageConsent", new SignMessageConsent(attributes, (String) proxyContext.getAdditionalData("country")));
+          return modelAndView;
+        }
+        else {
+          modelAndView.addObject("signMessageConsent", new SignMessageConsent(attributes, (String) proxyContext.getAdditionalData("country")));
+          return modelAndView;
+        }
+      }
+    }
+
+    if (ACTION_CANCEL.equals(action)) {
+      // User did not approve to the sign consent.
+      log.info("User did not approve to sign consent");
+      this.cancel(httpRequest, httpResponse);
+      return null;
+    }
+
+    boolean signMessageDisplayed = ACTION_OK.equals(action);
+
+    try {
+      String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(context, result.getAuthnContextClassUri(),
+        signMessageDisplayed);
+
+      this.success(httpRequest, httpResponse, this.attributeProcessingService.getPrincipal(attributes), attributes, loaToIssue, result
+        .getAuthnInstant(), null);
       return null;
     }
     catch (ExternalAutenticationErrorCodeException e) {
       log.warn("Error during ProxyIdP assertion process - {}", e.getMessage(), e);
       this.error(httpRequest, httpResponse, e);
       return null;
-    }    
+    }
+    catch (AttributeProcessingException e) {
+      log.warn("Error during attribute release process - {}", e.getMessage(), e);
+      this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION);
+      return null;
+    }
   }
 
   private ResponseProcessingInput createResponseProcessingInput(ProfileRequestContext<?, ?> context, HttpServletRequest httpRequest)
       throws ExternalAuthenticationException {
 
-    AuthenticationContext authenticationContext = this.authenticationContextLookupStrategy.apply(context);
-    if (authenticationContext == null) {
-      throw new ExternalAuthenticationException("No AuthenticationContext available");
-    }
-    ProxyIdpAuthenticationContext proxyContext = authenticationContext.getSubcontext(ProxyIdpAuthenticationContext.class);
+    ProxyIdpAuthenticationContext proxyContext = proxyIdpAuthenticationContextLookupStrategy.apply(context);
     if (proxyContext == null) {
       throw new ExternalAuthenticationException("No ProxyIdpAuthenticationContext available");
     }
@@ -595,16 +642,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   }
 
   /**
-   * Assigns the service for handling Authentication Context URI:s.
-   * 
-   * @param authenticationContextService
-   *          the authentication context service
-   */
-  public void setAuthenticationContextService(AuthenticationContextService authenticationContextService) {
-    this.authenticationContextService = authenticationContextService;
-  }
-
-  /**
    * Assigns the service for handling mappings of attributes.
    * 
    * @param attributeProcessingService
@@ -645,7 +682,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     Assert.notNull(this.authnRequestGenerator, "The property 'authnRequestGenerator' must be assigned");
     Assert.notNull(this.responseProcessor, "The property 'responseProcessor' must be assigned");
     Assert.notNull(this.messageSource, "The property 'messageSource' must be assigned");
-    Assert.notNull(this.authenticationContextService, "The property 'authenticationContextService' must be assigned");
     Assert.notNull(this.attributeProcessingService, "The property 'attributeProcessingService' must be assigned");
     if (!StringUtils.hasText(this.selectedCountryCookieName)) {
       this.selectedCountryCookieName = DEFAULT_SELECTED_COUNTRY_COOKIE_NAME;

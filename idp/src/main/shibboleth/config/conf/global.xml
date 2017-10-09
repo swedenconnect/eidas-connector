@@ -29,15 +29,15 @@
   </util:list>
   
   <!-- Connector services -->
-  
-  <bean id="eidas.AuthenticationContextService" class="se.elegnamnden.eidas.idp.connector.service.AuthenticationContextService" scope="singleton"
-    p:loaMappings-ref="eidas.LevelOfAssuranceMappings" 
-    p:authnContextweightMap-ref="shibboleth.AuthenticationPrincipalWeightMap" />
+      
+  <bean id="eidas.EidasAuthnContextService" class="se.elegnamnden.eidas.idp.connector.service.EidasAuthnContextServiceImpl" scope="singleton"
+    p:flowName="authn/External"
+    p:authnContextweightMap-ref="shibboleth.AuthenticationPrincipalWeightMap"
+    p:loaMappings-ref="eidas.LevelOfAssuranceMappings" />
     
-    <bean id="eidas.EidasAuthnContextService" class="se.elegnamnden.eidas.idp.connector.service.EidasAuthnContextServiceImpl" scope="singleton"
-      p:flowName="authn/External"
-      p:authnContextweightMap-ref="shibboleth.AuthenticationPrincipalWeightMap"
-      p:loaMappings-ref="eidas.LevelOfAssuranceMappings" />
+  <bean id="eidas.SignMessageService" class="se.litsec.shibboleth.idp.authn.service.impl.SignatureMessageServiceImpl" scope="singleton"
+    p:authnContextService-ref="eidas.EidasAuthnContextService"
+    p:signMessageDecrypter-ref="sweid.SignMessageDecryptionService" />
   
   <bean id="eidas.LevelOfAssuranceMappings" class="se.elegnamnden.eidas.mapping.loa.StaticLevelOfAssuranceMappings" scope="singleton" />
   
