@@ -56,8 +56,9 @@ import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import se.elegnamnden.eidas.idp.connector.controller.model.UiCountry;
 import se.elegnamnden.eidas.idp.connector.service.AttributeProcessingException;
-import se.elegnamnden.eidas.idp.connector.service.AttributeProcessingServiceImpl;
+import se.elegnamnden.eidas.idp.connector.service.AttributeProcessingService;
 import se.elegnamnden.eidas.idp.connector.service.AuthenticationContextService;
+import se.elegnamnden.eidas.idp.connector.service.EidasAuthnContextService;
 import se.elegnamnden.eidas.idp.connector.sp.EidasAuthnRequestGenerator;
 import se.elegnamnden.eidas.idp.connector.sp.EidasAuthnRequestGeneratorInput;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingException;
@@ -109,10 +110,13 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
   /** The name of the authenticator. */
   private String authenticatorName;
-  
+
+  /** Service for processing AuthnContext class URI:s. */
+  private EidasAuthnContextService eidasAuthnContextService;
+
   /** Generator for SP AuthnRequests. */
   private EidasAuthnRequestGenerator authnRequestGenerator;
-  
+
   /** Processor for handling of SAML responses received from the foreign IdP. */
   private ResponseProcessor responseProcessor;
 
@@ -123,7 +127,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   private AuthenticationContextService authenticationContextService;
 
   /** Service for handling mappings of attributes. */
-  private AttributeProcessingServiceImpl attributeProcessingService;
+  private AttributeProcessingService attributeProcessingService;
 
   /** The Spring message source holding localized UI message strings. */
   private MessageSource messageSource;
@@ -209,6 +213,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     }
 
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
+    
+    // Prepate the AuthnContext ...
+    this.eidasAuthnContextService.setSupportsNonNotifiedConcept(context, endPoint.isSupportsNonNotifiedConcept());
 
     // Next, generate an AuthnRequest and redirect or post the user there.
     //
@@ -226,7 +233,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       PeerMetadataResolver metadataResolver = (entityID) -> {
         return (entityID.equals(endPoint.getEntityID())) ? endPoint.getMetadataRecord() : null;
       };
-      
+
       RequestHttpObject<AuthnRequest> authnRequest = this.authnRequestGenerator.generateRequest(spInput, metadataResolver);
       this.saveProxyIdpState(context, authnRequest.getRequest(), endPoint);
 
@@ -262,19 +269,13 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       throws ExternalAutenticationErrorCodeException {
 
     EidasAuthnRequestGeneratorInput spInput = new EidasAuthnRequestGeneratorInput();
-    
+
     spInput.setPeerEntityID(endPoint.getEntityID());
     spInput.setCountry(endPoint.getCountry());
 
     // Match assurance levels and calculate which LoA URI to use in the request.
     //
-    String loaUriToRequest = this.authenticationContextService.getEidasAuthnContextURI(
-      this.getRequestedAuthnContextClassRefs(context), endPoint.getAssuranceCertifications(), endPoint.isSupportsNonNotifiedConcept());
-    if (loaUriToRequest == null) {
-      throw new ExternalAutenticationErrorCodeException(AuthnEventIds.INVALID_AUTHN_CTX,
-        "AuthnRequest did not contain a matching requested Authn Context URI");
-    }
-    spInput.setRequestedLevelOfAssurance(loaUriToRequest);
+    spInput.setRequestedLevelOfAssurance(this.eidasAuthnContextService.getSendAuthnContextClassRef(context, endPoint.getAssuranceCertifications()));
 
     // Relay state
     spInput.setRelayState(this.getRelayState(context));
@@ -356,25 +357,25 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     //
     ResponseProcessingInput input = this.createResponseProcessingInput(context, httpRequest);
     EndPointConfig idpEndpoint = this.metadataConfig.getProxyServiceConfig(input.getCountry());
-    
+
     try {
       PeerMetadataResolver idpMetadataResolver = (entityID) -> {
         return (entityID.equals(idpEndpoint.getEntityID())) ? idpEndpoint.getMetadataRecord() : null;
       };
-      
+
       ResponseProcessingResult result = this.responseProcessor.processSamlResponse(samlResponse, relayState, input, idpMetadataResolver);
       log.debug("Successfully processed SAML response");
-      
+
       // Perform the attribute relase ...
       //
       List<Attribute> attributes = this.attributeProcessingService.performAttributeRelease(result);
-      
+
       // Map LoA.
-      // 
-      // TODO
-      
-      this.success(httpRequest, httpResponse, this.attributeProcessingService.getPrincipal(attributes), attributes, 
-        LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, result.getAuthnInstant(), null);
+      //
+      String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(context, result.getAuthnContextClassUri(), false);
+
+      this.success(httpRequest, httpResponse, this.attributeProcessingService.getPrincipal(attributes), attributes,
+        loaToIssue, result.getAuthnInstant(), null);
       return null;
     }
     catch (ResponseProcessingException e) {
@@ -391,6 +392,11 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       log.warn("Error during attribute release process - {}", e.getMessage(), e);
       this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION); // TODO: change
       return null;
+    }
+    catch (ExternalAutenticationErrorCodeException e) {
+      log.warn("Error during ProxyIdP assertion process - {}", e.getMessage(), e);
+      this.error(httpRequest, httpResponse, e);
+      return null;
     }    
   }
 
@@ -405,9 +411,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     if (proxyContext == null) {
       throw new ExternalAuthenticationException("No ProxyIdpAuthenticationContext available");
     }
-    
+
     final String relayState = this.getRelayState(context);
-        
+
     return new ResponseProcessingInput() {
       @Override
       public AuthnRequest getAuthnRequest() {
@@ -432,7 +438,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       @Override
       public String getCountry() {
         return (String) proxyContext.getAdditionalData("country");
-      }      
+      }
     };
   }
 
@@ -548,8 +554,21 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   }
 
   /**
+   * Assigns the service for processing AuthnContext class URI:s.
+   * 
+   * @param eidasAuthnContextService
+   *          service
+   */
+  public void setEidasAuthnContextService(EidasAuthnContextService eidasAuthnContextService) {
+    super.setAuthnContextService(eidasAuthnContextService);
+    this.eidasAuthnContextService = eidasAuthnContextService;
+  }
+
+  /**
    * Assigns the AuthnRequest generator bean.
-   * @param authnRequestGenerator generator
+   * 
+   * @param authnRequestGenerator
+   *          generator
    */
   public void setAuthnRequestGenerator(EidasAuthnRequestGenerator authnRequestGenerator) {
     this.authnRequestGenerator = authnRequestGenerator;
@@ -557,7 +576,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
   /**
    * Assigns the SAML response processor bean.
-   * @param responseProcessor processor
+   * 
+   * @param responseProcessor
+   *          processor
    */
   public void setResponseProcessor(ResponseProcessor responseProcessor) {
     this.responseProcessor = responseProcessor;
@@ -589,7 +610,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    * @param attributeProcessingService
    *          the attribute processing service
    */
-  public void setAttributeProcessingService(AttributeProcessingServiceImpl attributeProcessingService) {
+  public void setAttributeProcessingService(AttributeProcessingService attributeProcessingService) {
     this.attributeProcessingService = attributeProcessingService;
   }
 
@@ -620,6 +641,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     super.afterPropertiesSet();
     Assert.hasText(this.authenticatorName, "The property 'authenticatorName' must be assigned");
     Assert.notNull(this.metadataConfig, "The property 'metadataConfig' must be assigned");
+    Assert.notNull(this.eidasAuthnContextService, "The property 'eidasAuthnContextService' must be assigned");
     Assert.notNull(this.authnRequestGenerator, "The property 'authnRequestGenerator' must be assigned");
     Assert.notNull(this.responseProcessor, "The property 'responseProcessor' must be assigned");
     Assert.notNull(this.messageSource, "The property 'messageSource' must be assigned");

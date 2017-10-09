@@ -50,6 +50,7 @@
   <bean id="eidas.ProxyAuthenticationController" class="se.elegnamnden.eidas.idp.connector.controller.ProxyAuthenticationController" 
     parent="sweid.AbstractExternalAuthenticationController"
     p:authenticatorName="%{idp.authn.external-authn.name}" 
+    p:eidasAuthnContextService-ref="eidas.EidasAuthnContextService"
     p:authnRequestGenerator-ref="eidas.AuthnRequestGenerator"
     p:responseProcessor-ref="eidas.ResponseProcessor"
     p:metadataConfig-ref="eidas.MetadataConfig"
