@@ -1,6 +1,7 @@
-h2{
+h2 {
     color:#46447c;
 }
+
 div.failframe {
     border: #961717;
     border-style: solid;
@@ -9,6 +10,7 @@ div.failframe {
     color: #540b0b;
     font-weight: bolder;
 }
+
 div.successframe {
     border: #346622;
     border-style: solid;
@@ -18,10 +20,22 @@ div.successframe {
     font-weight: bolder;
 }
 
-td.signerAttrName{
+td.signerAttrName {
     padding-right: 20px;
     color: #915608;
 }
-td.signerAttrValue{
-    
+
+td.signerAttrValue {
+}
+
+.controlled-img-div > img {
+	height: 60px;
+	width: auto;
+}
+
+.signMessageTextArea {
+	width: 100%; 
+	resize: none;
+	border: none;
+	font-family: "Lucida Console", Monaco, monospace;
 }

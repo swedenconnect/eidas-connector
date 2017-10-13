@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Model for a SignMessage consent.
+ * MVC model class for displaying information about a requesting Service Provider. 
  * 
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  * @author Stefan Santesson (stefan@aaa-sec.com)
@@ -33,23 +33,14 @@ import lombok.ToString;
 @Data
 @NoArgsConstructor
 @ToString
-public class SignMessageConsent {
+public class SpInfo {
   
-  private String textMessage;
+  /** The SP display name. */
+  private String displayName;
   
-  private UserInfo userInfo;
+  /** The SP description. */
+  private String description;
   
-  private SpInfo spInfo;
-    
-  @Data
-  @NoArgsConstructor
-  @ToString
-  public static class UserInfo {
-    private String name;
-    private String swedishId;
-    private String internationalId;
-    private String dateOfBirth;
-    private String country;
-  }
-
+  /** The SP default logo - meaning that we return a logo that is not too small (16x16) and not too large (>100 px). */
+  private String defaultLogoUrl;
 }

@@ -1,0 +1,18 @@
+<table style="width: 100%">
+  <tr>
+    <td>
+      <img src="$request.getContextPath()/custom/SE/logo_notext_h67.png" height="20"> 
+        <span style="color: #7f0927">
+          #springMessageText("connector.ui.e-identification-board", "The Swedish E-Identification Board")
+        </span>
+    </td>
+    <td style="text-align: center">
+      <a href="#springMessageText('connector.ui.e-identification-board.info.url', 'http://www.elegnamnden.se')">http://www.elegnamnden.se</a>
+      <br/>#springMessageText("connector.ui.e-identification-board.address", "E-legitimationsnämnden, 171 94 Solna")
+    </td>
+    <td style="text-align: right">
+      #springMessageText("connector.ui.phone", "Phone"): +46-10 574 21 00<br/>
+      #springMessageText("connector.ui.e-mail", "E-mail"): <a href="mailto:kansliet@elegnamnden.se">kansliet@elegnamnden.se</a>
+    </td>
+  </tr>
+</table>

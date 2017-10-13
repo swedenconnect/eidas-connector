@@ -188,8 +188,8 @@
     <dependency>
       <groupId>org.springframework.mobile</groupId>
       <artifactId>spring-mobile-device</artifactId>
-    </dependency>    
-
+    </dependency>
+    
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>

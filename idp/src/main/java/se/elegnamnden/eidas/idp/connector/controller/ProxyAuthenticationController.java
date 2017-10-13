@@ -21,14 +21,10 @@
 package se.elegnamnden.eidas.idp.connector.controller;
 
 import java.io.IOException;
-import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -39,12 +35,8 @@ import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.MessageSource;
-import org.springframework.context.NoSuchMessageException;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -56,8 +48,6 @@ import com.google.common.base.Functions;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
-import se.elegnamnden.eidas.idp.connector.controller.model.SignMessageConsent;
-import se.elegnamnden.eidas.idp.connector.controller.model.UiCountry;
 import se.elegnamnden.eidas.idp.connector.service.AttributeProcessingException;
 import se.elegnamnden.eidas.idp.connector.service.AttributeProcessingService;
 import se.elegnamnden.eidas.idp.connector.service.EidasAuthnContextService;
@@ -91,9 +81,6 @@ import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSetConstants;
  */
 @Controller
 public class ProxyAuthenticationController extends AbstractExternalAuthenticationController implements InitializingBean {
-
-  /** The name of the cookie that holds the selected country. */
-  public static final String DEFAULT_SELECTED_COUNTRY_COOKIE_NAME = "selectedCountry";
 
   /** Symbolic name for the action parameter value of "cancel". */
   public static final String ACTION_CANCEL = "cancel";
@@ -138,23 +125,25 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   /** Service for handling mappings of attributes. */
   private AttributeProcessingService attributeProcessingService;
 
-  /** The Spring message source holding localized UI message strings. */
-  private MessageSource messageSource;
+  /** Helper bean for handling selected country. */
+  private CountrySelectionHandler countrySelectionHandler;
+
+  /** Helper bean for handling view of Sign message consent. */
+  private SignMessageUiHandler signMessageUiHandler;
 
   /**
-   * The name for the cookie that stores the selected country. Defaults to
-   * {@value #DEFAULT_SELECTED_COUNTRY_COOKIE_NAME}.
+   * The first step for the connector authentication is to prompt the user for the eID country.
    */
-  private String selectedCountryCookieName;
-
-  /** {@inheritDoc} */
   @Override
-  protected ModelAndView doExternalAuthentication(HttpServletRequest httpRequest, HttpServletResponse httpResponse, String key,
+  protected ModelAndView doExternalAuthentication(
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse,
+      String key,
       ProfileRequestContext<?, ?> profileRequestContext) throws ExternalAuthenticationException, IOException {
 
     // Selected country from earlier session.
     //
-    final String selectedCountry = this.getSelectedCountry(httpRequest);
+    final String selectedCountry = this.countrySelectionHandler.getSelectedCountry(httpRequest, true);
     log.debug("Selected country from previous session: {}", selectedCountry != null ? selectedCountry : "none");
 
     // The first step is to prompt the user for which country to direct to.
@@ -168,10 +157,12 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     ModelAndView modelAndView = new ModelAndView("country-select");
     modelAndView.addObject("authenticationKey", key);
-    modelAndView.addObject("countries", this.getSelectableCountries());
+    modelAndView.addObject("countries", this.countrySelectionHandler.getSelectableCountries(this.metadataConfig
+      .getProxyServiceCountryList()));
+    modelAndView.addObject("spInfo", this.countrySelectionHandler.getSpInfo(this.getPeerMetadata(profileRequestContext)));
 
     if (selectedCountry != null) {
-      modelAndView.addObject("selectedCountry", selectedCountry);
+      modelAndView.addObject("selectedCountry", this.countrySelectionHandler.getSelectedCountry(httpRequest, false));
     }
 
     // LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(httpRequest);
@@ -181,7 +172,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   }
 
   @RequestMapping(value = "/proxyauth", method = RequestMethod.POST)
-  public ModelAndView processAuthentication(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+  public ModelAndView processAuthentication(
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse,
       @RequestParam("action") String action,
       @RequestParam("selectedCountry") String selectedCountry) throws ExternalAuthenticationException, IOException {
 
@@ -192,7 +185,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     }
 
     log.debug("User selected country '{}'", selectedCountry);
-    this.saveSelectedCountry(httpResponse, selectedCountry);
+    this.countrySelectionHandler.saveSelectedCountry(httpResponse, selectedCountry);
 
     // Get hold of all information needed for the foreign endpoint.
     //
@@ -395,7 +388,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Pick up the context from the session. If the request is stale, we'll get an exception.
     //
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
-    
+
     ProxyIdpAuthenticationContext proxyContext = proxyIdpAuthenticationContextLookupStrategy.apply(context);
 
     ResponseProcessingResult result = (ResponseProcessingResult) proxyContext.getAdditionalData("result");
@@ -404,19 +397,22 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     if (result == null || attributes == null) {
       throw new ExternalAuthenticationException("No result in ProxyIdpAuthenticationContext");
     }
-    
+
     // If 'action' is null we were called internally.
     if (action == null) {
 
-      SignMessageContext signMessageContext = signMessageService.getSignMessageContext(context);
-      if (signMessageContext != null) {
-        ModelAndView modelAndView = new ModelAndView("sign-consent");        
-        if (signMessageContext.isDisplayMessage()) {
-          modelAndView.addObject("signMessageConsent", new SignMessageConsent(attributes, (String) proxyContext.getAdditionalData("country")));
+      if (this.signMessageService.isSignatureServicePeer(context)) {
+        ModelAndView modelAndView = new ModelAndView("sign-consent");
+        SignMessageContext signMessageContext = signMessageService.getSignMessageContext(context);
+        if (signMessageContext != null && signMessageContext.isDisplayMessage()) {
+          modelAndView.addObject("signMessageConsent", this.signMessageUiHandler.getSignMessageConsentModel(
+            signMessageContext.getClearTextMessage(), signMessageContext.getSignMessage().getMimeTypeEnum(),
+            attributes, (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
           return modelAndView;
         }
         else {
-          modelAndView.addObject("signMessageConsent", new SignMessageConsent(attributes, (String) proxyContext.getAdditionalData("country")));
+          modelAndView.addObject("signMessageConsent", this.signMessageUiHandler.getSignMessageConsentModel(
+            null, null, attributes, (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
           return modelAndView;
         }
       }
@@ -428,9 +424,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       this.cancel(httpRequest, httpResponse);
       return null;
     }
-
+    
     boolean signMessageDisplayed = ACTION_OK.equals(action);
-
     try {
       String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(context, result.getAuthnContextClassUri(),
         signMessageDisplayed);
@@ -487,101 +482,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
         return (String) proxyContext.getAdditionalData("country");
       }
     };
-  }
-
-  /**
-   * Returns the selected country by inspecting the "selected country" cookie.
-   * 
-   * @param httpRequest
-   *          the HTTP request
-   * @return the selected country, or {@code null} if this information is not available
-   */
-  private String getSelectedCountry(HttpServletRequest httpRequest) {
-    Cookie[] cookies = httpRequest.getCookies();
-    return cookies != null ? Arrays.asList(cookies)
-      .stream()
-      .filter(c -> this.selectedCountryCookieName.equals(c.getName()))
-      .map(c -> c.getValue())
-      .findFirst()
-      .orElse(null) : null;
-  }
-
-  /**
-   * Saves the selected country in a user cookie.
-   * 
-   * @param httpResponse
-   *          the HTTP response
-   * @param selectedCountry
-   *          the selected country
-   */
-  private void saveSelectedCountry(HttpServletResponse httpResponse, String selectedCountry) {
-    Cookie cookie = new Cookie(this.selectedCountryCookieName, selectedCountry);
-    cookie.setPath("/idp");
-    httpResponse.addCookie(cookie);
-  }
-
-  /**
-   * Returns a list of country objects for displaying in the list of possible countries in the UI. The list is sorted
-   * according to the current locale.
-   * 
-   * @return a sorted list of country objects
-   */
-  private List<UiCountry> getSelectableCountries() {
-
-    // Ask the metadata configurator about which countries that have an eIDAS Proxy service registered.
-    //
-    this.metadataConfig.recache();
-    List<String> isoCodes = this.metadataConfig.getProxyServiceCountryList();
-
-    // We want to avoid locale based sorting in the view, so we'll provide a sorted list based on each
-    // country's localized display name.
-    //
-    Locale locale = LocaleContextHolder.getLocale();
-
-    List<UiCountry> countries = new ArrayList<>();
-    for (String code : isoCodes) {
-      String displayName = null;
-      try {
-        displayName = this.messageSource.getMessage("connector.ui.country." + code.toUpperCase(), null, locale);
-      }
-      catch (NoSuchMessageException e) {
-        // Maybe, there is no mapping for the given locale. Try the default locale also.
-        if (!locale.equals(DEFAULT_LOCALE)) {
-          try {
-            displayName = this.messageSource.getMessage("connector.ui.country." + code.toUpperCase(), null, DEFAULT_LOCALE);
-          }
-          catch (NoSuchMessageException e2) {
-          }
-        }
-      }
-
-      if (displayName != null) {
-        countries.add(new UiCountry(code, displayName));
-      }
-      else {
-        // A fake country for test...
-        displayName = this.messageSource.getMessage("connector.ui.country.TEST", new Object[] { code }, code + "Test Country", locale);
-        countries.add(new UiCountry(code, displayName, false));
-      }
-    }
-
-    Collator collator = Collator.getInstance(locale);
-
-    countries.sort(new Comparator<UiCountry>() {
-
-      @Override
-      public int compare(UiCountry o1, UiCountry o2) {
-        if (!o1.isRealCountry()) {
-          return 1;
-        }
-        if (!o2.isRealCountry()) {
-          return -1;
-        }
-        return collator.compare(o1.getName(), o2.getName());
-      }
-    });
-
-    return countries;
   }
 
   /** {@inheritDoc} */
@@ -652,24 +552,23 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   }
 
   /**
-   * Assigns the message source holding the localized UI messages used.
+   * Assigns the helper bean for handling country selection.
    * 
-   * @param messageSource
-   *          Spring message source
+   * @param countrySelectionHandler
+   *          country selection handler
    */
-  public void setMessageSource(MessageSource messageSource) {
-    this.messageSource = messageSource;
+  public void setCountrySelectionHandler(CountrySelectionHandler countrySelectionHandler) {
+    this.countrySelectionHandler = countrySelectionHandler;
   }
 
   /**
-   * Assigns the name that should be used for the cookie that stores the selected country. Defaults to
-   * {@value #DEFAULT_SELECTED_COUNTRY_COOKIE_NAME}.
+   * Assigns the helper bean for displaying sign message consent.
    * 
-   * @param selectedCountryCookieName
-   *          the cookie name
+   * @param signMessageUiHandler
+   *          sign message consent handler
    */
-  public void setSelectedCountryCookieName(String selectedCountryCookieName) {
-    this.selectedCountryCookieName = selectedCountryCookieName;
+  public void setSignMessageUiHandler(SignMessageUiHandler signMessageUiHandler) {
+    this.signMessageUiHandler = signMessageUiHandler;
   }
 
   /** {@inheritDoc} */
@@ -681,15 +580,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     Assert.notNull(this.eidasAuthnContextService, "The property 'eidasAuthnContextService' must be assigned");
     Assert.notNull(this.authnRequestGenerator, "The property 'authnRequestGenerator' must be assigned");
     Assert.notNull(this.responseProcessor, "The property 'responseProcessor' must be assigned");
-    Assert.notNull(this.messageSource, "The property 'messageSource' must be assigned");
+    Assert.notNull(this.countrySelectionHandler, "The property 'countrySelectionHandler' must be assigned");
+    Assert.notNull(this.signMessageUiHandler, "The property 'signMessageUiHandler' must be assigned");
     Assert.notNull(this.attributeProcessingService, "The property 'attributeProcessingService' must be assigned");
-    if (!StringUtils.hasText(this.selectedCountryCookieName)) {
-      this.selectedCountryCookieName = DEFAULT_SELECTED_COUNTRY_COOKIE_NAME;
-      log.debug("Name of cookie that holds selected country was not given - defaulting to {}", this.selectedCountryCookieName);
-    }
-
-    // TMP
-    this.metadataConfig.recache();
   }
 
 }

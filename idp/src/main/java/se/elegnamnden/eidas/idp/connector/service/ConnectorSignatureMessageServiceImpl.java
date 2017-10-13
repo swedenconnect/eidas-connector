@@ -18,38 +18,27 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package se.elegnamnden.eidas.idp.connector.controller.model;
+package se.elegnamnden.eidas.idp.connector.service;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import se.litsec.shibboleth.idp.authn.service.SignatureMessageService;
+import se.litsec.shibboleth.idp.authn.service.impl.SignatureMessageServiceImpl;
+import se.litsec.swedisheid.opensaml.saml2.signservice.dss.SignMessageMimeTypeEnum;
 
 /**
- * Model for a SignMessage consent.
+ * Overrides the default {@link SignatureMessageService} so that we can make sure that only
+ * signature messages of the the "text" type is supported.
  * 
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  * @author Stefan Santesson (stefan@aaa-sec.com)
  */
-@Data
-@NoArgsConstructor
-@ToString
-public class SignMessageConsent {
-  
-  private String textMessage;
-  
-  private UserInfo userInfo;
-  
-  private SpInfo spInfo;
-    
-  @Data
-  @NoArgsConstructor
-  @ToString
-  public static class UserInfo {
-    private String name;
-    private String swedishId;
-    private String internationalId;
-    private String dateOfBirth;
-    private String country;
-  }
+public class ConnectorSignatureMessageServiceImpl extends SignatureMessageServiceImpl {
 
+  /**
+   * We only support "text". 
+   */
+  @Override
+  public boolean supportsMimeType(SignMessageMimeTypeEnum mimeType) {
+    return mimeType == null || mimeType.equals(SignMessageMimeTypeEnum.TEXT);
+  }
+  
 }

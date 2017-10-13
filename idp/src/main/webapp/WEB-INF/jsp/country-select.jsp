@@ -10,6 +10,7 @@
     
     <link rel="stylesheet" type="text/css" href="<c:url value='/js/bs-select/css/bootstrap-select.min.css' />" />
     <script type="text/javascript" src="<c:url value='/js/bs-select/js/bootstrap-select.min.js' />"></script>
+    <link rel="stylesheet" type="text/css" href="<c:url value='/resources/skin0/css/authcstyle.css' />" />
         
     <title><spring:message code="connector.ui.title" /></title>
     
@@ -53,9 +54,18 @@
              -->
              <div class='panel panel-default'>
                <div class='panel-body' style="min-height: 300px">
-                 <h4 style="color: #204d74">Information</h4>
+                 <h4 style="color: #204d74"><spring:message code="connector.ui.select-country.info.title" /></h4>
+                 <c:if test="${not empty spInfo.defaultLogoUrl}">
+                   <div class="controlled-img-div">
+                     <img src="<c:out value="${spInfo.defaultLogoUrl}" />" />
+                   </div>
+                   <br />
+                 </c:if>
                  <div style="color: #666">
-                   <p><spring:message code="connector.ui.select-country.info.1" /></p>
+                   <spring:message code="connector.ui.select-country.info.default-sp-name" var="defaultName" />
+                   <c:set var="displayName" value="${not empty spInfo.displayName ? spInfo.displayName : defaultName}" />
+                   
+                   <p><spring:message code="connector.ui.select-country.info.1" arguments="${displayName}" /></p>
                    <p><spring:message code="connector.ui.select-country.info.2" /></p>
                  </div>
                </div>

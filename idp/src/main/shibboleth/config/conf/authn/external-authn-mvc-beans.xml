@@ -13,29 +13,19 @@
                            
        default-init-method="initialize"
        default-destroy-method="destroy">
-
-<!-- TODO: move to shibext-mvc-beans -->       
-    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
-        <property name="converters">
-            <set>
-                <bean class="net.shibboleth.ext.spring.config.DurationToLongConverter" />
-                <bean class="net.shibboleth.ext.spring.config.StringToIPRangeConverter" />
-                <bean class="net.shibboleth.ext.spring.config.BooleanToPredicateConverter" />
-                <bean class="net.shibboleth.ext.spring.config.StringBooleanToPredicateConverter" />
-                <bean class="net.shibboleth.ext.spring.config.StringToResourceConverter" />
-            </set>
-        </property>
-    </bean>
-       
-       
-  <bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver"
-    p:cookieName="idpUiLanguage"
-    p:cookieDomain="%{idp.cookie.domain:}"
-    p:cookieHttpOnly="%{idp.cookie.httpOnly:true}"
-    p:cookieSecure="%{idp.cookie.secure:false}"
-    p:cookiePath="%{idp.cookie.path:}"
-    p:cookieMaxAge="%{idp.cookie.maxAge:31536000}"
-    p:defaultLocale="sv" />       
+           
+  <bean id="eidas.CountrySelectionHandler" class="se.elegnamnden.eidas.idp.connector.controller.CountrySelectionHandler" scope="singleton"
+    p:messageSource-ref="messageSource">
+    <property name="fallbackLanguages">
+      <bean parent="shibboleth.CommaDelimStringArray" c:_0="#{'%{idp.ui.fallbackLanguages:}'.trim()}" />
+    </property>
+  </bean>
+  
+  <bean id="eidas.SignMessageUiHandler" class="se.elegnamnden.eidas.idp.connector.controller.SignMessageUiHandler" scope="singleton">
+    <property name="fallbackLanguages">
+      <bean parent="shibboleth.CommaDelimStringArray" c:_0="#{'%{idp.ui.fallbackLanguages:}'.trim()}" />
+    </property>  
+  </bean>
 
   <!--
     Abstract base controller for external authentication controllers.
@@ -55,6 +45,7 @@
     p:responseProcessor-ref="eidas.ResponseProcessor"
     p:metadataConfig-ref="eidas.MetadataConfig"
     p:attributeProcessingService-ref="eidas.AttributeProcessingService"
-    p:messageSource-ref="messageSource" />    
+    p:countrySelectionHandler-ref="eidas.CountrySelectionHandler"
+    p:signMessageUiHandler-ref="eidas.SignMessageUiHandler" />    
         
 </beans>

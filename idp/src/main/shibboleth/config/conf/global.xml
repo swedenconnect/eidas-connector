@@ -1,20 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task"
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:c="http://www.springframework.org/schema/c"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd"
                            
        default-init-method="initialize"
        default-destroy-method="destroy">
+       
+  <bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver"
+    p:cookieName="idpUiLanguage"
+    p:cookieDomain="%{idp.cookie.domain:}"
+    p:cookieHttpOnly="%{idp.cookie.httpOnly:true}"
+    p:cookieSecure="%{idp.cookie.secure:false}"
+    p:cookiePath="%{idp.cookie.path:}"
+    p:cookieMaxAge="%{idp.cookie.maxAge:31536000}"
+    p:defaultLocale="sv" />       
+    
+  <task:scheduler id="eidas.Scheduler" pool-size="5" />
+  
+  <task:scheduled-tasks scheduler="eidas.Scheduler">
+    <task:scheduled ref="eidas.MetadataConfig" method="recache" fixed-delay="600000" initial-delay="3000" />
+  </task:scheduled-tasks>
               
   <!-- eIDAS metadata -->
-  <bean id="eidas.MetadataConfig" class="se.elegnamnden.eidas.metadataconfig.MetadataConfig" scope="singleton"
-    init-method="recache" depends-on="shibboleth.OpenSAMLConfig"
+  <bean id="eidas.MetadataConfig" class="se.elegnamnden.eidas.metadataconfig.MetadataConfig" scope="singleton" depends-on="shibboleth.OpenSAMLConfig"
     c:dataDirectory="%{idp.metadata.eidas.cache-directory}"
     c:metadataListUrl="%{idp.metadata.eidas.service-list.url}"
     c:metadataListCertFile="%{idp.metadata.eidas.service-list.validation-certificate}"
@@ -27,7 +43,7 @@
     <bean class="se.elegnamnden.eidas.metadataconfig.data.MiddleWareParams"
       c:entityID="https://demw.eidastest.se" c:serviceUrlPrefix="https://demw.eidastest.se" />
   </util:list>
-  
+      
   <!-- Connector services -->
       
   <bean id="eidas.EidasAuthnContextService" class="se.elegnamnden.eidas.idp.connector.service.EidasAuthnContextServiceImpl" scope="singleton"
@@ -35,7 +51,7 @@
     p:authnContextweightMap-ref="shibboleth.AuthenticationPrincipalWeightMap"
     p:loaMappings-ref="eidas.LevelOfAssuranceMappings" />
     
-  <bean id="eidas.SignMessageService" class="se.litsec.shibboleth.idp.authn.service.impl.SignatureMessageServiceImpl" scope="singleton"
+  <bean id="eidas.SignMessageService" class="se.elegnamnden.eidas.idp.connector.service.ConnectorSignatureMessageServiceImpl" scope="singleton"
     p:authnContextService-ref="eidas.EidasAuthnContextService"
     p:signMessageDecrypter-ref="sweid.SignMessageDecryptionService" />
   

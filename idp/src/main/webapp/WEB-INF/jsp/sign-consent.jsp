@@ -8,10 +8,6 @@
   <head>
     <jsp:include page="c-htmlHead.jsp" />
     
-    <!-- 
-    <link rel="stylesheet" type="text/css" href="<c:url value='/js/bs-select/css/bootstrap-select.min.css' />" />
-    <script type="text/javascript" src="<c:url value='/js/bs-select/js/bootstrap-select.min.js' />"></script>
-    -->
     <link rel="stylesheet" type="text/css" href="<c:url value='/resources/skin0/css/authcstyle.css' />" />
     
     <title><spring:message code="connector.ui.title" /></title>
@@ -22,7 +18,7 @@
       <div class="panel panel-default" style="margin-top: 20px">
         <div class="panel-heading" style="padding-top: 0px;padding-bottom: 0px">
           <jsp:include page="header.jsp">
-            <jsp:param value="connector.ui.subtitle" name="titleCode" />
+            <jsp:param value="connector.ui.sign.subtitle" name="titleCode" />
            </jsp:include>
         </div>
         <div class="panel-body">
@@ -33,23 +29,38 @@
                 <spring:message code="connector.ui.sign.requester-info.title" />
               </div>
               <div class="panel-body" id="spinfo">
-                <i>TODO: Will be added</i>
+                <c:if test="${not empty signMessageConsent.spInfo.defaultLogoUrl}">
+                  <div class="controlled-img-div">
+                    <img src="<c:out value="${signMessageConsent.spInfo.defaultLogoUrl}" />" />
+                  </div>
+                  <br />                  
+                </c:if>
+                <div>
+                  <p>
+                    <c:out value="${signMessageConsent.spInfo.displayName}" />
+                  </p>
+                  <div style="color: #999999;">
+                    <p>
+                      <c:out value="${signMessageConsent.spInfo.description}" />
+                    </p>
+                  </div>
+                </div>
+                
               </div>
             </div>
             
+            <c:if test="${not empty signMessageConsent.textMessage}">
             <div id="sigMessPanel" class="panel panel-primary">
               <div class="panel-heading">
                 <spring:message code="connector.ui.sign.sign-message.title" />
               </div>
-              <div id="SignMessageBody" class="panel-body" style="height: 260px;overflow: auto">
-                <div id="htmlSignMessageBox"></div>
-                <div id="textSignMessageBox">
-                  <textarea id="sigMessTextArea" rows="11" readonly style='width: 100%; resize: none;border: none;font-family: "Lucida Console", Monaco, monospace'>
-                    TODO: Will contain signmessage
-                  </textarea>
+              <div id="SignMessageBody" class="panel-body" style="height: 260px;overflow: auto">                
+                <div class="signMessageTextArea">
+                  <c:out value="${signMessageConsent.textMessage}" escapeXml="false" />
                 </div>
               </div>
             </div>
+            </c:if>
             
             <div class="panel panel-primary">
               <div class="panel-heading" id="signerHeading">
