@@ -25,7 +25,36 @@
            </jsp:include>
         </div>
         <div class="panel-body">
-          <div class="col-sm-6">
+        
+          <div class="col-sm-6 col-sm-push-6">
+             <!-- 
+             <div id="changeLanguage">
+               <form action="/idp/extauth/language" method="POST">
+                 
+               </form>
+             </div>
+             -->
+            <div class='panel panel-default' style="border: 0; box-shadow: none">
+              <div class='panel-body' style="min-height: 250px">
+                <h4 style="color: #204d74"><spring:message code="connector.ui.select-country.info.title" /></h4>
+                <c:if test="${not empty spInfo.defaultLogoUrl}">
+                <div class="controlled-img-div">
+                  <img src="<c:out value="${spInfo.defaultLogoUrl}" />" />
+                </div>
+                <br />
+                </c:if>
+                <div style="color: #666">
+                  <spring:message code="connector.ui.select-country.info.default-sp-name" var="defaultName" />
+                  <c:set var="displayName" value="${not empty spInfo.displayName ? spInfo.displayName : defaultName}" />
+                   
+                  <p><spring:message code="connector.ui.select-country.info.1" arguments="${displayName}" /></p>
+                  <p><spring:message code="connector.ui.select-country.info.2" /></p>
+                </div>
+              </div>
+            </div>
+          </div>        
+        
+          <div class="col-sm-6 col-sm-pull-6">
             <form action="/idp/extauth/proxyauth" method="POST" id="formTab3">
               <div class="form-group form-group-sm">
                 <label for="countryInp"><spring:message code="connector.ui.choose-country" /></label>
@@ -43,34 +72,8 @@
               <button type="submit" class="btn btn-default btn-sm" name="action" value="cancel"><spring:message code='connector.ui.button.cancel' /></button>
               <input type="hidden" name="authenticationKey" value="${authenticationKey}" />
             </form>
-           </div>
-           <div class="col-sm-6">
-             <!-- 
-             <div id="changeLanguage">
-               <form action="/idp/extauth/language" method="POST">
-                 
-               </form>
-             </div>
-             -->
-             <div class='panel panel-default'>
-               <div class='panel-body' style="min-height: 300px">
-                 <h4 style="color: #204d74"><spring:message code="connector.ui.select-country.info.title" /></h4>
-                 <c:if test="${not empty spInfo.defaultLogoUrl}">
-                   <div class="controlled-img-div">
-                     <img src="<c:out value="${spInfo.defaultLogoUrl}" />" />
-                   </div>
-                   <br />
-                 </c:if>
-                 <div style="color: #666">
-                   <spring:message code="connector.ui.select-country.info.default-sp-name" var="defaultName" />
-                   <c:set var="displayName" value="${not empty spInfo.displayName ? spInfo.displayName : defaultName}" />
-                   
-                   <p><spring:message code="connector.ui.select-country.info.1" arguments="${displayName}" /></p>
-                   <p><spring:message code="connector.ui.select-country.info.2" /></p>
-                 </div>
-               </div>
-             </div>
-           </div>                        
+          </div>
+                                   
          </div>
        </div>
        <div class='panel panel-footer'>
