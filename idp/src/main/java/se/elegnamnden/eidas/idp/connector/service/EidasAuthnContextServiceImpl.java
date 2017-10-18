@@ -147,7 +147,7 @@ public class EidasAuthnContextServiceImpl extends ProxyIdpAuthnContextServiceImp
           authnContextUriToReturn = requestedUri;
           break;
         }
-        else if (authnContextUriToReturn != null) {
+        else if (authnContextUriToReturn == null) {
           // Otherwise, save the URI. It matches, but we may stumble on a better match (sigmessage).
           authnContextUriToReturn = requestedUri;
         }
