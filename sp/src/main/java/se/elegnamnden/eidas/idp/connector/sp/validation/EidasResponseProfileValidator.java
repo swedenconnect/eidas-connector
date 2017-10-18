@@ -20,9 +20,6 @@
  */
 package se.elegnamnden.eidas.idp.connector.sp.validation;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import se.litsec.swedisheid.opensaml.saml2.validation.SwedishEidResponseProfileValidator;
 
 /**
@@ -32,8 +29,4 @@ import se.litsec.swedisheid.opensaml.saml2.validation.SwedishEidResponseProfileV
  * @author Stefan Santesson (stefan@aaa-sec.com)
  */
 public class EidasResponseProfileValidator extends SwedishEidResponseProfileValidator {
-
-  /** Logging instance. */
-  private final Logger log = LoggerFactory.getLogger(EidasResponseProfileValidator.class);
-
 }

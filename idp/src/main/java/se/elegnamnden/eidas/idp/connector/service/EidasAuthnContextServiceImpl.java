@@ -20,6 +20,7 @@
  */
 package se.elegnamnden.eidas.idp.connector.service;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -112,15 +113,6 @@ public class EidasAuthnContextServiceImpl extends ProxyIdpAuthnContextServiceImp
     // OK, that seems OK. Next, we have to find the strongest possible requested URI that is equal to or weaker
     // than what we received.
     //
-    // Transform to SP format.
-    //
-    String authnContextUriForSp = this.transformForSp(context, authnContextUri);
-    if (authnContextUriForSp == null) {
-      // Should never happen since we matched everything before sending the request.
-      final String msg = String.format("AuthnContextClassRef received from IdP '{}' cannot be transformed", authnContextUri);
-      log.info("{} [{}]", msg, logId);
-      throw new ExternalAutenticationErrorCodeException(AuthnEventIds.AUTHN_EXCEPTION, msg);
-    }
 
     // Sort all requsted URI:s, and then go through the list and pick the strongest one that matches.
     //
@@ -133,32 +125,48 @@ public class EidasAuthnContextServiceImpl extends ProxyIdpAuthnContextServiceImp
     String authnContextUriToReturn = null;
     
     for (String requestedUri : sortedRequested) {
-      
-      if (!authnContextClassContext.isProxiedIdPSupportsSignMessage() && displayedSignMessage) {        
-        String baseUri = this.toBaseURI(requestedUri);
-        if (authnContextUriForSp.equals(baseUri)) {
+      boolean isSigMessage = this.isSignMessageURI(requestedUri);
+      if (!displayedSignMessage && isSigMessage) {
+        // If this is a sig message URI, and we did not display a signature message, this
+        // URI can not be used.
+        continue;
+      }
+      // Transform the national URI to eIDAS format and check if it is weaker or equal to the 
+      // ACC we received.
+      String eidasUri = this.transformToEidas(context, requestedUri);
+      if (minimumComparisonMatch(eidasUri, authnContextUri)) {
+        if (isSigMessage) {
+          // If this is a sigmessage URI, we have found a perfect match.
+          // If not, we may iterate over a sigmessage URI later so we keep trying (the SP
+          // may have requested both x and x-sigmessage).
           authnContextUriToReturn = requestedUri;
-          if (this.isSignMessageURI(requestedUri)) {
-            // If this is a sigmessage URI, we have found a perfect match.
-            // If not, we may iterate over a sigmessage URI later so we keep trying (the SP
-            // may have requested both x and x-sigmessage).
-            break;
-          }
+          break;
+        }
+        else if (!displayedSignMessage) {
+          // If we shouldn't return a sig message URI and we get a match we are done.
+          authnContextUriToReturn = requestedUri;
+          break;
+        }
+        else if (authnContextUriToReturn != null) {
+          // Otherwise, save the URI. It matches, but we may stumble on a better match (sigmessage).
+          authnContextUriToReturn = requestedUri;
         }
       }
-      else if (authnContextUriForSp.equals(requestedUri)) {
-        authnContextUriToReturn = requestedUri;
-        break;
-      }      
-    }
+    }    
     
     if (authnContextUriToReturn == null) {
-      final String msg = String.format("AuthnContextClassRef received from IdP '{}' cannot be mapped against requested URI:s", authnContextUri);
+      final String msg = String.format("AuthnContextClassRef received from IdP '%s' cannot be mapped against requested URI:s", authnContextUri);
       log.info("{} [{}]", msg, logId);
       throw new ExternalAutenticationErrorCodeException(AuthnEventIds.AUTHN_EXCEPTION, msg);      
     }
 
     return authnContextUriToReturn;
+  }
+  
+  private static boolean minimumComparisonMatch(String uri, String issuedUri) {
+    EidasLoaEnum loa = EidasLoaEnum.parse(uri);
+    EidasLoaEnum issuedLoa = EidasLoaEnum.parse(issuedUri);
+    return eidasLoAbyOrder.compare(loa, issuedLoa) <= 0;
   }
 
   /**
@@ -230,6 +238,11 @@ public class EidasAuthnContextServiceImpl extends ProxyIdpAuthnContextServiceImp
           .collect(Collectors.toList());      
     }
   }
+  
+  protected String transformToEidas(ProfileRequestContext<?, ?> context, String uri) {
+    List<String> eidas = this.transformForIdp(context, Arrays.asList(uri));
+    return !eidas.isEmpty() ? eidas.get(0) : null;
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -254,7 +267,16 @@ public class EidasAuthnContextServiceImpl extends ProxyIdpAuthnContextServiceImp
     return (u1, u2) -> {
       LoaEnum loa1 = LoaEnum.parse(u1);
       LoaEnum loa2 = LoaEnum.parse(u2);
-      return Integer.compare(loa1 != null ? loa1.getLevel() : 0, loa1 != null ? loa2.getLevel() : 0);
+      Integer i1 = 0;
+      Integer i2 = 0;
+      if (loa1 != null) {
+        i1 = loa1.getLevel() + (loa1.isNotified() ? 1 : 0) + (loa1.isSignatureMessageUri() ? 1 : 0);
+      }
+      if (loa2 != null) {
+        i2 = loa2.getLevel() + (loa2.isNotified() ? 1 : 0) + (loa2.isSignatureMessageUri() ? 1 : 0);
+      }
+      
+      return Integer.compare(i1, i2);
     };
   }
 
