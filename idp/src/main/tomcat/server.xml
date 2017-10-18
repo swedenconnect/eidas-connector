@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<!-- managed by puppet -->
 <Server port="8056" shutdown="SHUTDOWN">
   <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
   <!--
@@ -49,10 +48,10 @@
       <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false" >
       
         <Valve className="org.apache.catalina.valves.RemoteIpValve"
-               remoteIpHeader="X-Forwarded-For" />
-               
+               remoteIpHeader="X-Forwarded-For" />               
+        
         <!-- begränsa access till webappen, tills vidare med regex för RFC1918-adresser
-             Update 2013-12-19: tillåt IPv6 ::1 för t.ex. curl mot localhost /jenhag -->
+             Update 2013-12-19: tillåt IPv6 ::1 för t.ex. curl mot localhost -->
         <!-- <Valve className="org.apache.catalina.valves.RemoteAddrValve"
                 allow="((^127\.0\.0\.1)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)).*?|::1|0:0:0:0:0:0:0:1" />
          <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"

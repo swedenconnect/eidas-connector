@@ -23,7 +23,7 @@ do
     source $i
 done
 
-IDP_HOME=/opt/bankididp/shibboleth
+IDP_HOME=/opt/eidas-connector/shibboleth
 
 : ${SSL_KEYSTORE_FILE:=`echo $IDP_SSL_KEYSTORE |sed s/file://`}
 : ${IDP_SSL_PASSWORD:=secret}
@@ -89,4 +89,4 @@ export CATALINA_OPTS="\
           -Xms${JVM_START_HEAP}\
 "
 
-/opt/bankididp/tomcat/bin/catalina.sh run
+/opt/eidas-connector/tomcat/bin/catalina.sh run

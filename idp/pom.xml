@@ -226,16 +226,6 @@
           <include>logback-local.xml</include>
         </includes>
       </resource>
-      <!-- 
-      <resource>
-        <directory>src/main/scripts</directory>
-        <filtering>true</filtering>
-        <includes>
-          <include>**/*.sh</include>
-          <include>**/*.bat</include>
-        </includes>
-      </resource>
-      -->
     </resources>
 
     <plugins>
@@ -405,12 +395,25 @@
                 <exec dir="${project.build.directory}/shibboleth/bin/" executable="./build.sh" osfamily="unix">
                   <arg value="-Didp.noprompt=true"/>
                 </exec>
+                
+                <echo>Clean up</echo>
+                <delete file="${project.build.directory}/shibboleth/idp_ant.log" />
+                <delete includeEmptyDirs="true">
+                  <fileset dir="${project.build.directory}/shibboleth/" includes="old-*" />
+                </delete>
+                <delete>
+                  <fileset dir="${project.build.directory}/shibboleth/logs/" includes="*.*" />
+                </delete>
 
                 <echo>Installing new war into tomcat</echo>
+                <delete includeEmptyDirs="true">
+                  <fileset dir="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/webapps/" includes="**/*" />
+                </delete>
+                            
                 <copy file="${project.build.directory}/shibboleth/war/idp.war" tofile="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/webapps/idp.war"/>
                 <copy file="${project.basedir}/src/main/scripts/dockerStart.sh" tofile="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/bin/dockerStart.sh" />
                 <copy file="${project.basedir}/src/main/scripts/dockerDevStart.sh" tofile="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/bin/dockerDevStart.sh" />
-                
+                                
                 <chmod perm="755" dir="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/bin" includes="**/*.sh"/>
               </target>
             </configuration>
@@ -420,6 +423,53 @@
           </execution>
         </executions>
       </plugin>
+      
+      <!-- Build the distribution zip -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.0.0</version>
+        <configuration>
+          <descriptors>
+            <descriptor>${basedir}/src/assembly/eidas-connector-dist.xml</descriptor>
+          </descriptors>
+          <finalName>${project.artifactId}-${project.version}</finalName>
+          <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+          <execution>
+            <id>build-distribution</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Attach the zip file as an artifact of this build to get it installed and deployed -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.build.directory}/${project.artifactId}-${project.version}.zip</file>
+                  <type>zip</type>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>      
 
     </plugins>
   </build>

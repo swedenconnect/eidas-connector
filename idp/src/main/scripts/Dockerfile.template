@@ -1,15 +1,15 @@
 FROM openjdk:8-jre
 
-RUN mkdir /opt/refidp
-ADD target/dependency/apache-tomcat-8.5.9 /opt/refidp/tomcat/
-ADD target/shibboleth /opt/refidp/shibboleth/
+RUN mkdir /opt/eidas-connector
+ADD target/dependency/apache-tomcat-8.5.9 /opt/eidas-connector/tomcat/
+ADD target/shibboleth /opt/eidas-connector/shibboleth/
 
 # Redirecting log directories
-RUN rm -rf /opt/refidp/tomcat/logs && ln -s /var/log/refidp/ /opt/refidp/tomcat/logs
-RUN rm -rf /opt/refidp/shibboleth/logs && ln -s /var/log/refidp/ /opt/refidp/shibboleth/logs
-RUN chmod a+x /opt/refidp/tomcat/bin/*.sh
-EXPOSE 9150
+RUN rm -rf /opt/eidas-connector/tomcat/logs && ln -s /var/log/eidas-connector/ /opt/eidas-connector/tomcat/logs
+RUN rm -rf /opt/eidas-connector/shibboleth/logs && ln -s /var/log/eidas-connector/ /opt/eidas-connector/shibboleth/logs
+RUN chmod a+x /opt/eidas-connector/tomcat/bin/*.sh
+EXPOSE 9160
 
-VOLUME /etc/refidp
-VOLUME /var/log/refidp
-CMD mkdir -p /var/log/refidp/ && /opt/refidp/tomcat/bin/dockerStart.sh refidp
+VOLUME /etc/eidas-connector
+VOLUME /var/log/eidas-connector
+CMD mkdir -p /var/log/eidas-connector/ && /opt/eidas-connector/tomcat/bin/dockerStart.sh eidas-connector
