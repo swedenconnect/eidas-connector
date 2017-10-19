@@ -10,6 +10,6 @@
 <meta http-equiv="Expires" content="-1"/>
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<script type="text/javascript" src="<c:url value='/resources/skin0/js/jquery-1.11.3.min.js' />"></script>
-<script type="text/javascript" src="<c:url value='/resources/skin0/js/bootstrap.min.js' />"></script>
-<link rel="stylesheet" type="text/css" href="<c:url value='/resources/skin0/css/bootstrap.min.css' />" />
+<script type="text/javascript" src="<c:url value='/js/jquery-2.1.4.min.js' />"></script>
+<script type="text/javascript" src="<c:url value='/js/bootstrap.min.js' />"></script>
+<link rel="stylesheet" type="text/css" href="<c:url value='/css/bootstrap.min.css' />" />

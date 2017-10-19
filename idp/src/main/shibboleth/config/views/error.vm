@@ -52,7 +52,7 @@
         <meta http-equiv='cache-control' content='no-cache, no-store, must-revalidate'/>
         <meta http-equiv="Expires" content="-1"/>
     
-        <link rel="stylesheet" type="text/css" href="$request.getContextPath()/resources/skin0/css/bootstrap.min.css" />
+        <link rel="stylesheet" type="text/css" href="$request.getContextPath()/css/bootstrap.min.css" />
                 
         <title>$title - $titleSuffix</title>
     </head>
@@ -74,29 +74,6 @@
            #parse("footer.vm")
          </div>
        </div>                                            
-   </body>      
-      
-      
-      <!--
-    	<div class="container">
-        <header>
-				<img src="$request.getContextPath()#springMessage("idp.logo")" alt="#springMessageText("idp.logo.alt-text", "logo")">
-				<h3>$title - $titleSuffix</h3>
-			</header>
-		
-        	<div class="content">
-            #evaluate($message)
-            </div>
-    	</div>
-
-      	<footer>
-        	<div class="container container-footer">
-          		<p class="footer-text">#springMessageText("idp.footer", "Insert your footer text here.")</p>
-        	</div>
-      	</footer>
-      	
-    </div>
-    -->
-    
     </body>
+         
 </html>

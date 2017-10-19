@@ -6,9 +6,9 @@
 
 <html>
   <head>
-    <jsp:include page="c-htmlHead.jsp" />
+    <jsp:include page="html-head.jsp" />
     
-    <link rel="stylesheet" type="text/css" href="<c:url value='/resources/skin0/css/authcstyle.css' />" />
+    <link rel="stylesheet" type="text/css" href="<c:url value='/css/idp-style.css' />" />
     
     <title><spring:message code="connector.ui.title" /></title>
     

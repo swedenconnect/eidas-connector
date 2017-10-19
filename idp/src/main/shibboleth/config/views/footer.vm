@@ -1,6 +1,6 @@
 <div class="row hidden-xs">
   <div class="col-sm-4">
-    <img src="$request.getContextPath()/custom/SE/logo_notext_h67.png" height="20">  
+    <img src="$request.getContextPath()/img/logo_notext_h67.png" height="20">  
     <span style="color: #7f0927">
       #springMessageText("connector.ui.e-identification-board", "The Swedish E-Identification Board")
     </span>  
@@ -15,7 +15,7 @@
   </div>
 </div>
 <div class="visible-xs" style="text-align: center">
-  <img src="$request.getContextPath()/custom/SE/logo_notext_h67.png" height="20">
+  <img src="$request.getContextPath()/img/logo_notext_h67.png" height="20">
   <span style="color: #7f0927">
     #springMessageText("connector.ui.e-identification-board", "The Swedish E-Identification Board")
   </span>  

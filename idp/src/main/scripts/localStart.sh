@@ -105,7 +105,7 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Dtomcat.tls.password=secret \
 -Dtomcat.tls.alias=localhost \
 -Dtomcat.tls.port=${TOMCAT_TLS_PORT} \
--Dtomcat.ajp.port=8009 \
+-Dtomcat.ajp.port=8099 \
 -Didp.hostname=${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFFIX} \
 -Didp.baseurl=${IDP_BASE_URL} \
 -Didp.test.sp.metadata=$TEST_SP_METADATA \
