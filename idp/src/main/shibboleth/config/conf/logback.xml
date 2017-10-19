@@ -20,6 +20,12 @@
     <variable name="idp.loglevel.opensaml" value="INFO" />
     <variable name="idp.loglevel.props" value="INFO" />
     
+    <!-- 
+    <variable name="idp.loglevel.litsec" value="%{idp.loglevel.se.litsec}" />
+    <variable name="idp.loglevel.elegnamnden.idp" value="INFO" />
+    <variable name="idp.loglevel.elegnamnden" value="INFO" />
+    -->
+    
     <!-- Don't turn these up unless you want a *lot* of noise. -->
     <variable name="idp.loglevel.spring" value="ERROR" />
     <variable name="idp.loglevel.container" value="ERROR" />
@@ -35,6 +41,11 @@
     <!-- ============== Logging Categories and Levels ============== -->
     <!-- =========================================================== -->
     
+    <!-- 
+    <logger name="se.litsec" level="${idp.loglevel.litsec:-INFO}" />
+    <logger name="se.elegnamnden.eidas.idp" level="${idp.loglevel.elegnamnden.idp:-INFO}" />
+    <logger name="se.elegnamnden" level="${idp.loglevel.elegnamnden:-INFO}" />    
+    -->
     <logger name="se.litsec" level="DEBUG" />
     <logger name="se.elegnamnden.eidas.idp" level="TRACE" />
     <logger name="se.elegnamnden" level="DEBUG" />    

@@ -48,10 +48,30 @@ TOMCAT_TLS_ALIAS=localhost
 IDP_ENTITY_ID=https://eunode.eidastest.se/idp2
 SP_ENTITY_ID=https://eunode.eidastest.se/connector-sp
 
+IDP_AA_URL=https://eunode.eidastest.se/eidas-aa
+
 TEST_SP_METADATA=https://localhost:8443/svelegtest-sp/metadata/all-metadata.xml
 
 IDP_CREDENTIALS=$IDP_HOME/credentials
 
+#
+# Metadata
+#
+FEDERATION_METADATA_URL=https://eid.svelegtest.se/metadata/feed
+FEDERATION_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/metadata-validation-cert.crt
+
+# https://eid.svelegtest.se/nodeconfig/mdservicelist
+EIDAS_METADATA_SERVICE_LIST_URL=file:///private/etc/eidas-connector/mock/metadataList.xml
+EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT=${IDP_HOME}/metadata/eidas-servicelist-validation-cert.crt
+# https://eid.svelegtest.se/nodeconfig/metadata
+EIDAS_METADATA_URL=file:///private/etc/eidas-connector/mock/metadata.xml
+EIDAS_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/eidas-metadata-validation-cert.crt
+# false
+EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION=true
+
+#
+# Assign all values
+#
 export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.sealer.storeResource=$IDP_CREDENTIALS/sealer.jks \
 -Didp.sealer.versionResource=$IDP_CREDENTIALS/sealer.kver \
@@ -62,6 +82,14 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.encryption.cert=$IDP_CREDENTIALS/idp-encryption.crt \
 -Didp.metadata.signing.key=$IDP_CREDENTIALS/metadata-signing.key \
 -Didp.metadata.signing.cert=$IDP_CREDENTIALS/metadata-signing.crt \
+-Didp.metadata.federation.url=${FEDERATION_METADATA_URL} \
+-Didp.metadata.federation.validation-certificate=${FEDERATION_METADATA_VALIDATION_CERT} \
+-Didp.metadata.eidas.service-list.url=${EIDAS_METADATA_SERVICE_LIST_URL} \
+-Didp.metadata.eidas.service-list.validation-certificate=${EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT} \
+-Didp.metadata.eidas.federation.url=${EIDAS_METADATA_URL} \
+-Didp.metadata.eidas.federation.validation-certificate=${EIDAS_METADATA_VALIDATION_CERT} \
+-Didp.metadata.eidas.ignore-signature-validation=${EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION} \
+-Didp.aa.url=$IDP_AA_URL \
 -Didp.sp.entityID=$SP_ENTITY_ID \
 -Didp.sp.signing.key=$IDP_CREDENTIALS/sp/sp-signing.key \
 -Didp.sp.signing.cert=$IDP_CREDENTIALS/sp/sp-signing.crt \
@@ -77,9 +105,11 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Dtomcat.tls.password=secret \
 -Dtomcat.tls.alias=localhost \
 -Dtomcat.tls.port=${TOMCAT_TLS_PORT} \
+-Dtomcat.ajp.port=8009 \
 -Didp.hostname=${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFFIX} \
 -Didp.baseurl=${IDP_BASE_URL} \
 -Didp.test.sp.metadata=$TEST_SP_METADATA \
+-Didp.service.metadata.resources=shibboleth.DevelMetadataResolverResources \
 -Didp.litsec.loglevel=DEBUG"
 
 #JVM settings should go in CATALINA_OPTS
