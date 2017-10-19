@@ -73,6 +73,10 @@
     <logger name="net.shibboleth.idp.log.LogbackLoggingService" level="${idp.loglevel.props:-INFO}" />
 
     <!-- Especially chatty. -->
+        
+    <logger name="net.shibboleth.idp.attribute.resolver.ad.impl.ContextDerivedAttributeDefinition" level="WARN" />
+    <logger name="se.litsec.shibboleth.idp.attribute.resolver.SAML2AttributeNameToIdMapperService" level="INFO" />
+    
     <logger name="net.shibboleth.idp.saml.attribute.mapping" level="INFO" />
     <logger name="org.apache.xml.security" level="${idp.loglevel.xmlsec:-INFO}" />
     <logger name="org.springframework" level="${idp.loglevel.spring:-ERROR}"/>
@@ -103,7 +107,7 @@
             <evaluator>
                 <matcher>
                     <Name>VelocityStatusMatcher</Name>
-                    <regex>ResourceManager : unable to find resource 'status.vm' in any resource loader.</regex>
+                    <regex>ResourceManager : unable to find resource</regex>
                 </matcher>
                 <expression>VelocityStatusMatcher.matches(formattedMessage)</expression>
             </evaluator>
@@ -139,7 +143,7 @@
             <evaluator>
                 <matcher>
                     <Name>VelocityStatusMatcher</Name>
-                    <regex>ResourceManager : unable to find resource 'status.vm' in any resource loader.</regex>
+                    <regex>ResourceManager : unable to find resource</regex>
                 </matcher>
                 <expression>VelocityStatusMatcher.matches(formattedMessage)</expression>
             </evaluator>

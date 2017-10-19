@@ -22,8 +22,8 @@
   </licenses>
 
   <scm>
-    <connection>scm:https://github.com/elegnamnden/eidas-connector.git</connection>
-    <developerConnection>scm:https://github.com/elegnamnden/eidas-connector.git</developerConnection>
+    <connection>scm:git:https://github.com/elegnamnden/eidas-connector.git</connection>
+    <developerConnection>scm:git:https://github.com/elegnamnden/eidas-connector.git</developerConnection>
     <url>https://github.com/elegnamnden/eidas-connector/tree/master</url>
   </scm>
 
@@ -47,7 +47,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.8</java.version>
     
-    <shibboleth-base-package.version>1.0.0-SNAPSHOT</shibboleth-base-package.version>
+    <shibboleth-base-package.version>1.0.0</shibboleth-base-package.version>
     <opensaml.eidas.version>1.0.3</opensaml.eidas.version>
   </properties>
 
@@ -57,6 +57,22 @@
       <name>Shibboleth Maven Repo</name>
       <url>https://build.shibboleth.net/nexus/content/repositories/releases</url>
     </repository>
+    <repository>
+      <id>eidasrl</id>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <name>eIDAS releases</name>
+      <url>https://maven.eidastest.se/artifactory/eidas-release-local</url>
+    </repository>
+    <repository>
+      <id>eidassh</id>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <name>eIDAS snapshots</name>
+      <url>https://maven.eidastest.se/artifactory/eidas-snapshot-local</url>
+    </repository>    
   </repositories>
 
   <distributionManagement>
@@ -85,7 +101,7 @@
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-dependency-bom</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>      
@@ -104,6 +120,20 @@
         <type>jar</type>
         <scope>compile</scope>
       </dependency>
+      
+      <dependency>
+        <groupId>se.elegnamnden.eidas</groupId>
+        <artifactId>metadataconfig</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <scope>compile</scope>
+      </dependency>
+    
+      <dependency>
+        <groupId>se.elegnamnden.eidas.commons</groupId>
+        <artifactId>eidas-mappings</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <scope>compile</scope>
+      </dependency>      
 
     </dependencies>
 
