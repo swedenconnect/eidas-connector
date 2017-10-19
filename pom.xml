@@ -122,16 +122,16 @@
       </dependency>
       
       <dependency>
-        <groupId>se.elegnamnden.eidas</groupId>
+        <groupId>se.elegnamnden.eidas.commons</groupId>
         <artifactId>metadataconfig</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0</version>
         <scope>compile</scope>
       </dependency>
     
       <dependency>
         <groupId>se.elegnamnden.eidas.commons</groupId>
         <artifactId>eidas-mappings</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
         <scope>compile</scope>
       </dependency>      
 

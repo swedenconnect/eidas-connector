@@ -52,7 +52,7 @@
   <dependencies>
 
     <dependency>
-      <groupId>se.elegnamnden.eidas</groupId>
+      <groupId>se.elegnamnden.eidas.commons</groupId>
       <artifactId>metadataconfig</artifactId>
     </dependency>
 
