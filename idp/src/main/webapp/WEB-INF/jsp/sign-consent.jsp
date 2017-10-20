@@ -21,9 +21,27 @@
             <jsp:param value="connector.ui.sign.subtitle" name="titleCode" />
            </jsp:include>
         </div>
+        
         <div class="panel-body">
+        
           <div class="panel-group">
           
+            <c:if test="${not empty uiLanguages}">
+            <div class="panel panel-default" style="border: 0; box-shadow: none">
+              <div class='panel-body'>
+                <div id="languageSelect" class="pull-right">
+                  <form action="/idp/extauth/proxyauth/complete" method="POST"> 
+                    <c:forEach items="${uiLanguages}" var="uiLang">
+                    <span style="width: 35px; margin-left: 10px; height: 30px">
+                      <input type="image" src="<c:url value='${uiLang.flagUrl}' />" alt="${uiLang.altText}" name="language" value="${uiLang.languageTag}">
+                    </span>
+                    </c:forEach>
+                  </form>
+                </div>              
+              </div>
+            </div>
+            </c:if>
+                      
             <div class="panel panel-primary">
               <div class="panel-heading">
                 <spring:message code="connector.ui.sign.requester-info.title" />
@@ -54,7 +72,7 @@
               <div class="panel-heading">
                 <spring:message code="connector.ui.sign.sign-message.title" />
               </div>
-              <div id="SignMessageBody" class="panel-body" style="height: 260px;overflow: auto">                
+              <div id="SignMessageBody" class="panel-body" style="min-height: 120px;overflow: auto">                
                 <div class="signMessageTextArea">
                   <c:out value="${signMessageConsent.textMessage}" escapeXml="false" />
                 </div>

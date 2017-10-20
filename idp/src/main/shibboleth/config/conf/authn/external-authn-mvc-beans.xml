@@ -26,6 +26,15 @@
       <bean parent="shibboleth.CommaDelimStringArray" c:_0="#{'%{idp.ui.fallbackLanguages:}'.trim()}" />
     </property>  
   </bean>
+  
+  <util:list id="eidas.uiLanguages">
+    <bean class="se.elegnamnden.eidas.idp.connector.controller.model.UiLanguage" p:languageTag="sv" p:altText="Svenska" p:flagUrl="/img/flags/SE.png" />
+    <bean class="se.elegnamnden.eidas.idp.connector.controller.model.UiLanguage" p:languageTag="en" p:altText="English" p:flagUrl="/img/flags/UK.png" />
+    <!-- <bean class="se.elegnamnden.eidas.idp.connector.controller.model.UiLanguage" p:languageTag="de" p:altText="Deutsch" p:flagUrl="/img/flags/DE.png" /> -->
+  </util:list>
+  
+  <bean id="eidas.UiLanguageHandler" class="se.elegnamnden.eidas.idp.connector.controller.UiLanguageHandler" scope="singleton"
+    p:languages-ref="eidas.uiLanguages" />
 
   <!--
     Abstract base controller for external authentication controllers.
@@ -46,6 +55,7 @@
     p:metadataConfig-ref="eidas.MetadataConfig"
     p:attributeProcessingService-ref="eidas.AttributeProcessingService"
     p:countrySelectionHandler-ref="eidas.CountrySelectionHandler"
-    p:signMessageUiHandler-ref="eidas.SignMessageUiHandler" />    
+    p:signMessageUiHandler-ref="eidas.SignMessageUiHandler"
+    p:uiLanguageHandler-ref="eidas.UiLanguageHandler" />    
         
 </beans>

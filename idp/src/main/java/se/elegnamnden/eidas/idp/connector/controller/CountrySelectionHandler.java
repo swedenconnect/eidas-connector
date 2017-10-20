@@ -106,9 +106,13 @@ public class CountrySelectionHandler implements InitializingBean {
   public void saveSelectedCountry(HttpServletResponse httpResponse, String selectedCountry) {
     Cookie cookie = new Cookie(this.selectedCountryCookieName, selectedCountry);
     cookie.setPath("/idp");
+    cookie.setHttpOnly(true);
+    cookie.setMaxAge(Integer.MAX_VALUE);
     httpResponse.addCookie(cookie);
     cookie = new Cookie(this.selectedSessionCountryCookieName, selectedCountry);
     cookie.setPath("/idp");
+    cookie.setHttpOnly(true);
+    cookie.setMaxAge(-1);
     httpResponse.addCookie(cookie);
   }
 
@@ -125,7 +129,7 @@ public class CountrySelectionHandler implements InitializingBean {
     Cookie[] cookies = httpRequest.getCookies();
     return cookies != null ? Arrays.asList(cookies)
       .stream()
-      .filter(cookieName::equals)
+      .filter(c -> cookieName.equals(c.getName()))
       .map(Cookie::getValue)
       .findFirst()
       .orElse(null) : null;

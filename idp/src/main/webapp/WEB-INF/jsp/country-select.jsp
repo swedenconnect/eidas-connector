@@ -27,16 +27,24 @@
         <div class="panel-body">
         
           <div class="col-sm-6 col-sm-push-6">
-             <!-- 
-             <div id="changeLanguage">
-               <form action="/idp/extauth/language" method="POST">
-                 
-               </form>
-             </div>
-             -->
+
+            <c:if test="${not empty uiLanguages}">
+            <div id="languageSelect" class="pull-right">
+              <form action="/idp/extauth/start" method="POST">
+                <div style="min-height: 35px"> 
+                  <c:forEach items="${uiLanguages}" var="uiLang">
+                    <span style="width: 35px; margin-left: 10px; height: 30px">
+                      <input type="image" src="<c:url value='${uiLang.flagUrl}' />" alt="${uiLang.altText}" name="language" value="${uiLang.languageTag}">
+                    </span>
+                  </c:forEach>
+                </div>
+              </form>
+            </div>  
+            </c:if>
+             
             <div class='panel panel-default' style="border: 0; box-shadow: none">
               <div class='panel-body' style="min-height: 250px">
-                <h4 style="color: #204d74"><spring:message code="connector.ui.select-country.info.title" /></h4>
+                <!-- <h4 style="color: #204d74"><spring:message code="connector.ui.select-country.info.title" /></h4> -->
                 <c:if test="${not empty spInfo.defaultLogoUrl}">
                 <div class="controlled-img-div">
                   <img src="<c:out value="${spInfo.defaultLogoUrl}" />" />
@@ -70,7 +78,7 @@
               <button type="submit" class="btn btn-primary btn-md btn-block" name="action" value="authenticate"><spring:message code='connector.ui.button.authenticate' /></button>
               <br />
               <button type="submit" class="btn btn-default btn-sm" name="action" value="cancel"><spring:message code='connector.ui.button.cancel' /></button>
-              <input type="hidden" name="authenticationKey" value="${authenticationKey}" />
+              <!-- <input type="hidden" name="authenticationKey" value="${authenticationKey}" /> -->
             </form>
           </div>
                                    

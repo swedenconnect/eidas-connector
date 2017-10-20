@@ -131,6 +131,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   /** Helper bean for handling view of Sign message consent. */
   private SignMessageUiHandler signMessageUiHandler;
 
+  /** Helper bean for UI language select. */
+  private UiLanguageHandler uiLanguageHandler;
+
   /**
    * The first step for the connector authentication is to prompt the user for the eID country.
    */
@@ -141,6 +144,21 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       String key,
       ProfileRequestContext<?, ?> profileRequestContext) throws ExternalAuthenticationException, IOException {
 
+    return this.countrySelect(httpRequest, httpResponse, null);
+  }
+  
+  @RequestMapping(value = "/start", method = RequestMethod.POST)
+  public ModelAndView countrySelect(
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse,
+      @RequestParam(name = "language", required = false) String language) throws ExternalAuthenticationException, IOException {
+    
+    final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
+    
+    if (language != null) {
+      this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
+    }
+    
     // Selected country from earlier session.
     //
     final String selectedCountry = this.countrySelectionHandler.getSelectedCountry(httpRequest, true);
@@ -150,25 +168,22 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // If the request is made by a signature service and the selected country is known, we skip
     // the "select country" view.
     //
-    if (this.signMessageService.isSignatureServicePeer(profileRequestContext) && selectedCountry != null) {
+    if (this.signMessageService.isSignatureServicePeer(context) && selectedCountry != null) {
       log.info("Request is from a signature service. Will default to previously selected country: '{}'", selectedCountry);
       return this.processAuthentication(httpRequest, httpResponse, ACTION_AUTHENTICATE, selectedCountry);
     }
 
     ModelAndView modelAndView = new ModelAndView("country-select");
-    modelAndView.addObject("authenticationKey", key);
     modelAndView.addObject("countries", this.countrySelectionHandler.getSelectableCountries(this.metadataConfig
       .getProxyServiceCountryList()));
-    modelAndView.addObject("spInfo", this.countrySelectionHandler.getSpInfo(this.getPeerMetadata(profileRequestContext)));
+    modelAndView.addObject("spInfo", this.countrySelectionHandler.getSpInfo(this.getPeerMetadata(context)));
+    modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
 
     if (selectedCountry != null) {
       modelAndView.addObject("selectedCountry", this.countrySelectionHandler.getSelectedCountry(httpRequest, false));
     }
 
-    // LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(httpRequest);
-    // localeResolver.setLocale(httpRequest, httpResponse, Locale.forLanguageTag("en"));
-
-    return modelAndView;
+    return modelAndView;    
   }
 
   @RequestMapping(value = "/proxyauth", method = RequestMethod.POST)
@@ -362,7 +377,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       proxyContext.addAdditionalData("result", result);
       proxyContext.addAdditionalData("attributes", attributes);
 
-      return this.completeAuthentication(httpRequest, httpResponse, null);
+      return this.completeAuthentication(httpRequest, httpResponse, null, null);
     }
     catch (ResponseProcessingException e) {
       log.warn("Error while processing eIDAS response - {}", e.getMessage(), e);
@@ -383,11 +398,16 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
   @RequestMapping(value = "/proxyauth/complete", method = RequestMethod.POST)
   public ModelAndView completeAuthentication(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
-      @RequestParam(value = "action", required = false) String action) throws ExternalAuthenticationException, IOException {
+      @RequestParam(value = "action", required = false) String action,
+      @RequestParam(value = "language", required = false) String language) throws ExternalAuthenticationException, IOException {
 
     // Pick up the context from the session. If the request is stale, we'll get an exception.
     //
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
+    
+    if (language != null) {
+      this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
+    }
 
     ProxyIdpAuthenticationContext proxyContext = proxyIdpAuthenticationContextLookupStrategy.apply(context);
 
@@ -403,6 +423,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
       if (this.signMessageService.isSignatureServicePeer(context)) {
         ModelAndView modelAndView = new ModelAndView("sign-consent");
+        modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
         SignMessageContext signMessageContext = signMessageService.getSignMessageContext(context);
         if (signMessageContext != null && signMessageContext.isDisplayMessage()) {
           modelAndView.addObject("signMessageConsent", this.signMessageUiHandler.getSignMessageConsentModel(
@@ -424,7 +445,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       this.cancel(httpRequest, httpResponse);
       return null;
     }
-    
+
     boolean signMessageDisplayed = ACTION_OK.equals(action);
     try {
       String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(context, result.getAuthnContextClassUri(),
@@ -571,6 +592,16 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     this.signMessageUiHandler = signMessageUiHandler;
   }
 
+  /**
+   * Assigns the helper bean for handling user UI language.
+   * 
+   * @param uiLanguageHandler
+   *          the UI language handler
+   */
+  public void setUiLanguageHandler(UiLanguageHandler uiLanguageHandler) {
+    this.uiLanguageHandler = uiLanguageHandler;
+  }
+
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
@@ -582,6 +613,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     Assert.notNull(this.responseProcessor, "The property 'responseProcessor' must be assigned");
     Assert.notNull(this.countrySelectionHandler, "The property 'countrySelectionHandler' must be assigned");
     Assert.notNull(this.signMessageUiHandler, "The property 'signMessageUiHandler' must be assigned");
+    Assert.notNull(this.uiLanguageHandler, "The property 'uiLanguageHandler' must be assigned");
     Assert.notNull(this.attributeProcessingService, "The property 'attributeProcessingService' must be assigned");
   }
 
