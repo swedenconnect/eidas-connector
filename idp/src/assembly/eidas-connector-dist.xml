@@ -12,7 +12,7 @@
     <fileSet>
       <directory>${project.build.directory}/shibboleth</directory>
       <includes></includes>
-      <outputDirectory>eidas-connector</outputDirectory>
+      <outputDirectory>shibboleth</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/dependency/apache-tomcat-${tomcat.version}</directory>

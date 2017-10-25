@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <!--
-    Variables for simplifying logging configuration.
-    http://logback.qos.ch/manual/configuration.html#variableSubstitution
-    -->
-    
-    <variable name="idp.logfiles" value="${idp.home}/logs" />
+    <variable name="idp.logfiles" value="${idp.home}/logs" />    
     <variable name="idp.loghistory" value="180" />
     
     <!-- Much higher performance if you operate on DEBUG. -->
@@ -15,44 +10,27 @@
     <!-- Logging level shortcuts. -->
     <variable name="idp.loglevel.idp" value="INFO" />
     <variable name="idp.loglevel.ldap" value="WARN" />
-    <variable name="idp.loglevel.messages" value="INFO" />
-    <variable name="idp.loglevel.encryption" value="INFO" />
+    <variable name="idp.loglevel.messages" value="WARN" />
+    <variable name="idp.loglevel.encryption" value="WARN" />
     <variable name="idp.loglevel.opensaml" value="INFO" />
-    <variable name="idp.loglevel.props" value="INFO" />
-    
-    <!-- 
-    <variable name="idp.loglevel.litsec" value="%{idp.loglevel.se.litsec}" />
-    <variable name="idp.loglevel.elegnamnden.idp" value="INFO" />
-    <variable name="idp.loglevel.elegnamnden" value="INFO" />
-    -->
+    <variable name="idp.loglevel.props" value="WARN" />
     
     <!-- Don't turn these up unless you want a *lot* of noise. -->
     <variable name="idp.loglevel.spring" value="ERROR" />
     <variable name="idp.loglevel.container" value="ERROR" />
-    <variable name="idp.loglevel.xmlsec" value="INFO" />
+    <variable name="idp.loglevel.xmlsec" value="WARN" />
+    
+    <!-- ELN -->
+    <variable name="idp.loglevel.eln" value="INFO" />
+    <variable name="idp.loglevel.eidas" value="INFO" />     
 
-    <!--
-    If you want to use custom properties in this config file,
-    we load the main property file for you.
-    -->
     <variable file="${idp.home}/conf/idp.properties" />
+    
+    <include file="${idp.log-settings.file}" optional="true" />
     
     <!-- =========================================================== -->
     <!-- ============== Logging Categories and Levels ============== -->
-    <!-- =========================================================== -->
-    
-    <!-- 
-    <logger name="se.litsec" level="${idp.loglevel.litsec:-INFO}" />
-    <logger name="se.elegnamnden.eidas.idp" level="${idp.loglevel.elegnamnden.idp:-INFO}" />
-    <logger name="se.elegnamnden" level="${idp.loglevel.elegnamnden:-INFO}" />    
-    -->
-    <logger name="se.litsec" level="DEBUG" />
-    <logger name="se.elegnamnden.eidas.idp" level="TRACE" />
-    <logger name="se.elegnamnden" level="DEBUG" />    
-    
-        
-    <logger name="org.springframework.web" level="WARN" />
-    <logger name="org.springframework.webflow" level="WARN" />    
+    <!-- =========================================================== -->    
 
     <!-- Logs IdP, but not OpenSAML, messages -->
     <logger name="net.shibboleth.idp" level="${idp.loglevel.idp:-INFO}"/>
@@ -72,17 +50,21 @@
     <!-- Logs system properties during startup at DEBUG level -->
     <logger name="net.shibboleth.idp.log.LogbackLoggingService" level="${idp.loglevel.props:-INFO}" />
 
+    <!-- ELN & eIDAS -->
+    <logger name="se.elegnamnden.eidas" level="${idp.loglevel.eidas:-INFO}" />
+    <logger name="se.litsec.shibboleth.idp" level="${idp.loglevel.eidas:-INFO}" />
+    <logger name="se.litsec" level="${idp.loglevel.eln:-INFO}" />
+    <logger name="se.elegnamnden" level="${idp.loglevel.eln:-INFO}" />    
+
     <!-- Especially chatty. -->
-        
-    <logger name="net.shibboleth.idp.attribute.resolver.ad.impl.ContextDerivedAttributeDefinition" level="WARN" />
     <logger name="se.litsec.shibboleth.idp.attribute.resolver.SAML2AttributeNameToIdMapperService" level="INFO" />
-    
     <logger name="net.shibboleth.idp.saml.attribute.mapping" level="INFO" />
     <logger name="org.apache.xml.security" level="${idp.loglevel.xmlsec:-INFO}" />
     <logger name="org.springframework" level="${idp.loglevel.spring:-ERROR}"/>
     <logger name="org.apache.catalina" level="${idp.loglevel.container:-ERROR}"/>
     <logger name="org.eclipse.jetty" level="${idp.loglevel.container:-ERROR}"/>
-
+    <logger name="net.shibboleth.idp.attribute.resolver.ad.impl.ContextDerivedAttributeDefinition" level="WARN" />
+    <logger name="net.shibboleth.idp.attribute.resolver.spring.BaseResolverPluginParser" level="WARN" />
 
     <!-- =========================================================== -->
     <!-- ============== Low Level Details or Changes =============== -->
@@ -114,6 +96,26 @@
             <OnMatch>DENY</OnMatch>
         </filter>
     </appender>
+    
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <Pattern>%date{ISO8601} - %level [%logger:%line] - %msg%n%ex{short}</Pattern>
+        </encoder>
+
+        <!-- Ignore Velocity status page error. -->
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator>
+                <matcher>
+                    <Name>VelocityStatusMatcher</Name>
+                    <regex>ResourceManager : unable to find resource</regex>
+                </matcher>
+                <expression>VelocityStatusMatcher.matches(formattedMessage)</expression>
+            </evaluator>
+            <OnMatch>DENY</OnMatch>
+        </filter>
+    </appender>    
 
     <appender name="ASYNC_PROCESS" class="ch.qos.logback.classic.AsyncAppender">
         <appender-ref ref="IDP_PROCESS" />
@@ -166,6 +168,13 @@
         </encoder>
     </appender>
     
+    <appender name="IDP_AUDIT_SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+        <syslogHost>${idp.syslog.host:-localhost}</syslogHost>
+        <port>${idp.syslog.port:-514}</port>
+        <facility>${idp.syslog.facility:-AUTH}</facility>
+        <suffixPattern>%logger %msg</suffixPattern>
+    </appender>    
+    
     <!-- Consent audit log. -->
     <appender name="IDP_CONSENT_AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${idp.logfiles}/idp-consent-audit.log</File>
@@ -185,8 +194,15 @@
     <appender name="IDP_FTICKS" class="ch.qos.logback.classic.net.SyslogAppender">
         <syslogHost>${idp.fticks.loghost:-localhost}</syslogHost>
         <port>${idp.fticks.logport:-514}</port>
-        <facility>AUTH</facility>
+        <facility>${idp.fticks.facility:-AUTH}</facility>
         <suffixPattern>[%thread] %logger %msg</suffixPattern>
+    </appender>
+    
+    <appender name="NOOP_APPENDER" class="ch.qos.logback.core.ConsoleAppender">
+      <!-- Deny everything below OFF, that means deny everything -->
+      <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+        <level>OFF</level>
+      </filter>
     </appender>
 
     <logger name="Shibboleth-Audit" level="ALL">

@@ -70,6 +70,36 @@ EIDAS_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/eidas-metadata-validation-ce
 EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION=true
 
 #
+# Logging
+#
+IDP_LOG_SETTINGS_FILE=${IDP_HOME}/conf/logback-devel.xml
+IDP_FTICKS_FEDERATION_ID=eIDAS
+
+: ${IDP_SYSLOG_PORT:=514}
+
+IDP_AUDIT_APPENDER=IDP_AUDIT
+IDP_FTICKS_APPENDER=IDP_PROCESS
+IDP_SYSLOG_HOST_INT=localhost
+
+if [ -n "$IDP_SYSLOG_HOST" ]; then
+  IDP_AUDIT_APPENDER=IDP_AUDIT_SYSLOG
+  IDP_FTICKS_APPENDER=IDP_FTICKS
+  IDP_SYSLOG_HOST_INT=$IDP_SYSLOG_HOST
+fi
+
+IDP_FTICKS_SYSLOG_FACILITY=AUTH
+IDP_AUDIT_SYSLOG_FACILITY=AUTH
+
+IDP_FTICKS_ALGORITHM=SHA-256
+IDP_FTICKS_SALT=kdssdjas987ghdasn
+
+: ${IDP_LOG_CONSOLE:=false}
+IDP_PROCESS_APPENDER=IDP_PROCESS
+if [ "$IDP_LOG_CONSOLE" = true ]; then
+  IDP_PROCESS_APPENDER=CONSOLE
+fi
+
+#
 # Assign all values
 #
 export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
@@ -110,13 +140,30 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.baseurl=${IDP_BASE_URL} \
 -Didp.test.sp.metadata=$TEST_SP_METADATA \
 -Didp.service.metadata.resources=shibboleth.DevelMetadataResolverResources \
--Didp.litsec.loglevel=DEBUG"
+-Didp.log-settings.file=$IDP_LOG_SETTINGS_FILE \
+-Didp.audit.appender=$IDP_AUDIT_APPENDER \
+-Didp.syslog.host=$IDP_SYSLOG_HOST_INT \
+-Didp.syslog.facility=$IDP_AUDIT_SYSLOG_FACILITY \
+-Didp.syslog.port=$IDP_SYSLOG_PORT \
+-Didp.fticks.appender=$IDP_FTICKS_APPENDER \
+-Didp.fticks.loghost=$IDP_SYSLOG_HOST_INT \
+-Didp.fticks.facility=$IDP_FTICKS_SYSLOG_FACILITY \
+-Didp.fticks.algorithm=$IDP_FTICKS_ALGORITHM \
+-Didp.fticks.salt=$IDP_FTICKS_SALT \
+-Didp.consent.appender=NOOP_APPENDER \
+-Didp.process.appender=$IDP_PROCESS_APPENDER \
+"
+
+# F-TICKS
+
+if [ -n "$IDP_FTICKS_FEDERATION_ID" ]; then
+
+  export JAVA_OPTS="${JAVA_OPTS} \
+    -Didp.fticks.federation=${IDP_FTICKS_FEDERATION_ID}"
+fi
 
 #JVM settings should go in CATALINA_OPTS
 export CATALINA_OPTS="-Xms512m -Xmx1536m"
-
-echo "JAVA_OPTS=$JAVA_OPTS"
-echo "CATALINA_OPTS=$CATALINA_OPTS"
 
 export JPDA_ADDRESS=8788
 export JPDA_TRANSPORT=dt_socket

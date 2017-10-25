@@ -7,14 +7,6 @@ else
     exit 1
 fi
 
-# Source common config
-#
-for i in `\ls /etc/common-config/*.conf 2>/dev/null`
-do
-    echo sourcing $i
-    source $i
-done
-
 # Source this app's config
 #
 for i in `\ls /etc/${myapp}/env/*.conf 2>/dev/null`
@@ -106,10 +98,35 @@ IDP_METADATA_RESOURCES_BEAN=shibboleth.MetadataResolverResources
 : ${EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION:=false}
 
 #
-# Log levels
+# Log settings
 #
 
-# TODO
+# Log settings may be overridden by setting IDP_LOG_SETTINGS_FILE to point to a logback include file. 
+: ${IDP_LOG_SETTINGS_FILE:=""}
+
+: ${IDP_SYSLOG_PORT:=514}
+
+IDP_AUDIT_APPENDER=IDP_AUDIT
+IDP_FTICKS_APPENDER=IDP_PROCESS
+IDP_SYSLOG_HOST_INT=localhost
+
+if [ -n "$IDP_SYSLOG_HOST" ]; then
+  IDP_AUDIT_APPENDER=IDP_AUDIT_SYSLOG
+  IDP_FTICKS_APPENDER=IDP_FTICKS
+  IDP_SYSLOG_HOST_INT=$IDP_SYSLOG_HOST
+fi
+
+: ${IDP_FTICKS_SYSLOG_FACILITY:=AUTH}
+: ${IDP_AUDIT_SYSLOG_FACILITY:=AUTH}
+
+: ${IDP_FTICKS_ALGORITHM:=SHA-256}
+: ${IDP_FTICKS_SALT:=kdssdjas987ghdasn}
+
+: ${IDP_LOG_CONSOLE:=false}
+IDP_PROCESS_APPENDER=IDP_PROCESS
+if [ "$IDP_LOG_CONSOLE" = true ]; then
+  IDP_PROCESS_APPENDER=CONSOLE
+fi
 
 #
 # Devel only
@@ -170,7 +187,29 @@ export JAVA_OPTS="\
           -Didp.metadata.eidas.ignore-signature-validation=${EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION} \
           -Didp.test.sp.metadata=${DEVEL_TEST_SP_METADATA} \
           -Didp.service.metadata.resources=${IDP_METADATA_RESOURCES_BEAN} \
+          -Didp.log-settings.file=$IDP_LOG_SETTINGS_FILE \
+          -Didp.audit.appender=$IDP_AUDIT_APPENDER \
+          -Didp.syslog.host=$IDP_SYSLOG_HOST_INT \
+          -Didp.syslog.facility=$IDP_AUDIT_SYSLOG_FACILITY \
+          -Didp.syslog.port=$IDP_SYSLOG_PORT \
+          -Didp.fticks.appender=$IDP_FTICKS_APPENDER \
+          -Didp.fticks.loghost=$IDP_SYSLOG_HOST_INT \
+          -Didp.fticks.facility=$IDP_FTICKS_SYSLOG_FACILITY \
+          -Didp.fticks.logport=$IDP_SYSLOG_PORT \
+          -Didp.fticks.algorithm=$IDP_FTICKS_ALGORITHM \
+          -Didp.fticks.salt=$IDP_FTICKS_SALT \
+          -Didp.consent.appender=NOOP_APPENDER \
+          -Didp.warn.appender=NOOP_APPENDER \
+          -Didp.process.appender=$IDP_PROCESS_APPENDER \
           ${JAVA_OPTS}"
+
+
+# F-Ticks
+
+if [ -n "$IDP_FTICKS_FEDERATION_ID" ]; then
+  export JAVA_OPTS="${JAVA_OPTS} -Didp.fticks.federation=${IDP_FTICKS_FEDERATION_ID}"
+fi
+
 
 # TODO:
 #  We probably should set 

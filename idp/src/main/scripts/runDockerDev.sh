@@ -13,6 +13,8 @@ docker run -d --name eidas-connector --restart=always \
   -e EIDAS_METADATA_SERVICE_LIST_URL=file:///etc/eidas-connector/mock/metadataList.xml \
   -e EIDAS_METADATA_URL=file:///etc/eidas-connector/mock/metadata.xml \
   -e EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION=true \
+  -e IDP_LOG_SETTINGS_FILE=/opt/eidas-connector/shibboleth/conf/logback-devel \
+  -e IDP_LOG_CONSOLE=true \
   -v /tmp/eidas-connector:/var/log/eidas-connector \
   -v /private/etc/eidas-connector:/etc/eidas-connector \
   docker.eidastest.se:5000/eidas-connector-idp
