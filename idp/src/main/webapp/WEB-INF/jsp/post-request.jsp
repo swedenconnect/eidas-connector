@@ -10,8 +10,10 @@
       <input type="hidden" name="SAMLRequest" value="${SAMLRequest}"/>
       <c:if test="${not empty RelayState}" >
         <input type="hidden" name="RelayState" value="${RelayState}" />
-      </c:if>                
-      <input type="submit" value="Continue" />
+      </c:if>
+      <noscript>      
+        <input type="submit" value="Continue" />
+      </noscript>
     </form>
   </body>
 </html>
