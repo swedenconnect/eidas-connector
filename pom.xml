@@ -47,7 +47,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.8</java.version>
     
-    <shibboleth-base-package.version>1.0.0</shibboleth-base-package.version>
+    <shibboleth-base-package.version>1.0.1</shibboleth-base-package.version>
     <opensaml.eidas.version>1.0.3</opensaml.eidas.version>
   </properties>
 
