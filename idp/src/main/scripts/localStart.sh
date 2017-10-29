@@ -54,6 +54,8 @@ TEST_SP_METADATA=https://localhost:8443/svelegtest-sp/metadata/all-metadata.xml
 
 IDP_CREDENTIALS=$IDP_HOME/credentials
 
+IDP_PERSISTENT_ID_SALT=jkio98gbnmklop0Pr5WTvCgh
+
 #
 # Metadata
 #
@@ -119,6 +121,7 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.metadata.eidas.federation.url=${EIDAS_METADATA_URL} \
 -Didp.metadata.eidas.federation.validation-certificate=${EIDAS_METADATA_VALIDATION_CERT} \
 -Didp.metadata.eidas.ignore-signature-validation=${EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION} \
+-Didp.persistentId.salt.value=${IDP_PERSISTENT_ID_SALT} \
 -Didp.aa.url=$IDP_AA_URL \
 -Didp.sp.entityID=$SP_ENTITY_ID \
 -Didp.sp.signing.key=$IDP_CREDENTIALS/sp/sp-signing.key \
