@@ -70,6 +70,8 @@ IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFF
 
 : ${IDP_AA_URL:=https://eunode.eidastest.se/eidas-aa}
 
+: ${IDP_PERSISTENT_ID_SALT:=jkio98gbnmklop0Pr5WTvCgh}
+
 
 #
 # SP settings
@@ -178,6 +180,7 @@ export JAVA_OPTS="\
           -Didp.sp.metadata.signing.key=$SP_METADATA_SIGNING_KEY \
           -Didp.sp.metadata.signing.cert=$SP_METADATA_SIGNING_CERT \
           -Didp.aa.url=${IDP_AA_URL} \
+          -Didp.persistentId.salt.value=${IDP_PERSISTENT_ID_SALT} \
           -Didp.metadata.federation.url=${FEDERATION_METADATA_URL} \
           -Didp.metadata.federation.validation-certificate=${FEDERATION_METADATA_VALIDATION_CERT} \
           -Didp.metadata.eidas.service-list.url=${EIDAS_METADATA_SERVICE_LIST_URL} \
