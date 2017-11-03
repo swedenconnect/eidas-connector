@@ -58,13 +58,13 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
   private final Logger log = LoggerFactory.getLogger(AttributeProcessingServiceImpl.class);
 
   /** Mappings between eIDAS and Swedish eID attributes. */
-  private AttributeMappings attributeMappings;
+  protected AttributeMappings attributeMappings;
 
   /** The Attribute Authority service. */
-  private AttributeAuthority attributeAuthority;
+  protected AttributeAuthority attributeAuthority;
 
   /** Function that finds an attribute with a given name from a list of attributes. */
-  private static BiFunction<String, List<Attribute>, Attribute> getAttribute = (name, list) -> {
+  protected static BiFunction<String, List<Attribute>, Attribute> getAttribute = (name, list) -> {
     return list.stream().filter(a -> name.equals(a.getName())).findFirst().orElse(null);
   };
   
