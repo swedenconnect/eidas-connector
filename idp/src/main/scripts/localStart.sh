@@ -12,8 +12,8 @@ TOMCAT_HOME=$BASE_DIR_WIN/target/dependency/apache-tomcat-8.5.9
 CATALINA_HOME=$TOMCAT_HOME
 
 # Home
-IDP_ENV_FLAG=dev
 IDP_HOME=$BASE_DIR_WIN/target/shibboleth
+CREDENTIALS_BASE=$BASE_DIR_WIN/target/credentials
 
 #
 # Set up the IdP server URL
@@ -43,7 +43,7 @@ TOMCAT_TLS_PASSWORD=secret
 TOMCAT_TLS_ALIAS=localhost
 
 #
-# IdP settings
+# IdP and SP settings
 #
 IDP_ENTITY_ID=https://eunode.eidastest.se/idp2
 SP_ENTITY_ID=https://eunode.eidastest.se/connector-sp
@@ -52,7 +52,8 @@ IDP_AA_URL=https://eunode.eidastest.se/eidas-aa
 
 TEST_SP_METADATA=https://localhost:8443/svelegtest-sp/metadata/all-metadata.xml
 
-IDP_CREDENTIALS=$IDP_HOME/credentials
+IDP_CREDENTIALS=$CREDENTIALS_BASE
+SP_CREDENTIALS=$IDP_CREDENTIALS/sp
 
 IDP_PERSISTENT_ID_SALT=jkio98gbnmklop0Pr5WTvCgh
 
@@ -126,12 +127,12 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.metadata.cacheDuration=3600000 \
 -Didp.aa.url=$IDP_AA_URL \
 -Didp.sp.entityID=$SP_ENTITY_ID \
--Didp.sp.signing.key=$IDP_CREDENTIALS/sp/sp-signing.key \
--Didp.sp.signing.cert=$IDP_CREDENTIALS/sp/sp-signing.crt \
--Didp.sp.encryption.key=$IDP_CREDENTIALS/sp/sp-signing.key \
--Didp.sp.encryption.cert=$IDP_CREDENTIALS/sp/sp-signing.crt \
--Didp.sp.metadata.signing.key=$IDP_CREDENTIALS/metadata-signing.key \
--Didp.sp.metadata.signing.cert=$IDP_CREDENTIALS/metadata-signing.crt \
+-Didp.sp.signing.key=$SP_CREDENTIALS/sp-signing.key \
+-Didp.sp.signing.cert=$SP_CREDENTIALS/sp-signing.crt \
+-Didp.sp.encryption.key=$SP_CREDENTIALS/sp-encryption.key \
+-Didp.sp.encryption.cert=$SP_CREDENTIALS/sp-encryption.crt \
+-Didp.sp.metadata.signing.key=$SP_CREDENTIALS/metadata-signing.key \
+-Didp.sp.metadata.signing.cert=$SP_CREDENTIALS/metadata-signing.crt \
 -Didp.sp.metadata.validity=10800 \
 -Didp.sp.metadata.cacheDuration=3600000 \
 -Didp.home=$IDP_HOME \

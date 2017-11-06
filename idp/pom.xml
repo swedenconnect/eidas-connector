@@ -394,6 +394,11 @@
                 <echo>Copy this project lib</echo>
                 <!-- TODO: Check if name is correct -->                 
                 <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar" tofile="${project.build.directory}/shibboleth/edit-webapp/WEB-INF/lib/${project.build.finalName}.jar"/>
+                
+                <echo>Copy test credentials</echo>
+                <copy todir="${project.build.directory}/credentials" overwrite="true">
+                  <fileset dir="${project.basedir}/credentials" />
+                </copy>
 
                 <echo>Running build on Shibboleth installation</echo>
                 <exec dir="${project.build.directory}/shibboleth/bin/" executable="cmd" osfamily="windows">
@@ -412,6 +417,9 @@
                 </delete>
                 <delete>
                   <fileset dir="${project.build.directory}/shibboleth/logs/" includes="*.*" />
+                </delete>
+                <delete>
+                  <fileset dir="${project.build.directory}/shibboleth/credentials/" includes="*.*" />
                 </delete>
 
                 <echo>Installing new war into tomcat</echo>

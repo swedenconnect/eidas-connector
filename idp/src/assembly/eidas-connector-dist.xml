@@ -19,6 +19,10 @@
       <includes></includes>
       <outputDirectory>tomcat</outputDirectory>
     </fileSet>
-    <!-- Scripts and documentation -->
+    <fileSet>
+      <directory>${project.build.directory}/credentials</directory>
+      <includes></includes>
+      <outputDirectory>test-credentials</outputDirectory>
+    </fileSet>    
   </fileSets>
 </assembly>
