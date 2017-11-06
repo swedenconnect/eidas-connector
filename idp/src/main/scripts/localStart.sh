@@ -122,6 +122,8 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.metadata.eidas.federation.validation-certificate=${EIDAS_METADATA_VALIDATION_CERT} \
 -Didp.metadata.eidas.ignore-signature-validation=${EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION} \
 -Didp.persistentId.salt.value=${IDP_PERSISTENT_ID_SALT} \
+-Didp.metadata.validity=10800 \
+-Didp.metadata.cacheDuration=3600000 \
 -Didp.aa.url=$IDP_AA_URL \
 -Didp.sp.entityID=$SP_ENTITY_ID \
 -Didp.sp.signing.key=$IDP_CREDENTIALS/sp/sp-signing.key \
@@ -130,6 +132,8 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.sp.encryption.cert=$IDP_CREDENTIALS/sp/sp-signing.crt \
 -Didp.sp.metadata.signing.key=$IDP_CREDENTIALS/metadata-signing.key \
 -Didp.sp.metadata.signing.cert=$IDP_CREDENTIALS/metadata-signing.crt \
+-Didp.sp.metadata.validity=10800 \
+-Didp.sp.metadata.cacheDuration=3600000 \
 -Didp.home=$IDP_HOME \
 -Didp.envflag=dev \
 -Djava.net.preferIPv4Stack=true \

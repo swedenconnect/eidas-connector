@@ -25,6 +25,8 @@
     <!-- entityID -->
     <property name="entityID" value="%{idp.sp.entityID}" />
     
+    <property name="cacheDuration" value="%{idp.sp.metadata.cacheDuration:3600000}" />
+    
     <property name="wantAssertionsSigned" value="%{idp.sp.metadata.wantAssertionsSigned}" />
     <property name="authnRequestsSigned" value="%{idp.sp.metadata.authnRequestsSigned}" />
 
@@ -63,12 +65,17 @@
     p:certificateResource="%{idp.sp.metadata.signing.cert}"
     p:entityId="%{idp.sp.entityID}" />
     
+  <bean id="eidas.idp.sp.metadata.Validity" class="java.time.Duration" factory-method="ofMinutes">
+    <constructor-arg value="%{idp.sp.metadata.validity:10800}" />
+  </bean>    
+    
   <!--
     The container wrapping the metadata and is used for publishing. 
    -->
   <bean id="eidas.SpMetadataContainer" class="se.litsec.opensaml.saml2.metadata.EntityDescriptorContainer" scope="singleton"
     c:descriptor-ref="eidas.SpMetadata"
-    c:signatureCredentials-ref="eidas.SpMetadataSigningCredential" />
+    c:signatureCredentials-ref="eidas.SpMetadataSigningCredential" 
+    p:validity-ref="eidas.idp.sp.metadata.Validity" />
 
     
 </beans>
