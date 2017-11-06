@@ -72,6 +72,8 @@ IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFF
 
 : ${IDP_PERSISTENT_ID_SALT:=jkio98gbnmklop0Pr5WTvCgh}
 
+: ${IDP_METADATA_VALIDITY_MINUTES:=10800}
+: ${IDP_METADATA_CACHEDURATION_MILLIS:=3600000}
 
 #
 # SP settings
@@ -85,6 +87,9 @@ IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFF
 : ${SP_ENCRYPTION_CERT:=$SP_CREDENTIALS/sp-signing.crt}
 : ${SP_METADATA_SIGNING_KEY:=$IDP_CREDENTIALS/metadata-signing.key}
 : ${SP_METADATA_SIGNING_CERT:=$IDP_CREDENTIALS/metadata-signing.crt}
+
+: ${SP_METADATA_VALIDITY_MINUTES:=10800}
+: ${SP_METADATA_CACHEDURATION_MILLIS:=3600000}
 
 #
 # Metadata
@@ -172,6 +177,8 @@ export JAVA_OPTS="\
           -Didp.encryption.cert=$IDP_ENCRYPTION_CERT \
           -Didp.metadata.signing.key=$IDP_METADATA_SIGNING_KEY \
           -Didp.metadata.signing.cert=$IDP_METADATA_SIGNING_CERT \
+          -Didp.metadata.validity=$IDP_METADATA_VALIDITY_MINUTES \
+          -Didp.metadata.cacheDuration=$IDP_METADATA_CACHEDURATION_MILLIS \
           -Didp.sp.entityID=$SP_ENTITY_ID \
           -Didp.sp.signing.key=$SP_SIGNING_KEY \
           -Didp.sp.signing.cert=$SP_SIGNING_CERT \
@@ -179,6 +186,8 @@ export JAVA_OPTS="\
           -Didp.sp.encryption.cert=$SP_ENCRYPTION_CERT \
           -Didp.sp.metadata.signing.key=$SP_METADATA_SIGNING_KEY \
           -Didp.sp.metadata.signing.cert=$SP_METADATA_SIGNING_CERT \
+          -Didp.sp.metadata.validity=$SP_METADATA_VALIDITY_MINUTES \
+          -Didp.sp.metadata.cacheDuration=$SP_METADATA_CACHEDURATION_MILLIS \
           -Didp.aa.url=${IDP_AA_URL} \
           -Didp.persistentId.salt.value=${IDP_PERSISTENT_ID_SALT} \
           -Didp.metadata.federation.url=${FEDERATION_METADATA_URL} \

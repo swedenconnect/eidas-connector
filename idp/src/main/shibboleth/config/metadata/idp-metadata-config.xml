@@ -24,6 +24,8 @@
     
     <!-- entityID -->
     <property name="entityID" value="%{idp.entityID}" />
+    
+    <property name="cacheDuration" value="%{idp.metadata.cacheDuration:3600000}" />
 
     <!-- 
       The "urn:oasis:names:tc:SAML:attribute:assurance-certification" extension holding the authentication context URI:s 
@@ -111,6 +113,10 @@
     
   </bean>
   
+  <bean id="sweid.idp.metadata.Validity" class="java.time.Duration" factory-method="ofMinutes">
+    <constructor-arg value="%{idp.metadata.validity:10800}" />
+  </bean>
+  
   <!--
     The credential used to sign the metadata. 
    -->
@@ -124,7 +130,8 @@
    -->
   <bean id="sweid.IdpMetadataContainer" class="se.litsec.opensaml.saml2.metadata.EntityDescriptorContainer" scope="singleton"
     c:descriptor-ref="sweid.IdpMetadata"
-    c:signatureCredentials-ref="sweid.MetadataSigningCredential" />
+    c:signatureCredentials-ref="sweid.MetadataSigningCredential" 
+    p:validity-ref="sweid.idp.metadata.Validity" />
     
   <import resource="sp-metadata-config.xml "/>
     
