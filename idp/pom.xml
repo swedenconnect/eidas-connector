@@ -49,6 +49,9 @@
   <properties>  
     <tomcat.version>8.5.9</tomcat.version>
     <docker.image.prefix>docker.eidastest.se:5000</docker.image.prefix>
+    
+    <!-- <mockito.version>2.11.0</mockito.version>-->
+    <mockito.version>1.9.5</mockito.version>
   </properties>
 
   <dependencies>
@@ -211,6 +214,13 @@
       <artifactId>spring-test</artifactId>
       <scope>test</scope>
     </dependency>
+    
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>    
 
   </dependencies>
 

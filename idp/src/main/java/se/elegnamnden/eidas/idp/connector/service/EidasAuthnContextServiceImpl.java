@@ -209,7 +209,21 @@ public class EidasAuthnContextServiceImpl extends ProxyIdpAuthnContextServiceImp
       if (nationalUri == null) {
         return false;
       }
-      return assuranceURIs.contains(nationalUri);
+      EidasLoaEnum loaUri = EidasLoaEnum.parse(nationalUri);
+      if (loaUri == null) {
+        return false;
+      }
+      
+      for (String assuranceURI : assuranceURIs) {
+        EidasLoaEnum assuranceLoa = EidasLoaEnum.parse(assuranceURI);
+        if (assuranceLoa == null) {
+          continue;
+        }
+        if (eidasLoAbyOrder.compare(loaUri, assuranceLoa) <= 0) {
+          return true;
+        }
+      }
+      return false;
     }
     catch (ExternalAutenticationErrorCodeException e) {
       // Will fail later.
