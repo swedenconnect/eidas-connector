@@ -57,7 +57,7 @@ IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFF
 #
 : ${IDP_ENTITY_ID:=https://eunode.eidastest.se/eidas}
 
-: ${IDP_CREDENTIALS:=$IDP_HOME/credentials}
+: ${IDP_CREDENTIALS:=/etc/eidas-connector/credentials}
 : ${IDP_SEALER_STORE_RESOURCE:=$IDP_CREDENTIALS/sealer.jks}
 : ${IDP_SEALER_PASSWORD:=3eifrUFrujUefIo8FJN4}
 : ${IDP_SEALER_VERSION_RESOURCES:=$IDP_CREDENTIALS/sealer.kver}
@@ -75,21 +75,77 @@ IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFF
 : ${IDP_METADATA_VALIDITY_MINUTES:=10800}
 : ${IDP_METADATA_CACHEDURATION_MILLIS:=3600000}
 
+# Verification that all IdP credentials are in place ...
+if [ ! -f "$IDP_SEALER_STORE_RESOURCE" ]; then
+	echo "$IDP_SEALER_STORE_RESOURCE does not exist" >&2
+    exit 1
+fi
+if [ ! -f "$IDP_SIGNING_KEY" ]; then
+	echo "IdP signature key - $IDP_SIGNING_KEY - does not exist" >&2
+    exit 1
+fi
+if [ ! -f "$IDP_SIGNING_CERT" ]; then
+	echo "IdP signature certificate - $IDP_SIGNING_CERT - does not exist" >&2
+    exit 1
+fi
+if [ ! -f "$IDP_ENCRYPTION_KEY" ]; then
+	echo "IdP encryption key - $IDP_ENCRYPTION_KEY - does not exist" >&2
+    exit 1
+fi
+if [ ! -f "$IDP_ENCRYPTION_CERT" ]; then
+	echo "IdP encryption certificate - $IDP_ENCRYPTION_CERT - does not exist" >&2
+    exit 1
+fi
+if [ ! -f "$IDP_METADATA_SIGNING_KEY" ]; then
+	echo "IdP metadata signing key - $IDP_METADATA_SIGNING_KEY - does not exist" >&2
+    exit 1
+fi
+if [ ! -f "$IDP_METADATA_SIGNING_CERT" ]; then
+	echo "IdP metadata signing certificate - $IDP_METADATA_SIGNING_CERT - does not exist" >&2
+    exit 1
+fi
+
 #
 # SP settings
 #
 : ${SP_ENTITY_ID:=https://eunode.eidastest.se/idp/metadata/sp}
 
-: ${SP_CREDENTIALS:=$IDP_HOME/credentials/sp}
+: ${SP_CREDENTIALS:=$IDP_CREDENTIALS/sp}
 : ${SP_SIGNING_KEY:=$SP_CREDENTIALS/sp-signing.key}
 : ${SP_SIGNING_CERT:=$SP_CREDENTIALS/sp-signing.crt}
-: ${SP_ENCRYPTION_KEY:=$SP_CREDENTIALS/sp-signing.key}
-: ${SP_ENCRYPTION_CERT:=$SP_CREDENTIALS/sp-signing.crt}
-: ${SP_METADATA_SIGNING_KEY:=$IDP_CREDENTIALS/metadata-signing.key}
-: ${SP_METADATA_SIGNING_CERT:=$IDP_CREDENTIALS/metadata-signing.crt}
+: ${SP_ENCRYPTION_KEY:=$SP_CREDENTIALS/sp-encryption.key}
+: ${SP_ENCRYPTION_CERT:=$SP_CREDENTIALS/sp-encryption.crt}
+: ${SP_METADATA_SIGNING_KEY:=$SP_CREDENTIALS/metadata-signing.key}
+: ${SP_METADATA_SIGNING_CERT:=$SP_CREDENTIALS/metadata-signing.crt}
 
 : ${SP_METADATA_VALIDITY_MINUTES:=10800}
 : ${SP_METADATA_CACHEDURATION_MILLIS:=3600000}
+
+# Verification that all SP credentials are in place ...
+if [ ! -f "$SP_SIGNING_KEY" ]; then
+	echo "SP signature key - $SP_SIGNING_KEY - does not exist" >&2
+    exit 1
+fi
+if [ ! -f "$SP_SIGNING_CERT" ]; then
+	echo "SP signature certificate - $SP_SIGNING_CERT - does not exist" >&2
+    exit 1
+fi
+if [ ! -f "$SP_ENCRYPTION_KEY" ]; then
+	echo "SP encryption key - $SP_ENCRYPTION_KEY - does not exist" >&2
+    exit 1
+fi
+if [ ! -f "$SP_ENCRYPTION_CERT" ]; then
+	echo "SP encryption certificate - $SP_ENCRYPTION_CERT - does not exist" >&2
+    exit 1
+fi
+if [ ! -f "$SP_METADATA_SIGNING_KEY" ]; then
+	echo "SP metadata signing key - $SP_METADATA_SIGNING_KEY - does not exist" >&2
+    exit 1
+fi
+if [ ! -f "$SP_METADATA_SIGNING_CERT" ]; then
+	echo "SP metadata signing certificate - $SP_METADATA_SIGNING_CERT - does not exist" >&2
+    exit 1
+fi
 
 #
 # Metadata
