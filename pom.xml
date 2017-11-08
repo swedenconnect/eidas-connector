@@ -48,7 +48,7 @@
     <java.version>1.8</java.version>
     
     <shibboleth-base-package.version>1.0.1</shibboleth-base-package.version>
-    <opensaml.eidas.version>1.0.3</opensaml.eidas.version>
+    <opensaml.eidas.version>1.0.4</opensaml.eidas.version>
   </properties>
 
   <repositories>
