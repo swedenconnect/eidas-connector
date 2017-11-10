@@ -8,7 +8,7 @@ SCRIPT_DIR_WIN=`echo $SCRIPT_DIR | sed 's/\/cygdrive\/c/c:/g'`
 BASE_DIR_WIN=`echo $SCRIPT_DIR_WIN | sed 's/\/src\/main\/scripts//g'`
 
 # Tomcat
-TOMCAT_HOME=$BASE_DIR_WIN/target/dependency/apache-tomcat-8.5.9
+TOMCAT_HOME=$BASE_DIR_WIN/target/dependency/apache-tomcat-8.5.23
 CATALINA_HOME=$TOMCAT_HOME
 
 # Home
@@ -38,9 +38,16 @@ IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFF
 #
 TOMCAT_TLS_PORT=9200
 TOMCAT_HOSTNAME=$IDP_SERVER_HOSTNAME
-TOMCAT_TLS_KEYSTORE=$TOMCAT_HOME/conf/tls-test-localhost.jks
-TOMCAT_TLS_PASSWORD=secret
-TOMCAT_TLS_ALIAS=localhost
+
+TOMCAT_TLS_SERVER_KEY=$CREDENTIALS_BASE/tomcat/tomcat-key.pem
+TOMCAT_TLS_SERVER_KEY_TYPE=RSA
+TOMCAT_TLS_SERVER_CERTIFICATE=$CREDENTIALS_BASE/tomcat/tomcat-cert.pem
+TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=$CREDENTIALS_BASE/tomcat/tomcat-chain.pem 
+
+if [ ! -f "$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN" ]; then
+  echo "$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN does not exist, using dummy chain ..." >&2
+  TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=$TOMCAT_HOME/conf/dummy-chain.pem
+fi
 
 #
 # IdP and SP settings
@@ -139,11 +146,12 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.envflag=dev \
 -Djava.net.preferIPv4Stack=true \
 -Dtomcat.hostname=$TOMCAT_HOSTNAME \
--Dtomcat.tls.keystore=$TOMCAT_TLS_KEYSTORE \
--Dtomcat.tls.password=secret \
--Dtomcat.tls.alias=localhost \
 -Dtomcat.tls.port=${TOMCAT_TLS_PORT} \
 -Dtomcat.ajp.port=8099 \
+-Dtomcat.tls.server-key=$TOMCAT_TLS_SERVER_KEY \
+-Dtomcat.tls.server-key-type=$TOMCAT_TLS_SERVER_KEY_TYPE \
+-Dtomcat.tls.server-certificate=$TOMCAT_TLS_SERVER_CERTIFICATE \
+-Dtomcat.tls.certificate-chain=$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN \
 -Didp.hostname=${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFFIX} \
 -Didp.baseurl=${IDP_BASE_URL} \
 -Didp.test.sp.metadata=$TEST_SP_METADATA \

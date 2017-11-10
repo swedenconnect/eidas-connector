@@ -47,10 +47,9 @@
   </developers>
   
   <properties>  
-    <tomcat.version>8.5.9</tomcat.version>
+    <tomcat.version>8.5.23</tomcat.version>
     <docker.image.prefix>docker.eidastest.se:5000</docker.image.prefix>
     
-    <!-- <mockito.version>2.11.0</mockito.version>-->
     <mockito.version>1.9.5</mockito.version>
   </properties>
 
