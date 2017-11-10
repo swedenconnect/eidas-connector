@@ -99,10 +99,14 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
 
     // Build request extensions with the SP type and requested attributes.
     Extensions extensions = ObjectUtils.createSamlObject(Extensions.class);
-
-    SPType spType = ObjectUtils.createSamlObject(SPType.class);
-    spType.setType(SPTypeEnumeration.PUBLIC);
-    extensions.getUnknownXMLObjects().add(spType);
+    /*
+     * There is a bug with comparison of SPType in EU node version 1.2
+     * A workaround is to remove SPTYpe from requests.
+     * The original code for inclusion of SPType below is commented away
+     */
+    // SPType spType = ObjectUtils.createSamlObject(SPType.class);
+    // spType.setType(SPTypeEnumeration.PUBLIC);
+    // extensions.getUnknownXMLObjects().add(spType);
 
     extensions.getUnknownXMLObjects().add(input.getRequestedAttributes());
 
