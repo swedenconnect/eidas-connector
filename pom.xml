@@ -49,6 +49,8 @@
     
     <shibboleth-base-package.version>1.0.1</shibboleth-base-package.version>
     <opensaml.eidas.version>1.0.4</opensaml.eidas.version>
+    
+    <lombok.version>1.16.8</lombok.version>
   </properties>
 
   <repositories>
@@ -138,7 +140,13 @@
         <artifactId>eidas-mappings</artifactId>
         <version>1.0.0</version>
         <scope>compile</scope>
-      </dependency>      
+      </dependency>
+      
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
+      </dependency>
 
     </dependencies>
 

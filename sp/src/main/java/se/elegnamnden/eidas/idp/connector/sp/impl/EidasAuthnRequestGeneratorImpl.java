@@ -22,7 +22,6 @@ package se.elegnamnden.eidas.idp.connector.sp.impl;
 
 import org.joda.time.DateTime;
 import org.opensaml.core.xml.Namespace;
-import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Extensions;
@@ -58,14 +57,11 @@ import se.litsec.opensaml.utils.ObjectUtils;
 public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerator<EidasAuthnRequestGeneratorInput> implements
     EidasAuthnRequestGenerator, InitializingBean {
 
-  /** The default preferred binding to use when sending the request. */
-  public static final String DEFAULT_PREFERRED_BINDING = SAMLConstants.SAML2_POST_BINDING_URI;
-
   /** Logging instance. */
   private final Logger log = LoggerFactory.getLogger(EidasAuthnRequestGeneratorImpl.class);
 
-  /** The preferred binding to use when sending the request. */
-  private String preferredBinding;
+  /** The configuration object for how to create AuthnRequest objects. */
+  private AuthnRequestGeneratorConfig config;
 
   /**
    * Constructor.
@@ -99,20 +95,17 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
 
     // Build request extensions with the SP type and requested attributes.
     Extensions extensions = ObjectUtils.createSamlObject(Extensions.class);
-    /*
-     * There is a bug with comparison of SPType in EU node version 1.2
-     * A workaround is to remove SPTYpe from requests.
-     * The original code for inclusion of SPType below is commented away
-     */
-    // SPType spType = ObjectUtils.createSamlObject(SPType.class);
-    // spType.setType(SPTypeEnumeration.PUBLIC);
-    // extensions.getUnknownXMLObjects().add(spType);
-
+    
+    if (config.isIncludeSpType()) {
+      SPType spType = ObjectUtils.createSamlObject(SPType.class);
+      spType.setType(SPTypeEnumeration.PUBLIC);
+      extensions.getUnknownXMLObjects().add(spType);      
+    }
     extensions.getUnknownXMLObjects().add(input.getRequestedAttributes());
 
     // TODO: We should ensure that the NameIDFormat is accepted by the IdP.
     // TODO: We should also make NameIDFormat configurable.
-    
+
     AuthnRequest authnRequest = builder
       .id(this.generateID())
       .destination(serviceUrl.getLocation())
@@ -134,26 +127,26 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
     if (log.isTraceEnabled()) {
       log.trace("Connector SP sending AuthnRequest: {}", ObjectUtils.toStringSafe(authnRequest));
     }
-    
+
     // TODO: We should make sure that we use an algorithm that is accepted by the recipient.
 
     return this.buildRequestHttpObject(authnRequest, input, serviceUrl.getBinding(), serviceUrl.getLocation());
   }
 
-  /**
-   * Assigns the preferred binding to use when sending the request.
-   * 
-   * @param preferredBinding
-   *          the preferred binding
-   */
-  public void setPreferredBinding(String preferredBinding) {
-    this.preferredBinding = preferredBinding;
-  }
-
   /** {@inheritDoc} */
   @Override
   protected String getDefaultBinding() {
-    return this.preferredBinding;
+    return this.config.getPreferredBinding();
+  }
+
+  /**
+   * Assigns the configuration object for this generator.
+   * 
+   * @param config
+   *          the config object
+   */
+  public void setConfig(AuthnRequestGeneratorConfig config) {
+    this.config = config;
   }
 
   /** {@inheritDoc} */
@@ -161,15 +154,8 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
   public void afterPropertiesSet() throws Exception {
     super.afterPropertiesSet();
     Assert.notNull(this.getSigningCredentials(), "Property 'signingCredentials' must be assigned");
-
-    if (this.preferredBinding == null) {
-      this.preferredBinding = DEFAULT_PREFERRED_BINDING;
-    }
-    else {
-      Assert.isTrue(isValidBinding.test(this.preferredBinding),
-        String.format("Property 'preferredBinding' must be '%s' or '%s'", SAMLConstants.SAML2_POST_BINDING_URI,
-          SAMLConstants.SAML2_REDIRECT_BINDING_URI));
-    }
+    
+    Assert.notNull(this.config, "Property 'config' must be assigned");
   }
 
 }
