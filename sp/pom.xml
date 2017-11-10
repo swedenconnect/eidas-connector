@@ -110,6 +110,11 @@
       <groupId>net.shibboleth.utilities</groupId>
       <artifactId>java-support</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>    
 
     <dependency>
       <groupId>org.slf4j</groupId>

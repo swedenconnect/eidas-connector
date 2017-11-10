@@ -74,7 +74,13 @@
   <bean id="eidas.AuthnRequestGenerator" class="se.elegnamnden.eidas.idp.connector.sp.impl.EidasAuthnRequestGeneratorImpl" scope="singleton"
     c:entityID="%{idp.sp.entityID}" 
     p:name="%{idp.sp.name}"
-    p:signingCredentials-ref="eidas.SpSigningCredential" />
+    p:signingCredentials-ref="eidas.SpSigningCredential">
+    <property name="config">
+      <bean class="se.elegnamnden.eidas.idp.connector.sp.impl.AuthnRequestGeneratorConfig"
+        p:includeSpType="%{idp.sp.request.include-sptype:false}" 
+        p:preferredBinding="%{idp.sp.request.preferred-binding:urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST}" />
+    </property>
+  </bean>
     
   <bean id="eidas.ResponseProcessor" class="se.elegnamnden.eidas.idp.connector.sp.impl.ResponseProcessorImpl" scope="singleton"
     p:decrypter-ref="eidas.Decrypter"
