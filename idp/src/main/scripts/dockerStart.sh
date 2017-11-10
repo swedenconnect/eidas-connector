@@ -44,13 +44,15 @@ IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFF
 : ${TOMCAT_TLS_PORT:=8443}
 : ${TOMCAT_AJP_PORT:=8009}
 : ${TOMCAT_HOSTNAME:=localhost}
-: ${TOMCAT_TLS_KEYSTORE:=$TOMCAT_HOME/conf/tls-test-localhost.jks}
-: ${TOMCAT_TLS_PASSWORD:=secret}
-: ${TOMCAT_TLS_ALIAS:=localhost}
 
-# : ${SSL_KEYSTORE_FILE:=`echo $IDP_SSL_KEYSTORE |sed s/file://`}
-# : ${IDP_SSL_PASSWORD:=secret}
-# : ${IDP_SSL_KEY_ALIAS:=ssl}
+: ${TOMCAT_TLS_SERVER_KEY:=/etc/eidas-connector/credentials/tomcat/tomcat-key.pem}
+: ${TOMCAT_TLS_SERVER_CERTIFICATE:=/etc/eidas-connector/credentials/tomcat/tomcat-cert.pem}
+: ${TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN:=/etc/eidas-connector/credentials/tomcat/tomcat-chain.pem}
+: ${TOMCAT_TLS_SERVER_KEY_TYPE:=RSA} 
+
+if [ ! -f "$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN" ]; then
+  TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=$TOMCAT_HOME/conf/dummy-chain.pem
+fi
 
 #
 # IdP settings
@@ -82,27 +84,27 @@ if [ ! -f "$IDP_SEALER_STORE_RESOURCE" ]; then
 fi
 if [ ! -f "$IDP_SIGNING_KEY" ]; then
 	echo "IdP signature key - $IDP_SIGNING_KEY - does not exist" >&2
-    exit 1
+  exit 1
 fi
 if [ ! -f "$IDP_SIGNING_CERT" ]; then
 	echo "IdP signature certificate - $IDP_SIGNING_CERT - does not exist" >&2
-    exit 1
+  exit 1
 fi
 if [ ! -f "$IDP_ENCRYPTION_KEY" ]; then
 	echo "IdP encryption key - $IDP_ENCRYPTION_KEY - does not exist" >&2
-    exit 1
+  exit 1
 fi
 if [ ! -f "$IDP_ENCRYPTION_CERT" ]; then
 	echo "IdP encryption certificate - $IDP_ENCRYPTION_CERT - does not exist" >&2
-    exit 1
+  exit 1
 fi
 if [ ! -f "$IDP_METADATA_SIGNING_KEY" ]; then
 	echo "IdP metadata signing key - $IDP_METADATA_SIGNING_KEY - does not exist" >&2
-    exit 1
+  exit 1
 fi
 if [ ! -f "$IDP_METADATA_SIGNING_CERT" ]; then
 	echo "IdP metadata signing certificate - $IDP_METADATA_SIGNING_CERT - does not exist" >&2
-    exit 1
+  exit 1
 fi
 
 #
@@ -124,27 +126,27 @@ fi
 # Verification that all SP credentials are in place ...
 if [ ! -f "$SP_SIGNING_KEY" ]; then
 	echo "SP signature key - $SP_SIGNING_KEY - does not exist" >&2
-    exit 1
+  exit 1
 fi
 if [ ! -f "$SP_SIGNING_CERT" ]; then
 	echo "SP signature certificate - $SP_SIGNING_CERT - does not exist" >&2
-    exit 1
+  exit 1
 fi
 if [ ! -f "$SP_ENCRYPTION_KEY" ]; then
 	echo "SP encryption key - $SP_ENCRYPTION_KEY - does not exist" >&2
-    exit 1
+  exit 1
 fi
 if [ ! -f "$SP_ENCRYPTION_CERT" ]; then
 	echo "SP encryption certificate - $SP_ENCRYPTION_CERT - does not exist" >&2
-    exit 1
+  exit 1
 fi
 if [ ! -f "$SP_METADATA_SIGNING_KEY" ]; then
 	echo "SP metadata signing key - $SP_METADATA_SIGNING_KEY - does not exist" >&2
-    exit 1
+  exit 1
 fi
 if [ ! -f "$SP_METADATA_SIGNING_CERT" ]; then
 	echo "SP metadata signing certificate - $SP_METADATA_SIGNING_CERT - does not exist" >&2
-    exit 1
+  exit 1
 fi
 
 #
@@ -215,11 +217,12 @@ fi
 
 export JAVA_OPTS="\
           -Dtomcat.hostname=$TOMCAT_HOSTNAME \
-          -Dtomcat.tls.keystore=$TOMCAT_TLS_KEYSTORE \
-          -Dtomcat.tls.password=$TOMCAT_TLS_PASSWORD \
-          -Dtomcat.tls.alias=$TOMCAT_TLS_ALIAS \
           -Dtomcat.tls.port=$TOMCAT_TLS_PORT \
           -Dtomcat.ajp.port=$TOMCAT_AJP_PORT \
+          -Dtomcat.tls.server-key=$TOMCAT_TLS_SERVER_KEY \
+          -Dtomcat.tls.server-key-type=$TOMCAT_TLS_SERVER_KEY_TYPE \
+          -Dtomcat.tls.server-certificate=$TOMCAT_TLS_SERVER_CERTIFICATE \
+          -Dtomcat.tls.certificate-chain=$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN \
           -Djava.net.preferIPv4Stack=true \
           -Didp.home=$IDP_HOME \
           -Didp.baseurl=$IDP_BASE_URL \

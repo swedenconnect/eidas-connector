@@ -1,11 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <Server port="-1" shutdown="SHUTDOWN">
-  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
 
+  <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
   <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
-
+  
   <GlobalNamingResources>
     <Resource name="UserDatabase" auth="Container"
               type="org.apache.catalina.UserDatabase"
@@ -15,30 +16,33 @@
   </GlobalNamingResources>
 
   <Service name="Catalina">
-    <Connector port="${tomcat.tls.port}" protocol="HTTP/1.1"
-               server=" "
+    
+    <Connector port="${tomcat.tls.port}" 
+               protocol="HTTP/1.1"
+               scheme="https"
+               SSLEnabled="true"
                connectionTimeout="20000"
                acceptCount="100"
                minSpareThreads="5"
                maxThreads="200"
-               scheme="https"
-               secure="true"
-               SSLEnabled="true"
-               sslProtocol="TLS"
-               keystoreFile="${tomcat.tls.keystore}"
-               keystorePass="${tomcat.tls.password}"
-               keyAlias="${tomcat.tls.alias}"
                allowTrace="false"
                maxHttpHeaderSize="65536"
                xpoweredBy="false"
                maxPostSize="100000"
-               compression="on"/>
-              <!--Added maxPostSize as recommended for Shibboleth  https://wiki.shibboleth.net/confluence/display/IDP30/ApacheTomcat8 -->
-              
+               compression="on">
+      <SSLHostConfig>
+        <Certificate certificateKeyFile="${tomcat.tls.server-key}" 
+                     certificateFile="${tomcat.tls.server-certificate}"
+                     certificateChainFile="${tomcat.tls.certificate-chain}"
+                     type="${tomcat.tls.server-key-type}" />
+      </SSLHostConfig>
+    </Connector>
+    <!-- Added maxPostSize as recommended for Shibboleth  https://wiki.shibboleth.net/confluence/display/IDP30/ApacheTomcat8 -->
+                
     <!-- Define an AJP 1.3 Connector -->
     <Connector port="${tomcat.ajp.port}" protocol="AJP/1.3" redirectPort="${tomcat.tls.port}" />              
 
-    <Engine name="Catalina" defaultHost="localhost">
+    <Engine name="Catalina" defaultHost="${tomcat.hostname}">
       <Realm className="org.apache.catalina.realm.LockOutRealm"
              failureCount="3" lockOutTime="600" cacheSize="1000"
              cacheRemovalWarningTime="3600" >
@@ -46,23 +50,9 @@
                resourceName="UserDatabase"/>
       </Realm>
 
-      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false" >
-      
+      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false" >      
         <Valve className="org.apache.catalina.valves.RemoteIpValve"
-               remoteIpHeader="X-Forwarded-For" />               
-        
-        <!-- begränsa access till webappen, tills vidare med regex för RFC1918-adresser
-             Update 2013-12-19: tillåt IPv6 ::1 för t.ex. curl mot localhost -->
-        <!-- <Valve className="org.apache.catalina.valves.RemoteAddrValve"
-                allow="((^127\.0\.0\.1)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)).*?|::1|0:0:0:0:0:0:0:1" />
-         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-                prefix="localhost_access_log." suffix=".txt"
-                pattern="%h %l %u %t &quot;%r&quot; %s %b %D" />
-         <Valve className="org.apache.catalina.valves.RemoteIpValve"
-                internalProxies="((^127\.0\.0\.1)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)).*?|::1|0:0:0:0:0:0:0:1"
-                remoteIpHeader="X-Forwarded-For" />-->
-                
-                
+               remoteIpHeader="X-Forwarded-For" />
       </Host>
 
     </Engine>

@@ -22,9 +22,12 @@ docker run -d --name eidas-connector --restart=always \
   -e IDP_LOG_CONSOLE=true \
   -e IDP_CREDENTIALS=/etc/eidas-connector-credentials \
   -e SP_CREDENTIALS=/etc/eidas-connector-credentials/sp \
+  -e TOMCAT_TLS_SERVER_KEY=/etc/eidas-connector-credentials/tomcat/tomcat-key.pem \
+  -e TOMCAT_TLS_SERVER_CERTIFICATE=/etc/eidas-connector-credentials/tomcat/tomcat-cert.pem \
+  -e TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=/etc/eidas-connector-credentials/tomcat/tomcat-chain.pem \
   -v /tmp/eidas-connector-credentials:/etc/eidas-connector-credentials \
   -v /tmp/eidas-connector:/var/log/eidas-connector \
   -v /private/etc/eidas-connector:/etc/eidas-connector \
   docker.eidastest.se:5000/eidas-connector-idp
- 
+    
 # docker logs -f eidas-connector
