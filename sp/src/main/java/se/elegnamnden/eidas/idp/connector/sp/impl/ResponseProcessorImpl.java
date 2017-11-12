@@ -21,6 +21,7 @@
 package se.elegnamnden.eidas.idp.connector.sp.impl;
 
 import java.io.ByteArrayInputStream;
+import java.util.Optional;
 
 import org.opensaml.core.xml.io.UnmarshallingException;
 import org.opensaml.messaging.decoder.MessageDecodingException;
@@ -336,9 +337,12 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
 
     // Does the relayState variables match?
     //
-    boolean relayStateMatch = (relayState == null && input.getRelayState() == null)
-        || (relayState != null && relayState.equals(input.getRelayState()))
-        || (input.getRelayState() != null && input.getRelayState().equals(relayState));
+    Optional<String> relayStateOptional = relayState==null || relayState.trim().length()==0?Optional.empty():Optional.of(relayState);
+    Optional<String> relayStateInputOptional = input.getRelayState()==null || input.getRelayState().trim().length()==0?Optional.empty():Optional.of(input.getRelayState());
+
+    boolean relayStateMatch = (!relayStateOptional.isPresent()  && !relayStateInputOptional.isPresent())
+        || (relayStateOptional.isPresent() && relayState.equals(input.getRelayState()))
+        || (relayStateInputOptional.isPresent() && input.getRelayState().equals(relayState));
 
     if (!relayStateMatch) {
       String msg = String.format("RelayState variable received with response (%s) does not match the sent one (%s)", relayState, input
