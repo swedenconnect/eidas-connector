@@ -33,8 +33,10 @@
               <form action="/idp/extauth/start" method="POST">
                 <div style="min-height: 35px"> 
                   <c:forEach items="${uiLanguages}" var="uiLang">
-                    <span style="width: 35px; margin-left: 10px; height: 30px">
-                      <input type="image" src="<c:url value='${uiLang.flagUrl}' />" alt="${uiLang.altText}" name="language" value="${uiLang.languageTag}">
+                    <span style="width: 35px; margin-left: 10px; height: 30px">  
+                      <button type="submit" value="${uiLang.languageTag}" name="language" style="border: none; color: transparent; background:transparent;">
+                        <img src="<c:url value='${uiLang.flagUrl}' />" />
+                      </button>
                     </span>
                   </c:forEach>
                 </div>
