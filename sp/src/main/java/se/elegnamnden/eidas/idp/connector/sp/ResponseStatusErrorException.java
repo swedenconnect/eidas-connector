@@ -53,7 +53,7 @@ public class ResponseStatusErrorException extends Exception {
     this.status = status;
     this.responseId = responseId;
     
-    if (!StatusCode.SUCCESS.equals(status.getStatusCode().getValue())) {
+    if (StatusCode.SUCCESS.equals(status.getStatusCode().getValue())) {
       throw new IllegalArgumentException("Status is success - can not throw ResponseStatusErrorException");
     }
   }

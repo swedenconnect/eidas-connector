@@ -337,8 +337,9 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
 
     // Does the relayState variables match?
     //
-    Optional<String> relayStateOptional = relayState==null || relayState.trim().length()==0?Optional.empty():Optional.of(relayState);
-    Optional<String> relayStateInputOptional = input.getRelayState()==null || input.getRelayState().trim().length()==0?Optional.empty():Optional.of(input.getRelayState());
+    Optional<String> relayStateOptional = relayState == null || relayState.trim().length() == 0 ? Optional.empty() : Optional.of(relayState);
+    Optional<String> relayStateInputOptional = input.getRelayState() == null || input.getRelayState().trim().length() == 0
+        ? Optional.empty() : Optional.of(input.getRelayState());
 
     boolean relayStateMatch = (!relayStateOptional.isPresent()  && !relayStateInputOptional.isPresent())
         || (relayStateOptional.isPresent() && relayState.equals(input.getRelayState()))
