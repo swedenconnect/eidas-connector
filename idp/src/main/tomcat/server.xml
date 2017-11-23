@@ -50,9 +50,8 @@
                resourceName="UserDatabase"/>
       </Realm>
 
-      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false" >      
-        <Valve className="org.apache.catalina.valves.RemoteIpValve"
-               remoteIpHeader="X-Forwarded-For" />
+      <Host name="${tomcat.hostname}" appBase="webapps" unpackWARs="true" autoDeploy="false" >      
+        <Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="X-Forwarded-For" />
       </Host>
 
     </Engine>
