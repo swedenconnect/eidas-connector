@@ -55,7 +55,7 @@ fi
 IDP_ENTITY_ID=https://eunode.eidastest.se/idp2
 SP_ENTITY_ID=https://eunode.eidastest.se/connector-sp
 
-IDP_AA_URL=https://eunode.eidastest.se/eidas-aa
+IDP_PRID_SERVICE_URL=https://localhost:9443/prid
 
 TEST_SP_METADATA=https://localhost:8443/svelegtest-sp/metadata/all-metadata.xml
 
@@ -132,7 +132,7 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.persistentId.salt.value=${IDP_PERSISTENT_ID_SALT} \
 -Didp.metadata.validity=10800 \
 -Didp.metadata.cacheDuration=3600000 \
--Didp.aa.url=$IDP_AA_URL \
+-Didp.prid-service.url=$IDP_PRID_SERVICE_URL \
 -Didp.sp.entityID=$SP_ENTITY_ID \
 -Didp.sp.signing.key=$SP_CREDENTIALS/sp-signing.key \
 -Didp.sp.signing.cert=$SP_CREDENTIALS/sp-signing.crt \

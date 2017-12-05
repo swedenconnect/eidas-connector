@@ -61,12 +61,15 @@
     <property name="attributeMappings">
       <bean class="se.elegnamnden.eidas.mapping.attributes.impl.NaturalPersonStaticAttributeMappings" />
     </property>
-    <property name="attributeAuthority" ref="eidas.AAService" />
+    <property name="attributeAuthority" ref="eidas.AttributeAuthority" />
   </bean>
   
-  <bean id="eidas.AAService" class="se.elegnamnden.eidas.idp.connector.aaclient.mock.AttributeAuthorityMockImpl" scope="singleton"
-    p:aaUrl="%{idp.aa.url}" />
-  
+  <bean id="eidas.AttributeAuthority" class="se.elegnamnden.eidas.idp.connector.aaclient.AttributeAuthorityImpl" scope="singleton"
+    p:pridService-ref="eidas.PridService" />
+      
+  <bean id="eidas.PridService" class="se.elegnamnden.eidas.idp.connector.aaclient.prid.PridServiceImpl" scope="singleton"
+    p:pridServiceUrl="%{idp.prid-service.url}" />
+    
   <!-- Connector SP -->
   
   <!-- TODO: move the connector SP into a reloadable Spring subsystem so that we get support for reloading of keys etc. -->
