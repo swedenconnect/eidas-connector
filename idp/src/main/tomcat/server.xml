@@ -50,7 +50,10 @@
                resourceName="UserDatabase"/>
       </Realm>
 
-      <Host name="${tomcat.hostname}" appBase="webapps" unpackWARs="true" autoDeploy="false" >      
+      <Host name="${tomcat.hostname}" appBase="webapps" unpackWARs="true" autoDeploy="false" >
+        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+               prefix="localhost_access_log" suffix=".txt"
+               pattern="%h %l %u %t &quot;%r&quot; %s %b %D X-Forwarded-For: %{X-Forwarded-For}i" />      
         <Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="X-Forwarded-For" />
       </Host>
 
