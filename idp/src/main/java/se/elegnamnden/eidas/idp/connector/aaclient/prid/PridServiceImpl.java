@@ -20,6 +20,7 @@
  */
 package se.elegnamnden.eidas.idp.connector.aaclient.prid;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
@@ -28,10 +29,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.InitializingBean;
@@ -58,11 +63,13 @@ public class PridServiceImpl implements PridService, InitializingBean {
   /** The URL to the PRID service. */
   private String pridServiceUrl;
 
+  /** Flag for development mode. */
+  private boolean develMode = false;
+
   /**
    * Constructor.
    */
   public PridServiceImpl() {
-    this.restTemplate = this.createTrustAllRestTemplate();
   }
 
   /**
@@ -96,6 +103,66 @@ public class PridServiceImpl implements PridService, InitializingBean {
     }
   }
 
+  /**
+   * Assigns the URL to the PRID service.
+   * 
+   * @param pridServiceUrl
+   *          URL to PRID service
+   */
+  public void setPridServiceUrl(String pridServiceUrl) {
+    this.pridServiceUrl = pridServiceUrl;
+  }
+
+  /**
+   * Assigns whether we are running in devel mode.
+   * 
+   * @param develMode
+   *          devel mode flag
+   */
+  public void setDevelMode(boolean develMode) {
+    this.develMode = develMode;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    Assert.hasText(this.pridServiceUrl, "Property 'pridServiceUrl' must be assigned");
+    if (this.pridServiceUrl.endsWith("/")) {
+      this.pridServiceUrl = this.pridServiceUrl.substring(0, this.pridServiceUrl.length() - 1);
+    }
+
+    if (this.develMode) {
+      CloseableHttpClient httpClient = HttpClients.custom().setHostnameVerifier(new NullHostnameVerifier()).build();
+      HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+      requestFactory.setHttpClient(httpClient);
+      this.restTemplate = new RestTemplate(requestFactory);
+    }
+    else {
+      this.restTemplate = new RestTemplate();
+    }
+  }
+  
+  public static class NullHostnameVerifier implements X509HostnameVerifier {
+
+    @Override
+    public boolean verify(String hostname, SSLSession session) {
+      return true;
+    }
+
+    @Override
+    public void verify(String host, SSLSocket ssl) throws IOException {
+    }
+
+    @Override
+    public void verify(String host, X509Certificate cert) throws SSLException {
+    }
+
+    @Override
+    public void verify(String host, String[] cns, String[] subjectAlts) throws SSLException {
+    }
+
+  }
+
   private RestTemplate createTrustAllRestTemplate() {
     try {
       TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
@@ -119,24 +186,6 @@ public class PridServiceImpl implements PridService, InitializingBean {
       throw new SecurityException(e);
     }
   }
-
-  /**
-   * Assigns the URL to the PRID service.
-   * 
-   * @param pridServiceUrl
-   *          URL to PRID service
-   */
-  public void setPridServiceUrl(String pridServiceUrl) {
-    this.pridServiceUrl = pridServiceUrl;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public void afterPropertiesSet() throws Exception {
-    Assert.hasText(this.pridServiceUrl, "Property 'pridServiceUrl' must be assigned");
-    if (this.pridServiceUrl.endsWith("/")) {
-      this.pridServiceUrl = this.pridServiceUrl.substring(0, this.pridServiceUrl.length() - 1);
-    }
-  }
+  
 
 }

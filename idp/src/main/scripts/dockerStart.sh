@@ -70,7 +70,7 @@ fi
 : ${IDP_METADATA_SIGNING_KEY:=$IDP_CREDENTIALS/metadata-signing.key}
 : ${IDP_METADATA_SIGNING_CERT:=$IDP_CREDENTIALS/metadata-signing.crt}
 
-: ${IDP_AA_URL:=https://eunode.eidastest.se/eidas-aa}
+: ${IDP_PRID_SERVICE_URL:=https://prid-1.qa.sveidas.se/prid}
 
 : ${IDP_PERSISTENT_ID_SALT:=jkio98gbnmklop0Pr5WTvCgh}
 
@@ -202,6 +202,8 @@ fi
 
 if [ "$IDP_DEVEL_MODE" == "true" ]; then
   IDP_METADATA_RESOURCES_BEAN="shibboleth.DevelMetadataResolverResources"
+else
+  IDP_DEVEL_MODE=false
 fi
 
 
@@ -226,6 +228,7 @@ export JAVA_OPTS="\
           -Djava.net.preferIPv4Stack=true \
           -Didp.home=$IDP_HOME \
           -Didp.baseurl=$IDP_BASE_URL \
+          -Didp.devel.mode=$IDP_DEVEL_MODE \
           -Didp.entityID=$IDP_ENTITY_ID \
           -Didp.sealer.storeResource=$IDP_SEALER_STORE_RESOURCE \
           -Didp.sealer.password=$IDP_SEALER_PASSWORD \
@@ -247,7 +250,7 @@ export JAVA_OPTS="\
           -Didp.sp.metadata.signing.cert=$SP_METADATA_SIGNING_CERT \
           -Didp.sp.metadata.validity=$SP_METADATA_VALIDITY_MINUTES \
           -Didp.sp.metadata.cacheDuration=$SP_METADATA_CACHEDURATION_MILLIS \
-          -Didp.aa.url=${IDP_AA_URL} \
+          -Didp.prid-service.url=${IDP_PRID_SERVICE_URL} \
           -Didp.persistentId.salt.value=${IDP_PERSISTENT_ID_SALT} \
           -Didp.metadata.federation.url=${FEDERATION_METADATA_URL} \
           -Didp.metadata.federation.validation-certificate=${FEDERATION_METADATA_VALIDATION_CERT} \
@@ -281,12 +284,39 @@ if [ -n "$IDP_FTICKS_FEDERATION_ID" ]; then
   export JAVA_OPTS="${JAVA_OPTS} -Didp.fticks.federation=${IDP_FTICKS_FEDERATION_ID}"
 fi
 
+#
+# Truststore for TLS
+#
+# Given a PEM file containing certificates that should be trusted
+# by TLS connections, we build a trust JKS
+#
+: ${IDP_TLS_TRUST_KEYSTORE_PASSWORD:=changeit}
 
-# TODO:
-#  We probably should set 
-# -Djavax.net.ssl.trustStore=${IDP_COMMON_TRUSTSTORE}
-# -Djavax.net.ssl.trustStorePassword=${IDP_COMMON_TRUSTSTORE_PASSWORD}
-
+if [ -n "$IDP_TLS_TRUSTED_CERTS" ]; then
+  IDP_TLS_TRUST_KEYSTORE=${TOMCAT_HOME}/conf/tls-trust.jks
+  rm -rf ${IDP_TLS_TRUST_KEYSTORE}
+  
+  TMP_CA_STORE=/tmp/trustedcas
+  rm -rf ${TMP_CA_STORE}
+  mkdir ${TMP_CA_STORE}
+  
+  csplit -s -f ${TMP_CA_STORE}/ca- ${IDP_TLS_TRUSTED_CERTS} '/-----BEGIN CERTIFICATE-----/'
+  
+  for cafile in `\ls ${TMP_CA_STORE}/* 2>/dev/null`
+  do
+    keytool -import -file $cafile -alias `basename $cafile` -trustcacerts -keystore ${IDP_TLS_TRUST_KEYSTORE} -storepass ${IDP_TLS_TRUST_KEYSTORE_PASSWORD} -noprompt 2>/dev/null
+  done
+  
+  if ! [ "$(ls -A $TMP_CA_STORE)" ]; then
+    echo "$IDP_TLS_TRUST_KEYSTORE contains no (valid) certificates - at least one is required" >&2
+    exit 1
+  fi
+  
+  export JAVA_OPTS="${JAVA_OPTS} -Djavax.net.ssl.trustStore=$IDP_TLS_TRUST_KEYSTORE -Djavax.net.ssl.trustStorePassword=$IDP_TLS_TRUST_KEYSTORE_PASSWORD"
+  
+else
+  echo "No TLS trust set, will use system defaults"
+fi
 
 export CATALINA_OPTS="\
           -Xmx${JVM_MAX_HEAP}\

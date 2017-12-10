@@ -23,6 +23,7 @@ package se.elegnamnden.eidas.idp.connector.controller;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -156,6 +157,11 @@ public class CountrySelectionHandler implements InitializingBean {
    * @return a sorted list of country objects
    */
   public List<UiCountry> getSelectableCountries(List<String> isoCodes) {
+    
+    if (isoCodes == null) {
+      log.error("No countries available");
+      return Collections.emptyList();
+    }
 
     // We want to avoid locale based sorting in the view, so we'll provide a sorted list based on each
     // country's localized display name.
