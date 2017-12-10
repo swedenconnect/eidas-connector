@@ -18,32 +18,29 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package se.elegnamnden.eidas.idp.connector.aaclient.mock;
+package se.elegnamnden.eidas.idp.connector.aaclient.prid;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import lombok.Data;
-import lombok.ToString;
+import se.elegnamnden.eidas.idp.connector.aaclient.AttributeAuthorityException;
 
 /**
- * Represents a response message from the mocked AA service.
+ * Interface for communicating with the PRID Service.
  * 
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  * @author Stefan Santesson (stefan@aaa-sec.com)
  */
-@Data
-@ToString
-public class AAResponse {
-  
-  private String provisionalId;
-  
-  private String pidQuality;
-  
-  @JsonInclude(Include.NON_NULL)
-  private String personalIdNumber;
-  
-  @JsonInclude(Include.NON_NULL)
-  private String personalIdNumberBinding;
+public interface PridService {
+
+  /**
+   * Communicates with the PRID service and returns the PRID (and associated data) for the given user.
+   * 
+   * @param eidasPersonIdentifier
+   *          the eIDAS person identifier
+   * @param country
+   *          the country that authenticated the user
+   * @return a PRID response structure holding the PRID and additional data.
+   * @throws AttributeAuthorityException
+   *           for errors communicating with the PRID service
+   */
+  PridResponse getPrid(String eidasPersonIdentifier, String country) throws AttributeAuthorityException;
 
 }

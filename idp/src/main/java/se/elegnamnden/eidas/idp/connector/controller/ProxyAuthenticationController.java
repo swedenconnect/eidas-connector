@@ -191,12 +191,15 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       HttpServletRequest httpRequest,
       HttpServletResponse httpResponse,
       @RequestParam("action") String action,
-      @RequestParam("selectedCountry") String selectedCountry) throws ExternalAuthenticationException, IOException {
+      @RequestParam(name = "selectedCountry", required = false) String selectedCountry) throws ExternalAuthenticationException, IOException {
 
     if (ACTION_CANCEL.equals(action)) {
       log.info("User cancelled country selection - aborting authentication");
       this.cancel(httpRequest, httpResponse);
       return null;
+    }
+    if (selectedCountry == null) {
+      throw new IllegalArgumentException("Missing selectedCountry parameter");
     }
 
     log.debug("User selected country '{}'", selectedCountry);

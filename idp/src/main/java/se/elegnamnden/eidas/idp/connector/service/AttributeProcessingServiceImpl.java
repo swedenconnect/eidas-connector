@@ -112,30 +112,9 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
 
     // Step 3. Get extra attributes from the AA service.
     //
-
-    // The ID to supply to the AA service is the 'eidasPersonIdentifier'. Let's look that up ...
-    Attribute eidasPersonIdentifier = getAttribute.apply(AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER, attributesForRelease); 
-    if (eidasPersonIdentifier == null) {
-      final String msg = String.format("Attribute '%s' (%s) was not received in Assertion - can not proceed",
-        AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_EIDAS_PERSON_IDENTIFIER, AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER);
-      throw new AttributeProcessingException(msg);
-    }
-
     try {
-      List<Attribute> additionalAttributes = this.attributeAuthority.resolveAttributes(AttributeUtils.getAttributeStringValue(eidasPersonIdentifier), responseResult.getCountry());
+      List<Attribute> additionalAttributes = this.attributeAuthority.resolveAttributes(attributesForRelease, responseResult.getCountry());
 
-      // Ensure that we got at least the prid and pridPersistence attributes.
-      if (getAttribute.apply(AttributeConstants.ATTRIBUTE_NAME_PRID, additionalAttributes) == null) {
-        final String msg = String.format("Attribute '%s' (%s) was not received when resolving attributes from AA service - can not proceed",
-          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PRID, AttributeConstants.ATTRIBUTE_NAME_PRID);
-        throw new AttributeProcessingException(msg);
-      }
-      if (getAttribute.apply(AttributeConstants.ATTRIBUTE_NAME_PRID_PERSISTENCE, additionalAttributes) == null) {
-        final String msg = String.format("Attribute '%s' (%s) was not received when resolving attributes from AA service - can not proceed",
-          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PRID_PERSISTENCE, AttributeConstants.ATTRIBUTE_NAME_PRID_PERSISTENCE);
-        throw new AttributeProcessingException(msg);
-      }
-      
       // OK, we are a bit defensive, but better safe than sorry. Let's make sure that the AA did not give us any attributes
       // that are already part of the attributes we got from the IdP.
       //
@@ -151,7 +130,7 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
     catch (AttributeAuthorityException e) {
       throw new AttributeProcessingException("Failed to get attributes from Attribute Authority - " + e.getMessage(), e);
     }
-
+    
     return attributesForRelease;
   }
 

@@ -49,6 +49,7 @@
     
     <shibboleth-base-package.version>1.0.1</shibboleth-base-package.version>
     <opensaml.eidas.version>1.0.4</opensaml.eidas.version>
+    <eidas-commons.version>1.0.1</eidas-commons.version>
     
     <lombok.version>1.16.8</lombok.version>
   </properties>
@@ -131,14 +132,14 @@
       <dependency>
         <groupId>se.elegnamnden.eidas.commons</groupId>
         <artifactId>metadataconfig</artifactId>
-        <version>1.0.0</version>
+        <version>${eidas-commons.version}</version>
         <scope>compile</scope>
       </dependency>
     
       <dependency>
         <groupId>se.elegnamnden.eidas.commons</groupId>
         <artifactId>eidas-mappings</artifactId>
-        <version>1.0.0</version>
+        <version>${eidas-commons.version}</version>
         <scope>compile</scope>
       </dependency>
       

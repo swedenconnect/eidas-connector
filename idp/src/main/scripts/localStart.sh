@@ -55,7 +55,7 @@ fi
 IDP_ENTITY_ID=https://eunode.eidastest.se/idp2
 SP_ENTITY_ID=https://eunode.eidastest.se/connector-sp
 
-IDP_AA_URL=https://eunode.eidastest.se/eidas-aa
+IDP_PRID_SERVICE_URL=https://localhost:9443/prid
 
 TEST_SP_METADATA=https://localhost:8443/svelegtest-sp/metadata/all-metadata.xml
 
@@ -112,7 +112,8 @@ fi
 #
 # Assign all values
 #
-export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
+export JAVA_OPTS="-Didp.devel.mode=false \
+-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.sealer.storeResource=$IDP_CREDENTIALS/sealer.jks \
 -Didp.sealer.versionResource=$IDP_CREDENTIALS/sealer.kver \
 -Didp.sealer.password=3eifrUFrujUefIo8FJN4 \
@@ -132,7 +133,7 @@ export JAVA_OPTS="-Didp.entityID=$IDP_ENTITY_ID \
 -Didp.persistentId.salt.value=${IDP_PERSISTENT_ID_SALT} \
 -Didp.metadata.validity=10800 \
 -Didp.metadata.cacheDuration=3600000 \
--Didp.aa.url=$IDP_AA_URL \
+-Didp.prid-service.url=$IDP_PRID_SERVICE_URL \
 -Didp.sp.entityID=$SP_ENTITY_ID \
 -Didp.sp.signing.key=$SP_CREDENTIALS/sp-signing.key \
 -Didp.sp.signing.cert=$SP_CREDENTIALS/sp-signing.crt \
@@ -176,6 +177,44 @@ if [ -n "$IDP_FTICKS_FEDERATION_ID" ]; then
 
   export JAVA_OPTS="${JAVA_OPTS} \
     -Didp.fticks.federation=${IDP_FTICKS_FEDERATION_ID}"
+fi
+
+#
+# Truststore for TLS
+#
+# Given a PEM file containing certificates that should be trusted
+# by TLS connections, we build a trust JKS
+#
+: ${IDP_TLS_TRUST_KEYSTORE_PASSWORD:=changeit}
+
+IDP_TLS_TRUSTED_CERTS=${CREDENTIALS_BASE}/tlstrust.pem
+
+if [ -n "$IDP_TLS_TRUSTED_CERTS" ]; then
+  IDP_TLS_TRUST_KEYSTORE=${TOMCAT_HOME}/conf/tls-trust.jks
+  rm -rf ${IDP_TLS_TRUST_KEYSTORE}
+  
+  TMP_CA_STORE=/tmp/trustedcas
+  rm -rf ${TMP_CA_STORE}
+  mkdir ${TMP_CA_STORE}
+ 
+  csplit -s -f ${TMP_CA_STORE}/ca- ${IDP_TLS_TRUSTED_CERTS} '/-----BEGIN CERTIFICATE-----/'
+   
+#  split -p "-----BEGIN CERTIFICATE-----" ${IDP_TLS_TRUSTED_CERTS} ${TMP_CA_STORE}/ca-
+  
+  for cafile in `\ls ${TMP_CA_STORE}/* 2>/dev/null`
+  do
+    keytool -import -file $cafile -alias `basename $cafile` -trustcacerts -keystore ${IDP_TLS_TRUST_KEYSTORE} -storepass ${IDP_TLS_TRUST_KEYSTORE_PASSWORD} -noprompt 2>/dev/null
+  done
+  
+  if ! [ "$(ls -A $TMP_CA_STORE)" ]; then
+    echo "$IDP_TLS_TRUST_KEYSTORE contains no (valid) certificates - at least one is required" >&2
+    exit 1
+  fi
+  
+  export JAVA_OPTS="${JAVA_OPTS} -Djavax.net.ssl.trustStore=$IDP_TLS_TRUST_KEYSTORE -Djavax.net.ssl.trustStorePassword=$IDP_TLS_TRUST_KEYSTORE_PASSWORD"
+  
+else
+  echo "No TLS trust set, will use system defaults"
 fi
 
 #JVM settings should go in CATALINA_OPTS

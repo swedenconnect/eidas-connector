@@ -34,6 +34,9 @@ public interface AttributeAuthority {
 
   /**
    * Resolves the supplied id to a list (possibly empty) of attributes.
+   * <p>
+   * Deprecated - use {@link #resolveAttributes(List, String)} instead.
+   * </p>
    * 
    * @param id
    *          the identifier to supply as input to the attribute query
@@ -43,6 +46,20 @@ public interface AttributeAuthority {
    * @throws AttributeAuthorityException
    *           for errors during communication with the attribute authority
    */
+  @Deprecated
   List<Attribute> resolveAttributes(String id, String country) throws AttributeAuthorityException;
+
+  /**
+   * Based on a set of attributes the implementation resolves additional attributes.
+   * 
+   * @param attributes
+   *          the attributes received from authentication (mapped to Swedish eID format)
+   * @param country
+   *          the the country from which the attributes were originally obtained (before conversion)
+   * @return a list of resolved attributes
+   * @throws AttributeAuthorityException
+   *           for resolving errors
+   */
+  List<Attribute> resolveAttributes(List<Attribute> attributes, String country) throws AttributeAuthorityException;
 
 }
