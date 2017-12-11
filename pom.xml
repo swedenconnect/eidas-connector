@@ -47,7 +47,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.8</java.version>
     
-    <shibboleth-base-package.version>1.0.1</shibboleth-base-package.version>
+    <shibboleth-base-package.version>1.1</shibboleth-base-package.version>
     <opensaml.eidas.version>1.0.4</opensaml.eidas.version>
     <eidas-commons.version>1.0.1</eidas-commons.version>
     
@@ -109,7 +109,7 @@
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-dependency-bom</artifactId>
-        <version>1.0.1</version>
+        <version>1.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>      
