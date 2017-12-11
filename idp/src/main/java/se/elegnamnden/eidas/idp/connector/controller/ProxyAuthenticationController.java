@@ -103,7 +103,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   /** Strategy that gives us the AuthenticationContext. */
   @SuppressWarnings("rawtypes") private static Function<ProfileRequestContext, AuthenticationContext> authenticationContextLookupStrategy = new AuthenticationContextLookup();
 
-  /** Strategy used to locate the SignMessageContext. */
+  /** Strategy used to locate the ProxyIdpAuthenticationContext. */
   @SuppressWarnings("rawtypes") private static Function<ProfileRequestContext, ProxyIdpAuthenticationContext> proxyIdpAuthenticationContextLookupStrategy = Functions
     .compose(new ProxyIdpAuthenticationContextLookup(), authenticationContextLookupStrategy);
 
@@ -379,6 +379,10 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       }
       proxyContext.addAdditionalData("result", result);
       proxyContext.addAdditionalData("attributes", attributes);
+      
+      if (result.getAssertion() != null) {
+        proxyContext.setAssertion(result.getAssertion());
+      }
 
       return this.completeAuthentication(httpRequest, httpResponse, null, null);
     }
