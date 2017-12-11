@@ -6,7 +6,7 @@
   <groupId>se.elegnamnden.eidas.idp</groupId>
   <artifactId>eidas-connector-base-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.0.6</version>
+  <version>1.0.7-SNAPSHOT</version>
 
   <name>eIDAS :: Parent POM for the Swedish eIDAS connector</name>
   <description>Parent POM for the Swedish eIDAS connector IdP</description>
