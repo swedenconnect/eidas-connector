@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
 
-if [ $# -eq 1 ]; then
-    myapp=$1
-else
-    echo "$0 Need name of app as argument"
-    exit 1
-fi
+myapp="eidas-connector"
+
+mkdir -p /var/log/eidas-connector
 
 # Source this app's config
 #
-for i in `\ls /etc/${myapp}/env/*.conf 2>/dev/null`
-do
+for i in /etc/${myapp}/*.conf; do
     echo sourcing $i
-    source $i
+    . ${i}
 done
 
 IDP_HOME=/opt/eidas-connector/shibboleth
@@ -26,42 +22,49 @@ TOMCAT_HOME=/opt/eidas-connector/tomcat
 : ${IDP_SERVER_PORT:=443}
 : ${IDP_SERVER_SERVLET_NAME:=idp}
 
-IDP_SERVER_PORT_SUFFIX=":${IDP_SERVER_PORT}"
+export IDP_SERVER_SCHEME IDP_SERVER_HOSTNAME IDP_SERVER_PORT IDP_SERVER_SERVLET_NAME
 
-if [ "$IDP_SERVER_SCHEME" == "https" ] && [ "$IDP_SERVER_PORT" == "443" ]; then
-  IDP_SERVER_PORT_SUFFIX=""
-fi
-if [ "$IDP_SERVER_SCHEME" == "http" ] && [ "$IDP_SERVER_PORT" == "80" ]; then
-  IDP_SERVER_PORT_SUFFIX=""
+export IDP_SERVER_PORT_SUFFIX=":${IDP_SERVER_PORT}"
+
+if [ "x$IDP_SERVER_SCHEME" = "xhttps" -a "x$IDP_SERVER_PORT" = "x443" ]; then
+  export IDP_SERVER_PORT_SUFFIX=""
 fi
 
-IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFFIX}/${IDP_SERVER_SERVLET_NAME}
+if [ "x$IDP_SERVER_SCHEME" = "xhttp" -a "x$IDP_SERVER_PORT" = "x80" ]; then
+  export IDP_SERVER_PORT_SUFFIX=""
+fi
+
+export IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFFIX}/${IDP_SERVER_SERVLET_NAME}
 
 #
 # Tomcat settings
 #
-
 : ${TOMCAT_TLS_PORT:=8443}
+export TOMCAT_TLS_PORT
 : ${TOMCAT_AJP_PORT:=8009}
+export TOMCAT_AJP_PORT
 : ${TOMCAT_HOSTNAME:=localhost}
+export TOMCAT_HOSTNAME
 
 : ${TOMCAT_TLS_SERVER_KEY:=/etc/eidas-connector/credentials/tomcat/tomcat-key.pem}
 : ${TOMCAT_TLS_SERVER_CERTIFICATE:=/etc/eidas-connector/credentials/tomcat/tomcat-cert.pem}
 : ${TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN:=/etc/eidas-connector/credentials/tomcat/tomcat-chain.pem}
 : ${TOMCAT_TLS_SERVER_KEY_TYPE:=RSA} 
+export TOMCAT_TLS_SERVER_KEY TOMCAT_TLS_SERVER_CERTIFICATE TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN TOMCAT_TLS_SERVER_KEY_TYPE
 
 if [ ! -f "$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN" ]; then
-  TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=$TOMCAT_HOME/conf/dummy-chain.pem
+  export TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=$TOMCAT_HOME/conf/dummy-chain.pem
 fi
 
 #
 # IdP settings
 #
 : ${IDP_ENTITY_ID:=https://eunode.eidastest.se/eidas}
+export IDP_ENTITY_ID
 
 : ${IDP_CREDENTIALS:=/etc/eidas-connector/credentials}
 : ${IDP_SEALER_STORE_RESOURCE:=$IDP_CREDENTIALS/sealer.jks}
-: ${IDP_SEALER_PASSWORD:=3eifrUFrujUefIo8FJN4}
+: ${IDP_SEALER_PASSWORD:=changeme}
 : ${IDP_SEALER_VERSION_RESOURCES:=$IDP_CREDENTIALS/sealer.kver}
 : ${IDP_SIGNING_KEY:=$IDP_CREDENTIALS/idp-signing.key}
 : ${IDP_SIGNING_CERT:=$IDP_CREDENTIALS/idp-signing.crt}
@@ -70,12 +73,17 @@ fi
 : ${IDP_METADATA_SIGNING_KEY:=$IDP_CREDENTIALS/metadata-signing.key}
 : ${IDP_METADATA_SIGNING_CERT:=$IDP_CREDENTIALS/metadata-signing.crt}
 
+export IDP_CREDENTIALS IDP_SEALER_STORE_RESOURCE IDP_SEALER_PASSWORD IDP_SEALER_VERSION_RESOURCES IDP_SIGNING_KEY IDP_SIGNING_CERT IDP_ENCRYPTION_KEY IDP_ENCRYPTION_CERT IDP_METADATA_SIGNING_KEY IDP_METADATA_SIGNING_CERT
+
 : ${IDP_PRID_SERVICE_URL:=https://prid-1.qa.sveidas.se/prid}
+export IDP_PRID_SERVICE_URL
 
 : ${IDP_PERSISTENT_ID_SALT:=jkio98gbnmklop0Pr5WTvCgh}
+export IDP_PERSISTENT_ID_SALT
 
 : ${IDP_METADATA_VALIDITY_MINUTES:=10800}
 : ${IDP_METADATA_CACHEDURATION_MILLIS:=3600000}
+export IDP_METADATA_VALIDITY_MINUTES IDP_METADATA_CACHEDURATION_MILLIS
 
 # Verification that all IdP credentials are in place ...
 if [ ! -f "$IDP_SEALER_STORE_RESOURCE" ]; then
@@ -111,17 +119,22 @@ fi
 # SP settings
 #
 : ${SP_ENTITY_ID:=https://eunode.eidastest.se/idp/metadata/sp}
+export SP_ENTITY_ID
 
 : ${SP_CREDENTIALS:=$IDP_CREDENTIALS/sp}
+export SP_CREDENTIALS
+
 : ${SP_SIGNING_KEY:=$SP_CREDENTIALS/sp-signing.key}
 : ${SP_SIGNING_CERT:=$SP_CREDENTIALS/sp-signing.crt}
 : ${SP_ENCRYPTION_KEY:=$SP_CREDENTIALS/sp-encryption.key}
 : ${SP_ENCRYPTION_CERT:=$SP_CREDENTIALS/sp-encryption.crt}
 : ${SP_METADATA_SIGNING_KEY:=$SP_CREDENTIALS/metadata-signing.key}
 : ${SP_METADATA_SIGNING_CERT:=$SP_CREDENTIALS/metadata-signing.crt}
+export SP_SIGNING_KEY SP_SIGNING_CERT SP_ENCRYPTION_KEY SP_ENCRYPTION_CERT SP_METADATA_SIGNING_KEY SP_METADATA_SIGNING_CERT
 
 : ${SP_METADATA_VALIDITY_MINUTES:=10800}
 : ${SP_METADATA_CACHEDURATION_MILLIS:=3600000}
+export SP_METADATA_VALIDITY_MINUTES SP_METADATA_CACHEDURATION_MILLIS
 
 # Verification that all SP credentials are in place ...
 if [ ! -f "$SP_SIGNING_KEY" ]; then
@@ -153,6 +166,7 @@ fi
 # Metadata
 #
 IDP_METADATA_RESOURCES_BEAN=shibboleth.MetadataResolverResources
+export IDP_METADATA_RESOURCES_BEAN
 
 : ${FEDERATION_METADATA_URL:=https://eid.svelegtest.se/metadata/feed}
 : ${FEDERATION_METADATA_VALIDATION_CERT:=$IDP_HOME/metadata/metadata-validation-cert.crt}
@@ -161,6 +175,7 @@ IDP_METADATA_RESOURCES_BEAN=shibboleth.MetadataResolverResources
 : ${EIDAS_METADATA_URL:=https://eid.svelegtest.se/nodeconfig/metadata}
 : ${EIDAS_METADATA_VALIDATION_CERT:=$IDP_HOME/metadata/eidas-metadata-validation-cert.crt}
 : ${EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION:=false}
+export FEDERATION_METADATA_URL FEDERATION_METADATA_VALIDATION_CERT EIDAS_METADATA_SERVICE_LIST_URL EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT EIDAS_METADATA_URL EIDAS_METADATA_VALIDATION_CERT EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION
 
 #
 # Log settings
@@ -168,29 +183,34 @@ IDP_METADATA_RESOURCES_BEAN=shibboleth.MetadataResolverResources
 
 # Log settings may be overridden by setting IDP_LOG_SETTINGS_FILE to point to a logback include file. 
 : ${IDP_LOG_SETTINGS_FILE:=""}
+export IDP_LOG_SETTINGS_FILE
 
 : ${IDP_SYSLOG_PORT:=514}
+export IDP_SYSLOG_PORT
 
-IDP_AUDIT_APPENDER=IDP_AUDIT
-IDP_FTICKS_APPENDER=IDP_PROCESS
-IDP_SYSLOG_HOST_INT=localhost
+export IDP_AUDIT_APPENDER=IDP_AUDIT
+export IDP_FTICKS_APPENDER=IDP_PROCESS
+export IDP_SYSLOG_HOST_INT=localhost
 
 if [ -n "$IDP_SYSLOG_HOST" ]; then
-  IDP_AUDIT_APPENDER=IDP_AUDIT_SYSLOG
-  IDP_FTICKS_APPENDER=IDP_FTICKS
-  IDP_SYSLOG_HOST_INT=$IDP_SYSLOG_HOST
+  export IDP_AUDIT_APPENDER=IDP_AUDIT_SYSLOG
+  export IDP_FTICKS_APPENDER=IDP_FTICKS
+  export IDP_SYSLOG_HOST_INT=$IDP_SYSLOG_HOST
 fi
 
 : ${IDP_FTICKS_SYSLOG_FACILITY:=AUTH}
 : ${IDP_AUDIT_SYSLOG_FACILITY:=AUTH}
+export IDP_FTICKS_SYSLOG_FACILITY IDP_AUDIT_SYSLOG_FACILITY
 
 : ${IDP_FTICKS_ALGORITHM:=SHA-256}
 : ${IDP_FTICKS_SALT:=kdssdjas987ghdasn}
+export IDP_FTICKS_ALGORITHM IDP_FTICKS_SALT
 
 : ${IDP_LOG_CONSOLE:=false}
-IDP_PROCESS_APPENDER=IDP_PROCESS
+export IDP_LOG_CONSOLE
+export IDP_PROCESS_APPENDER=IDP_PROCESS
 if [ "$IDP_LOG_CONSOLE" = true ]; then
-  IDP_PROCESS_APPENDER=CONSOLE
+  export IDP_PROCESS_APPENDER=CONSOLE
 fi
 
 #
@@ -199,11 +219,12 @@ fi
 
 : ${IDP_DEVEL_MODE:=false}
 : ${DEVEL_TEST_SP_METADATA:=https://docker.for.mac.localhost:8443/svelegtest-sp/metadata/all-metadata.xml}
+export IDP_DEVEL_MODE DEVEL_TEST_SP_METADATA
 
 if [ "$IDP_DEVEL_MODE" == "true" ]; then
-  IDP_METADATA_RESOURCES_BEAN="shibboleth.DevelMetadataResolverResources"
+  export IDP_METADATA_RESOURCES_BEAN="shibboleth.DevelMetadataResolverResources"
 else
-  IDP_DEVEL_MODE=false
+  export IDP_DEVEL_MODE=false
 fi
 
 
@@ -216,6 +237,7 @@ fi
 #: ${JMX_ACCESS_FILE:=/etc/common-config/jmxremote.access}
 #: ${JMX_PASSWORD_FILE:=/etc/common-config/jmxremote.password}
 
+export JVM_MAX_HEAP JVM_START_HEAP
 
 export JAVA_OPTS="\
           -Dtomcat.hostname=$TOMCAT_HOSTNAME \
