@@ -49,6 +49,11 @@ if [ ! -f "$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN" ]; then
   TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=$TOMCAT_HOME/conf/dummy-chain.pem
 fi
 
+# Default is: 10/8, 192.168/16, 169.254/16, 127/8 and 172.16/12
+# But unfortunately we have to use Java RegExp:s.
+#
+TOMCAT_INTERNAL_PROXIES="10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}"  
+
 #
 # IdP and SP settings
 #
@@ -153,6 +158,7 @@ export JAVA_OPTS="-Didp.devel.mode=false \
 -Dtomcat.tls.server-key-type=$TOMCAT_TLS_SERVER_KEY_TYPE \
 -Dtomcat.tls.server-certificate=$TOMCAT_TLS_SERVER_CERTIFICATE \
 -Dtomcat.tls.certificate-chain=$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN \
+-Dtomcat.internal-proxies=$TOMCAT_INTERNAL_PROXIES \
 -Didp.hostname=${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFFIX} \
 -Didp.baseurl=${IDP_BASE_URL} \
 -Didp.test.sp.metadata=$TEST_SP_METADATA \
