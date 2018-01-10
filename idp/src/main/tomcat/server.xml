@@ -53,8 +53,11 @@
       <Host name="${tomcat.hostname}" appBase="webapps" unpackWARs="true" autoDeploy="false" >
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
                prefix="localhost_access_log" suffix=".log"
-               pattern="%h %l %u %t &quot;%r&quot; %s %b %D X-Forwarded-For: %{X-Forwarded-For}i" />      
-        <Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="X-Forwarded-For" />
+               pattern="%h %l %u %t &quot;%r&quot; %s %b %D X-Forwarded-For: %{X-Forwarded-For}i" />
+                   
+        <Valve className="org.apache.catalina.valves.RemoteIpValve" 
+               remoteIpHeader="X-Forwarded-For" 
+               internalProxies="${tomcat.internal-proxies}" />
       </Host>
 
     </Engine>

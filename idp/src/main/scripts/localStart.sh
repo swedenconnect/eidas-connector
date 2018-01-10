@@ -49,6 +49,11 @@ if [ ! -f "$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN" ]; then
   TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=$TOMCAT_HOME/conf/dummy-chain.pem
 fi
 
+# Default is: 10/8, 192.168/16, 169.254/16, 127/8 and 172.16/12
+# But unfortunately we have to use Java RegExp:s.
+#
+TOMCAT_INTERNAL_PROXIES="'10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}'"
+
 #
 # IdP and SP settings
 #
@@ -146,13 +151,6 @@ export JAVA_OPTS="-Didp.devel.mode=false \
 -Didp.home=$IDP_HOME \
 -Didp.envflag=dev \
 -Djava.net.preferIPv4Stack=true \
--Dtomcat.hostname=$TOMCAT_HOSTNAME \
--Dtomcat.tls.port=${TOMCAT_TLS_PORT} \
--Dtomcat.ajp.port=8099 \
--Dtomcat.tls.server-key=$TOMCAT_TLS_SERVER_KEY \
--Dtomcat.tls.server-key-type=$TOMCAT_TLS_SERVER_KEY_TYPE \
--Dtomcat.tls.server-certificate=$TOMCAT_TLS_SERVER_CERTIFICATE \
--Dtomcat.tls.certificate-chain=$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN \
 -Didp.hostname=${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFFIX} \
 -Didp.baseurl=${IDP_BASE_URL} \
 -Didp.test.sp.metadata=$TEST_SP_METADATA \
@@ -170,6 +168,8 @@ export JAVA_OPTS="-Didp.devel.mode=false \
 -Didp.consent.appender=NOOP_APPENDER \
 -Didp.process.appender=$IDP_PROCESS_APPENDER \
 "
+
+# -Dtomcat.internal-proxies=$TOMCAT_INTERNAL_PROXIES \
 
 # F-TICKS
 
@@ -217,8 +217,16 @@ else
   echo "No TLS trust set, will use system defaults"
 fi
 
-#JVM settings should go in CATALINA_OPTS
-export CATALINA_OPTS="-Xms512m -Xmx1536m"
+#JVM and Tomcat settings should go in CATALINA_OPTS
+export CATALINA_OPTS="-Xms512m -Xmx1536m \
+  -Dtomcat.hostname=$TOMCAT_HOSTNAME \
+  -Dtomcat.tls.port=${TOMCAT_TLS_PORT} \
+  -Dtomcat.ajp.port=8099 \
+  -Dtomcat.tls.server-key=$TOMCAT_TLS_SERVER_KEY \
+  -Dtomcat.tls.server-key-type=$TOMCAT_TLS_SERVER_KEY_TYPE \
+  -Dtomcat.tls.server-certificate=$TOMCAT_TLS_SERVER_CERTIFICATE \
+  -Dtomcat.tls.certificate-chain=$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN \
+  -Dtomcat.internal-proxies=${TOMCAT_INTERNAL_PROXIES}"
 
 export JPDA_ADDRESS=8788
 export JPDA_TRANSPORT=dt_socket
