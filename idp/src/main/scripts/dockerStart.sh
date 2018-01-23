@@ -56,6 +56,14 @@ if [ ! -f "$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN" ]; then
   export TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=$TOMCAT_HOME/conf/dummy-chain.pem
 fi
 
+: ${TOMCAT_PROXY_SHARED_SECRET_HEADER:=X-Proxy-Authenticate}
+export TOMCAT_PROXY_SHARED_SECRET_HEADER
+
+if [ -z "$TOMCAT_PROXY_SHARED_SECRET" ]; then
+  echo "No proxy secret for Tomcat remote IP valve assigned (TOMCAT_PROXY_SHARED_SECRET)" >&2
+  exit 1
+fi
+
 # Default is: 10/8, 192.168/16, 169.254/16, 127/8 and 172.16/12
 # But unfortunately we have to use Java RegExp:s.
 #
@@ -350,6 +358,8 @@ export CATALINA_OPTS="\
           -Dtomcat.tls.server-key-type=$TOMCAT_TLS_SERVER_KEY_TYPE \
           -Dtomcat.tls.server-certificate=$TOMCAT_TLS_SERVER_CERTIFICATE \
           -Dtomcat.tls.certificate-chain=$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN \
+          -Dtomcat.proxy.shared-secret-header=$TOMCAT_PROXY_SHARED_SECRET_HEADER \
+          -Dtomcat.proxy.shared-secret=$TOMCAT_PROXY_SHARED_SECRET \
           -Dtomcat.internal-proxies=$TOMCAT_INTERNAL_PROXIES \
 "
 
