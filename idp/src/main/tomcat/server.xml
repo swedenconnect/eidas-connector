@@ -55,9 +55,16 @@
                prefix="localhost_access_log" suffix=".log"
                pattern="%h %l %u %t &quot;%r&quot; %s %b %D X-Forwarded-For: %{X-Forwarded-For}i" />
                    
+<!-- 
         <Valve className="org.apache.catalina.valves.RemoteIpValve" 
                remoteIpHeader="X-Forwarded-For" 
                internalProxies="${tomcat.internal-proxies}" />
+-->
+        <Valve className="se.elegnamnden.eidas.valves.tomcat.CustomRemoteIpValve"
+               sharedSecretHeader="${tomcat.proxy.shared-secret-header}"
+               sharedSecret="${tomcat.proxy.shared-secret}" />
+        <!-- Default for sharedSecretHeader is X-Proxy-Authenticate -->
+             
       </Host>
 
     </Engine>

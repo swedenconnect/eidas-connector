@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>eidas-connector-idp</artifactId>
@@ -9,13 +9,13 @@
   <parent>
     <groupId>se.elegnamnden.eidas.idp</groupId>
     <artifactId>eidas-connector-base-parent</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9-SNAPSHOT</version>
   </parent>
 
   <name>eIDAS :: Swedish eIDAS connector</name>
   <description>Swedish eIDAS connector IdP</description>
   <url>https://github.com/elegnamnden/eidas-connector</url>
-  
+
   <licenses>
     <license>
       <name>GNU General Public License, Version 3</name>
@@ -24,7 +24,7 @@
       <comments>A free, copyleft license for software and other kinds of works</comments>
     </license>
   </licenses>
-  
+
   <scm>
     <connection>scm:git:https://github.com/elegnamnden/eidas-connector.git</connection>
     <developerConnection>scm:git:https://github.com/elegnamnden/eidas-connector.git</developerConnection>
@@ -45,32 +45,31 @@
       <organizationUrl>http://www.litsec.se</organizationUrl>
     </developer>
   </developers>
-  
-  <properties>  
-    <tomcat.version>8.5.23</tomcat.version>
+
+  <properties>
     <docker.image.prefix>docker.eidastest.se:5000</docker.image.prefix>
-    
+
     <mockito.version>1.9.5</mockito.version>
   </properties>
 
   <dependencies>
-  
+
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>eidas-connector-sp</artifactId>
       <version>${project.version}</version>
     </dependency>
-  
+
     <dependency>
       <groupId>se.elegnamnden.eidas.commons</groupId>
       <artifactId>metadataconfig</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>se.elegnamnden.eidas.commons</groupId>
       <artifactId>eidas-mappings</artifactId>
     </dependency>
-  
+
     <dependency>
       <groupId>se.litsec.opensaml</groupId>
       <artifactId>opensaml3-ext</artifactId>
@@ -79,33 +78,33 @@
     <dependency>
       <groupId>se.litsec.opensaml.sweid</groupId>
       <artifactId>swedish-eid-opensaml3</artifactId>
-    </dependency>      
+    </dependency>
 
     <dependency>
       <groupId>se.litsec.eidas</groupId>
       <artifactId>eidas-opensaml3</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>se.litsec.sweid.idp</groupId>
       <artifactId>shibboleth-authn-support</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>se.litsec.sweid.idp</groupId>
       <artifactId>shibboleth-attribute-support</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>se.litsec.sweid.idp</groupId>
       <artifactId>shibboleth-metadata-support</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>se.litsec.sweid.idp</groupId>
       <artifactId>shibboleth-sweid-extensions</artifactId>
-    </dependency>    
-    
+    </dependency>
+
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
@@ -115,82 +114,82 @@
       <groupId>jstl</groupId>
       <artifactId>jstl</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>net.shibboleth.idp</groupId>
       <artifactId>idp-authn-api</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>net.shibboleth.idp</groupId>
       <artifactId>idp-authn-impl</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>net.shibboleth.idp</groupId>
       <artifactId>idp-attribute-resolver-impl</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>net.shibboleth.idp</groupId>
       <artifactId>idp-attribute-resolver-spring</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>net.shibboleth.idp</groupId>
       <artifactId>idp-session-impl</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>net.shibboleth.idp</groupId>
       <artifactId>idp-ui</artifactId>
-    </dependency>    
-    
+    </dependency>
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-core</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-api</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-messaging-api</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-messaging-impl</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-profile-api</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-profile-impl</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.opensaml</groupId>
       <artifactId>opensaml-saml-impl</artifactId>
     </dependency>
-        
+
     <dependency>
       <groupId>org.springframework.mobile</groupId>
       <artifactId>spring-mobile-device</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
@@ -200,7 +199,7 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -212,13 +211,13 @@
       <artifactId>spring-test</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
       <scope>test</scope>
-    </dependency>    
+    </dependency>
 
   </dependencies>
 
@@ -281,6 +280,26 @@
             </configuration>
           </execution>
 
+          <execution>
+            <id>copy-valve</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>se.elegnamnden.eidas.idp</groupId>
+                  <artifactId>custom-remoteip-valve</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/lib</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+
         </executions>
       </plugin>
 
@@ -288,7 +307,7 @@
         <artifactId>maven-antrun-plugin</artifactId>
         <version>1.8</version>
         <executions>
-        
+
           <execution>
             <id>copy-credentials</id>
             <phase>process-resources</phase>
@@ -296,44 +315,44 @@
               <target>
                 <echo>Copy Shibboleth metadata and credentials</echo>
                 <copy todir="${project.build.directory}/shibboleth/metadata" overwrite="true">
-                  <fileset dir="${project.build.directory}/dependency/shibboleth-base/metadata"/>
+                  <fileset dir="${project.build.directory}/dependency/shibboleth-base/metadata" />
                 </copy>
               </target>
             </configuration>
             <goals>
               <goal>run</goal>
-            </goals>            
+            </goals>
           </execution>
- 
+
           <execution>
             <id>install-shibboleth</id>
             <phase>process-resources</phase>
             <configuration>
               <target name="install-shibboleth">
-                <copy file="${project.basedir}/src/main/shibboleth/idp.merge.properties" tofile="${project.build.directory}/idp.merge.properties"/>
-                
+                <copy file="${project.basedir}/src/main/shibboleth/idp.merge.properties" tofile="${project.build.directory}/idp.merge.properties" />
+
                 <echo>Running install on Shibboleth</echo>
                 <exec dir="${project.build.directory}/dependency/shibboleth-base/bin/" executable="cmd" osfamily="Windows">
-                  <arg value="/c"/>
-                  <!-- <arg value="if not exist ${project.build.directory}/shibboleth"/>--> <!-- Check if install has run. This will speedup local development. -->
-                  <arg value="install.bat"/>
-                  <arg value="-Didp.target.dir=${project.build.directory}/shibboleth"/>
-                  <arg value="-Didp.noprompt=true"/>
-                  <arg value="-Didp.merge.properties=${project.build.directory}/idp.merge.properties"/>
-                  <arg value="-Didp.host.name=www.elegnamnden.se"/>
-                  <arg value="-Didp.src.dir=."/>
-                  <arg value="-Didp.keystore.password=pswForBackChanelKeystore"/>
-                  <arg value="-Didp.sealer.password=localDevelopmentSealerPassword"/>
+                  <arg value="/c" />
+                  <!-- <arg value="if not exist ${project.build.directory}/shibboleth"/> --> <!-- Check if install has run. This will speedup local development. -->
+                  <arg value="install.bat" />
+                  <arg value="-Didp.target.dir=${project.build.directory}/shibboleth" />
+                  <arg value="-Didp.noprompt=true" />
+                  <arg value="-Didp.merge.properties=${project.build.directory}/idp.merge.properties" />
+                  <arg value="-Didp.host.name=www.elegnamnden.se" />
+                  <arg value="-Didp.src.dir=." />
+                  <arg value="-Didp.keystore.password=pswForBackChanelKeystore" />
+                  <arg value="-Didp.sealer.password=localDevelopmentSealerPassword" />
                 </exec>
-                <exec dir="${project.build.directory}/dependency/shibboleth-base/bin/" executable="./install.sh" osfamily="unix">                
+                <exec dir="${project.build.directory}/dependency/shibboleth-base/bin/" executable="./install.sh" osfamily="unix">
                   <!-- <arg value="if not exist ${project.build.directory}/shibboleth"/> --><!-- Check if install has run. This will speedup local development. -->
                   <arg value="-Didp.target.dir=${project.build.directory}/shibboleth" />
-                  <arg value="-Didp.noprompt=true"/>
-                  <arg value="-Didp.merge.properties=${project.build.directory}/idp.merge.properties"/>
-                  <arg value="-Didp.host.name=www.elegnamnden.se"/>
-                  <arg value="-Didp.src.dir=."/>
-                  <arg value="-Didp.keystore.password=randomKeystorePsw"/>
-                  <arg value="-Didp.sealer.password=randomSealername"/>
+                  <arg value="-Didp.noprompt=true" />
+                  <arg value="-Didp.merge.properties=${project.build.directory}/idp.merge.properties" />
+                  <arg value="-Didp.host.name=www.elegnamnden.se" />
+                  <arg value="-Didp.src.dir=." />
+                  <arg value="-Didp.keystore.password=randomKeystorePsw" />
+                  <arg value="-Didp.sealer.password=randomSealername" />
                 </exec>
               </target>
             </configuration>
@@ -341,7 +360,7 @@
               <goal>run</goal>
             </goals>
           </execution>
-          
+
           <execution>
             <id>copy-shibboleth-config</id>
             <phase>process-resources</phase>
@@ -349,22 +368,23 @@
               <target>
                 <echo>Copy Shibboleth override config</echo>
                 <copy todir="${project.build.directory}/shibboleth/" overwrite="true">
-                  <fileset dir="${project.basedir}/src/main/shibboleth/config"/>
+                  <fileset dir="${project.basedir}/src/main/shibboleth/config" />
                 </copy>
               </target>
             </configuration>
             <goals>
               <goal>run</goal>
-            </goals>            
+            </goals>
           </execution>
-                    
+
           <execution>
             <id>run-shibboleth-build</id>
             <phase>package</phase>
             <configuration>
               <target>
-                
-                <echo>Replace values in idp.properties ${project.build.directory}/shibboleth-${project.artifactId}-${project.version}/conf/idp.properties</echo>
+
+                <echo>Replace values in idp.properties
+                  ${project.build.directory}/shibboleth-${project.artifactId}-${project.version}/conf/idp.properties</echo>
                 <propertyfile file="${project.build.directory}/shibboleth/conf/idp.properties">
                   <entry key="idp.entityID" value="%{idp.entityID}" />
                   <entry key="idp.sealer.storeResource" value="%{idp.sealer.storeResource}" />
@@ -378,21 +398,21 @@
                   <entry key="idp.metadata.signing.key" value="%{idp.metadata.signing.key}" />
                   <entry key="idp.metadata.signing.cert" value="%{idp.metadata.signing.cert}" />
                 </propertyfile>
-                             
+
                 <echo>Copy tomcat override config</echo>
                 <copy todir="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/conf/" overwrite="true">
-                  <fileset dir="${project.basedir}/src/main/tomcat"/>
+                  <fileset dir="${project.basedir}/src/main/tomcat" />
                 </copy>
 
                 <echo>Copy webapp content</echo>
                 <copy todir="${project.build.directory}/shibboleth/edit-webapp" overwrite="true">
-                  <fileset dir="${project.basedir}/src/main/webapp"/>
+                  <fileset dir="${project.basedir}/src/main/webapp" />
                 </copy>
 
                 <echo>Copy this project lib</echo>
-                <!-- TODO: Check if name is correct -->                 
-                <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar" tofile="${project.build.directory}/shibboleth/edit-webapp/WEB-INF/lib/${project.build.finalName}.jar"/>
-                
+                <!-- TODO: Check if name is correct -->
+                <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar" tofile="${project.build.directory}/shibboleth/edit-webapp/WEB-INF/lib/${project.build.finalName}.jar" />
+
                 <echo>Copy test credentials</echo>
                 <copy todir="${project.build.directory}/credentials" overwrite="true">
                   <fileset dir="${project.basedir}/credentials" />
@@ -400,14 +420,14 @@
 
                 <echo>Running build on Shibboleth installation</echo>
                 <exec dir="${project.build.directory}/shibboleth/bin/" executable="cmd" osfamily="windows">
-                  <arg value="/c"/>
-                  <arg value="build.bat"/>
-                  <arg value="-Didp.noprompt=true"/>
+                  <arg value="/c" />
+                  <arg value="build.bat" />
+                  <arg value="-Didp.noprompt=true" />
                 </exec>
                 <exec dir="${project.build.directory}/shibboleth/bin/" executable="./build.sh" osfamily="unix">
-                  <arg value="-Didp.noprompt=true"/>
+                  <arg value="-Didp.noprompt=true" />
                 </exec>
-                
+
                 <echo>Clean up</echo>
                 <delete file="${project.build.directory}/shibboleth/idp_ant.log" />
                 <delete includeEmptyDirs="true">
@@ -424,11 +444,11 @@
                 <delete includeEmptyDirs="true">
                   <fileset dir="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/webapps/" includes="**/*" />
                 </delete>
-                            
-                <copy file="${project.build.directory}/shibboleth/war/idp.war" tofile="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/webapps/idp.war"/>
+
+                <copy file="${project.build.directory}/shibboleth/war/idp.war" tofile="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/webapps/idp.war" />
                 <copy file="${project.basedir}/src/main/scripts/dockerStart.sh" tofile="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/bin/dockerStart.sh" />
-                                
-                <chmod perm="755" dir="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/bin" includes="**/*.sh"/>
+
+                <chmod perm="755" dir="${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/bin" includes="**/*.sh" />
               </target>
             </configuration>
             <goals>
@@ -437,7 +457,7 @@
           </execution>
         </executions>
       </plugin>
-      
+
       <!-- Build the distribution zip -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -483,21 +503,64 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>      
-      
+      </plugin>
+
       <!-- Support for Docker -->
       <plugin>
         <groupId>com.spotify</groupId>
         <artifactId>dockerfile-maven-plugin</artifactId>
         <version>1.3.6</version>
-        <configuration>          
+        <configuration>
           <repository>${docker.image.prefix}/${project.artifactId}</repository>
           <tag>latest</tag>
           <useMavenSettingsForAuth>true</useMavenSettingsForAuth>
         </configuration>
-      </plugin>      
+      </plugin>
 
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>eclipse-fix</id>
+      <activation>
+        <property>
+          <name>m2e.version</name>
+        </property>
+      </activation>
+
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.eclipse.m2e</groupId>
+              <artifactId>lifecycle-mapping</artifactId>
+              <version>1.0.0</version>
+              <configuration>
+                <lifecycleMappingMetadata>
+                  <pluginExecutions>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <versionRange>2.8</versionRange>
+                        <goals>
+                          <goal>copy</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore />
+                      </action>
+                    </pluginExecution>
+                  </pluginExecutions>
+                </lifecycleMappingMetadata>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+      
+    </profile>
+  </profiles>
 
 </project>

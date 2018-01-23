@@ -49,6 +49,9 @@ if [ ! -f "$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN" ]; then
   TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=$TOMCAT_HOME/conf/dummy-chain.pem
 fi
 
+TOMCAT_PROXY_SHARED_SECRET_HEADER=X-Proxy-Authenticate
+TOMCAT_PROXY_SHARED_SECRET=123456
+
 # Default is: 10/8, 192.168/16, 169.254/16, 127/8 and 172.16/12
 # But unfortunately we have to use Java RegExp:s.
 #
@@ -226,6 +229,8 @@ export CATALINA_OPTS="-Xms512m -Xmx1536m \
   -Dtomcat.tls.server-key-type=$TOMCAT_TLS_SERVER_KEY_TYPE \
   -Dtomcat.tls.server-certificate=$TOMCAT_TLS_SERVER_CERTIFICATE \
   -Dtomcat.tls.certificate-chain=$TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN \
+  -Dtomcat.proxy.shared-secret-header=$TOMCAT_PROXY_SHARED_SECRET_HEADER \
+  -Dtomcat.proxy.shared-secret=$TOMCAT_PROXY_SHARED_SECRET \
   -Dtomcat.internal-proxies=${TOMCAT_INTERNAL_PROXIES}"
 
 export JPDA_ADDRESS=8788
