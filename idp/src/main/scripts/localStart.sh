@@ -61,7 +61,8 @@ TOMCAT_INTERNAL_PROXIES="'10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,
 # IdP and SP settings
 #
 IDP_ENTITY_ID=https://eunode.eidastest.se/idp2
-SP_ENTITY_ID=https://eunode.eidastest.se/connector-sp
+SP_ENTITY_ID=https://localhost:9200/idp/metadata/sp
+#https://eunode.eidastest.se/connector-sp
 
 IDP_PRID_SERVICE_URL=https://localhost:9443/prid
 
@@ -79,10 +80,10 @@ FEDERATION_METADATA_URL=https://eid.svelegtest.se/metadata/feed
 FEDERATION_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/metadata-validation-cert.crt
 
 # https://eid.svelegtest.se/nodeconfig/mdservicelist
-EIDAS_METADATA_SERVICE_LIST_URL=file:///private/etc/eidas-connector/mock/metadataList.xml
+EIDAS_METADATA_SERVICE_LIST_URL=file://${EIDAS_LOCAL_ENV}/metadata/metadataList.xml
 EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT=${IDP_HOME}/metadata/eidas-servicelist-validation-cert.crt
 # https://eid.svelegtest.se/nodeconfig/metadata
-EIDAS_METADATA_URL=file:///private/etc/eidas-connector/mock/metadata.xml
+EIDAS_METADATA_URL=file://${EIDAS_LOCAL_ENV}/metadata/metadata.xml
 EIDAS_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/eidas-metadata-validation-cert.crt
 # false
 EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION=true
