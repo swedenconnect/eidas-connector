@@ -42,9 +42,9 @@
    -->
   <bean id="sweid.AbstractExternalAuthenticationController" class="se.litsec.shibboleth.idp.authn.controller.sweid.AbstractExternalAuthenticationController"
     abstract="true" 
-    p:attributeToIdMapping-ref="sweid.SAML2AttributeNameToIdMapperService"
-    p:signMessageService-ref="eidas.SignMessageService" 
-    p:flowName="authn/External" />
+    p:signSupportService-ref="eidas.SignSupportService"
+    p:attributeToIdMapping-ref="sweid.SAML2AttributeNameToIdMapperService"    
+    p:flowName="authn/External" />    
     
   <bean id="eidas.ProxyAuthenticationController" class="se.elegnamnden.eidas.idp.connector.controller.ProxyAuthenticationController" 
     parent="sweid.AbstractExternalAuthenticationController"

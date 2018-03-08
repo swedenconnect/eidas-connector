@@ -50,10 +50,29 @@
     p:flowName="authn/External"
     p:authnContextweightMap-ref="shibboleth.AuthenticationPrincipalWeightMap"
     p:loaMappings-ref="eidas.LevelOfAssuranceMappings" />
+          
+  <bean id="eidas.SignSupportService" class="se.litsec.shibboleth.idp.authn.service.impl.SignSupportServiceImpl" scope="singleton"
+      p:authnContextService-ref="eidas.EidasAuthnContextService"
+      p:signatureSupportKeyService-ref="sweid.SignatureServiceSupportService"
+      p:entityID="%{idp.entityID}"
+      p:scal2Supported="%{idp.scal2.support:false}">
     
-  <bean id="eidas.SignMessageService" class="se.elegnamnden.eidas.idp.connector.service.ConnectorSignatureMessageServiceImpl" scope="singleton"
-    p:authnContextService-ref="eidas.EidasAuthnContextService"
-    p:signMessageDecrypter-ref="sweid.SignMessageDecryptionService" />
+    <property name="supportedMimeTypes">
+      <list>
+        <value>text</value>
+      </list>
+    </property>
+    <property name="sadFactory">
+      <bean class="se.litsec.swedisheid.opensaml.saml2.signservice.SADFactory"
+        c:idpEntityID="%{idp.entityID}"
+        p:validityTime="%{idp.signature-support.sad.validity-time:300}" 
+        p:userIdAttributeName="%{idp.signature-support.sad.userid-attribute-name}"
+        p:jwtIdSize="%{idp.signature-support.sad.id-size:24}"
+        p:jwtSigningAlgorithm="%{idp.signature-support.sad.jwt-signing-algorithm:RS256}">
+        <constructor-arg name="signingCredential"><null /></constructor-arg>
+      </bean>    
+    </property>      
+  </bean>
   
   <bean id="eidas.LevelOfAssuranceMappings" class="se.elegnamnden.eidas.mapping.loa.StaticLevelOfAssuranceMappings" scope="singleton" />
   
