@@ -78,6 +78,12 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
     }
     return AttributeUtils.getAttributeStringValue(principalAttribute);
   }
+  
+  /** {@inheritDoc} */
+  @Override
+  public String getPrincipalAttributeName() {
+    return AttributeConstants.ATTRIBUTE_NAME_PRID;
+  }
 
   /**
    * Performs the following steps:

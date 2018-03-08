@@ -29,11 +29,13 @@
             <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-low"/>
             <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-sub"/>
             <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-high"/>
+            <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-nf-low"/>
             <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-nf-sub"/>
             <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-nf-high"/>
             <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-low-sigm"/>
             <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-sub-sigm"/>
             <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-high-sigm"/>
+            <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-nf-low-sigm"/>
             <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-nf-sub-sigm"/>
             <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-nf-high-sigm"/>
           </util:list>
@@ -54,7 +56,7 @@
     <util:map id="shibboleth.AuthenticationPrincipalWeightMap">
       <entry>
         <key>
-          <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-sub" />
+          <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="http://id.elegnamnden.se/loa/1.0/eidas-nf-sub" />
         </key>
         <value>1</value>
       </entry>

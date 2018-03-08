@@ -60,15 +60,18 @@ import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessor;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseStatusErrorException;
 import se.elegnamnden.eidas.metadataconfig.MetadataConfig;
 import se.elegnamnden.eidas.metadataconfig.data.EndPointConfig;
+import se.litsec.opensaml.saml2.attribute.AttributeTemplate;
 import se.litsec.opensaml.saml2.common.request.RequestGenerationException;
 import se.litsec.opensaml.saml2.common.request.RequestHttpObject;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
 import se.litsec.shibboleth.idp.authn.ExternalAutenticationErrorCodeException;
 import se.litsec.shibboleth.idp.authn.context.ProxyIdpAuthenticationContext;
 import se.litsec.shibboleth.idp.authn.context.SignMessageContext;
+import se.litsec.shibboleth.idp.authn.context.SignatureActivationDataContext;
 import se.litsec.shibboleth.idp.authn.context.strategy.AuthenticationContextLookup;
 import se.litsec.shibboleth.idp.authn.context.strategy.ProxyIdpAuthenticationContextLookup;
 import se.litsec.shibboleth.idp.authn.controller.AbstractExternalAuthenticationController;
+import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeConstants;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSet;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSetConstants;
 
@@ -101,10 +104,12 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   private final Logger log = LoggerFactory.getLogger(ProxyAuthenticationController.class);
 
   /** Strategy that gives us the AuthenticationContext. */
-  @SuppressWarnings("rawtypes") private static Function<ProfileRequestContext, AuthenticationContext> authenticationContextLookupStrategy = new AuthenticationContextLookup();
+  @SuppressWarnings("rawtypes")
+  private static Function<ProfileRequestContext, AuthenticationContext> authenticationContextLookupStrategy = new AuthenticationContextLookup();
 
   /** Strategy used to locate the ProxyIdpAuthenticationContext. */
-  @SuppressWarnings("rawtypes") private static Function<ProfileRequestContext, ProxyIdpAuthenticationContext> proxyIdpAuthenticationContextLookupStrategy = Functions
+  @SuppressWarnings("rawtypes")
+  private static Function<ProfileRequestContext, ProxyIdpAuthenticationContext> proxyIdpAuthenticationContextLookupStrategy = Functions
     .compose(new ProxyIdpAuthenticationContextLookup(), authenticationContextLookupStrategy);
 
   /** The name of the authenticator. */
@@ -146,19 +151,19 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     return this.countrySelect(httpRequest, httpResponse, null);
   }
-  
+
   @RequestMapping(value = "/start", method = RequestMethod.POST)
   public ModelAndView countrySelect(
       HttpServletRequest httpRequest,
       HttpServletResponse httpResponse,
       @RequestParam(name = "language", required = false) String language) throws ExternalAuthenticationException, IOException {
-    
+
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
-    
+
     if (language != null) {
       this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
     }
-    
+
     // Selected country from earlier session.
     //
     final String selectedCountry = this.countrySelectionHandler.getSelectedCountry(httpRequest, true);
@@ -168,7 +173,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // If the request is made by a signature service and the selected country is known, we skip
     // the "select country" view.
     //
-    if (this.signMessageService.isSignatureServicePeer(context) && selectedCountry != null) {
+    if (this.getSignSupportService().isSignatureServicePeer(context) && selectedCountry != null) {
       log.info("Request is from a signature service. Will default to previously selected country: '{}'", selectedCountry);
       return this.processAuthentication(httpRequest, httpResponse, ACTION_AUTHENTICATE, selectedCountry);
     }
@@ -183,7 +188,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       modelAndView.addObject("selectedCountry", this.countrySelectionHandler.getSelectedCountry(httpRequest, false));
     }
 
-    return modelAndView;    
+    return modelAndView;
   }
 
   @RequestMapping(value = "/proxyauth", method = RequestMethod.POST)
@@ -191,7 +196,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       HttpServletRequest httpRequest,
       HttpServletResponse httpResponse,
       @RequestParam("action") String action,
-      @RequestParam(name = "selectedCountry", required = false) String selectedCountry) throws ExternalAuthenticationException, IOException {
+      @RequestParam(name = "selectedCountry", required = false) String selectedCountry) throws ExternalAuthenticationException,
+          IOException {
 
     if (ACTION_CANCEL.equals(action)) {
       log.info("User cancelled country selection - aborting authentication");
@@ -379,7 +385,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       }
       proxyContext.addAdditionalData("result", result);
       proxyContext.addAdditionalData("attributes", attributes);
-      
+
       if (result.getAssertion() != null) {
         proxyContext.setAssertion(result.getAssertion());
       }
@@ -411,7 +417,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Pick up the context from the session. If the request is stale, we'll get an exception.
     //
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
-    
+
     if (language != null) {
       this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
     }
@@ -428,14 +434,17 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // If 'action' is null we were called internally.
     if (action == null) {
 
-      if (this.signMessageService.isSignatureServicePeer(context)) {
+      if (this.getSignSupportService().isSignatureServicePeer(context)) {
         ModelAndView modelAndView = new ModelAndView("sign-consent");
         modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
-        SignMessageContext signMessageContext = signMessageService.getSignMessageContext(context);
+
+        SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
+
         if (signMessageContext != null && signMessageContext.isDisplayMessage()) {
           modelAndView.addObject("signMessageConsent", this.signMessageUiHandler.getSignMessageConsentModel(
             signMessageContext.getClearTextMessage(), signMessageContext.getSignMessage().getMimeTypeEnum(),
             attributes, (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
+
           return modelAndView;
         }
         else {
@@ -457,6 +466,16 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     try {
       String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(context, result.getAuthnContextClassUri(),
         signMessageDisplayed);
+
+      // Check if we should issue a SAD attribute.
+      //
+      SignatureActivationDataContext sadContext = this.getSignSupportService().getSadContext(context);
+      if (sadContext != null && signMessageDisplayed && this.getSignSupportService().isSignatureServicePeer(context)) {
+        String sad = this.getSignSupportService().issueSAD(context, attributes, 
+          this.attributeProcessingService.getPrincipalAttributeName(), loaToIssue);
+        
+        attributes.add(AttributeConstants.ATTRIBUTE_TEMPLATE_SAD.createBuilder().value(sad).build());
+      }
 
       this.success(httpRequest, httpResponse, this.attributeProcessingService.getPrincipal(attributes), attributes, loaToIssue, result
         .getAuthnInstant(), null);

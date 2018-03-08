@@ -49,6 +49,13 @@ public interface AttributeProcessingService {
   String getPrincipal(List<Attribute> attributes) throws AttributeProcessingException;
 
   /**
+   * Returns the name of the attribute that is the attribute that represents the principal (subject).
+   * 
+   * @return attribute name
+   */
+  String getPrincipalAttributeName();
+
+  /**
    * Given a response result, the implementation will perform an attribute release process including transforming eIDAS
    * attributes into national eID definitions of attributes, possibly add extra attributes to release and so on.
    * 
