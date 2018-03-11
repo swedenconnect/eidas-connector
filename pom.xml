@@ -49,9 +49,9 @@
     
     <tomcat.version>8.5.23</tomcat.version>
     
-    <shibboleth-base-package.version>1.2-SNAPSHOT</shibboleth-base-package.version>
+    <shibboleth-base-package.version>1.2</shibboleth-base-package.version>
     <opensaml.eidas.version>1.1.0</opensaml.eidas.version>
-    <eidas-commons.version>1.0.2</eidas-commons.version>
+    <eidas-commons.version>1.0.3</eidas-commons.version>
         
     <lombok.version>1.16.8</lombok.version>
   </properties>
@@ -141,8 +141,7 @@
       <dependency>
         <groupId>se.elegnamnden.eidas.commons</groupId>
         <artifactId>eidas-mappings</artifactId>
-        <!-- <version>${eidas-commons.version}</version> -->
-        <version>1.0.3-SNAPSHOT</version>
+        <version>${eidas-commons.version}</version>
         <scope>compile</scope>
       </dependency>
       
