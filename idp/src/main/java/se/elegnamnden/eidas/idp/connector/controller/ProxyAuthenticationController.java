@@ -60,7 +60,6 @@ import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessor;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseStatusErrorException;
 import se.elegnamnden.eidas.metadataconfig.MetadataConfig;
 import se.elegnamnden.eidas.metadataconfig.data.EndPointConfig;
-import se.litsec.opensaml.saml2.attribute.AttributeTemplate;
 import se.litsec.opensaml.saml2.common.request.RequestGenerationException;
 import se.litsec.opensaml.saml2.common.request.RequestHttpObject;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;

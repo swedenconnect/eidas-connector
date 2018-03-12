@@ -49,6 +49,8 @@
   <properties>
     <docker.image.prefix>docker.eidastest.se:5000</docker.image.prefix>
 
+    <shibboleth-base.version>1.2.1</shibboleth-base.version>
+
     <mockito.version>1.9.5</mockito.version>
   </properties>
 
@@ -253,7 +255,7 @@
                 <artifactItem>
                   <groupId>se.litsec.sweid.idp</groupId>
                   <artifactId>shibboleth-base</artifactId>
-                  <version>${shibboleth-base-package.version}</version>
+                  <version>${shibboleth-base.version}</version>
                   <type>zip</type>
                 </artifactItem>
                 <artifactItem>

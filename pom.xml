@@ -49,7 +49,6 @@
     
     <tomcat.version>8.5.23</tomcat.version>
     
-    <shibboleth-base-package.version>1.2</shibboleth-base-package.version>
     <opensaml.eidas.version>1.1.0</opensaml.eidas.version>
     <eidas-commons.version>1.0.3</eidas-commons.version>
         
@@ -103,7 +102,7 @@
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-bom</artifactId>
-        <version>${shibboleth-base-package.version}</version>
+        <version>1.2.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -111,17 +110,10 @@
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-dependency-bom</artifactId>
-        <version>${shibboleth-base-package.version}</version>
+        <version>1.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>      
-
-      <dependency>
-        <groupId>se.litsec.sweid.idp</groupId>
-        <artifactId>shibboleth-base</artifactId>
-        <version>${shibboleth-base-package.version}</version>
-        <type>zip</type>
-      </dependency>
 
       <dependency>
         <groupId>se.litsec.eidas</groupId>
