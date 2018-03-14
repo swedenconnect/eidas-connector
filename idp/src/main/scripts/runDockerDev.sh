@@ -15,6 +15,10 @@ docker run -d --name eidas-connector --restart=always \
   -e IDP_SERVER_HOSTNAME=localhost -e IDP_SERVER_PORT=9200 \
   -e IDP_ENTITY_ID="https://eunode.eidastest.se/idp2" \
   -e SP_ENTITY_ID="https://eunode.eidastest.se/connector-sp" \
+  -e FEDERATION_METADATA_URL="https://qa.md.swedenconnect.se/entities" \
+  -e FEDERATION_METADATA_VALIDATION_CERT=/tmp/eidas-connector-credentials/metadata/sc-qa-metadata-validation-cert.crt \
+  -e SECONDARY_FEDERATION_METADATA_URL="https://eid.svelegtest.se/metadata/feed" \
+  -e SECONDARY_FEDERATION_METADATA_VALIDATION_CERT=/tmp/eidas-connector-credentials/metadata/sveleg-metadata-validation-cert.crt \  
   -e EIDAS_METADATA_SERVICE_LIST_URL=file:///etc/eidas-connector/mock/metadataList.xml \
   -e EIDAS_METADATA_URL=file:///etc/eidas-connector/mock/metadata.xml \
   -e EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION=true \

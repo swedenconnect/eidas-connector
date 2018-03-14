@@ -181,10 +181,17 @@ fi
 # Metadata
 #
 IDP_METADATA_RESOURCES_BEAN=shibboleth.MetadataResolverResources
+if [ -n "$SECONDARY_FEDERATION_METADATA_URL" ]; then
+  if [ -z "$SECONDARY_FEDERATION_METADATA_VALIDATION_CERT" ]; then
+    echo "SECONDARY_FEDERATION_METADATA_VALIDATION_CERT must be set" >&2
+    exit 1
+  fi
+  IDP_METADATA_RESOURCES_BEAN=shibboleth.MetadataResolverResources2
+fi
 export IDP_METADATA_RESOURCES_BEAN
 
-: ${FEDERATION_METADATA_URL:=https://eid.svelegtest.se/metadata/feed}
-: ${FEDERATION_METADATA_VALIDATION_CERT:=$IDP_HOME/metadata/metadata-validation-cert.crt}
+: ${FEDERATION_METADATA_URL:=https://qa.md.swedenconnect.se/entities}
+: ${FEDERATION_METADATA_VALIDATION_CERT:=$IDP_HOME/metadata/sc-qa-metadata-validation-cert.crt}
 : ${EIDAS_METADATA_SERVICE_LIST_URL:=https://eid.svelegtest.se/nodeconfig/mdservicelist}
 : ${EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT:=${IDP_HOME}/metadata/eidas-servicelist-validation-cert.crt}
 : ${EIDAS_METADATA_URL:=https://eid.svelegtest.se/nodeconfig/metadata}
@@ -307,6 +314,12 @@ export JAVA_OPTS="\
           -Didp.process.appender=$IDP_PROCESS_APPENDER \
           ${JAVA_OPTS}"
 
+#
+# Secondary metadata source
+#
+if [ -n "$SECONDARY_FEDERATION_METADATA_URL" ]; then
+  export JAVA_OPTS="${JAVA_OPTS} -Didp.metadata.secondary.federation.url=${SECONDARY_FEDERATION_METADATA_URL} -Didp.metadata.secondary.federation.validation-certificate=${SECONDARY_FEDERATION_METADATA_VALIDATION_CERT}"
+fi
 
 # F-Ticks
 
