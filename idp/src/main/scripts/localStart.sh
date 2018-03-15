@@ -76,8 +76,11 @@ IDP_PERSISTENT_ID_SALT=jkio98gbnmklop0Pr5WTvCgh
 #
 # Metadata
 #
-FEDERATION_METADATA_URL=https://eid.svelegtest.se/metadata/feed
-FEDERATION_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/metadata-validation-cert.crt
+FEDERATION_METADATA_URL=https://qa.md.swedenconnect.se/entities
+FEDERATION_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/sc-qa-metadata-validation-cert.crt
+
+SECONDARY_FEDERATION_METADATA_URL=https://eid.svelegtest.se/metadata/feed
+SECONDARY_FEDERATION_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/sveleg-metadata-validation-cert.crt
 
 # https://eid.svelegtest.se/nodeconfig/mdservicelist
 EIDAS_METADATA_SERVICE_LIST_URL=file://${EIDAS_LOCAL_ENV}/metadata/metadataList.xml
@@ -134,6 +137,8 @@ export JAVA_OPTS="-Didp.devel.mode=false \
 -Didp.metadata.signing.cert=$IDP_CREDENTIALS/metadata-signing.crt \
 -Didp.metadata.federation.url=${FEDERATION_METADATA_URL} \
 -Didp.metadata.federation.validation-certificate=${FEDERATION_METADATA_VALIDATION_CERT} \
+-Didp.metadata.secondary.federation.url=${SECONDARY_FEDERATION_METADATA_URL} \
+-Didp.metadata.secondary.federation.validation-certificate=${SECONDARY_FEDERATION_METADATA_VALIDATION_CERT} \
 -Didp.metadata.eidas.service-list.url=${EIDAS_METADATA_SERVICE_LIST_URL} \
 -Didp.metadata.eidas.service-list.validation-certificate=${EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT} \
 -Didp.metadata.eidas.federation.url=${EIDAS_METADATA_URL} \
