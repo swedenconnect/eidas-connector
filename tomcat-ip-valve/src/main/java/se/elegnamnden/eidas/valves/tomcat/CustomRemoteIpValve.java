@@ -28,6 +28,12 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.http.MimeHeaders;
 
+/**
+ * A customized remote IP valve that checks for a shared secret instead of matching internal proxies against
+ * regular expressions.
+ * 
+ * @author Martin Lindström (martin.lindstrom@litsec.se)
+ */
 public class CustomRemoteIpValve extends RemoteIpValve {
 
   /** Logger. */
@@ -104,7 +110,7 @@ public class CustomRemoteIpValve extends RemoteIpValve {
       }
       super.invoke(request, response);
     }
-    else {
+    else {      
       if (log.isDebugEnabled()) {
         log.debug(String.format("Skip RemoteIpValve for request %s with originalRemoteAddr '%s'", request.getRequestURI(), request
           .getRemoteAddr()));
