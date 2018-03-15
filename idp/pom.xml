@@ -4,12 +4,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>eidas-connector-idp</artifactId>
+  <version>1.1.0</version>
   <packaging>jar</packaging>
 
   <parent>
     <groupId>se.elegnamnden.eidas.idp</groupId>
     <artifactId>eidas-connector-base-parent</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1</version>
   </parent>
 
   <name>eIDAS :: Swedish eIDAS connector</name>
@@ -18,10 +19,9 @@
 
   <licenses>
     <license>
-      <name>GNU General Public License, Version 3</name>
-      <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
       <distribution>repo</distribution>
-      <comments>A free, copyleft license for software and other kinds of works</comments>
     </license>
   </licenses>
 
@@ -50,6 +50,7 @@
     <docker.image.prefix>docker.eidastest.se:5000</docker.image.prefix>
 
     <shibboleth-base.version>1.2.1</shibboleth-base.version>
+    <custom-remoteip-valve.version>1.1.0</custom-remoteip-valve.version>
 
     <mockito.version>1.9.5</mockito.version>
   </properties>
@@ -293,7 +294,7 @@
                 <artifactItem>
                   <groupId>se.elegnamnden.eidas.idp</groupId>
                   <artifactId>custom-remoteip-valve</artifactId>
-                  <version>${project.version}</version>
+                  <version>${custom-remoteip-valve.version}</version>
                   <type>jar</type>
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/dependency/apache-tomcat-${tomcat.version}/lib</outputDirectory>
