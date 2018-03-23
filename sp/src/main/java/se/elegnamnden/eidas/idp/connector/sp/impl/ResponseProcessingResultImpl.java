@@ -88,12 +88,18 @@ public class ResponseProcessingResultImpl implements ResponseProcessingResult {
   /** {@inheritDoc} */
   @Override
   public DateTime getAuthnInstant() {
-    try {
-      return this.assertion.getAuthnStatements().get(0).getAuthnInstant();
+    
+    DateTime authnInstant = this.assertion.getAuthnStatements().get(0).getAuthnInstant();
+    
+    // We have already checked the validity of the authentication instant, but if it is
+    // after the current time it means that it is within the allowed clock skew. If so,
+    // we set it to the current time (it's the best we can do).
+    
+    if (authnInstant.isAfterNow()) {
+      return new DateTime();
     }
-    catch (NullPointerException e) {
-      return null;
-    }
+    
+    return authnInstant;
   }
 
   /** {@inheritDoc} */

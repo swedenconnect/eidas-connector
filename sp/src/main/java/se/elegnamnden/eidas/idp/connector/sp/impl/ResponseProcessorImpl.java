@@ -1,22 +1,17 @@
 /*
- * The eidas-connector project is the implementation of the Swedish eIDAS 
- * connector built on top of the Shibboleth IdP.
+ * Copyright 2017-2018 E-legitimationsnämnden
  *
- * More details on <https://github.com/elegnamnden/eidas-connector> 
- * Copyright (C) 2017 E-legitimationsnämnden
- * 
- * This program is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License 
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package se.elegnamnden.eidas.idp.connector.sp.impl;
 
@@ -25,7 +20,6 @@ import java.util.Optional;
 
 import org.opensaml.core.xml.io.UnmarshallingException;
 import org.opensaml.messaging.decoder.MessageDecodingException;
-import org.opensaml.saml.common.SignableSAMLObject;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.common.assertion.ValidationResult;
 import org.opensaml.saml.common.xml.SAMLConstants;
@@ -38,13 +32,10 @@ import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
 import org.opensaml.saml.security.impl.MetadataCredentialResolver;
 import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
-import org.opensaml.security.SecurityException;
 import org.opensaml.security.credential.UsageType;
 import org.opensaml.security.criteria.UsageCriterion;
 import org.opensaml.xmlsec.config.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xmlsec.encryption.support.DecryptionException;
-import org.opensaml.xmlsec.signature.Signature;
-import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.SignaturePrevalidator;
 import org.opensaml.xmlsec.signature.support.SignatureTrustEngine;
 import org.opensaml.xmlsec.signature.support.impl.ExplicitKeySignatureTrustEngine;
@@ -52,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
-import org.w3c.dom.Attr;
 
 import net.shibboleth.utilities.java.support.codec.Base64Support;
 import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
@@ -63,11 +53,16 @@ import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingResult;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessor;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseStatusErrorException;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseValidationException;
-import se.elegnamnden.eidas.idp.connector.sp.SignatureValidationException;
+import se.elegnamnden.eidas.idp.connector.sp.ResponseValidationSettings;
+import se.elegnamnden.eidas.idp.connector.sp.validation.EidasAssertionValidator;
+import se.elegnamnden.eidas.idp.connector.sp.validation.EidasResponseValidator;
 import se.litsec.opensaml.common.validation.ValidatorException;
+import se.litsec.opensaml.saml2.common.assertion.AssertionValidationParametersBuilder;
+import se.litsec.opensaml.saml2.common.assertion.AssertionValidator;
 import se.litsec.opensaml.saml2.common.response.MessageReplayChecker;
 import se.litsec.opensaml.saml2.common.response.MessageReplayException;
-import se.litsec.opensaml.saml2.common.response.ResponseProfileValidator;
+import se.litsec.opensaml.saml2.common.response.ResponseValidationParametersBuilder;
+import se.litsec.opensaml.saml2.common.response.ResponseValidator;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
 import se.litsec.opensaml.utils.ObjectUtils;
 import se.litsec.opensaml.xmlsec.SAMLObjectDecrypter;
@@ -98,8 +93,14 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
   /** Validator for checking the a Signature is correct with respect to the standards. */
   private SignaturePrevalidator signatureProfileValidator = new SAMLSignatureProfileValidator();
 
-  /** The response profile validator. */
-  private ResponseProfileValidator responseProfileValidator;
+  /** The response validator. */
+  private ResponseValidator responseValidator;
+
+  /** The assertion validator. */
+  private AssertionValidator assertionValidator;
+
+  /** Response validation settings. */
+  protected ResponseValidationSettings responseValidationSettings;
 
   /** Is this component initialized? */
   private boolean isInitialized = false;
@@ -118,24 +119,20 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
         log.trace("[{}] Decoded Response: {}", logId(response), ObjectUtils.toStringSafe(response));
       }
 
-      // Step 2: Validate the Response against the SAML profile in use.
+      // The IdP metadata is required for all steps below ...
       //
-      this.validateResponseAgainstProfile(response);
+      final String issuer = response.getIssuer() != null ? response.getIssuer().getValue() : null;
+      final EntityDescriptor idpMetadata = issuer != null ? peerMetadataResolver.getMetadata(issuer) : null;
+
+      // Step 2: Validate the Response (including its signature).
+      //
+      this.validateResponse(response, relayState, input, idpMetadata);
 
       // Step 3: Make sure this isn't a replay attack
       //
       this.messageReplayChecker.checkReplay(response);
 
-      // Step 4. Verify the Response signature
-      //
-      this.validateSignature(response, peerMetadataResolver.getMetadata(response.getIssuer().getValue()));
-      log.debug("Signature on Response was successfully validated [{}]", logId(response));
-
-      // Step 5. Verify that this response belongs to the AuthnRequest that we sent.
-      //
-      this.validateAgainstRequest(response, relayState, input);
-
-      // Step 6. Check Status
+      // Step 4. Check Status
       //
       if (!StatusCode.SUCCESS.equals(response.getStatus().getStatusCode().getValue())) {
         log.info("Authentication failed with status '{}' [{}]", ResponseStatusErrorException.statusToString(response.getStatus()), logId(
@@ -143,17 +140,20 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
         throw new ResponseStatusErrorException(response.getStatus(), response.getID());
       }
 
-      // Step 7. Decrypt assertion
+      // Step 5. Verify that the relay state matches the request.
+      //
+      this.validateRelayState(response, relayState, input);
+
+      // Step 6. Decrypt assertion
       //
       Assertion assertion = this.decrypter.decrypt(response.getEncryptedAssertions().get(0), Assertion.class);
       if (log.isTraceEnabled()) {
-        log.trace("[{}] Decrypted Assertion: {}", logId(response), ObjectUtils.toStringSafe(assertion));
+        log.trace("[{}] Decrypted Assertion: {}", logId(response, assertion), ObjectUtils.toStringSafe(assertion));
       }
 
-      // Step 8. Validate the assertion
+      // Step 7. Validate the assertion
       //
-
-      // TODO
+      this.validateAssertion(assertion, response, input, idpMetadata);
 
       // And finally, build the result.
       //
@@ -180,7 +180,7 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
   public void initialize() throws Exception {
     Assert.notNull(this.decrypter, "Property 'decrypter' must be assigned");
     Assert.notNull(this.messageReplayChecker, "Property 'messageReplayChecker' must be assigned");
-    Assert.notNull(this.responseProfileValidator, "Property 'responseProfileValidator' must be assigned");
+    Assert.notNull(this.responseValidationSettings, "Property 'responseValidationSettings' must be assigned");
 
     if (!this.isInitialized) {
 
@@ -191,6 +191,9 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
 
       this.signatureTrustEngine = new ExplicitKeySignatureTrustEngine(this.metadataCredentialResolver,
         DefaultSecurityConfigurationBootstrap.buildBasicInlineKeyInfoCredentialResolver());
+
+      this.responseValidator = new EidasResponseValidator(this.signatureTrustEngine, this.signatureProfileValidator);
+      this.assertionValidator = new EidasAssertionValidator(this.signatureTrustEngine, this.signatureProfileValidator);
 
       this.isInitialized = true;
     }
@@ -220,128 +223,77 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
   }
 
   /**
-   * Validates that the response message is valid regarding the SAML profile.
+   * Validates the response including its signature.
    * 
    * @param response
-   *          the response to validate
-   * @throws ValidatorException
-   *           if validation fails
-   */
-  protected void validateResponseAgainstProfile(Response response) throws ValidatorException {
-    ValidationContext context = new ValidationContext();
-    ValidationResult result = this.responseProfileValidator.validate(response, context);
-    switch (result) {
-    case VALID:
-      log.debug("Response with ID '{}' was successfully validated", response.getID());
-      break;
-    case INDETERMINATE:
-      log.warn("Validation of Response with '{}' was indeterminate - {}", response.getID(), context.getValidationFailureMessage());
-      break;
-    case INVALID:
-      log.error("Validation of Response failed - {}", context.getValidationFailureMessage());
-      throw new ValidatorException(context);
-    }
-  }
-
-  /**
-   * Validates the signature of the supplied signed object (Response).
-   * 
-   * @param signedObject
-   *          the object to check
-   * @param idpMetadata
-   *          the IdP metadata holding the signature certificate(s)
-   * @throws SignatureValidationException
-   *           for signature validation errors
-   */
-  protected void validateSignature(SignableSAMLObject signedObject, EntityDescriptor idpMetadata) throws SignatureValidationException {
-
-    // Resolve the certificate(s) from the IdP metadata that we need to validate the signature.
-    //
-    IDPSSODescriptor descriptor = idpMetadata != null ? idpMetadata.getIDPSSODescriptor(SAMLConstants.SAML20P_NS) : null;
-    if (descriptor == null) {
-      throw new SignatureValidationException("Invalid IdP metadata");
-    }
-
-    // Temporary code until we figure out how to make the OpenSAML unmarshaller to
-    // mark the ID attribute as an ID.
-    //
-    Attr idAttr = signedObject.getDOM().getAttributeNode("ID");
-    if (idAttr != null) {
-      idAttr.getOwnerElement().setIdAttributeNode(idAttr, true);
-    }
-
-    // The signature to validate.
-    //
-    final Signature signature = signedObject.getSignature();
-
-    // Criteria for finding the certificates to use when validating the signature.
-    //
-    CriteriaSet criteria = new CriteriaSet(new RoleDescriptorCriterion(descriptor), new UsageCriterion(UsageType.SIGNING));
-
-    // Is the signature correct according to the SAML signature profile?
-    //
-    try {
-      this.signatureProfileValidator.validate(signature);
-    }
-    catch (SignatureException e) {
-      String msg = String.format("Signature failed pre-validation: %s", e.getMessage());
-      log.warn(msg);
-      throw new SignatureValidationException(msg, e);
-    }
-
-    // Validate the signature.
-    //
-    try {
-      if (!this.signatureTrustEngine.validate(signature, criteria)) {
-        String msg = "Signature validation failed";
-        log.warn(msg);
-        throw new SignatureValidationException(msg);
-      }
-    }
-    catch (SecurityException e) {
-      String msg = String.format("A problem was encountered evaluating the signature: %s", e.getMessage());
-      log.warn(msg);
-      throw new SignatureValidationException(msg, e);
-    }
-
-  }
-
-  /**
-   * Validates the received response message against the AuthnRequest that was sent.
-   * 
-   * @param response
-   *          the response
+   *          the response to verify
+   * @param relayState
+   *          the relay state that was received
    * @param input
-   *          the response processing input
+   *          the processing input
    * @throws ResponseValidationException
    *           for validation errors
    */
-  protected void validateAgainstRequest(Response response, String relayState, ResponseProcessingInput input)
+  protected void validateResponse(Response response, String relayState, ResponseProcessingInput input, EntityDescriptor idpMetadata)
       throws ResponseValidationException {
 
-    final AuthnRequest authnRequest = input.getAuthnRequest();
-    if (authnRequest == null) {
+    if (input.getAuthnRequest() == null) {
       String msg = String.format("No AuthnRequest available when processing Response [%s]", logId(response));
       log.error("{}", msg);
       throw new ResponseValidationException(msg);
     }
 
-    // Is it the response that we are expecting?
-    //
-    if (!response.getInResponseTo().equals(authnRequest.getID())) {
-      String msg = String.format("Expected Response message for AuthnRequest with ID '%s', but this Response is for '%s' [%s]", authnRequest
-        .getID(), response.getID(), logId(response));
-      log.info(msg);
-      throw new ResponseValidationException(msg);
+    IDPSSODescriptor descriptor = idpMetadata != null ? idpMetadata.getIDPSSODescriptor(SAMLConstants.SAML20P_NS) : null;
+    if (descriptor == null) {
+      throw new ResponseValidationException("Invalid/missing IdP metadata - cannot verify Response signature");
     }
 
-    // Does the relayState variables match?
-    //
-    Optional<String> relayStateOptional = relayState == null || relayState.trim().length() == 0 ? Optional.empty() : Optional.of(relayState);
+    ValidationContext context = ResponseValidationParametersBuilder.builder()
+      .strictValidation(this.responseValidationSettings.isStrictValidation())
+      .allowedClockSkew(this.responseValidationSettings.getAllowedClockSkew())
+      .maxAgeReceivedMessage(this.responseValidationSettings.getMaxAgeResponse())
+      .signatureRequired(Boolean.TRUE)
+      .signatureValidationCriteriaSet(new CriteriaSet(new RoleDescriptorCriterion(descriptor), new UsageCriterion(UsageType.SIGNING)))
+      .receiveInstant(input.getReceiveInstant())
+      .receiveUrl(input.getReceiveURL())
+      .authnRequest(input.getAuthnRequest())
+      .build();
+
+    ValidationResult result = this.responseValidator.validate(response, context);
+    switch (result) {
+    case VALID:
+      log.debug("Response was successfully validated [{}]", logId(response));
+      break;
+    case INDETERMINATE:
+      log.warn("Validation of Response was indeterminate - {} [{}]", context.getValidationFailureMessage(), logId(response));
+      break;
+    case INVALID:
+      log.error("Validation of Response failed - {} [{}]", context.getValidationFailureMessage(), logId(response));
+      throw new ResponseValidationException(context.getValidationFailureMessage());
+    }
+  }
+
+  /**
+   * Validates the received relay state matches what we sent.
+   * 
+   * @param response
+   *          the response
+   * @param relayState
+   *          the received relay state
+   * @param input
+   *          the response processing input
+   * @throws ResponseValidationException
+   *           for validation errors
+   */
+  protected void validateRelayState(Response response, String relayState, ResponseProcessingInput input)
+      throws ResponseValidationException {
+
+    Optional<String> relayStateOptional = relayState == null || relayState.trim().length() == 0 ? Optional.empty()
+        : Optional.of(relayState);
     Optional<String> relayStateInputOptional = input.getRelayState() == null || input.getRelayState().trim().length() == 0
         ? Optional.empty() : Optional.of(input.getRelayState());
 
-    boolean relayStateMatch = (!relayStateOptional.isPresent()  && !relayStateInputOptional.isPresent())
+    boolean relayStateMatch = (!relayStateOptional.isPresent() && !relayStateInputOptional.isPresent())
         || (relayStateOptional.isPresent() && relayState.equals(input.getRelayState()))
         || (relayStateInputOptional.isPresent() && input.getRelayState().equals(relayState));
 
@@ -351,32 +303,61 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
       log.error("{} [{}]", msg, logId(response));
       throw new ResponseValidationException(msg);
     }
+  }
 
-    // Did we receive it on the correct location?
-    //
-    if (response.getDestination() != null && input.getReceiveURL() != null) {
-      if (!response.getDestination().equals(input.getReceiveURL())) {
-        String msg = String.format(
-          "Destination attribute (%s) of Response does not match URL on which response was received (%s)", response.getDestination(), input
-            .getReceiveURL());
-        log.error("{} [{}]", msg, logId(response));
-        throw new ResponseValidationException(msg);
-      }
+  /**
+   * Validates the assertion.
+   * 
+   * @param assertion
+   *          the assertion to validate
+   * @param response
+   *          the response that contained the assertion
+   * @param input
+   *          the processing input
+   * @throws ResponseValidationException
+   *           for validation errors
+   */
+  protected void validateAssertion(Assertion assertion, Response response, ResponseProcessingInput input, EntityDescriptor idpMetadata)
+      throws ValidatorException, ResponseValidationException {
+
+    IDPSSODescriptor descriptor = idpMetadata != null ? idpMetadata.getIDPSSODescriptor(SAMLConstants.SAML20P_NS) : null;
+    if (descriptor == null) {
+      throw new ResponseValidationException("Invalid/missing IdP metadata - cannot verify Assertion");
     }
 
-    // Make checks to ensure that the IssueInstant of the Response makes sense.
-    // if (response.getIssueInstant() != null) {
-    // DateTime now = this.getNow(responseProcessingInput);
-    // long clockSkew = this.getAllowedClockSkew(responseProcessingInput);
-    // if (!this.verifyIssueInstant(response.getIssueInstant(), now.getMillis(), clockSkew)) {
-    // String msg = String.format(
-    // "Validation of the issueInstant of the response failed [issueInstant: %s - current time: %s - max allowed age: %d
-    // milliseconds - allowed clock skew: %d milliseconds]",
-    // response.getIssueInstant().toString(), now.toString(), this.maxAgeResponse, clockSkew);
-    // logger.error(String.format("%s [logId]", msg, logId));
-    // throw new ResponseProcessingException(msg, response);
-    // }
-    // }
+    AuthnRequest authnRequest = input.getAuthnRequest();
+    String entityID = null;
+    if (authnRequest != null) {
+      entityID = authnRequest.getIssuer().getValue();
+    }
+
+    ValidationContext context = AssertionValidationParametersBuilder.builder()
+      .strictValidation(this.responseValidationSettings.isStrictValidation())
+      .allowedClockSkew(this.responseValidationSettings.getAllowedClockSkew())
+      .maxAgeReceivedMessage(this.responseValidationSettings.getMaxAgeResponse())
+      .signatureRequired(this.responseValidationSettings.isRequireSignedAssertions())
+      .signatureValidationCriteriaSet(new CriteriaSet(new RoleDescriptorCriterion(descriptor), new UsageCriterion(UsageType.SIGNING)))
+      .receiveInstant(input.getReceiveInstant())
+      .receiveUrl(input.getReceiveURL())
+      .authnRequest(authnRequest)
+      .expectedIssuer(idpMetadata.getEntityID())
+      .responseIssueInstant(response.getIssueInstant().getMillis())
+      .validAudiences(entityID)
+      .validRecipients(input.getReceiveURL())
+      .build();
+
+    ValidationResult result = this.assertionValidator.validate(assertion, context);
+    switch (result) {
+    case VALID:
+      log.debug("Assertion with ID '{}' was successfully validated", assertion.getID());
+      break;
+    case INDETERMINATE:
+      log.warn("Validation of Assertion with ID '{}' was indeterminate - {}", assertion.getID(), context.getValidationFailureMessage());
+      break;
+    case INVALID:
+      log.error("Validation of Assertion failed - {}", context.getValidationFailureMessage());
+      throw new ValidatorException(context);
+    }
   }
 
   /**
@@ -400,13 +381,13 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
   }
 
   /**
-   * Assigns the response profile validator.
+   * Assigns the response validation settings.
    * 
-   * @param responseProfileValidator
-   *          response profile validator
+   * @param responseValidationSettings
+   *          validation settings
    */
-  public void setResponseProfileValidator(ResponseProfileValidator responseProfileValidator) {
-    this.responseProfileValidator = responseProfileValidator;
+  public void setResponseValidationSettings(ResponseValidationSettings responseValidationSettings) {
+    this.responseValidationSettings = responseValidationSettings;
   }
 
   /** {@inheritDoc} */
@@ -417,6 +398,12 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
 
   private static String logId(Response response) {
     return String.format("response-id:'%s'", response.getID() != null ? response.getID() : "<empty>");
+  }
+
+  private static String logId(Response response, Assertion assertion) {
+    return String.format("response-id:'%s',assertion-id:'%s'",
+      response.getID() != null ? response.getID() : "<empty>",
+      assertion.getID() != null ? assertion.getID() : "<empty>");
   }
 
 }

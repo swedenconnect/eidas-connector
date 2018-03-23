@@ -52,6 +52,13 @@ public interface ResponseProcessingInput {
   String getReceiveURL();
 
   /**
+   * Returns the timestamp (epoch since 1970) when the response was received.
+   * 
+   * @return the receive timestamp
+   */
+  long getReceiveInstant();
+
+  /**
    * If the validation should perform a check of the Address(es) found in the assertion, this method should return the
    * address of the client, otherwise return {@code null}.
    * 

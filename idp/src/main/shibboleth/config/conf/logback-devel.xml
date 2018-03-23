@@ -7,7 +7,7 @@
     <variable name="idp.loglevel.props" value="INFO" />
     
     <variable name="idp.loglevel.eln" value="INFO" />
-    <variable name="idp.loglevel.eidas" value="DEBUG" />
+    <variable name="idp.loglevel.eidas" value="TRACE" />
     
     <!-- 
       It is also possible to add loggers and even appenders in this override file.
