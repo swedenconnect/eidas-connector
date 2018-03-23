@@ -6,7 +6,7 @@
   <groupId>se.elegnamnden.eidas.idp</groupId>
   <artifactId>eidas-connector-base-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.1</version>
+  <version>1.2-SNAPSHOT</version>
 
   <name>eIDAS :: Parent POM for the Swedish eIDAS connector</name>
   <description>Parent POM for the Swedish eIDAS connector IdP</description>
@@ -51,7 +51,7 @@
     <opensaml.eidas.version>1.1.0</opensaml.eidas.version>
     <eidas-commons.version>1.0.3</eidas-commons.version>
         
-    <lombok.version>1.16.8</lombok.version>
+    <lombok.version>1.16.20</lombok.version>
   </properties>
 
   <repositories>
@@ -101,7 +101,7 @@
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-bom</artifactId>
-        <version>1.2.1</version>
+        <version>1.3-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -109,7 +109,7 @@
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-dependency-bom</artifactId>
-        <version>1.2</version>
+        <version>1.3-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>      

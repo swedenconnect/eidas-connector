@@ -20,7 +20,10 @@
  */
 package se.elegnamnden.eidas.idp.connector.sp.validation;
 
-import se.litsec.swedisheid.opensaml.saml2.validation.SwedishEidResponseProfileValidator;
+import org.opensaml.xmlsec.signature.support.SignaturePrevalidator;
+import org.opensaml.xmlsec.signature.support.SignatureTrustEngine;
+
+import se.litsec.swedisheid.opensaml.saml2.validation.SwedishEidResponseValidator;
 
 /**
  * Validator that ensures that a {@code Response} element is valid according to the eIDAS Framework.
@@ -28,5 +31,21 @@ import se.litsec.swedisheid.opensaml.saml2.validation.SwedishEidResponseProfileV
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  * @author Stefan Santesson (stefan@aaa-sec.com)
  */
-public class EidasResponseProfileValidator extends SwedishEidResponseProfileValidator {
+public class EidasResponseValidator extends SwedishEidResponseValidator {
+
+  /**
+   * Constructor.
+   * 
+   * @param trustEngine
+   *          the trust used to validate the object's signature
+   * @param signaturePrevalidator
+   *          the signature pre-validator used to pre-validate the object's signature
+   * @throws IllegalArgumentException
+   *           if {@code null} values are supplied
+   */  
+  public EidasResponseValidator(SignatureTrustEngine trustEngine, SignaturePrevalidator signaturePrevalidator)
+      throws IllegalArgumentException {
+    super(trustEngine, signaturePrevalidator);
+  }
+  
 }

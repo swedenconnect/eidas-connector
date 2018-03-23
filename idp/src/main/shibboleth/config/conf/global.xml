@@ -107,15 +107,16 @@
     
   <bean id="eidas.ResponseProcessor" class="se.elegnamnden.eidas.idp.connector.sp.impl.ResponseProcessorImpl" scope="singleton"
     p:decrypter-ref="eidas.Decrypter"
-    p:messageReplayChecker-ref="eidas.MessageReplayChecker" 
-    p:responseProfileValidator-ref="eidas.ResponseProfileValidator" />
+    p:messageReplayChecker-ref="eidas.MessageReplayChecker"  
+    p:responseValidationSettings-ref="eidas.ResponseValidationSettings" />
     
-  <bean id="eidas.AbstractValidator" class="se.litsec.opensaml.common.validation.AbstractObjectValidator" abstract="true"
-    p:strictValidation="%{idp.sp.strict-validation:false}" />
-      
-  <bean id="eidas.ResponseProfileValidator" class="se.elegnamnden.eidas.idp.connector.sp.validation.EidasResponseProfileValidator" scope="singleton"
-    parent="eidas.AbstractValidator" />
-    
+  <bean id="eidas.ResponseValidationSettings" class="se.elegnamnden.eidas.idp.connector.sp.ResponseValidationSettings" scope="singleton"
+    p:strictValidation="%{idp.sp.strict-validation:false}"
+    p:requireSignedAssertions="%{idp.sp.metadata.wantAssertionsSigned}"
+    p:maxAgeResponse="%{idp.sp.response.validation-settings.max-age-response:180000}"
+    p:allowedClockSkew="%{idp.sp.response.validation-settings.allowed-clock-skew:30000}"
+    p:maxSessionAge="%{idp.authn.defaultLifetime:PT60M}" />
+        
   <bean id="eidas.MessageReplayChecker" class="se.litsec.opensaml.saml2.common.response.MessageReplayCheckerImpl" scope="singleton"
     p:replayCache-ref="shibboleth.ReplayCache"
     p:replayCacheExpiration="%{idp.policy.messageLifetime:PT5M}"

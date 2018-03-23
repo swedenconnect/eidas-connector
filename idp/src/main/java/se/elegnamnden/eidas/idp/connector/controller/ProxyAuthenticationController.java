@@ -527,6 +527,11 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       public String getCountry() {
         return (String) proxyContext.getAdditionalData("country");
       }
+
+      @Override
+      public long getReceiveInstant() {
+        return System.currentTimeMillis();
+      }
     };
   }
 
