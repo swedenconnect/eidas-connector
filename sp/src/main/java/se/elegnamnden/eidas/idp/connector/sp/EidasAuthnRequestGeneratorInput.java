@@ -23,6 +23,7 @@ package se.elegnamnden.eidas.idp.connector.sp;
 import java.util.List;
 
 import se.litsec.eidas.opensaml.ext.RequestedAttributes;
+import se.litsec.eidas.opensaml.ext.SPTypeEnumeration;
 import se.litsec.opensaml.saml2.common.request.AbstractRequestGeneratorInput;
 import se.litsec.opensaml.utils.ObjectUtils;
 
@@ -42,6 +43,9 @@ public class EidasAuthnRequestGeneratorInput extends AbstractRequestGeneratorInp
 
   /** The eIDAS requested attributes to include in the AuthnRequest. */
   private List<se.litsec.eidas.opensaml.ext.RequestedAttribute> requestedAttributeList;
+
+  /** The type of SP that makes the request. */
+  private SPTypeEnumeration spType;
 
   /**
    * Returns the country in which the IdP resides.
@@ -120,6 +124,25 @@ public class EidasAuthnRequestGeneratorInput extends AbstractRequestGeneratorInp
   @Override
   public String getPreferredBinding() {
     return null;
+  }
+
+  /**
+   * Returns the SP type, or {@code null} if no information is set.
+   * 
+   * @return the SP type, or {@code null}
+   */
+  public SPTypeEnumeration getSpType() {
+    return this.spType;
+  }
+
+  /**
+   * Assigns the SP type.
+   * 
+   * @param spType
+   *          the SP type
+   */
+  public void setSpType(SPTypeEnumeration spType) {
+    this.spType = spType;
   }
 
 }

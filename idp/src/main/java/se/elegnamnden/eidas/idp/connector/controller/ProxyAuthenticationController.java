@@ -32,6 +32,7 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -60,6 +61,7 @@ import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessor;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseStatusErrorException;
 import se.elegnamnden.eidas.metadataconfig.MetadataConfig;
 import se.elegnamnden.eidas.metadataconfig.data.EndPointConfig;
+import se.litsec.eidas.opensaml.ext.SPTypeEnumeration;
 import se.litsec.opensaml.saml2.common.request.RequestGenerationException;
 import se.litsec.opensaml.saml2.common.request.RequestHttpObject;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
@@ -73,6 +75,8 @@ import se.litsec.shibboleth.idp.authn.controller.AbstractExternalAuthenticationC
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeConstants;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSet;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSetConstants;
+import se.litsec.swedisheid.opensaml.saml2.metadata.entitycategory.EntityCategoryConstants;
+import se.litsec.swedisheid.opensaml.saml2.metadata.entitycategory.EntityCategoryMetadataHelper;
 
 /**
  * The main controller for the Shibboleth external authentication flow implementing proxy functionality against the
@@ -290,6 +294,22 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     // Relay state
     spInput.setRelayState(this.getRelayState(context));
+    
+    // SP type
+    //
+    EntityDescriptor spMetadata = this.getPeerMetadata(context);
+    if (spMetadata != null) {
+      List<String> entityCategories = EntityCategoryMetadataHelper.getEntityCategories(spMetadata);
+      if (entityCategories.contains(EntityCategoryConstants.SERVICE_TYPE_CATEGORY_PUBLIC_SECTOR_SP.getUri())) {
+        spInput.setSpType(SPTypeEnumeration.PUBLIC);
+      }
+      else if (entityCategories.contains(EntityCategoryConstants.SERVICE_TYPE_CATEGORY_PRIVATE_SECTOR_SP.getUri())) {
+        spInput.setSpType(SPTypeEnumeration.PRIVATE);
+      }
+      else {
+        log.warn("Entity '%s' does not specify entity category for public or private SP");
+      }
+    }    
 
     // Requested attributes
     // First get the default ones to request from the implemented attribute set.

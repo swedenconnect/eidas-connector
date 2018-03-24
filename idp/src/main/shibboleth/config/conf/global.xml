@@ -100,7 +100,7 @@
     p:signingCredentials-ref="eidas.SpSigningCredential">
     <property name="config">
       <bean class="se.elegnamnden.eidas.idp.connector.sp.impl.AuthnRequestGeneratorConfig"
-        p:includeSpType="%{idp.sp.request.include-sptype:false}" 
+        p:includeSpType="%{idp.sp.request.include-sptype:true}" 
         p:preferredBinding="%{idp.sp.request.preferred-binding:urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST}" />
     </property>
   </bean>
