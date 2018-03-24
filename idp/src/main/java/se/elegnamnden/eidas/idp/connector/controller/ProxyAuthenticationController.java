@@ -228,7 +228,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     //
     EidasAuthnRequestGeneratorInput spInput;
     try {
-      spInput = this.createAuthnRequestInput(context, endPoint);
+      spInput = this.createAuthnRequestInput(context, endPoint, this.getAuthnRequest(context));
     }
     catch (ExternalAutenticationErrorCodeException e) {
       log.info("Error while building AuthnRequest - {} - {}", e.getMessage(), e.getActualMessage());
@@ -268,12 +268,15 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    *          the profile request
    * @param endPoint
    *          the recipient endpoint info
+   * @param authnRequest
+   *          the {@code AuthnRequest}
    * @return an {@code AuthnRequestInput} object
    * @throws ExternalAutenticationErrorCodeException
    *           for errors creating the request
    */
-  private EidasAuthnRequestGeneratorInput createAuthnRequestInput(ProfileRequestContext<?, ?> context, EndPointConfig endPoint)
-      throws ExternalAutenticationErrorCodeException {
+  private EidasAuthnRequestGeneratorInput createAuthnRequestInput(ProfileRequestContext<?, ?> context, EndPointConfig endPoint,
+      AuthnRequest authnRequest)
+          throws ExternalAutenticationErrorCodeException {
 
     EidasAuthnRequestGeneratorInput spInput = new EidasAuthnRequestGeneratorInput();
 
@@ -297,7 +300,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     requestedAttributes.addAll(
       this.attributeProcessingService.getEidasRequestedAttributesFromAttributeSet(IMPLEMENTED_ATTRIBUTE_SET));
     requestedAttributes.addAll(
-      this.attributeProcessingService.getEidasRequestedAttributesFromMetadata(this.getPeerMetadata(context), requestedAttributes));
+      this.attributeProcessingService.getEidasRequestedAttributesFromMetadata(this.getPeerMetadata(context), authnRequest, requestedAttributes));
 
     spInput.setRequestedAttributeList(requestedAttributes);
 
@@ -470,9 +473,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       //
       SignatureActivationDataContext sadContext = this.getSignSupportService().getSadContext(context);
       if (sadContext != null && signMessageDisplayed && this.getSignSupportService().isSignatureServicePeer(context)) {
-        String sad = this.getSignSupportService().issueSAD(context, attributes, 
+        String sad = this.getSignSupportService().issueSAD(context, attributes,
           this.attributeProcessingService.getPrincipalAttributeName(), loaToIssue);
-        
+
         attributes.add(AttributeConstants.ATTRIBUTE_TEMPLATE_SAD.createBuilder().value(sad).build());
       }
 

@@ -23,6 +23,7 @@ package se.elegnamnden.eidas.idp.connector.service;
 import java.util.List;
 
 import org.opensaml.saml.saml2.core.Attribute;
+import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingResult;
@@ -83,10 +84,12 @@ public interface AttributeProcessingService {
    * 
    * @param peerMetadata
    *          the peer metadata entry
+   * @param authnRequest
+   *          the authentication request (potentially holding a {@code AssertionConsumerServiceIndex})
    * @param alreadyRequested
    *          already present attributes
    * @return a list of eIDAS requested attributes
    */
   List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromMetadata(EntityDescriptor peerMetadata,
-      List<se.litsec.eidas.opensaml.ext.RequestedAttribute> alreadyRequested);
+      AuthnRequest authnRequest, List<se.litsec.eidas.opensaml.ext.RequestedAttribute> alreadyRequested);
 }

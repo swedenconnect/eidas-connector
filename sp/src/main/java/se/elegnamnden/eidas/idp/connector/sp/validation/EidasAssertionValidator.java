@@ -37,7 +37,7 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
    * <ul>
    * <li>confirmationValidators: {@link SwedishEidSubjectConfirmationValidator}</li>
    * <li>conditionValidators: {@link AudienceRestrictionConditionValidator}</li>
-   * <li>statementValidators: {@link EidasAuthnStatementValidator}</li>
+   * <li>statementValidators: {@link EidasAuthnStatementValidator}, {@link EidasAttributeStatementValidator}.</li>
    * </ul>
    * 
    * @param trustEngine
@@ -49,7 +49,7 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
     super(trustEngine, signaturePrevalidator, 
       Arrays.asList(new SwedishEidSubjectConfirmationValidator()),
       Arrays.asList(new AudienceRestrictionConditionValidator()), 
-      Arrays.asList(new EidasAuthnStatementValidator()));
+      Arrays.asList(new EidasAuthnStatementValidator(), new EidasAttributeStatementValidator()));
   }
 
 }

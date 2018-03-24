@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.Attribute;
+import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.metadata.AttributeConsumingService;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
 import org.slf4j.Logger;
@@ -157,6 +159,7 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
   /** {@inheritDoc} */
   @Override
   public List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromMetadata(EntityDescriptor peerMetadata,
+      AuthnRequest authnRequest,
       List<se.litsec.eidas.opensaml.ext.RequestedAttribute> alreadyRequested) {
 
     if (peerMetadata == null) {
@@ -166,12 +169,38 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
     if (descriptor == null || descriptor.getAttributeConsumingServices().isEmpty()) {
       return Collections.emptyList();
     }
-
+    
+    // Find the correct AttributeConsumingService
+    //
+    Integer attributeConsumingServiceIndex = authnRequest.getAttributeConsumingServiceIndex();
+    AttributeConsumingService service = null;
+    for (AttributeConsumingService s : descriptor.getAttributeConsumingServices()) {
+      if (attributeConsumingServiceIndex != null && s.getIndex() == attributeConsumingServiceIndex.intValue()) {
+        service = s;
+        break;
+      }
+      if (s.isDefault()) {
+        service = s;
+        if (attributeConsumingServiceIndex == null) {
+          break;
+        }
+      }
+      else {
+        // No default and no index given in request - pick the lowest index.
+        if (service == null || s.getIndex() < service.getIndex()) {
+          service = s;
+        }
+      }
+    }
+    
+    if (service == null) {
+      return Collections.emptyList();
+    }
+    
     Predicate<se.litsec.eidas.opensaml.ext.RequestedAttribute> noDuplicate = r -> alreadyRequested.stream().noneMatch(a -> a.getName()
       .equals(r.getName()));
 
-    return descriptor.getAttributeConsumingServices()
-      .get(0)
+    return service
       .getRequestAttributes()
       .stream()
       .map(r -> this.attributeMappings.toEidasRequestedAttribute(r))
