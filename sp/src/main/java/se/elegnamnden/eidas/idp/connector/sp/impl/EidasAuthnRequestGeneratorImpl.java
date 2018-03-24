@@ -97,8 +97,12 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
     Extensions extensions = ObjectUtils.createSamlObject(Extensions.class);
     
     if (config.isIncludeSpType()) {
+      SPTypeEnumeration type = input.getSpType();
+      if (type == null) {
+        log.warn("SPType not set - using PUBLIC as default");
+      }      
       SPType spType = ObjectUtils.createSamlObject(SPType.class);
-      spType.setType(SPTypeEnumeration.PUBLIC);
+      spType.setType(type);
       extensions.getUnknownXMLObjects().add(spType);      
     }
     extensions.getUnknownXMLObjects().add(input.getRequestedAttributes());
