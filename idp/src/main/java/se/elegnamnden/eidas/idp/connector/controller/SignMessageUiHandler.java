@@ -1,29 +1,23 @@
 /*
- * The eidas-connector project is the implementation of the Swedish eIDAS 
- * connector built on top of the Shibboleth IdP.
+ * Copyright 2017-2018 E-legitimationsnämnden
  *
- * More details on <https://github.com/elegnamnden/eidas-connector> 
- * Copyright (C) 2017 E-legitimationsnämnden
- * 
- * This program is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License 
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package se.elegnamnden.eidas.idp.connector.controller;
 
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.springframework.beans.factory.InitializingBean;
@@ -33,7 +27,6 @@ import org.springframework.util.Assert;
 import se.elegnamnden.eidas.idp.connector.controller.model.SignMessageConsent;
 import se.litsec.opensaml.saml2.attribute.AttributeUtils;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeConstants;
-import se.litsec.swedisheid.opensaml.saml2.signservice.dss.SignMessageMimeTypeEnum;
 
 /**
  * Handler class for managing the Sign Message consent view.
@@ -46,28 +39,29 @@ public class SignMessageUiHandler implements InitializingBean {
   /** Fallback languages to be used in the currently selected language can not be used. */
   private List<String> fallbackLanguages;
 
-  public SignMessageConsent getSignMessageConsentModel(String message, SignMessageMimeTypeEnum messageType,
-      List<Attribute> attributes, String country, EntityDescriptor metadata) {
+  /**
+   * Based on a ready to display message and attributes from the authentication, the method builds a
+   * {@code SignMessageConsent} model object.
+   * 
+   * @param message
+   *          the message to display
+   * @param attributes
+   *          the attributes
+   * @param country
+   *          the country
+   * @param metadata
+   *          the metadata for the SP
+   * @return a model object
+   */
+  public SignMessageConsent getSignMessageConsentModel(String message, List<Attribute> attributes, String country,
+      EntityDescriptor metadata) {
 
     Locale locale = LocaleContextHolder.getLocale();
 
     SignMessageConsent model = new SignMessageConsent();
 
-    // The sign message
-    //
-
-    // Filter to protect against XSS
-    //
-    if (message != null) {      
-      String filteredMessage = StringEscapeUtils.escapeHtml(message);
-      
-      // Replace NL with <br />
-      filteredMessage = filteredMessage.replaceAll("(\r\n|\n\r|\r|\n)", "<br />");
-      
-      // Replace tabs with &emsp;
-      filteredMessage = filteredMessage.replaceAll("\t", "&emsp;");
-
-      model.setTextMessage(filteredMessage);
+    if (message != null) {
+      model.setTextMessage(message);
     }
 
     // SP Info

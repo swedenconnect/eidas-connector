@@ -462,16 +462,16 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
         SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
 
-        if (signMessageContext != null && signMessageContext.isDisplayMessage()) {
+        if (signMessageContext != null && signMessageContext.isDoDisplayMessage()) {
           modelAndView.addObject("signMessageConsent", this.signMessageUiHandler.getSignMessageConsentModel(
-            signMessageContext.getClearTextMessage(), signMessageContext.getSignMessage().getMimeTypeEnum(),
-            attributes, (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
+            signMessageContext.getMessageToDisplay(), attributes, 
+            (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
 
           return modelAndView;
         }
         else {
           modelAndView.addObject("signMessageConsent", this.signMessageUiHandler.getSignMessageConsentModel(
-            null, null, attributes, (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
+            null, attributes, (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
           return modelAndView;
         }
       }

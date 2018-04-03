@@ -56,6 +56,10 @@
       p:signatureSupportKeyService-ref="sweid.SignatureServiceSupportService"
       p:entityID="%{idp.entityID}"
       p:scal2Supported="%{idp.scal2.support:false}">
+      
+   <property name="signMessagePreProcessor">
+    <bean class="se.elegnamnden.eidas.idp.connector.service.TextSignMessagePreProcessor" />
+   </property>
     
     <property name="supportedMimeTypes">
       <list>
