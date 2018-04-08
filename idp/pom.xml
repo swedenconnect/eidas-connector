@@ -49,7 +49,7 @@
   <properties>
     <docker.image.prefix>docker.eidastest.se:5000</docker.image.prefix>
 
-    <shibboleth-base.version>1.3-SNAPSHOT</shibboleth-base.version>
+    <shibboleth-base.version>1.3.1</shibboleth-base.version>
     <custom-remoteip-valve.version>1.1.0</custom-remoteip-valve.version>
 
     <mockito.version>1.9.5</mockito.version>
