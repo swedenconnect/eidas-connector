@@ -42,6 +42,7 @@
    -->
   <bean id="sweid.AbstractExternalAuthenticationController" class="se.litsec.shibboleth.idp.authn.controller.sweid.AbstractExternalAuthenticationController"
     abstract="true" 
+    p:sessionManager-ref="shibboleth.SessionManager"
     p:signSupportService-ref="eidas.SignSupportService"
     p:attributeToIdMapping-ref="sweid.SAML2AttributeNameToIdMapperService"    
     p:flowName="authn/External" />    
