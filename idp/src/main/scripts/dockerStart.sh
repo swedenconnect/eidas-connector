@@ -130,6 +130,9 @@ if [ ! -f "$IDP_METADATA_SIGNING_CERT" ]; then
   exit 1
 fi
 
+: ${IDP_ERRORS_VERBOSE:=false}
+export IDP_ERRORS_VERBOSE
+
 #
 # SP settings
 #
@@ -266,6 +269,7 @@ export JAVA_OPTS="\
           -Didp.home=$IDP_HOME \
           -Didp.baseurl=$IDP_BASE_URL \
           -Didp.devel.mode=$IDP_DEVEL_MODE \
+          -Didp.errors.verbose=$IDP_ERRORS_VERBOSE \
           -Didp.entityID=$IDP_ENTITY_ID \
           -Didp.sealer.storeResource=$IDP_SEALER_STORE_RESOURCE \
           -Didp.sealer.password=$IDP_SEALER_PASSWORD \

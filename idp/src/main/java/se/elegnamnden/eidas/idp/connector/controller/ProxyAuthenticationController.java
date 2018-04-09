@@ -1,22 +1,17 @@
 /*
- * The eidas-connector project is the implementation of the Swedish eIDAS 
- * connector built on top of the Shibboleth IdP.
+ * Copyright 2017-2018 E-legitimationsnämnden
  *
- * More details on <https://github.com/elegnamnden/eidas-connector> 
- * Copyright (C) 2017 E-legitimationsnämnden
- * 
- * This program is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License 
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package se.elegnamnden.eidas.idp.connector.controller;
 
@@ -32,6 +27,9 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.Status;
+import org.opensaml.saml.saml2.core.StatusCode;
+import org.opensaml.saml.saml2.core.StatusMessage;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +63,7 @@ import se.litsec.eidas.opensaml.ext.SPTypeEnumeration;
 import se.litsec.opensaml.saml2.common.request.RequestGenerationException;
 import se.litsec.opensaml.saml2.common.request.RequestHttpObject;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
+import se.litsec.opensaml.utils.ObjectUtils;
 import se.litsec.shibboleth.idp.authn.ExternalAutenticationErrorCodeException;
 import se.litsec.shibboleth.idp.authn.context.ProxyIdpAuthenticationContext;
 import se.litsec.shibboleth.idp.authn.context.SignMessageContext;
@@ -83,7 +82,6 @@ import se.litsec.swedisheid.opensaml.saml2.metadata.entitycategory.EntityCategor
  * eIDAS framework.
  * 
  * @author Martin Lindström (martin.lindstrom@litsec.se)
- * @author Stefan Santesson (stefan@aaa-sec.com)
  */
 @Controller
 public class ProxyAuthenticationController extends AbstractExternalAuthenticationController implements InitializingBean {
@@ -141,6 +139,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
   /** Helper bean for UI language select. */
   private UiLanguageHandler uiLanguageHandler;
+
+  /** Flag telling whether we should include verbose status messages in response messages. Default is {@code false}. */
+  private boolean verboseStatusMessage = false;
 
   /**
    * The first step for the connector authentication is to prompt the user for the eID country.
@@ -219,7 +220,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     EndPointConfig endPoint = this.metadataConfig.getProxyServiceConfig(selectedCountry);
     if (endPoint == null) {
       log.error("No endpoint found for country '{}'", selectedCountry);
-      this.error(httpRequest, httpResponse, AuthnEventIds.INVALID_AUTHN_CTX);
+      this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
+        "No services available for selected country", null);
       return null;
     }
 
@@ -230,17 +232,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     // Next, generate an AuthnRequest and redirect or post the user there.
     //
-    EidasAuthnRequestGeneratorInput spInput;
     try {
-      spInput = this.createAuthnRequestInput(context, endPoint, this.getAuthnRequest(context));
-    }
-    catch (ExternalAutenticationErrorCodeException e) {
-      log.info("Error while building AuthnRequest - {} - {}", e.getMessage(), e.getActualMessage());
-      this.error(httpRequest, httpResponse, e);
-      return null;
-    }
+      EidasAuthnRequestGeneratorInput spInput = this.createAuthnRequestInput(context, endPoint, this.getAuthnRequest(context));
 
-    try {
       PeerMetadataResolver metadataResolver = (entityID) -> {
         return (entityID.equals(endPoint.getEntityID())) ? endPoint.getMetadataRecord() : null;
       };
@@ -260,7 +254,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     }
     catch (RequestGenerationException e) {
       log.error("Error while creating eIDAS AuthnContext - {}", e.getMessage(), e);
-      this.error(httpRequest, httpResponse, AuthnEventIds.REQUEST_UNSUPPORTED); // TODO: change
+      this.error(httpRequest, httpResponse, StatusCode.REQUESTER, StatusCode.REQUEST_UNSUPPORTED,
+        "Can not create valid request to foreign service", e.getMessage());
       return null;
     }
   }
@@ -275,12 +270,11 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    * @param authnRequest
    *          the {@code AuthnRequest}
    * @return an {@code AuthnRequestInput} object
-   * @throws ExternalAutenticationErrorCodeException
+   * @throws RequestGenerationException
    *           for errors creating the request
    */
-  private EidasAuthnRequestGeneratorInput createAuthnRequestInput(ProfileRequestContext<?, ?> context, EndPointConfig endPoint,
-      AuthnRequest authnRequest)
-          throws ExternalAutenticationErrorCodeException {
+  private EidasAuthnRequestGeneratorInput createAuthnRequestInput(ProfileRequestContext<?, ?> context,
+      EndPointConfig endPoint, AuthnRequest authnRequest) throws RequestGenerationException {
 
     EidasAuthnRequestGeneratorInput spInput = new EidasAuthnRequestGeneratorInput();
 
@@ -289,12 +283,17 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     // Match assurance levels and calculate which LoA URI to use in the request.
     //
-    spInput.setRequestedLevelOfAssurance(this.eidasAuthnContextService.getSendAuthnContextClassRef(context, endPoint
-      .getAssuranceCertifications()));
+    try {
+      spInput.setRequestedLevelOfAssurance(this.eidasAuthnContextService.getSendAuthnContextClassRef(context, endPoint
+        .getAssuranceCertifications()));
+    }
+    catch (ExternalAutenticationErrorCodeException e) {
+      throw new RequestGenerationException(e.getActualMessage() != null ? e.getActualMessage() : e.getMessage(), e);
+    }
 
     // Relay state
     spInput.setRelayState(this.getRelayState(context));
-    
+
     // SP type
     //
     EntityDescriptor spMetadata = this.getPeerMetadata(context);
@@ -309,7 +308,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       else {
         log.warn("Entity '{}' does not specify entity category for public or private SP", spMetadata.getEntityID());
       }
-    }    
+    }
 
     // Requested attributes
     // First get the default ones to request from the implemented attribute set.
@@ -320,7 +319,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     requestedAttributes.addAll(
       this.attributeProcessingService.getEidasRequestedAttributesFromAttributeSet(IMPLEMENTED_ATTRIBUTE_SET));
     requestedAttributes.addAll(
-      this.attributeProcessingService.getEidasRequestedAttributesFromMetadata(this.getPeerMetadata(context), authnRequest, requestedAttributes));
+      this.attributeProcessingService.getEidasRequestedAttributesFromMetadata(this.getPeerMetadata(context), authnRequest,
+        requestedAttributes));
 
     spInput.setRequestedAttributeList(requestedAttributes);
 
@@ -416,23 +416,60 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     }
     catch (ResponseProcessingException e) {
       log.warn("Error while processing eIDAS response - {}", e.getMessage(), e);
-      this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION);
+      this.error(httpRequest, httpResponse, StatusCode.REQUESTER, StatusCode.REQUEST_DENIED,
+        "Validation failure of response from foreign service", e.getMessage());
       return null;
     }
     catch (ResponseStatusErrorException e) {
       log.info("Received non successful status: {}", e.getMessage());
-      this.error(httpRequest, httpResponse, e.getStatus());
+
+      // Let's update the status message - It may be in any language, so we add
+      // a text telling that the failure was received from the foreign service.
+      //
+      Status status = e.getStatus();
+      if (status.getStatusMessage() != null) {
+        String msg = String.format("Failure received from foreign service: %s", status.getStatusMessage().getMessage());
+        status.getStatusMessage().setMessage(msg);
+      }
+      else {
+        StatusMessage sm = ObjectUtils.createSamlObject(StatusMessage.class);
+        sm.setMessage("Failure received from foreign service");
+        status.setStatusMessage(sm);
+      }
+
+      this.error(httpRequest, httpResponse, status);
       return null;
     }
     catch (AttributeProcessingException e) {
       log.warn("Error during attribute release process - {}", e.getMessage(), e);
-      this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION);
+      this.error(httpRequest, httpResponse, StatusCode.REQUESTER, StatusCode.REQUEST_DENIED,
+        "Attribute release error", e.getMessage());
       return null;
     }
   }
 
+  /**
+   * Method that is invoked in order to complate an authentication process.
+   * 
+   * @param httpRequest
+   *          the HTTP request
+   * @param httpResponse
+   *          the HTTP response
+   * @param action
+   *          the action - {@link #ACTION_OK} or {@value #ACTION_CANCEL} (if invoked from sign consent view),
+   *          {@code null} otherwise
+   * @param language
+   *          language tag (for UI)
+   * @return a {@code ModelAndView} or {@code null} if the authentication is done
+   * @throws ExternalAuthenticationException
+   *           for Shibboleth session errors
+   * @throws IOException
+   *           for IO errors
+   */
   @RequestMapping(value = "/proxyauth/complete", method = RequestMethod.POST)
-  public ModelAndView completeAuthentication(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+  public ModelAndView completeAuthentication(
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse,
       @RequestParam(value = "action", required = false) String action,
       @RequestParam(value = "language", required = false) String language) throws ExternalAuthenticationException, IOException {
 
@@ -464,7 +501,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
         if (signMessageContext != null && signMessageContext.isDoDisplayMessage()) {
           modelAndView.addObject("signMessageConsent", this.signMessageUiHandler.getSignMessageConsentModel(
-            signMessageContext.getMessageToDisplay(), attributes, 
+            signMessageContext.getMessageToDisplay(), attributes,
             (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
 
           return modelAndView;
@@ -504,7 +541,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       return null;
     }
     catch (ExternalAutenticationErrorCodeException e) {
-      log.warn("Error during ProxyIdP assertion process - {}", e.getMessage(), e);
+      log.warn("Error during ProxyIdP assertion process - {} - {}", e.getMessage(), e.getActualMessage(), e);
       this.error(httpRequest, httpResponse, e);
       return null;
     }
@@ -515,6 +552,86 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     }
   }
 
+  /**
+   * Method that will build an error status and pass back to the requester.
+   * 
+   * @param httpRequest
+   *          the HTTP request
+   * @param httpResponse
+   *          the HTTP response
+   * @param statusCode
+   *          the main SAML status code
+   * @param subStatusCode
+   *          the sub status code
+   * @param statusMessage
+   *          the status message to include
+   * @param verboseStatusMessage
+   *          verbose message (included in {@link #verboseStatusMessage} is set)
+   * @throws ExternalAuthenticationException
+   *           for Shibboleth session errors
+   * @throws IOException
+   *           for IO errors
+   */
+  protected void error(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+      String statusCode,
+      String subStatusCode,
+      String statusMessage,
+      String verboseStatusMessage)
+          throws ExternalAuthenticationException, IOException {
+
+    Status status = ObjectUtils.createSamlObject(Status.class);
+    StatusCode _statusCode = ObjectUtils.createSamlObject(StatusCode.class);
+    _statusCode.setValue(statusCode);
+    status.setStatusCode(_statusCode);
+    
+    if (subStatusCode != null) {
+      StatusCode _subStatusCode = ObjectUtils.createSamlObject(StatusCode.class);
+      _subStatusCode.setValue(subStatusCode);
+      status.getStatusCode().setStatusCode(_subStatusCode);
+    }
+    
+    StatusMessage _statusMessage = ObjectUtils.createSamlObject(StatusMessage.class);
+    String msg = null;
+    
+    if (!this.verboseStatusMessage && statusMessage != null) {
+      msg = statusMessage;
+    }
+    else if (this.verboseStatusMessage) {
+      StringBuilder sb = new StringBuilder();
+      if (statusMessage != null) {
+        sb.append(statusMessage);
+      }
+      if (verboseStatusMessage != null) {
+        if (sb.length() > 0) {
+          sb.append(" - ");
+        }
+        sb.append(verboseStatusMessage);
+      }
+      msg = sb.toString();
+      if (sb.length() > 0) {
+        msg = sb.toString();
+      }
+    }
+    
+    if (msg != null) {
+      _statusMessage.setMessage(msg);
+      status.setStatusMessage(_statusMessage);
+    }
+
+    this.error(httpRequest, httpResponse, status);
+  }
+
+  /**
+   * Creates a {@link ResponseProcessingInput} for response processing.
+   * 
+   * @param context
+   *          the profile context
+   * @param httpRequest
+   *          the HTTP request
+   * @return a {@link ResponseProcessingInput} object
+   * @throws ExternalAuthenticationException
+   *           if there is no {@code ProxyIdpAuthenticationContext} available
+   */
   private ResponseProcessingInput createResponseProcessingInput(ProfileRequestContext<?, ?> context, HttpServletRequest httpRequest)
       throws ExternalAuthenticationException {
 
@@ -653,6 +770,17 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    */
   public void setUiLanguageHandler(UiLanguageHandler uiLanguageHandler) {
     this.uiLanguageHandler = uiLanguageHandler;
+  }
+
+  /**
+   * Assigns the flag telling whether we should include verbose status messages in response messages. Default is
+   * {@code false}.
+   * 
+   * @param verboseStatusMessage
+   *          {@code true} for verbose status messages
+   */
+  public void setVerboseStatusMessage(boolean verboseStatusMessage) {
+    this.verboseStatusMessage = verboseStatusMessage;
   }
 
   /** {@inheritDoc} */

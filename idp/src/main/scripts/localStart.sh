@@ -159,6 +159,7 @@ export JAVA_OPTS="-Didp.devel.mode=false \
 -Didp.sp.metadata.cacheDuration=3600000 \
 -Didp.home=$IDP_HOME \
 -Didp.envflag=dev \
+-Didp.errors.verbose=true \
 -Djava.net.preferIPv4Stack=true \
 -Didp.hostname=${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFFIX} \
 -Didp.baseurl=${IDP_BASE_URL} \
