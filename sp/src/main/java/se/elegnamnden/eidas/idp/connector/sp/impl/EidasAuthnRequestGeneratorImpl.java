@@ -100,6 +100,7 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
       SPTypeEnumeration type = input.getSpType();
       if (type == null) {
         log.warn("SPType not set - using PUBLIC as default");
+        type = SPTypeEnumeration.PUBLIC;
       }      
       SPType spType = ObjectUtils.createSamlObject(SPType.class);
       spType.setType(type);
