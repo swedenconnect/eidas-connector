@@ -6,7 +6,7 @@
   <groupId>se.elegnamnden.eidas.idp</groupId>
   <artifactId>eidas-connector-base-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2</version>
 
   <name>eIDAS :: Parent POM for the Swedish eIDAS connector</name>
   <description>Parent POM for the Swedish eIDAS connector IdP</description>
@@ -49,8 +49,7 @@
     <tomcat.version>8.5.23</tomcat.version>
     
     <opensaml.eidas.version>1.1.0</opensaml.eidas.version>
-    <eidas-commons.version>1.0.3</eidas-commons.version>
-        
+            
     <lombok.version>1.16.20</lombok.version>
   </properties>
 
@@ -125,14 +124,14 @@
       <dependency>
         <groupId>se.elegnamnden.eidas.commons</groupId>
         <artifactId>metadataconfig</artifactId>
-        <version>${eidas-commons.version}</version>
+        <version>1.0.4</version>
         <scope>compile</scope>
       </dependency>
     
       <dependency>
         <groupId>se.elegnamnden.eidas.commons</groupId>
         <artifactId>eidas-mappings</artifactId>
-        <version>${eidas-commons.version}</version>
+        <version>1.0.3</version>
         <scope>compile</scope>
       </dependency>
       
