@@ -307,7 +307,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
         spInput.setSpType(SPTypeEnumeration.PRIVATE);
       }
       else {
-        log.warn("Entity '%s' does not specify entity category for public or private SP");
+        log.warn("Entity '{}' does not specify entity category for public or private SP", spMetadata.getEntityID());
       }
     }    
 
