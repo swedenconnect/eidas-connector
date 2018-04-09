@@ -17,9 +17,16 @@ package se.elegnamnden.eidas.idp.connector.sp.validation;
 
 import java.util.Arrays;
 
+import org.joda.time.DateTime;
+import org.joda.time.chrono.ISOChronology;
+import org.opensaml.saml.common.assertion.ValidationContext;
+import org.opensaml.saml.common.assertion.ValidationResult;
 import org.opensaml.saml.saml2.assertion.impl.AudienceRestrictionConditionValidator;
+import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.xmlsec.signature.support.SignaturePrevalidator;
 import org.opensaml.xmlsec.signature.support.SignatureTrustEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import se.litsec.opensaml.saml2.common.assertion.AssertionValidator;
 import se.litsec.swedisheid.opensaml.saml2.validation.SwedishEidAssertionValidator;
@@ -31,6 +38,9 @@ import se.litsec.swedisheid.opensaml.saml2.validation.SwedishEidSubjectConfirmat
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  */
 public class EidasAssertionValidator extends SwedishEidAssertionValidator {
+  
+  /** Class logger. */
+  private final Logger log = LoggerFactory.getLogger(EidasAssertionValidator.class);
   
   /**
    * Constructor setting up the validator with the following validators:
@@ -51,5 +61,36 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
       Arrays.asList(new AudienceRestrictionConditionValidator()), 
       Arrays.asList(new EidasAuthnStatementValidator(), new EidasAttributeStatementValidator()));
   }
+
+  /**
+   * The EU-software sometimes issue assertions that are a few milliseconds newer than the response message if we 
+   * look at their respective issue instants. We can tolerate a few milliseconds.
+   */
+  @Override
+  protected ValidationResult validateIssueInstant(Assertion assertion, ValidationContext context) {
+    
+    Long responseIssueInstant = (Long) context.getStaticParameters().get(RESPONSE_ISSUE_INSTANT);
+    if (responseIssueInstant != null) {
+      if (assertion.getIssueInstant().isAfter(responseIssueInstant)) {
+        final String msg = String.format("Invalid Assertion - Its issue-instant (%s) is after the response message issue-instant (%s)",
+          assertion.getIssueInstant(), new DateTime(responseIssueInstant, ISOChronology.getInstanceUTC()));
+        
+        log.warn("{} [assertion-id:{}]", msg, assertion.getID());
+        
+        // We can't accept more than 500 millis
+        if (assertion.getIssueInstant().isAfter(responseIssueInstant + 500L)) {
+          context.setValidationFailureMessage(msg);
+          return ValidationResult.INVALID;
+        }        
+      }
+    }    
+    else {
+      return super.validateIssueInstant(assertion, context);
+    }
+    
+    return ValidationResult.VALID;
+  }
+  
+  
 
 }
