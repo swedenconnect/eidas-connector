@@ -12,6 +12,7 @@ cp -r ${SCRIPT_DIR}/../../../credentials /tmp/eidas-connector-credentials
 docker run -d --name eidas-connector --restart=always \
   -p 9200:8443 \
   -e IDP_DEVEL_MODE=true \
+  -e IDP_ERRORS_VERBOSE=true \
   -e IDP_SERVER_HOSTNAME=localhost -e IDP_SERVER_PORT=9200 \
   -e IDP_ENTITY_ID="https://eunode.eidastest.se/idp2" \
   -e SP_ENTITY_ID="https://localhost:9200/idp/metadata/sp" \

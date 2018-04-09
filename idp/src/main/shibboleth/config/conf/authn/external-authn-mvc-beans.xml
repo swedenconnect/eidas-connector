@@ -57,6 +57,7 @@
     p:attributeProcessingService-ref="eidas.AttributeProcessingService"
     p:countrySelectionHandler-ref="eidas.CountrySelectionHandler"
     p:signMessageUiHandler-ref="eidas.SignMessageUiHandler"
-    p:uiLanguageHandler-ref="eidas.UiLanguageHandler" />    
+    p:uiLanguageHandler-ref="eidas.UiLanguageHandler" 
+    p:verboseStatusMessage="%{idp.errors.verbose:false}" />    
         
 </beans>
