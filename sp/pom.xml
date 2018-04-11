@@ -4,13 +4,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>eidas-connector-sp</artifactId>
-  <version>1.2.1</version>
   <packaging>jar</packaging>
 
   <parent>
     <groupId>se.elegnamnden.eidas.idp</groupId>
     <artifactId>eidas-connector-base-parent</artifactId>
-    <version>1.2</version>
+    <version>1.2.3-SNAPSHOT</version>
   </parent>
 
   <name>eIDAS :: Swedish eIDAS connector SP</name>
