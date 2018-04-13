@@ -48,7 +48,7 @@
     
     <tomcat.version>8.5.23</tomcat.version>
     
-    <opensaml.eidas.version>1.1.0</opensaml.eidas.version>
+    <opensaml.eidas.version>1.1.1</opensaml.eidas.version>
             
     <lombok.version>1.16.20</lombok.version>
   </properties>
