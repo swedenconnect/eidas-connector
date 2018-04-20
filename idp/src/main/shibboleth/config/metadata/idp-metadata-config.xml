@@ -102,13 +102,53 @@
         </property>
         <property name="logos">
           <util:list>
-            <bean class="se.litsec.opensaml.saml2.metadata.build.spring.LogoFactoryBean" c:url="https://eid.svelegtest.se/logos/elegnamnden_114x100.png" c:width="114" c:height="100" />
-            <bean class="se.litsec.opensaml.saml2.metadata.build.spring.LogoFactoryBean" c:url="https://eid.svelegtest.se/logos/elegnamnden_logo_160x90.png" c:width="160" c:height="90" />
-            <bean class="se.litsec.opensaml.saml2.metadata.build.spring.LogoFactoryBean" c:url="https://eid.svelegtest.se/logos/elegnamnden_notext_16x16.png" c:width="16" c:height="16" />
-            <bean class="se.litsec.opensaml.saml2.metadata.build.spring.LogoFactoryBean" c:url="https://eid.svelegtest.se/logos/elegnamnden_notext_68x67.png" c:width="68" c:height="67" />            
+            <bean class="se.litsec.opensaml.saml2.metadata.build.spring.LogoFactoryBean" 
+              c:url="%{idp.metadata.uiInfo.smallLogo.url}" 
+              c:width="%{idp.metadata.uiInfo.smallLogo.width}" 
+              c:height="%{idp.metadata.uiInfo.smallLogo.height}" />
+            <bean class="se.litsec.opensaml.saml2.metadata.build.spring.LogoFactoryBean" 
+              c:url="%{idp.metadata.uiInfo.largeLogo.url}" 
+              c:width="%{idp.metadata.uiInfo.largeLogo.width}" 
+              c:height="%{idp.metadata.uiInfo.largeLogo.height}" />                        
           </util:list>
         </property>
       </bean>
+    </property>
+    
+    <property name="organization">
+      <bean class="se.litsec.opensaml.saml2.metadata.build.spring.OrganizationFactoryBean">
+        <property name="organizationNames">
+          <util:list>
+            <value>en-%{idp.metadata.organization.name.en}</value>
+            <value>sv-%{idp.metadata.organization.name.sv}</value>
+          </util:list>
+        </property>
+        <property name="organizationDisplayNames">
+          <util:list>
+            <value>en-%{idp.metadata.organization.displayName.en}</value>
+            <value>sv-%{idp.metadata.organization.displayName.sv}</value>
+          </util:list>
+        </property>
+        <property name="organizationURLs">
+          <util:list>
+            <value>en-%{idp.metadata.organization.url.en}</value>
+            <value>sv-%{idp.metadata.organization.url.sv}</value>
+          </util:list>
+        </property>
+      </bean>
+    </property>
+    
+    <property name="contactPersons">
+      <util:list>
+        <bean class="se.litsec.opensaml.saml2.metadata.build.spring.ContactPersonFactoryBean"
+          p:type="SUPPORT"
+          p:company="%{idp.metadata.contactPerson.support.company}"
+          p:emailAddresses="%{idp.metadata.contactPerson.support.emailAddress}" />
+        <bean class="se.litsec.opensaml.saml2.metadata.build.spring.ContactPersonFactoryBean"
+          p:type="TECHNICAL"
+          p:company="%{idp.metadata.contactPerson.technical.company}"
+          p:emailAddresses="%{idp.metadata.contactPerson.technical.emailAddress}" />          
+      </util:list>
     </property>
     
   </bean>
