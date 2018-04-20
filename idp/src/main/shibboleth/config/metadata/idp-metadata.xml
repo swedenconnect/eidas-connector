@@ -11,12 +11,4 @@
 
   </IDPSSODescriptor>
   
-  <Organization>
-    <OrganizationName xml:lang="en">Swedish E-Identification Board</OrganizationName>
-    <OrganizationName xml:lang="sv">E-legitimationsnämnden</OrganizationName>
-    <OrganizationDisplayName xml:lang="en">Swedish E-Identification Board</OrganizationDisplayName>
-    <OrganizationDisplayName xml:lang="sv">E-legitimationsnämnden</OrganizationDisplayName>
-    <OrganizationURL xml:lang="en">http://www.elegnamnden.se</OrganizationURL>
-  </Organization>
-
 </EntityDescriptor>
