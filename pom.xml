@@ -108,7 +108,7 @@
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-bom</artifactId>
-        <version>1.3.2</version>
+        <version>1.4-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

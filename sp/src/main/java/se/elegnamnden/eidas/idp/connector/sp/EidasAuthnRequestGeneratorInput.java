@@ -22,6 +22,8 @@ package se.elegnamnden.eidas.idp.connector.sp;
 
 import java.util.List;
 
+import org.opensaml.saml.saml2.core.RequestedAuthnContext;
+
 import se.litsec.eidas.opensaml.ext.RequestedAttributes;
 import se.litsec.eidas.opensaml.ext.SPTypeEnumeration;
 import se.litsec.opensaml.saml2.common.request.AbstractRequestGeneratorInput;
@@ -38,8 +40,8 @@ public class EidasAuthnRequestGeneratorInput extends AbstractRequestGeneratorInp
   /** The country for the IdP. */
   private String country;
 
-  /** The requested level of assurance URI. Only one is specified since eIDAS uses "minimum" matching. */
-  private String requestedLevelOfAssurance;
+  /** The requested authentication context to include in the authentication request. */
+  private RequestedAuthnContext requestedAuthnContext;
 
   /** The eIDAS requested attributes to include in the AuthnRequest. */
   private List<se.litsec.eidas.opensaml.ext.RequestedAttribute> requestedAttributeList;
@@ -67,22 +69,22 @@ public class EidasAuthnRequestGeneratorInput extends AbstractRequestGeneratorInp
   }
 
   /**
-   * Returns the requested level of assurance URI. Only one is specified since eIDAS uses "minimum" matching.
+   * Returns the requested authentication context to include in the authentication request.
    * 
-   * @return requested LoA URI
+   * @return a {@code RequestedAuthnContext} element
    */
-  public String getRequestedLevelOfAssurance() {
-    return this.requestedLevelOfAssurance;
+  public RequestedAuthnContext getRequestedAuthnContext() {
+    return this.requestedAuthnContext;
   }
 
   /**
-   * Assigns the requested level of assurance URI.
+   * Assigns the requested authentication context to include in the authentication request.
    * 
-   * @param requestedLevelOfAssurance
-   *          requested LoA URIs
+   * @param requestedAuthnContext
+   *          the {@code RequestedAuthnContext} element
    */
-  public void setRequestedLevelOfAssurance(String requestedLevelOfAssurance) {
-    this.requestedLevelOfAssurance = requestedLevelOfAssurance;
+  public void setRequestedAuthnContext(RequestedAuthnContext requestedAuthnContext) {
+    this.requestedAuthnContext = requestedAuthnContext;
   }
 
   /**
