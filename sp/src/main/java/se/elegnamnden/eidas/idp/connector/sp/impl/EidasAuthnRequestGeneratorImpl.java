@@ -22,7 +22,6 @@ package se.elegnamnden.eidas.idp.connector.sp.impl;
 
 import org.joda.time.DateTime;
 import org.opensaml.core.xml.Namespace;
-import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Extensions;
 import org.opensaml.saml.saml2.core.NameID;
@@ -44,7 +43,6 @@ import se.litsec.opensaml.saml2.common.request.RequestGenerationException;
 import se.litsec.opensaml.saml2.common.request.RequestHttpObject;
 import se.litsec.opensaml.saml2.core.build.AuthnRequestBuilder;
 import se.litsec.opensaml.saml2.core.build.NameIDPolicyBuilder;
-import se.litsec.opensaml.saml2.core.build.RequestedAuthnContextBuilder;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
 import se.litsec.opensaml.utils.ObjectUtils;
 
@@ -109,7 +107,6 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
     extensions.getUnknownXMLObjects().add(input.getRequestedAttributes());
 
     // TODO: We should ensure that the NameIDFormat is accepted by the IdP.
-    // TODO: We should also make NameIDFormat configurable.
 
     AuthnRequest authnRequest = builder
       .id(this.generateID())
@@ -120,11 +117,7 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
       .forceAuthn(true)
       .isPassive(false)
       .providerName(this.getName())
-      .requestedAuthnContext(
-        RequestedAuthnContextBuilder.builder()
-          .comparison(AuthnContextComparisonTypeEnumeration.MINIMUM)
-          .authnContextClassRefs(input.getRequestedLevelOfAssurance())
-          .build())
+      .requestedAuthnContext(input.getRequestedAuthnContext())
       .consent(StatusResponseType.UNSPECIFIED_CONSENT)
       .extensions(extensions)
       .build();

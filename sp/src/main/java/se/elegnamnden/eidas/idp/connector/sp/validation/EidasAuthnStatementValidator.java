@@ -39,7 +39,8 @@ public class EidasAuthnStatementValidator extends SwedishEidAuthnStatementValida
   protected ValidationResult validateAuthnContextClassRef(String authnContextClassRef, Collection<String> requestedContextClassRefs,
       AuthnStatement statement, Assertion assertion, ValidationContext context) {
 
-    // TODO
+    // The EidasAuthnContextService will check that everything is correct ...
+    
     return ValidationResult.VALID;
   }
 

@@ -23,6 +23,7 @@ package se.elegnamnden.eidas.idp.connector.service;
 import java.util.List;
 
 import org.opensaml.profile.context.ProfileRequestContext;
+import org.opensaml.saml.saml2.core.RequestedAuthnContext;
 
 import se.litsec.shibboleth.idp.authn.ExternalAutenticationErrorCodeException;
 import se.litsec.shibboleth.idp.authn.service.ProxyIdpAuthnContextService;
@@ -36,37 +37,19 @@ import se.litsec.shibboleth.idp.authn.service.ProxyIdpAuthnContextService;
 public interface EidasAuthnContextService extends ProxyIdpAuthnContextService {
 
   /**
-   * When the eIDAS connector knows which foreign Proxy Service IdP to communicate with it must inform the service
-   * whether this IdP supports the notified/non notified eID scheme concept. This is needed so that the service can
-   * perform a correct transformation between national AuthnContextClassRef URI:s and eIDAS URI:s.
-   * <p>
-   * By default, a service assumes that the foreign IdP understands the notified/non notified eID scheme concept.
-   * </p>
-   * 
-   * @param context
-   *          the request context
-   * @param supportsNonNotifiedConcept
-   *          does the foreign IdP support the notified/non notified eID scheme concept?
-   */
-  void setSupportsNonNotifiedConcept(ProfileRequestContext<?, ?> context, boolean supportsNonNotifiedConcept);
-
-  /**
-   * Maps to {@link #getSendAuthnContextClassRefs(ProfileRequestContext, List, boolean)} where the
-   * {@code idpSupportsSignMessage} parameter always is {@code false}. This is because eIDAS does not support the
-   * SignMessage extension and signature message displaying.
-   * <p>
-   * eIDAS uses "minimum" comparison of AuthnContextClassRefs which means that we only have to send one URI (the one
-   * with the lowest rank). Therefore, one URI instead of a list of URI:s will be returned. 
-   * </p>
+   * Given the supported authentication methods (assurance certification URI:s) indicated by the Proxy Service and the
+   * {@code AuthnRequest} that is being processed, the method calculates the {@code RequestedAuthnContext} to be
+   * included in the {@code AuthnRequest} that is to be sent to the Proxy Service.
    * 
    * @param context
    *          the request context
    * @param assuranceURIs
-   *          IdP assurance certification URI:s
+   *          a list of assurance certification URI:s
+   * @return a {@code RequestedAuthnContext} element
    * @throws ExternalAutenticationErrorCodeException
-   *           if no AuthnContext URI:s matches
+   *           for matching errors
    */
-  String getSendAuthnContextClassRef(ProfileRequestContext<?, ?> context, List<String> assuranceURIs)
+  RequestedAuthnContext getSendRequestedAuthnContext(ProfileRequestContext<?, ?> context, List<String> assuranceURIs)
       throws ExternalAutenticationErrorCodeException;
 
 }

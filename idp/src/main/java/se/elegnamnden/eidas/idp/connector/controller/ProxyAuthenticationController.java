@@ -156,6 +156,21 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     return this.countrySelect(httpRequest, httpResponse, null);
   }
 
+  /**
+   * Controller method for starting the authentication flow.
+   * 
+   * @param httpRequest
+   *          the request
+   * @param httpResponse
+   *          the response
+   * @param language
+   *          optional parameter holding the selected language
+   * @return a model and view object
+   * @throws ExternalAuthenticationException
+   *           for Shibboleth session errors
+   * @throws IOException
+   *           for IO errors
+   */
   @RequestMapping(value = "/start", method = RequestMethod.POST)
   public ModelAndView countrySelect(
       HttpServletRequest httpRequest,
@@ -195,6 +210,24 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     return modelAndView;
   }
 
+  /**
+   * Controller method that initiates the authentication against the foreign Proxy Service ending with an authentication
+   * being sent.
+   * 
+   * @param httpRequest
+   *          the request
+   * @param httpResponse
+   *          the response
+   * @param action
+   *          the action parameter received from the view
+   * @param selectedCountry
+   *          the country code for the selected country
+   * @return a model and view for POST or redirect of the request
+   * @throws ExternalAuthenticationException
+   *           for Shibboleth session errors
+   * @throws IOException
+   *           for IO errors
+   */
   @RequestMapping(value = "/proxyauth", method = RequestMethod.POST)
   public ModelAndView processAuthentication(
       HttpServletRequest httpRequest,
@@ -226,9 +259,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     }
 
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
-
-    // Prepare the AuthnContext ...
-    this.eidasAuthnContextService.setSupportsNonNotifiedConcept(context, endPoint.isSupportsNonNotifiedConcept());
 
     // Next, generate an AuthnRequest and redirect or post the user there.
     //
@@ -284,8 +314,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Match assurance levels and calculate which LoA URI to use in the request.
     //
     try {
-      spInput.setRequestedLevelOfAssurance(this.eidasAuthnContextService.getSendAuthnContextClassRef(context, endPoint
-        .getAssuranceCertifications()));
+      spInput.setRequestedAuthnContext(this.eidasAuthnContextService.getSendRequestedAuthnContext(
+        context, endPoint.getAssuranceCertifications()));
     }
     catch (ExternalAutenticationErrorCodeException e) {
       throw new RequestGenerationException(e.getActualMessage() != null ? e.getActualMessage() : e.getMessage(), e);
@@ -583,16 +613,16 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     StatusCode _statusCode = ObjectUtils.createSamlObject(StatusCode.class);
     _statusCode.setValue(statusCode);
     status.setStatusCode(_statusCode);
-    
+
     if (subStatusCode != null) {
       StatusCode _subStatusCode = ObjectUtils.createSamlObject(StatusCode.class);
       _subStatusCode.setValue(subStatusCode);
       status.getStatusCode().setStatusCode(_subStatusCode);
     }
-    
+
     StatusMessage _statusMessage = ObjectUtils.createSamlObject(StatusMessage.class);
     String msg = null;
-    
+
     if (!this.verboseStatusMessage && statusMessage != null) {
       msg = statusMessage;
     }
@@ -612,7 +642,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
         msg = sb.toString();
       }
     }
-    
+
     if (msg != null) {
       _statusMessage.setMessage(msg);
       status.setStatusMessage(_statusMessage);
