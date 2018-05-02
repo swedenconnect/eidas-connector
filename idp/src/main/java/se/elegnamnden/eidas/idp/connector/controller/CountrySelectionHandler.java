@@ -64,7 +64,7 @@ public class CountrySelectionHandler implements InitializingBean {
 
   /** The name of the cookie that holds the selected country for the current session. */
   public static final String DEFAULT_SELECTED_SESSION_COUNTRY_COOKIE_NAME = "selectedCountrySession";
-  
+
   /** Set cookie permanently. */
   private static final int FOREVER = 60 * 60 * 24 * 365 * 10;
 
@@ -85,6 +85,9 @@ public class CountrySelectionHandler implements InitializingBean {
    * {@value #DEFAULT_SELECTED_COUNTRY_COOKIE_NAME}.
    */
   private String selectedSessionCountryCookieName;
+
+  /** Cookie domain. */
+  private String cookieDomain;
 
   /**
    * Returns the selected country by inspecting the "selected country" cookies
@@ -109,11 +112,18 @@ public class CountrySelectionHandler implements InitializingBean {
    */
   public void saveSelectedCountry(HttpServletResponse httpResponse, String selectedCountry) {
     Cookie cookie = new Cookie(this.selectedCountryCookieName, selectedCountry);
+    if (StringUtils.hasText(this.cookieDomain)) {
+      cookie.setDomain(this.cookieDomain);
+    }
     cookie.setPath("/idp");
     cookie.setHttpOnly(true);
     cookie.setMaxAge(FOREVER);
     httpResponse.addCookie(cookie);
+    
     cookie = new Cookie(this.selectedSessionCountryCookieName, selectedCountry);
+    if (StringUtils.hasText(this.cookieDomain)) {
+      cookie.setDomain(this.cookieDomain);
+    }
     cookie.setPath("/idp");
     cookie.setHttpOnly(true);
     cookie.setMaxAge(-1);
@@ -160,7 +170,7 @@ public class CountrySelectionHandler implements InitializingBean {
    * @return a sorted list of country objects
    */
   public List<UiCountry> getSelectableCountries(List<String> isoCodes) {
-    
+
     if (isoCodes == null) {
       log.error("No countries available");
       return Collections.emptyList();
@@ -257,6 +267,16 @@ public class CountrySelectionHandler implements InitializingBean {
    */
   public void setFallbackLanguages(List<String> fallbackLanguages) {
     this.fallbackLanguages = fallbackLanguages;
+  }
+
+  /**
+   * Assigns the cookie domain.
+   * 
+   * @param cookieDomain
+   *          the cookie domain to use for cookies
+   */
+  public void setCookieDomain(String cookieDomain) {
+    this.cookieDomain = cookieDomain;
   }
 
   /** {@inheritDoc} */

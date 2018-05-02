@@ -267,6 +267,7 @@ export JVM_MAX_HEAP JVM_START_HEAP
 export JAVA_OPTS="\
           -Djava.net.preferIPv4Stack=true \
           -Didp.home=$IDP_HOME \
+          -Didp.domain=$IDP_SERVER_HOSTNAME \
           -Didp.baseurl=$IDP_BASE_URL \
           -Didp.devel.mode=$IDP_DEVEL_MODE \
           -Didp.errors.verbose=$IDP_ERRORS_VERBOSE \

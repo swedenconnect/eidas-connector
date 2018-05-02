@@ -180,10 +180,10 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
     }
 
-    // Selected country from earlier session.
+    // Selected country from this session.
     //
-    final String selectedCountry = this.countrySelectionHandler.getSelectedCountry(httpRequest, true);
-    log.debug("Selected country from previous session: {}", selectedCountry != null ? selectedCountry : "none");
+    String selectedCountry = this.countrySelectionHandler.getSelectedCountry(httpRequest, true);
+    log.debug("Selected country from this session: {}", selectedCountry != null ? selectedCountry : "none");
 
     // The first step is to prompt the user for which country to direct to.
     // If the request is made by a signature service and the selected country is known, we skip
@@ -193,7 +193,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       log.info("Request is from a signature service. Will default to previously selected country: '{}'", selectedCountry);
       return this.processAuthentication(httpRequest, httpResponse, selectedCountry);
     }
-    
+
     List<String> availableCountries = this.metadataConfig.getProxyServiceCountryList();
     if (availableCountries.isEmpty()) {
       log.error("No available countries");
@@ -207,6 +207,11 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     modelAndView.addObject("spInfo", this.countrySelectionHandler.getSpInfo(this.getPeerMetadata(context)));
     modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
 
+    if (selectedCountry == null) {
+      selectedCountry = this.countrySelectionHandler.getSelectedCountry(httpRequest, false);
+      log.debug("Selected country from previous session: {}", selectedCountry != null ? selectedCountry : "none");
+    }
+    
     if (selectedCountry != null) {
       modelAndView.addObject("selectedCountry", this.countrySelectionHandler.getSelectedCountry(httpRequest, false));
     }
