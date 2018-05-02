@@ -15,7 +15,8 @@
        default-destroy-method="destroy">
            
   <bean id="eidas.CountrySelectionHandler" class="se.elegnamnden.eidas.idp.connector.controller.CountrySelectionHandler" scope="singleton"
-    p:messageSource-ref="messageSource">
+    p:messageSource-ref="messageSource" 
+    p:cookieDomain="%{idp.cookie.domain:}">
     <property name="fallbackLanguages">
       <bean parent="shibboleth.CommaDelimStringArray" c:_0="#{'%{idp.ui.fallbackLanguages:}'.trim()}" />
     </property>

@@ -163,6 +163,7 @@ export JAVA_OPTS="-Didp.devel.mode=false \
 -Djava.net.preferIPv4Stack=true \
 -Didp.hostname=${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFFIX} \
 -Didp.baseurl=${IDP_BASE_URL} \
+-Didp.domain=$IDP_SERVER_HOSTNAME \
 -Didp.test.sp.metadata=$TEST_SP_METADATA \
 -Didp.service.metadata.resources=shibboleth.DevelMetadataResolverResources \
 -Didp.log-settings.file=$IDP_LOG_SETTINGS_FILE \
