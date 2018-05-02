@@ -193,10 +193,17 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       log.info("Request is from a signature service. Will default to previously selected country: '{}'", selectedCountry);
       return this.processAuthentication(httpRequest, httpResponse, selectedCountry);
     }
+    
+    List<String> availableCountries = this.metadataConfig.getProxyServiceCountryList();
+    if (availableCountries.isEmpty()) {
+      log.error("No available countries");
+      this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
+        "No countries available for authentication", null);
+      return null;
+    }
 
     ModelAndView modelAndView = new ModelAndView("country-select2");
-    modelAndView.addObject("countries", this.countrySelectionHandler.getSelectableCountries(this.metadataConfig
-      .getProxyServiceCountryList()));
+    modelAndView.addObject("countries", this.countrySelectionHandler.getSelectableCountries(availableCountries));
     modelAndView.addObject("spInfo", this.countrySelectionHandler.getSpInfo(this.getPeerMetadata(context)));
     modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
 
