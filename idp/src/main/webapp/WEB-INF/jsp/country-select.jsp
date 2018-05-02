@@ -65,21 +65,26 @@
           </div>        
         
           <div class="col-sm-6 col-sm-pull-6">
-            <form action="/idp/extauth/proxyauth" method="POST" id="formTab3">
+            <form action="/idp/extauth/proxyauth" method="POST" id="formTab3" name="selectCountryForm">
               <div class="form-group form-group-sm">
                 <label for="countryInp"><spring:message code="connector.ui.choose-country" /></label>
-                <select class="form-control selectpicker" id="selectCountryInp" name="selectedCountry" data-native-menu="false">                
+                <select class="form-control selectpicker" id="selectCountryInp" name="selectedCountry" data-native-menu="false">
                   <c:forEach items="${countries}" var="country">                    
                     <c:set var="flag" value="${country.isRealCountry() ? country.code : 'EU'}" />
                     <c:url value="/img/flags/${flag}.png" var="flagSrc" />                             
                     <c:set var="selectedAttr" value="${country.code == selectedCountry ? 'selected' : ''}" />                               
                     <option value="${country.code}" data-content="<img src='${flagSrc}'>&nbsp;&nbsp;${country.name}" ${selectedAttr}>${country.name}</option>
                   </c:forEach>
+                  <option style="display: none;" value="cancel">Cancel</option>
                 </select>
               </div>
+              <!-- 
               <button type="submit" class="btn btn-primary btn-md btn-block" name="action" value="authenticate"><spring:message code='connector.ui.button.authenticate' /></button>
+              -->
+              <button type="submit" class="btn btn-primary btn-md btn-block"><spring:message code='connector.ui.button.authenticate' /></button>
               <br />
-              <button type="submit" class="btn btn-default btn-sm" name="action" value="cancel"><spring:message code='connector.ui.button.cancel' /></button>
+              <button type="submit" class="btn btn-default btn-sm" onclick="document.selectCountryForm.selectedCountry.value='cancel';"><spring:message code='connector.ui.button.cancel' /></button>
+              <!-- <button type="submit" class="btn btn-default btn-sm" name="action" value="cancel"><spring:message code='connector.ui.button.cancel' /></button>-->
               <!-- <input type="hidden" name="authenticationKey" value="${authenticationKey}" /> -->
             </form>
           </div>

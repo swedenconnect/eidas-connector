@@ -79,7 +79,7 @@ public class SpInfoHandler {
     }
     spInfo.setDescription(getLocalizedName(uiInfo.getDescriptions(), language, fallbackLanguages));
 
-    // Try to find something larger than 40px and less than 100px first
+    // Try to find something larger than 80px and less than 120px first
     //
     Logo small = null;
     Logo large = null;
@@ -87,16 +87,16 @@ public class SpInfoHandler {
       if (logo.getHeight() == null) {
         continue;
       }
-      if (logo.getHeight() > 40 && logo.getHeight() < 100) {
+      if (logo.getHeight() > 80 && logo.getHeight() < 120) {
         spInfo.setDefaultLogoUrl(logo.getURL());
         break;
       }
-      else if (logo.getHeight() < 40) {
+      else if (logo.getHeight() < 80) {
         if (small == null || (small != null && logo.getHeight() > small.getHeight())) {
           small = logo;
         }
       }
-      else if (logo.getHeight() > 100) {
+      else if (logo.getHeight() > 120) {
         if (large == null || (large != null && logo.getHeight() < large.getHeight())) {
           large = logo;
         }

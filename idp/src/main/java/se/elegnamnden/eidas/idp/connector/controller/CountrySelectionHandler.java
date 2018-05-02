@@ -64,6 +64,9 @@ public class CountrySelectionHandler implements InitializingBean {
 
   /** The name of the cookie that holds the selected country for the current session. */
   public static final String DEFAULT_SELECTED_SESSION_COUNTRY_COOKIE_NAME = "selectedCountrySession";
+  
+  /** Set cookie permanently. */
+  private static final int FOREVER = 60 * 60 * 24 * 365 * 10;
 
   /** The Spring message source holding localized UI message strings. */
   private MessageSource messageSource;
@@ -108,7 +111,7 @@ public class CountrySelectionHandler implements InitializingBean {
     Cookie cookie = new Cookie(this.selectedCountryCookieName, selectedCountry);
     cookie.setPath("/idp");
     cookie.setHttpOnly(true);
-    cookie.setMaxAge(Integer.MAX_VALUE);
+    cookie.setMaxAge(FOREVER);
     httpResponse.addCookie(cookie);
     cookie = new Cookie(this.selectedSessionCountryCookieName, selectedCountry);
     cookie.setPath("/idp");
