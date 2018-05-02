@@ -41,6 +41,11 @@ public class SpInfo {
   /** The SP description. */
   private String description;
   
-  /** The SP default logo - meaning that we return a logo that is not too small (16x16) and not too large (>100 px). */
+  /** The SP default logo - meaning that we return a logo that is not too small (16x16) and not too large (>120 px). */
   private String defaultLogoUrl;
+  
+  private int logoHeight;
+  
+  private int logoWidth;
+  
 }

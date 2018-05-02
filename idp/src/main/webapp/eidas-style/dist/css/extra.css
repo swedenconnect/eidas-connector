@@ -1,0 +1,46 @@
+.sign-message {
+  margin-bottom: 30px;
+}
+
+.sign-message div {
+  margin: 0;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.top-logo-dim {
+  height: 70px;
+  width: auto;
+}
+
+.copyright {
+  margin-top: 23px;
+  margin-bottom: 23px;
+}
+
+.content-heading-text {
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.btn-link {
+  font-weight: inherit;
+  background-color: transparent;
+
+  color: #000000 !important;
+  text-decoration: underline;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.country-button {
+  background-color: transparent;  
+  border: none; 
+  padding: 0;
+  white-space: normal;
+  text-align: left;
+}
+
+
+
+
+

@@ -1,0 +1,79 @@
+##
+## Velocity Template for error end-state
+##
+## Velocity context will contain the following properties
+## flowRequestContext - the Spring Web Flow RequestContext
+## profileRequestContext - root of context tree
+## encoder - HTMLEncoder class
+## request - HttpServletRequest
+## response - HttpServletResponse
+## environment - Spring Environment object for property resolution
+## custom - arbitrary object injected by deployer
+##
+#set ($title = $springMacroRequestContext.getMessage("connector.ui.title", "The Swedish eIDAS Pilot"))
+#set ($defaultTitleSuffix = $springMacroRequestContext.getMessage("idp.title.suffix", "Error"))
+##
+#if ($flowRequestContext)
+	## This handles flow events, the most common case.
+    #set ($eventId = $flowRequestContext.getCurrentEvent().getId())
+    #set ($eventKey = $springMacroRequestContext.getMessage("$eventId", "error"))
+    #set ($titleSuffix = $springMacroRequestContext.getMessage("${eventKey}.title", "$defaultTitleSuffix"))
+    #set ($message = $springMacroRequestContext.getMessage("${eventKey}.message", "$defaultTitleSuffix: $eventId"))
+    #if ($eventId == "AccessDenied" or $eventId == "ContextCheckDenied")
+        $response.setStatus(403)
+    #elseif ($eventId == "AttributeReleaseRejected" || $eventId == "TermsRejected")
+        $response.setStatus(200)
+    #elseif ($eventKey == "unexpected" || $eventKey == "runtime-error" || $eventKey == "error")
+        $response.setStatus(500)
+    #else
+        $response.setStatus(400)
+    #end
+#elseif ($exception)
+	## This handles exceptions that reach the Spring-MVC exception handler.
+    #set ($eventId = $exception.getClass().getSimpleName())
+    #set ($eventKey = $springMacroRequestContext.getMessage("$eventId", "error"))
+    #set ($titleSuffix = $springMacroRequestContext.getMessage("${eventKey}.title", "$defaultTitleSuffix"))
+    #set ($message = $springMacroRequestContext.getMessage("${eventKey}.message", "$defaultTitleSuffix: $eventId"))
+#else
+	## This is a catch-all that theoretically shouldn't happen?
+    #set ($titleSuffix = $defaultTitleSuffix)
+    #set ($message = $springMacroRequestContext.getMessage("idp.message", "An unidentified error occurred."))
+#end
+##
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="eIDAS connector">
+
+        <meta http-equiv='pragma' content='no-cache'/>
+        <meta http-equiv='cache-control' content='no-cache, no-store, must-revalidate'/>
+        <meta http-equiv="Expires" content="-1"/>
+    
+        <link rel="stylesheet" type="text/css" href="$request.getContextPath()/css/bootstrap.min.css" />
+                
+        <title>$title - $titleSuffix</title>
+    </head>
+  	
+    <body class="container">
+    
+      <div class="panel panel-default" style="margin-top: 20px">
+        <div class="panel-heading" style="padding-top: 0px;padding-bottom: 0px">
+          #parse("header.vm")
+        </div>
+        <div class="panel-body">
+          <div>
+            #evaluate($message)
+          </div>        
+        </div>
+      </div>  
+       <div class='panel panel-footer'>
+         <div class="panel-body">
+           #parse("footer.vm")
+         </div>
+       </div>                                            
+    </body>
+         
+</html>

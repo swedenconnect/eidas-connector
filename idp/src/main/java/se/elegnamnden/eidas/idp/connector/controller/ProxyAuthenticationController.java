@@ -89,9 +89,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   /** Symbolic name for the action parameter value of "cancel". */
   public static final String ACTION_CANCEL = "cancel";
 
-  /** Symbolic name for the action parameter value of "authenticate". */
-  public static final String ACTION_AUTHENTICATE = "authenticate";
-
   /** Symbolic name for OK. */
   public static final String ACTION_OK = "ok";
 
@@ -194,12 +191,19 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     //
     if (this.getSignSupportService().isSignatureServicePeer(context) && selectedCountry != null) {
       log.info("Request is from a signature service. Will default to previously selected country: '{}'", selectedCountry);
-      return this.processAuthentication(httpRequest, httpResponse, ACTION_AUTHENTICATE, selectedCountry);
+      return this.processAuthentication(httpRequest, httpResponse, selectedCountry);
+    }
+    
+    List<String> availableCountries = this.metadataConfig.getProxyServiceCountryList();
+    if (availableCountries.isEmpty()) {
+      log.error("No available countries");
+      this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
+        "No countries available for authentication", null);
+      return null;
     }
 
-    ModelAndView modelAndView = new ModelAndView("country-select");
-    modelAndView.addObject("countries", this.countrySelectionHandler.getSelectableCountries(this.metadataConfig
-      .getProxyServiceCountryList()));
+    ModelAndView modelAndView = new ModelAndView("country-select2");
+    modelAndView.addObject("countries", this.countrySelectionHandler.getSelectableCountries(availableCountries));
     modelAndView.addObject("spInfo", this.countrySelectionHandler.getSpInfo(this.getPeerMetadata(context)));
     modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
 
@@ -218,8 +222,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    *          the request
    * @param httpResponse
    *          the response
-   * @param action
-   *          the action parameter received from the view
    * @param selectedCountry
    *          the country code for the selected country
    * @return a model and view for POST or redirect of the request
@@ -232,21 +234,15 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   public ModelAndView processAuthentication(
       HttpServletRequest httpRequest,
       HttpServletResponse httpResponse,
-      @RequestParam("action") String action,
-      @RequestParam(name = "selectedCountry", required = false) String selectedCountry) throws ExternalAuthenticationException,
-          IOException {
+      @RequestParam(name = "selectedCountry") String selectedCountry) throws ExternalAuthenticationException, IOException {
 
-    if (ACTION_CANCEL.equals(action)) {
+    if (ACTION_CANCEL.equals(selectedCountry)) {
       log.info("User cancelled country selection - aborting authentication");
       this.cancel(httpRequest, httpResponse);
       return null;
     }
-    if (selectedCountry == null) {
-      throw new IllegalArgumentException("Missing selectedCountry parameter");
-    }
 
     log.debug("User selected country '{}'", selectedCountry);
-    this.countrySelectionHandler.saveSelectedCountry(httpResponse, selectedCountry);
 
     // Get hold of all information needed for the foreign endpoint.
     //
@@ -257,6 +253,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
         "No services available for selected country", null);
       return null;
     }
+    
+    this.countrySelectionHandler.saveSelectedCountry(httpResponse, selectedCountry);
 
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
 
@@ -524,7 +522,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     if (action == null) {
 
       if (this.getSignSupportService().isSignatureServicePeer(context)) {
-        ModelAndView modelAndView = new ModelAndView("sign-consent");
+        ModelAndView modelAndView = new ModelAndView("sign-consent2");
         modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
 
         SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
