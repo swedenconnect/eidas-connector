@@ -9,8 +9,9 @@
 <meta http-equiv="Expires" content="-1"/>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
-<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,400i,700" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="<c:url value='/css/bootstrap-4.1.0.min.css' />" >
+<link rel="stylesheet" type="text/css" href="<c:url value='/css/open-sans-fonts.css' />" >
+<!-- <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,400i,700" rel="stylesheet"> -->
 <link rel="stylesheet" type="text/css" href="<c:url value='/eidas-style/dist/css/main.css' />" >
 <link rel="stylesheet" type="text/css" href="<c:url value='/eidas-style/dist/css/extra.css' />" >
 
