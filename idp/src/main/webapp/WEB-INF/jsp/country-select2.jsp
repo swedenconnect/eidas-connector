@@ -84,7 +84,7 @@
                 <c:url value="/eidas-style/images/flags/${fn:toLowerCase(flag)}.svg" var="flagSrc" />
 
                 <div class="col-sm">
-                  <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlag_${country.name}">
+                  <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlag_${country.code}">
                     <img class="col-sm country-flag float-left" src="${flagSrc}" alt="${country.name}" />
                     <div class="w-100"></div>
                     <p class="col-sm country-name float-left">${country.name}</p>
@@ -121,7 +121,7 @@
                 <c:url value="/eidas-style/images/flags/${fn:toLowerCase(flag)}.svg" var="flagSrc" />
 
                 <div class="col-3">
-                  <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlagSm_${country.name}">
+                  <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlagSm_${country.code}">
                     <img class="col-sm country-flag float-left" src="${flagSrc}" alt="${country.name}" />
                     <div class="w-100"></div>
                     <p class="col-sm country-name float-left">${country.name}</p>
