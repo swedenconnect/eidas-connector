@@ -24,11 +24,11 @@ import org.junit.Test;
 import org.opensaml.storage.StorageRecord;
 import org.opensaml.storage.VersionMismatchException;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.util.SocketUtils;
 
 import net.shibboleth.utilities.java.support.collection.Pair;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Protocol;
 import redis.embedded.RedisServer;
 
 /**
@@ -46,7 +46,10 @@ public class RedisStorageServiceTest {
 
   @Before
   public void setup() throws IOException, ComponentInitializationException {
-    this.server = new RedisServer(Protocol.DEFAULT_PORT);
+    
+    int port = SocketUtils.findAvailableTcpPort();
+    
+    this.server = new RedisServer(port);
     this.server.start();
 
     JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
@@ -56,7 +59,7 @@ public class RedisStorageServiceTest {
     JedisConnectionFactory connectionFactory = new JedisConnectionFactory(jedisPoolConfig);
     connectionFactory.setUsePool(true);
     connectionFactory.setHostName("localhost");
-    connectionFactory.setPort(Protocol.DEFAULT_PORT);
+    connectionFactory.setPort(port);
     connectionFactory.afterPropertiesSet();
 
     this.service = new RedisStorageService();
