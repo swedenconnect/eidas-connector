@@ -124,7 +124,7 @@
   <bean id="eidas.MessageReplayChecker" class="se.litsec.opensaml.saml2.common.response.MessageReplayCheckerImpl" scope="singleton"
     p:replayCache-ref="shibboleth.ReplayCache"
     p:replayCacheExpiration="%{idp.policy.messageLifetime:PT5M}"
-    p:replayCacheName="eidas-sp" />
+    p:replayCacheName="eidas-sp-replaycache" />
   
   <bean id="eidas.SpSigningCredential" class="net.shibboleth.idp.profile.spring.factory.BasicX509CredentialFactoryBean"
     p:privateKeyResource="%{idp.sp.signing.key}"
@@ -179,5 +179,8 @@
       </list>
     </constructor-arg>
   </bean>  
+  
+  <!-- Redis - lazy init -->
+  <import resource="storage-redis.xml" />
           
 </beans>

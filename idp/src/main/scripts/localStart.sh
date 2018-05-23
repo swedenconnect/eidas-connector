@@ -191,6 +191,37 @@ if [ -n "$IDP_FTICKS_FEDERATION_ID" ]; then
 fi
 
 #
+# Redis
+#
+
+#REDIS_HOST=docker.for.mac.localhost
+#REDIS_HOST=localhost
+
+: ${REDIS_HOST:=""}
+
+if [ -n "$REDIS_HOST" ]; then
+
+  : ${REDIS_PORT:=6379}
+  : ${REDIS_DATABASE:=0}
+  : ${REDIS_POOL_MAX:=20}
+  : ${REDIS_USE_TLS:=false}
+  : ${REDIS_TIMEOUT:=5000}
+  : ${REDIS_PASSWORD:=""}
+
+  export JAVA_OPTS="${JAVA_OPTS} \
+    -Didp.session.StorageService=shibboleth.RedisStorageService \
+    -Didp.replayCache.StorageService=shibboleth.RedisStorageService \
+    -Dredis.host=${REDIS_HOST} \
+    -Dredis.port=${REDIS_PORT} \
+    -Dredis.database=${REDIS_DATABASE} \
+    -Dredis.tls=${REDIS_USE_TLS} \
+    -Dredis.timeout=${REDIS_TIMEOUT} \
+    -Dredis.password=${REDIS_PASSWORD} \
+    -Dredis.pool.max-total=${REDIS_POOL_MAX}"
+fi
+
+
+#
 # Truststore for TLS
 #
 # Given a PEM file containing certificates that should be trusted
