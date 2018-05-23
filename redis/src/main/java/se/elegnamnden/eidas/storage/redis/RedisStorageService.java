@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import net.shibboleth.utilities.java.support.collection.Pair;
 import net.shibboleth.utilities.java.support.component.AbstractIdentifiableInitializableComponent;
@@ -74,8 +75,9 @@ public class RedisStorageService extends AbstractIdentifiableInitializableCompon
     }
 
     this.template = new RedisTemplate<>();
-    template.setConnectionFactory(this.connectionFactory);
+    template.setConnectionFactory(this.connectionFactory);    
     template.setEnableDefaultSerializer(true);
+    template.setKeySerializer(new StringRedisSerializer());
     template.afterPropertiesSet();
 
     this.valueOps = this.template.opsForValue();
