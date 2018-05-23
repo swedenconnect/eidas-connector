@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+                                                      
+       default-init-method="initialize"
+       default-destroy-method="destroy">
+       
+  <!--
+    See https://gist.github.com/JonCole/925630df72be1351b21440625ff2671f#file-redis-bestpractices-java-jedis-md 
+   -->
+       
+  <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig" scope="singleton" lazy-init="true"
+    p:testOnBorrow="true"
+    p:maxTotal="%{redis.pool.max-total:20}"
+    p:maxIdle="%{redis.pool.max-total:20}" />
+    
+  <bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory" scope="singleton" lazy-init="true"
+    c:poolConfig-ref="jedisPoolConfig"
+    p:usePool="true"
+    p:hostName="%{redis.host:localhost}"
+    p:port="%{redis.port:6379}"
+    p:database="%{redis.database:0}"
+    p:useSsl="%{redis.tls:false}"
+    p:timeout="%{redis.timeout:5000}"
+    p:password="%{redis.password:}" />
+    
+  <bean id="shibboleth.RedisStorageService" class="se.elegnamnden.eidas.storage.redis.RedisStorageService" scope="singleton" lazy-init="true"
+    p:connectionFactory-ref="jedisConnectionFactory"
+    p:id="shibboleth-redis-storage-service" />
+          
+</beans>

@@ -9,6 +9,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 rm -rf /tmp/eidas-connector-credentials 2>/dev/null
 cp -r ${SCRIPT_DIR}/../../../credentials /tmp/eidas-connector-credentials
 
+# To run against local Redis add: -e REDIS_HOST=docker.for.mac.localhost
+
 docker run -d --name eidas-connector --restart=always \
   -p 9200:8443 \
   -e IDP_DEVEL_MODE=true \
@@ -39,6 +41,6 @@ docker run -d --name eidas-connector --restart=always \
   -v ${EIDAS_LOCAL_ENV}:/etc/eidas-connector \
   docker.eidastest.se:5000/eidas-connector-idp
     
-# docker logs -f eidas-connector
+docker logs -f eidas-connector
 # -v /private/etc/eidas-connector:/etc/eidas-connector \
 

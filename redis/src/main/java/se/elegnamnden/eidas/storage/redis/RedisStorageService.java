@@ -29,6 +29,7 @@ import org.opensaml.storage.VersionMismatchException;
 import org.opensaml.storage.annotation.AnnotationSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -73,12 +74,24 @@ public class RedisStorageService extends AbstractIdentifiableInitializableCompon
     if (this.connectionFactory == null) {
       throw new ComponentInitializationException("connectionFactory has not been initialized");
     }
+    
+    // Test that the connection factory is correctly set up. Better to fail now, than later.
+    //
+    try {
+      RedisConnection connection = this.connectionFactory.getConnection();
+      connection.ping();
+      connection.close();
+    }
+    catch (Exception e) {
+      logger.error("Failed to open Redis connection - {}", e.getMessage(), e);
+      throw new ComponentInitializationException("Failed to open Redis connection", e);
+    }
 
     this.template = new RedisTemplate<>();
-    template.setConnectionFactory(this.connectionFactory);    
-    template.setEnableDefaultSerializer(true);
-    template.setKeySerializer(new StringRedisSerializer());
-    template.afterPropertiesSet();
+    this.template.setConnectionFactory(this.connectionFactory);    
+    this.template.setEnableDefaultSerializer(true);
+    this.template.setKeySerializer(new StringRedisSerializer());
+    this.template.afterPropertiesSet();
 
     this.valueOps = this.template.opsForValue();
   }
