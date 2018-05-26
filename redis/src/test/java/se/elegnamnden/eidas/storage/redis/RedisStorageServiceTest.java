@@ -27,7 +27,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.util.SocketUtils;
 
 import net.shibboleth.utilities.java.support.collection.Pair;
-import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.embedded.RedisServer;
 
@@ -45,7 +44,7 @@ public class RedisStorageServiceTest {
   private RedisStorageService service;
 
   @Before
-  public void setup() throws IOException, ComponentInitializationException {
+  public void setup() throws Exception {
     
     int port = SocketUtils.findAvailableTcpPort();
     
@@ -61,11 +60,14 @@ public class RedisStorageServiceTest {
     connectionFactory.setHostName("localhost");
     connectionFactory.setPort(port);
     connectionFactory.afterPropertiesSet();
+    
+    RedisStorageServiceFactoryBean factory = new RedisStorageServiceFactoryBean();
+    factory.setServiceId("redis-storage-service");
+    factory.setConnectionFactory(connectionFactory);
+    factory.setSingleton(true);
+    factory.afterPropertiesSet();
 
-    this.service = new RedisStorageService();
-    this.service.setId("redis-storage-service");
-    this.service.setConnectionFactory(connectionFactory);
-    this.service.initialize();
+    this.service = (RedisStorageService) factory.getObject();         
   }
 
   @After
