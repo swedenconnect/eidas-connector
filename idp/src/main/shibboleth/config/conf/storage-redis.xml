@@ -33,8 +33,9 @@
     p:timeout="%{redis.timeout:5000}"
     p:password="%{redis.password:}" />
     
-  <bean id="shibboleth.RedisStorageService" class="se.elegnamnden.eidas.storage.redis.RedisStorageService" scope="singleton" lazy-init="true"
+  <bean id="shibboleth.RedisStorageService" class="se.elegnamnden.eidas.storage.redis.RedisStorageServiceFactoryBean" scope="singleton" lazy-init="true"
+    p:serviceId="shibboleth-redis-storage-service"
     p:connectionFactory-ref="jedisConnectionFactory"
-    p:id="shibboleth-redis-storage-service" />
-          
+    p:fallbackService-ref="shibboleth.StorageService" />
+              
 </beans>
