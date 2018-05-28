@@ -6,7 +6,7 @@
   <groupId>se.elegnamnden.eidas.idp</groupId>
   <artifactId>eidas-connector-base-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.3.2-SNAPSHOT</version>
+  <version>1.3.2</version>
 
   <name>eIDAS :: Parent POM for the Swedish eIDAS connector</name>
   <description>Parent POM for the Swedish eIDAS connector IdP</description>
@@ -100,7 +100,7 @@
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-dependency-bom</artifactId>
-        <version>1.3.2-SNAPSHOT</version>
+        <version>1.3.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>    
@@ -108,7 +108,7 @@
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-bom</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
+        <version>1.4.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

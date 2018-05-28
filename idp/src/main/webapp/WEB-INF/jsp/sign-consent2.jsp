@@ -25,7 +25,7 @@
           </c:when>
           <c:otherwise>
             <div class="top-logo">
-              <img class="top-logo-dim" src="<c:url value='/eidas-style/images/sc-logo.svg' />" />
+              <img class="top-logo-dim" src="<c:url value='/img/logo_full.svg' />" />
             </div>
           </c:otherwise>
         </c:choose>
