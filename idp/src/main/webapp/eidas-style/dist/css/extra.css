@@ -7,9 +7,18 @@
   font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-.top-logo-dim {
-  height: 70px;
-  width: auto;
+@media (min-width: 576px) {
+  .top-logo-dim {
+    height: 60px;
+    width: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .top-logo-dim {
+    height: 40px;
+    width: auto;
+  }
 }
 
 .copyright {
