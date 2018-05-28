@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -211,7 +212,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       selectedCountry = this.countrySelectionHandler.getSelectedCountry(httpRequest, false);
       log.debug("Selected country from previous session: {}", selectedCountry != null ? selectedCountry : "none");
     }
-    
+
     if (selectedCountry != null) {
       modelAndView.addObject("selectedCountry", this.countrySelectionHandler.getSelectedCountry(httpRequest, false));
     }
@@ -258,7 +259,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
         "No services available for selected country", null);
       return null;
     }
-    
+
     this.countrySelectionHandler.saveSelectedCountry(httpResponse, selectedCountry);
 
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
@@ -273,7 +274,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       };
 
       RequestHttpObject<AuthnRequest> authnRequest = this.authnRequestGenerator.generateRequest(spInput, metadataResolver);
-      this.saveProxyIdpState(context, authnRequest.getRequest(), endPoint);
+      this.saveProxyIdpState(context, authnRequest.getRequest(), spInput.getRelayState(), endPoint);
 
       if (SAMLConstants.POST_METHOD.equals(authnRequest.getMethod())) {
         ModelAndView modelAndView = new ModelAndView("post-request");
@@ -327,6 +328,13 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Relay state
     spInput.setRelayState(this.getRelayState(context));
 
+    if (spInput.getRelayState() == null) {
+      // The EU-commission code has a bug where it generates a RelayState if none is sent. This will
+      // lead to problems for us when validating the response. So, a workaround ...
+      //
+      spInput.setRelayState(UUID.randomUUID().toString());
+    }
+
     // SP type
     //
     EntityDescriptor spMetadata = this.getPeerMetadata(context);
@@ -367,15 +375,17 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    *          the profile context
    * @param authnRequest
    *          the AuthnRequest object that is sent
+   * @param relayState
+   *          the relay state that is sent
    * @param endpoint
    *          the IdP/endpoint information
    * @throws ExternalAuthenticationException
    *           for session errors
    */
-  private void saveProxyIdpState(ProfileRequestContext<?, ?> context, AuthnRequest authnRequest, EndPointConfig endpoint)
+  private void saveProxyIdpState(ProfileRequestContext<?, ?> context, AuthnRequest authnRequest, String relayState, EndPointConfig endpoint)
       throws ExternalAuthenticationException {
 
-    ProxyIdpAuthenticationContext proxyContext = new ProxyIdpAuthenticationContext(authnRequest);
+    ProxyIdpAuthenticationContext proxyContext = new ProxyIdpAuthenticationContext(authnRequest, relayState);
 
     // In order not to store too much data in the session, we only store the country, and look up the rest
     // when we process the response.
@@ -673,7 +683,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       throw new ExternalAuthenticationException("No ProxyIdpAuthenticationContext available");
     }
 
-    final String relayState = this.getRelayState(context);
+    final String relayState = proxyContext.getRelayState();
 
     return new ResponseProcessingInput() {
       @Override
