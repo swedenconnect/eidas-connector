@@ -343,7 +343,11 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
       .expectedIssuer(idpMetadata.getEntityID())
       .responseIssueInstant(response.getIssueInstant().getMillis())
       .validAudiences(entityID)
-      .validRecipients(input.getReceiveURL())
+      /*
+       * We add the entityID as a valid recipient also since Germany places the entityID in the
+       * SubjectConfirmation/Recipient field instead of the URL to which the response is sent.
+       */
+      .validRecipients(input.getReceiveURL(), entityID)
       .build();
 
     ValidationResult result = this.assertionValidator.validate(assertion, context);

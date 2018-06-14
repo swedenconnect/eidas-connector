@@ -5,6 +5,7 @@
 
   <artifactId>eidas-connector-sp</artifactId>
   <packaging>jar</packaging>
+  <version>1.3.3-SNAPSHOT</version>
 
   <parent>
     <groupId>se.elegnamnden.eidas.idp</groupId>
