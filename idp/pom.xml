@@ -9,7 +9,7 @@
   <parent>
     <groupId>se.elegnamnden.eidas.idp</groupId>
     <artifactId>eidas-connector-base-parent</artifactId>
-    <version>1.3.3-SNAPSHOT</version>
+    <version>1.3.3</version>
   </parent>
 
   <name>eIDAS :: Swedish eIDAS connector</name>
@@ -50,7 +50,7 @@
 
     <shibboleth-base-package.version>1.4.4</shibboleth-base-package.version>
     <custom-remoteip-valve.version>1.1.0</custom-remoteip-valve.version>
-    <eidas-connector-sp.version>1.3.3-SNAPSHOT</eidas-connector-sp.version>
+    <eidas-connector-sp.version>1.3.3</eidas-connector-sp.version>
     <shibboleth.redis.version>1.0.0</shibboleth.redis.version>
     <eidas.pkcs11.version>1.1.0</eidas.pkcs11.version>
 
