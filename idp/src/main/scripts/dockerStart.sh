@@ -106,24 +106,38 @@ if [ ! -f "$IDP_SEALER_STORE_RESOURCE" ]; then
     exit 1
 fi
 if [ ! -f "$IDP_SIGNING_KEY" ]; then
-	echo "IdP signature key - $IDP_SIGNING_KEY - does not exist" >&2
-  exit 1
+  if [ "$IDP_PKCS11_ENABLED" == true ]; then
+    IDP_SIGNING_KEY = $IDP_HOME/conf/credentials/dummy.key
+  else
+    echo "IdP signature key - $IDP_SIGNING_KEY - does not exist" >&2
+    exit 1
+  fi
 fi
 if [ ! -f "$IDP_SIGNING_CERT" ]; then
 	echo "IdP signature certificate - $IDP_SIGNING_CERT - does not exist" >&2
   exit 1
 fi
+
 if [ ! -f "$IDP_ENCRYPTION_KEY" ]; then
-	echo "IdP encryption key - $IDP_ENCRYPTION_KEY - does not exist" >&2
-  exit 1
+  if [ "$IDP_PKCS11_ENABLED" == true ]; then
+    IDP_ENCRYPTION_KEY = $IDP_HOME/conf/credentials/dummy.key
+  else
+    echo "IdP encryption key - $IDP_ENCRYPTION_KEY - does not exist" >&2
+    exit 1  
+  fi	
 fi
 if [ ! -f "$IDP_ENCRYPTION_CERT" ]; then
 	echo "IdP encryption certificate - $IDP_ENCRYPTION_CERT - does not exist" >&2
   exit 1
 fi
+
 if [ ! -f "$IDP_METADATA_SIGNING_KEY" ]; then
-	echo "IdP metadata signing key - $IDP_METADATA_SIGNING_KEY - does not exist" >&2
-  exit 1
+  if [ "$IDP_METADATA_SIGNING_PKCS11_ENABLED" == true ]; then
+    IDP_METADATA_SIGNING_KEY = $IDP_HOME/conf/credentials/dummy.key
+  else  
+    echo "IdP metadata signing key - $IDP_METADATA_SIGNING_KEY - does not exist" >&2
+    exit 1
+  fi
 fi
 if [ ! -f "$IDP_METADATA_SIGNING_CERT" ]; then
 	echo "IdP metadata signing certificate - $IDP_METADATA_SIGNING_CERT - does not exist" >&2
@@ -156,24 +170,38 @@ export SP_METADATA_VALIDITY_MINUTES SP_METADATA_CACHEDURATION_MILLIS
 
 # Verification that all SP credentials are in place ...
 if [ ! -f "$SP_SIGNING_KEY" ]; then
-	echo "SP signature key - $SP_SIGNING_KEY - does not exist" >&2
-  exit 1
+  if [ "$IDP_PKCS11_ENABLED" == true ]; then
+    SP_SIGNING_KEY = $IDP_HOME/conf/credentials/dummy.key
+  else
+    echo "SP signature key - $SP_SIGNING_KEY - does not exist" >&2
+    exit 1
+  fi
 fi
 if [ ! -f "$SP_SIGNING_CERT" ]; then
 	echo "SP signature certificate - $SP_SIGNING_CERT - does not exist" >&2
   exit 1
 fi
+
 if [ ! -f "$SP_ENCRYPTION_KEY" ]; then
-	echo "SP encryption key - $SP_ENCRYPTION_KEY - does not exist" >&2
-  exit 1
+  if [ "$IDP_PKCS11_ENABLED" == true ]; then
+    SP_ENCRYPTION_KEY = $IDP_HOME/conf/credentials/dummy.key
+  else
+    echo "SP encryption key - $SP_ENCRYPTION_KEY - does not exist" >&2
+    exit 1
+  fi
 fi
 if [ ! -f "$SP_ENCRYPTION_CERT" ]; then
 	echo "SP encryption certificate - $SP_ENCRYPTION_CERT - does not exist" >&2
   exit 1
 fi
+
 if [ ! -f "$SP_METADATA_SIGNING_KEY" ]; then
-	echo "SP metadata signing key - $SP_METADATA_SIGNING_KEY - does not exist" >&2
-  exit 1
+  if [ "$SP_METADATA_SIGNING_PKCS11_ENABLED" == true ]; then
+    SP_METADATA_SIGNING_KEY = $IDP_HOME/conf/credentials/dummy.key
+  else
+	  echo "SP metadata signing key - $SP_METADATA_SIGNING_KEY - does not exist" >&2
+    exit 1
+  fi
 fi
 if [ ! -f "$SP_METADATA_SIGNING_CERT" ]; then
 	echo "SP metadata signing certificate - $SP_METADATA_SIGNING_CERT - does not exist" >&2
@@ -357,6 +385,119 @@ if [ -n "$REDIS_HOST" ]; then
     -Dredis.timeout=${REDIS_TIMEOUT} \
     -Dredis.password=${REDIS_PASSWORD} \
     -Dredis.pool.max-total=${REDIS_POOL_MAX}"
+fi
+
+#
+# HSM support
+#
+: ${IDP_PKCS11_ENABLED:=false}
+: ${IDP_METADATA_SIGNING_PKCS11_ENABLED:=false}
+: ${SP_METADATA_SIGNING_PKCS11_ENABLED:=false}
+
+if [ "$IDP_PKCS11_ENABLED" == true ]; then
+
+  if [ -z "$IDP_PKCS11_LIBRARY" ]; then
+    echo "IDP_PKCS11_LIBRARY must be set" >&2
+    exit 1
+  fi
+  
+  : ${IDP_PKCS11_NAME:=connector}
+  : ${IDP_PKCS11_SLOT:=""}
+  : ${IDP_PKCS11_SLOT_LIST_INDEX:=0}
+  : ${IDP_PKCS11_SLOT_LIST_INDEX_MAX_RANGE:=-1}
+  
+  if [ -z "$IDP_SIGNING_PKCS11_ALIAS" ]; then
+    echo "IDP_SIGNING_PKCS11_ALIAS must be set" >&2
+    exit 1
+  fi
+  if [ -z "$IDP_SIGNING_PKCS11_PIN" ]; then
+    echo "IDP_SIGNING_PKCS11_PIN must be set" >&2
+    exit 1
+  fi
+  if [ -z "$IDP_ENCRYPTION_PKCS11_ALIAS" ]; then
+    echo "IDP_ENCRYPTION_PKCS11_ALIAS must be set" >&2
+    exit 1
+  fi
+  if [ -z "$IDP_ENCRYPTION_PKCS11_PIN" ]; then
+    echo "IDP_ENCRYPTION_PKCS11_PIN must be set" >&2
+    exit 1
+  fi
+  if [ -z "$SP_SIGNING_PKCS11_ALIAS" ]; then
+    echo "SP_SIGNING_PKCS11_ALIAS must be set" >&2
+    exit 1
+  fi
+  if [ -z "$SP_SIGNING_PKCS11_PIN" ]; then
+    echo "SP_SIGNING_PKCS11_PIN must be set" >&2
+    exit 1
+  fi
+  if [ -z "$SP_ENCRYPTION_PKCS11_ALIAS" ]; then
+    echo "SP_ENCRYPTION_PKCS11_ALIAS must be set" >&2
+    exit 1
+  fi
+  if [ -z "$SP_ENCRYPTION_PKCS11_PIN" ]; then
+    echo "SP_ENCRYPTION_PKCS11_PIN must be set" >&2
+    exit 1
+  fi
+  
+  # For testing only
+  : ${IDP_PKCS11_SOFTHSM_KEYLOCATION:=""}
+  : ${IDP_PKCS11_SOFTHSM_PIN:=""}
+  
+  export JAVA_OPTS="${JAVA_OPTS} \
+    -Didp.pkcs11.enabled=true \
+    -Didp.pkcs11.library=$IDP_PKCS11_LIBRARY \
+    -Didp.pkcs11.name=$IDP_PKCS11_NAME \
+    -Didp.pkcs11.slot=$IDP_PKCS11_SLOT \
+    -Didp.pkcs11.slotListIndex=$IDP_PKCS11_SLOT_LIST_INDEX \
+    -Didp.pkcs11.slotListIndexMaxRange=$IDP_PKCS11_SLOT_LIST_INDEX_MAX_RANGE \
+    -Didp.signing.pkcs11.alias=$IDP_SIGNING_PKCS11_ALIAS \
+    -Didp.signing.pkcs11.pin=$IDP_SIGNING_PKCS11_PIN \
+    -Didp.encryption.pkcs11.alias=$IDP_ENCRYPTION_PKCS11_ALIAS \
+    -Didp.encryption.pkcs11.pin=$IDP_ENCRYPTION_PKCS11_PIN \
+    -Didp.sp.signing.pkcs11.alias=$SP_SIGNING_PKCS11_ALIAS \
+    -Didp.sp.signing.pkcs11.pin=$SP_SIGNING_PKCS11_PIN \
+    -Didp.sp.encryption.pkcs11.alias=$SP_ENCRYPTION_PKCS11_ALIAS \
+    -Didp.sp.encryption.pkcs11.pin=$SP_ENCRYPTION_PKCS11_PIN \
+    -Didp.pkcs11.soft.keyLocation=$IDP_PKCS11_SOFTHSM_KEYLOCATION \
+    -Didp.pkcs11.soft.pin=$IDP_PKCS11_SOFTHSM_PIN"
+    
+  
+  if [ "$IDP_METADATA_SIGNING_PKCS11_ENABLED" == true ]; then
+
+    if [ -z "$IDP_METADATA_SIGNING_PKCS11_ALIAS" ]; then
+      echo "IDP_METADATA_SIGNING_PKCS11_ALIAS must be set" >&2
+      exit 1
+    fi
+    if [ -z "$IDP_METADATA_SIGNING_PKCS11_PIN" ]; then
+      echo "IDP_METADATA_SIGNING_PKCS11_PIN must be set" >&2
+      exit 1
+    fi
+    
+    export JAVA_OPTS="${JAVA_OPTS} \
+      -Didp.metadata.signing.pkcs11.enabled=true \
+      -Didp.metadata.signing.pkcs11.alias=$IDP_METADATA_SIGNING_PKCS11_ALIAS \
+      -Didp.metadata.signing.pkcs11.pin=$IDP_METADATA_SIGNING_PKCS11_PIN"
+      
+  fi
+  
+  if [ "$SP_METADATA_SIGNING_PKCS11_ENABLED" == true ]; then
+
+    if [ -z "$SP_METADATA_SIGNING_PKCS11_ALIAS" ]; then
+      echo "SP_METADATA_SIGNING_PKCS11_ALIAS must be set" >&2
+      exit 1
+    fi
+    if [ -z "$SP_METADATA_SIGNING_PKCS11_PIN" ]; then
+      echo "SP_METADATA_SIGNING_PKCS11_PIN must be set" >&2
+      exit 1
+    fi
+    
+    export JAVA_OPTS="${JAVA_OPTS} \
+      -Didp.sp.metadata.signing.pkcs11.enabled=true \
+      -Didp.sp.metadata.signing.pkcs11.alias=$SP_METADATA_SIGNING_PKCS11_ALIAS \
+      -Didp.sp.metadata.signing.pkcs11.pin=$SP_METADATA_SIGNING_PKCS11_PIN"
+
+  fi
+
 fi
 
 #

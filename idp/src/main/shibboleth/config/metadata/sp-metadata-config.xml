@@ -60,10 +60,19 @@
   <!--
     The credential used to sign the metadata. 
    -->
+<!--    
   <bean id="eidas.SpMetadataSigningCredential" class="net.shibboleth.idp.profile.spring.factory.BasicX509CredentialFactoryBean"
     p:privateKeyResource="%{idp.sp.metadata.signing.key}"
     p:certificateResource="%{idp.sp.metadata.signing.cert}"
     p:entityId="%{idp.sp.entityID}" />
+-->
+    
+  <bean id="eidas.SpMetadataSigningCredential" parent="shibboleth.AbstractCredential"
+    p:pkcs11Enabled="%{idp.sp.metadata.signing.pkcs11.enabled:false}"
+    p:privateKeyResource="%{idp.sp.metadata.signing.key:%{idp.home}/conf/credentials/dummy.key}"
+    p:certificateResource="%{idp.sp.metadata.signing.cert}" 
+    p:alias="%{idp.sp.metadata.signing.pkcs11.alias:}"
+    p:pin="%{idp.sp.metadata.signing.pkcs11.pin:}" />    
     
   <bean id="eidas.idp.sp.metadata.Validity" class="java.time.Duration" factory-method="ofMinutes">
     <constructor-arg value="%{idp.sp.metadata.validity:10800}" />
