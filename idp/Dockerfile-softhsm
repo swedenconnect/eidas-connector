@@ -1,0 +1,29 @@
+FROM docker.sunet.se/openjdk-jre-luna:luna6.2-jre8
+
+# Install pkcs11-tool
+RUN apt-get install -y pcscd libccid libpcsclite-dev libssl-dev libreadline-dev autoconf automake build-essential docbook-xsl xsltproc libtool pkg-config && \
+    wget https://github.com/OpenSC/OpenSC/releases/download/0.17.0/opensc-0.17.0.tar.gz && \
+    tar xfvz opensc-*.tar.gz && \
+    cd opensc-0.17.0 && \
+    ./bootstrap && ./configure --prefix=/usr --sysconfdir=/etc/opensc && \
+    make && make install && \
+    cd .. && rm -rf opensc*
+
+# Setup softhsm
+RUN mkdir /var/lib/softhsm/tokens
+
+RUN mkdir /opt/eidas-connector
+ADD target/dependency/apache-tomcat-8.5.23 /opt/eidas-connector/tomcat/
+ADD target/shibboleth /opt/eidas-connector/shibboleth/
+
+# Redirecting log directories
+RUN rm -rf /opt/eidas-connector/tomcat/logs && ln -s /var/log/eidas-connector/ /opt/eidas-connector/tomcat/logs
+RUN rm -rf /opt/eidas-connector/shibboleth/logs && ln -s /var/log/eidas-connector/ /opt/eidas-connector/shibboleth/logs
+RUN chmod a+x /opt/eidas-connector/tomcat/bin/*.sh
+
+EXPOSE 8443
+EXPOSE 8009
+
+VOLUME /etc/eidas-connector
+VOLUME /var/log/eidas-connector
+CMD mkdir -p /var/log/eidas-connector/ && /opt/eidas-connector/tomcat/bin/dockerStart.sh eidas-connector
