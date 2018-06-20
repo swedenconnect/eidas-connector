@@ -17,6 +17,7 @@ package se.elegnamnden.eidas.idp.connector.controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -28,6 +29,7 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.IDPEntry;
 import org.opensaml.saml.saml2.core.Status;
 import org.opensaml.saml.saml2.core.StatusCode;
 import org.opensaml.saml.saml2.core.StatusMessage;
@@ -37,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -98,6 +101,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
   /** The attribute set that this IdP is implementing. */
   public static final AttributeSet IMPLEMENTED_ATTRIBUTE_SET = AttributeSetConstants.ATTRIBUTE_SET_EIDAS_NATURAL_PERSON;
+
+  /** Prefix URI for country representation. */
+  public static final String COUNTRY_URI_PREFIX = "http://id.swedenconnect.se/eidas/1.0/proxy-service/";
 
   /** Logging instance. */
   private final Logger log = LoggerFactory.getLogger(ProxyAuthenticationController.class);
@@ -195,12 +201,42 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       return this.processAuthentication(httpRequest, httpResponse, selectedCountry);
     }
 
+    // Did the SP pass along a Scoping element with one or several country URI:s?
+    List<String> requestedCountries = this.getRequestedCountries(httpRequest);
+    if (!requestedCountries.isEmpty()) {
+      log.debug("SP has requested country {}", requestedCountries);
+    }
+
     List<String> availableCountries = this.metadataConfig.getProxyServiceCountryList();
     if (availableCountries.isEmpty()) {
       log.error("No available countries");
       this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
         "No countries available for authentication", null);
       return null;
+    }
+    
+    // If the SP requested a country, perform filtering ...
+    if (!requestedCountries.isEmpty()) {
+      List<String> _availableCountries = new ArrayList<>();
+      for (String c : availableCountries) {
+        boolean exists = requestedCountries.stream().filter(r -> r.equalsIgnoreCase(c)).findFirst().isPresent();
+        if (exists) {
+          _availableCountries.add(c);
+        }
+      }
+      if (_availableCountries.isEmpty()) {
+        log.error("None of the requested countries ({}) exists in EU metadata", requestedCountries);
+        this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
+          String.format("Country/countries %s is not available for authentication", requestedCountries), null);
+        return null;
+      }
+      else if (_availableCountries.size() == 1 && requestedCountries.size() == 1) {
+        log.info("Using country {} (selected by SP)", _availableCountries.get(0));
+        return this.processAuthentication(httpRequest, httpResponse, _availableCountries.get(0));
+      }
+      else {
+        availableCountries = _availableCountries;
+      }
     }
 
     ModelAndView modelAndView = new ModelAndView("country-select2");
@@ -593,6 +629,44 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION);
       return null;
     }
+  }
+
+  /**
+   * Checks the AuthnRequest to see if the SP has requested a specific country.
+   * 
+   * @param httpRequest
+   *          the HTTP request
+   * @return a list of country codes (may be empty)
+   * @throws ExternalAuthenticationException
+   *           for session errors
+   */
+  protected List<String> getRequestedCountries(HttpServletRequest httpRequest) throws ExternalAuthenticationException {
+    AuthnRequest authnRequest = this.getAuthnRequest(httpRequest);
+    if (authnRequest == null) {
+      log.error("Failed to find AuthnRequest");
+      return Collections.emptyList();
+    }
+    if (authnRequest.getScoping() == null || authnRequest.getScoping().getIDPList() == null) {
+      return Collections.emptyList();
+    }
+    List<String> countries = new ArrayList<>();
+    for (IDPEntry entry : authnRequest.getScoping().getIDPList().getIDPEntrys()) {
+      if (entry.getProviderID() != null) {
+        if (entry.getProviderID().startsWith(COUNTRY_URI_PREFIX)) {
+          String country = entry.getProviderID().substring(COUNTRY_URI_PREFIX.length(), entry.getProviderID().length());
+          if (StringUtils.hasText(country)) {
+            countries.add(country.toUpperCase());
+          }
+          else {
+            log.warn("Bad value for IDPEntry ({}) in AuthnRequest '{}'", entry.getProviderID(), authnRequest.getID());
+          }
+        }
+        else {
+          log.warn("Unrecognized IDPEntry ({}) in AuthnRequest '{}'", entry.getProviderID(), authnRequest.getID());
+        }
+      }
+    }
+    return countries;
   }
 
   /**
