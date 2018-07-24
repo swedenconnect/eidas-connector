@@ -19,13 +19,17 @@
   <!--
     eidas.SpMetadata - The SAML EntityDescriptor for the metadata for the SP part of the proxy IdP. 
    -->
-  <bean id="eidas.SpMetadata" class="se.litsec.opensaml.saml2.metadata.build.spring.SpEntityDescriptorFactoryBean" scope="singleton" depends-on="shibboleth.OpenSAMLConfig"
+  <bean id="eidas.SpMetadata" class="se.elegnamnden.eidas.idp.connector.sp.metadata.EidasSpEntityDescriptorFactoryBean" scope="singleton" depends-on="shibboleth.OpenSAMLConfig"
     c:resource="%{idp.home}/metadata/sp-metadata.xml">
     
     <!-- entityID -->
     <property name="entityID" value="%{idp.sp.entityID}" />
     
     <property name="cacheDuration" value="%{idp.sp.metadata.cacheDuration:3600000}" />
+    
+    <!-- Entity Attributes -->
+    <property name="applicationIdentifierEntityAttribute" value="%{idp.sp.metadata.applicationIdentifier}" />
+    <property name="protocolVersionEntityAttributes" value="%{idp.sp.metadata.protocolVersions}" />
     
     <property name="wantAssertionsSigned" value="%{idp.sp.metadata.wantAssertionsSigned}" />
     <property name="authnRequestsSigned" value="%{idp.sp.metadata.authnRequestsSigned}" />
@@ -41,6 +45,9 @@
         </bean>
       </util:list>
     </property>
+    
+    <!-- Node country -->
+    <property name="nodeCountry" value="%{idp.sp.metadata.nodeCountry}" />
     
     <property name="assertionConsumerServices">
       <util:list>
