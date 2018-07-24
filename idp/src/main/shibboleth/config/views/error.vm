@@ -94,7 +94,7 @@
           <div class="col-sm-12 copyright">
             <div class="row">
               <div class="col-6">
-                <img class="float-left" src="$request.getContextPath()/logo_full.svg" height="40" /> 
+                <img class="float-left" src="$request.getContextPath()/img/logo_full.svg" height="40" /> 
               </div>
               <div class="col-6">
                 <p class="float-right">#springMessageText("connector.ui.copyright", "")</p>
