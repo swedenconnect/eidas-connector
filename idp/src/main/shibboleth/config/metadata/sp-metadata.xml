@@ -21,18 +21,18 @@
   <Organization>
     <OrganizationName xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:lang="en">Swedish E-Identification Board</OrganizationName>
     <OrganizationDisplayName xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:lang="en">Swedish eID Connector</OrganizationDisplayName>
-    <OrganizationURL xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:lang="en">http://eidasweb.se</OrganizationURL>
+    <OrganizationURL xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:lang="en">http://swedenconnect.se</OrganizationURL>
   </Organization>
 
   <ContactPerson contactType="support">
-    <Company>Swedish E-Identification Board</Company>
+    <Company>Sweden Connect</Company>
     <GivenName>Customer support</GivenName>
-    <EmailAddress>support@example.com</EmailAddress>
+    <EmailAddress>operations@swedenconnect.se</EmailAddress>
   </ContactPerson>
   <ContactPerson contactType="technical">
-    <Company>Swedish E-Identification Board</Company>
+    <Company>Sweden Connect</Company>
     <GivenName>Technical support</GivenName>
-    <EmailAddress>support@example.com</EmailAddress>
+    <EmailAddress>operations@swedenconnect.se</EmailAddress>
   </ContactPerson>
 
 </EntityDescriptor>
