@@ -98,18 +98,18 @@
             <div class="col-12">
               <div class="box">
                 <c:if test="${not empty signMessageConsent.userInfo.name}">
-                  <span class="name">${signMessageConsent.userInfo.name}</span>
+                  <span class="name dont-break-out">${signMessageConsent.userInfo.name}</span>
                 </c:if>
                 <c:choose>
                   <c:when test="${not empty signMessageConsent.userInfo.swedishId}">
-                    <span class="info-line">${signMessageConsent.userInfo.swedishId}</span>
+                    <span class="info-line dont-break-out">${signMessageConsent.userInfo.swedishId}</span>
                   </c:when>
                   <c:when test="${not empty signMessageConsent.userInfo.dateOfBirth}">
-                    <span class="info-line">${signMessageConsent.userInfo.dateOfBirth}</span>
+                    <span class="info-line dont-break-out">${signMessageConsent.userInfo.dateOfBirth}</span>
                   </c:when>
                 </c:choose>
                 <c:if test="${not empty signMessageConsent.userInfo.internationalId}">
-                  <span class="info-line"><spring:message code="connector.ui.sign.user.int-id" />: ${signMessageConsent.userInfo.internationalId}</span>
+                  <span class="info-line dont-break-out"><spring:message code="connector.ui.sign.user.int-id" /> ${signMessageConsent.userInfo.internationalId}</span>
                 </c:if>
                 <!-- 
                 <span class="info-line">Sweden</span>
