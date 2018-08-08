@@ -32,15 +32,12 @@
     </util:list>
     
     <util:list id="shibboleth.MetadataResolverResources2">
-        <value>%{idp.home}/conf/metadata-providers.xml</value>
-        <value>%{idp.home}/conf/secondary-metadata-provider.xml</value>
+        <value>%{idp.home}/conf/metadata-providers2.xml</value>
         <value>%{idp.home}/system/conf/metadata-providers-system.xml</value>
     </util:list>    
     
     <!-- For development -->
     <util:list id="shibboleth.DevelMetadataResolverResources">
-        <value>%{idp.home}/conf/metadata-providers.xml</value>
-        <value>%{idp.home}/conf/secondary-metadata-provider.xml</value>
         <value>%{idp.home}/conf/devel-metadata-providers.xml</value>
         <value>%{idp.home}/system/conf/metadata-providers-system.xml</value>
     </util:list>    
