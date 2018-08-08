@@ -67,7 +67,7 @@
         <div class="container"> 
           <div class="row no-gutter">
             <div class="top-logo">
-              <img class="top-logo-dim" src="$request.getContextPath()/img/logo_full.svg" />
+              <img class="top-logo-dim" src="$request.getContextPath()/img/sc-logo-temporary.svg" />
             </div>
           </div>
         </div>
@@ -94,7 +94,7 @@
           <div class="col-sm-12 copyright">
             <div class="row">
               <div class="col-6">
-                <img class="float-left" src="$request.getContextPath()/img/logo_full.svg" height="40" /> 
+                <img class="float-left" src="$request.getContextPath()/img/sc-logo-temporary.svg" height="40" /> 
               </div>
               <div class="col-6">
                 <p class="float-right">#springMessageText("connector.ui.copyright", "")</p>
