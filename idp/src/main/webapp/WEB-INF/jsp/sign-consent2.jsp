@@ -127,13 +127,13 @@
 
       </div> <!-- ./content-container -->
       
-      <form class="form-horizontal" role="form" action="/idp/extauth/proxyauth/complete" method="post" name="cancelForm">
-        <div class="col-sm-12 return">                  
-        <button type="submit" class="btn btn-link" name="action" value="cancel" id="cancelLink">
-          <spring:message code='connector.ui.button.cancel-return' />
-        </button>            
-        </div>
-      </form>
+      <div class="col-sm-12 return">
+        <form class="form-horizontal" role="form" action="/idp/extauth/proxyauth/complete" method="post" name="cancelForm">
+          <button type="submit" class="btn btn-link" name="action" value="cancel" id="cancelLink">
+            <spring:message code='connector.ui.button.cancel-return' />
+          </button>            
+        </form>
+      </div>
       
       <jsp:include page="footer2.jsp" />      
 
