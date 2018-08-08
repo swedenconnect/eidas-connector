@@ -83,7 +83,7 @@
                 <div class="col-12">
                   <h2>$titleSuffix</h2>
                 </div>
-                <div class="col-12">
+                <div class="col-12 error-text">
                   #evaluate($message)
                 </div>
               </div>

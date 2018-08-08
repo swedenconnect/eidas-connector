@@ -53,6 +53,9 @@
   display: none;
 }
 
+.error .error-text {
+  margin-top: 16px;
+}
 
 
 
