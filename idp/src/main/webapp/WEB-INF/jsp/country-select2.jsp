@@ -108,11 +108,9 @@
                 </c:forEach>
               </c:if>
 
-            </div>
-            <!-- /.row -->
+            </div> <!-- /.row -->
 
-          </div>
-          <!-- /.tablet-up -->
+          </div> <!-- /.tablet-up -->
 
           <div class="tablet-down">
             <div class="row flags">
@@ -130,13 +128,12 @@
 
               </c:forEach>
             </div>
-          </div>
-          <!-- /.tablet-down -->
+          </div> <!-- /.tablet-down -->
 
         </form>
 
 
-        <div class="drop-down-container">
+        <div class="drop-down-container noscripthide">
 
           <div class="col-sm-12 drop-down">
             <p>
