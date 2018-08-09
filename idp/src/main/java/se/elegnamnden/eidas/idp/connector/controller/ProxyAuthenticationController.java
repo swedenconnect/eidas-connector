@@ -208,7 +208,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     }
 
     List<String> availableCountries = this.metadataConfig.getProxyServiceCountryList();
-    if (availableCountries.isEmpty()) {
+    if (availableCountries == null || availableCountries.isEmpty()) {
       log.error("No available countries");
       this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
         "No countries available for authentication", null);

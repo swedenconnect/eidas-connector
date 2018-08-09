@@ -25,7 +25,7 @@
           </c:when>
           <c:otherwise>
             <div class="top-logo">
-              <img class="top-logo-dim" src="<c:url value='/img/logo_full.svg' />" />
+              <img class="top-logo-dim" src="<c:url value='/img/sc-logo-temporary.svg' />" />
             </div>
           </c:otherwise>
         </c:choose>
@@ -98,18 +98,18 @@
             <div class="col-12">
               <div class="box">
                 <c:if test="${not empty signMessageConsent.userInfo.name}">
-                  <span class="name">${signMessageConsent.userInfo.name}</span>
+                  <span class="name dont-break-out">${signMessageConsent.userInfo.name}</span>
                 </c:if>
                 <c:choose>
                   <c:when test="${not empty signMessageConsent.userInfo.swedishId}">
-                    <span class="info-line">${signMessageConsent.userInfo.swedishId}</span>
+                    <span class="info-line dont-break-out">${signMessageConsent.userInfo.swedishId}</span>
                   </c:when>
                   <c:when test="${not empty signMessageConsent.userInfo.dateOfBirth}">
-                    <span class="info-line">${signMessageConsent.userInfo.dateOfBirth}</span>
+                    <span class="info-line dont-break-out">${signMessageConsent.userInfo.dateOfBirth}</span>
                   </c:when>
                 </c:choose>
                 <c:if test="${not empty signMessageConsent.userInfo.internationalId}">
-                  <span class="info-line"><spring:message code="connector.ui.sign.user.int-id" />: ${signMessageConsent.userInfo.internationalId}</span>
+                  <span class="info-line dont-break-out"><spring:message code="connector.ui.sign.user.int-id" /> ${signMessageConsent.userInfo.internationalId}</span>
                 </c:if>
                 <!-- 
                 <span class="info-line">Sweden</span>
@@ -127,13 +127,13 @@
 
       </div> <!-- ./content-container -->
       
-      <form class="form-horizontal" role="form" action="/idp/extauth/proxyauth/complete" method="post" name="cancelForm">
-        <div class="col-sm-12 return">                  
-        <button type="submit" class="btn btn-link" name="action" value="cancel" id="cancelLink">
-          <spring:message code='connector.ui.button.cancel-return' />
-        </button>            
-        </div>
-      </form>
+      <div class="col-sm-12 return">
+        <form class="form-horizontal" role="form" action="/idp/extauth/proxyauth/complete" method="post" name="cancelForm">
+          <button type="submit" class="btn btn-link" name="action" value="cancel" id="cancelLink">
+            <spring:message code='connector.ui.button.cancel-return' />
+          </button>            
+        </form>
+      </div>
       
       <jsp:include page="footer2.jsp" />      
 

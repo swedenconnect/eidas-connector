@@ -25,7 +25,7 @@
           </c:when>
           <c:otherwise>
             <div class="top-logo">
-              <img class="top-logo-dim" src="<c:url value='/img/logo_full.svg' />" />
+              <img class="top-logo-dim" src="<c:url value='/img/sc-logo-temporary.svg' />" />
             </div>
           </c:otherwise>
         </c:choose>
@@ -108,11 +108,9 @@
                 </c:forEach>
               </c:if>
 
-            </div>
-            <!-- /.row -->
+            </div> <!-- /.row -->
 
-          </div>
-          <!-- /.tablet-up -->
+          </div> <!-- /.tablet-up -->
 
           <div class="tablet-down">
             <div class="row flags">
@@ -130,13 +128,12 @@
 
               </c:forEach>
             </div>
-          </div>
-          <!-- /.tablet-down -->
+          </div> <!-- /.tablet-down -->
 
         </form>
 
 
-        <div class="drop-down-container">
+        <div class="drop-down-container noscripthide">
 
           <div class="col-sm-12 drop-down">
             <p>
@@ -146,8 +143,7 @@
             <div class="drop-down-info">
               <spring:message code='connector.ui.help.1.text' />
             </div>
-          </div>
-          <!-- /drop-down -->
+          </div> <!-- /drop-down -->
 
           <div class="col-sm-12 drop-down">
             <p>
@@ -157,29 +153,24 @@
             <div class="drop-down-info">
               <spring:message code='connector.ui.help.2.text' />
             </div>
-          </div>
-          <!-- /drop-down -->
+          </div> <!-- /drop-down -->
 
-        </div>
-        <!-- /.drop-down-container -->
+        </div> <!-- /.drop-down-container -->
       </div>
 
-      <form action="/idp/extauth/proxyauth" method="POST" id="countrySelectForm2">
-      
-        <div class="col-sm-12 return">
+      <div class="col-sm-12 return">
+        <form action="/idp/extauth/proxyauth" method="POST" id="countrySelectForm2">
           <button type="submit" class="btn btn-link" name="selectedCountry" value="cancel" id="cancelLink">
             <spring:message code='connector.ui.button.cancel-return' />
-          </button>
-        </div>
-
-      </form>
+          </button>        
+        </form>
+      </div>
 
       <jsp:include page="footer2.jsp" />
 
-    </div>
-    <!-- /.row -->
-  </div>
-  <!-- /.container .main -->
+    </div> <!-- /.row -->
+    
+  </div> <!-- /.container .main -->
 
   <jsp:include page="final-includes.jsp" />
 
