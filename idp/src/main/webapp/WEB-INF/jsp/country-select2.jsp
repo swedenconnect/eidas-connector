@@ -81,7 +81,7 @@
 
               <c:forEach items="${countries}" var="country">
                 <c:set var="flag" value="${country.isRealCountry() ? country.code : 'eu'}" />
-                <c:url value="/eidas-style/images/flags/${fn:toLowerCase(flag)}.svg" var="flagSrc" />
+                <c:url value="/eidas-style/images/flags/${fn:toLowerCase(flag)}.png" var="flagSrc" />
 
                 <div class="col-sm">
                   <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlag_${country.code}">
@@ -116,7 +116,7 @@
             <div class="row flags">
               <c:forEach items="${countries}" var="country">
                 <c:set var="flag" value="${country.isRealCountry() ? country.code : 'eu'}" />
-                <c:url value="/eidas-style/images/flags/${fn:toLowerCase(flag)}.svg" var="flagSrc" />
+                <c:url value="/eidas-style/images/flags/${fn:toLowerCase(flag)}.png" var="flagSrc" />
 
                 <div class="col-3">
                   <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlagSm_${country.code}">
