@@ -23,6 +23,13 @@
       <directory>${project.build.directory}/credentials</directory>
       <includes></includes>
       <outputDirectory>test-credentials</outputDirectory>
-    </fileSet>    
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/src/main/scripts</directory>
+      <includes>
+        <include>dockerStart.sh</include>
+      </includes>
+      <outputDirectory>scripts</outputDirectory>
+    </fileSet>
   </fileSets>
 </assembly>
