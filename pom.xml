@@ -239,6 +239,7 @@
     <module>tomcat-ip-valve</module>
     <module>redis</module>
     <module>idp</module>
+    <module>dev-idp</module>
   </modules>
 
 </project>

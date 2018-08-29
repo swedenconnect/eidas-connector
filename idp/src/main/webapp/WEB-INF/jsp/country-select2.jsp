@@ -54,20 +54,6 @@
     </div>
     
     <div class="row">
-      <div class="col-sm-12">
-        <div class="alert alert-dismissible alert-danger">
-          <button type="button" class="close" data-dismiss="alert">&times;</button>
-          <h4 class="alert-heading"><spring:message code="connector.ui.development.title" /></h4>
-          <p class="mb-0"><spring:message code="connector.ui.development.text1" /></p>
-          <p class="mb-0">
-            <spring:message code="connector.ui.development.text2" />
-            <a href="https://swedenconnect.se" class="alert-link">swedenconnect.se</a>.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="row">
       <div class="col-sm-12 content-container">
 
         <div class="row">
@@ -170,7 +156,8 @@
           </div> <!-- /drop-down -->
 
         </div> <!-- /.drop-down-container -->
-      </div>
+        
+      </div> <!-- /.content-container -->
 
       <div class="col-sm-12 return">
         <form action="/idp/extauth/proxyauth" method="POST" id="countrySelectForm2">
