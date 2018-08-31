@@ -155,6 +155,7 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
       log.warn("Foreign Proxy Service IdP did not declare any assurance certification URI:s - assuming {} [{}]",
         EidasConstants.EIDAS_LOA_SUBSTANTIAL, logId);
       possibleDeliveryUris.add(EidasConstants.EIDAS_LOA_SUBSTANTIAL);
+      possibleDeliveryUris.add(EidasConstants.EIDAS_LOA_LOW);
     }
 
     authnContextClassContext.setAuthnContextComparison(

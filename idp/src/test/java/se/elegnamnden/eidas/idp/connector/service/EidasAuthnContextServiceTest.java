@@ -53,7 +53,7 @@ public class EidasAuthnContextServiceTest extends AbstractEidasAuthnContextServi
 
   @Parameters
   public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {
+    return Arrays.asList(new Object[][] {      
         {
             // Basic case - Only substantial
                     
@@ -232,7 +232,17 @@ public class EidasAuthnContextServiceTest extends AbstractEidasAuthnContextServi
             .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
             .build(),
             AUTH_CONTEXT_URI_EIDAS_LOW_SIGMESSAGE, null
-        }
+        },
+        // To validate reported Iceland bug ...
+        {
+          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW))
+          .signatureService(false)
+          .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
+          .signMsgDisplayed(false)
+          .deliveredUri(EidasConstants.EIDAS_LOA_LOW)
+          .build(),
+          AUTH_CONTEXT_URI_EIDAS_LOW, null
+        }        
     });
   }
 
