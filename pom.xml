@@ -10,7 +10,7 @@
 
   <name>eIDAS :: Parent POM for the Swedish eIDAS connector</name>
   <description>Parent POM for the Swedish eIDAS connector IdP</description>
-  <url>https://github.com/elegnamnden/eidas-connector</url>
+  <url>https://github.com/swedenconnect/eidas-connector</url>
 
   <licenses>
     <license>
@@ -21,9 +21,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:https://github.com/elegnamnden/eidas-connector.git</connection>
-    <developerConnection>scm:git:https://github.com/elegnamnden/eidas-connector.git</developerConnection>
-    <url>https://github.com/elegnamnden/eidas-connector/tree/master</url>
+    <connection>scm:git:https://github.com/swedenconnect/eidas-connector.git</connection>
+    <developerConnection>scm:git:https://github.com/swedenconnect/eidas-connector.git</developerConnection>
+    <url>https://github.com/swedenconnect/eidas-connector/tree/master</url>
   </scm>
 
   <developers>

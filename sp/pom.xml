@@ -14,7 +14,7 @@
 
   <name>eIDAS :: Swedish eIDAS connector SP</name>
   <description>Swedish eIDAS connector SP</description>
-  <url>https://github.com/elegnamnden/eidas-connector</url>
+  <url>https://github.com/swedenconnect/eidas-connector</url>
 
   <licenses>
     <license>
@@ -25,9 +25,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:https://github.com/elegnamnden/eidas-connector.git</connection>
-    <developerConnection>scm:git:https://github.com/elegnamnden/eidas-connector.git</developerConnection>
-    <url>https://github.com/elegnamnden/eidas-connector/tree/master</url>
+    <connection>scm:git:https://github.com/swedenconnect/eidas-connector.git</connection>
+    <developerConnection>scm:git:https://github.com/swedenconnect/eidas-connector.git</developerConnection>
+    <url>https://github.com/swedenconnect/eidas-connector/tree/master</url>
   </scm>
 
   <developers>
@@ -47,6 +47,25 @@
 
   <properties>
   </properties>
+  
+  <repositories>
+    <repository>
+      <id>eidasrl</id>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <name>eIDAS releases</name>
+      <url>https://maven.eidastest.se/artifactory/eidas-release-local</url>
+    </repository>
+    <repository>
+      <id>eidassh</id>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <name>eIDAS snapshots</name>
+      <url>https://maven.eidastest.se/artifactory/eidas-snapshot-local</url>
+    </repository>    
+  </repositories>
 
   <dependencies>
 

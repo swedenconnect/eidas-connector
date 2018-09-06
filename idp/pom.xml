@@ -14,7 +14,7 @@
 
   <name>eIDAS :: Swedish eIDAS connector</name>
   <description>Swedish eIDAS connector IdP</description>
-  <url>https://github.com/elegnamnden/eidas-connector</url>
+  <url>https://github.com/swedenconnect/eidas-connector</url>
 
   <licenses>
     <license>
@@ -25,9 +25,9 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:https://github.com/elegnamnden/eidas-connector.git</connection>
-    <developerConnection>scm:git:https://github.com/elegnamnden/eidas-connector.git</developerConnection>
-    <url>https://github.com/elegnamnden/eidas-connector/tree/master</url>
+    <connection>scm:git:https://github.com/swedenconnect/eidas-connector.git</connection>
+    <developerConnection>scm:git:https://github.com/swedenconnect/eidas-connector.git</developerConnection>
+    <url>https://github.com/swedenconnect/eidas-connector/tree/master</url>
   </scm>
 
   <developers>
@@ -49,9 +49,9 @@
     <docker.image.prefix>docker.eidastest.se:5000</docker.image.prefix>
 
     <shibboleth-base-package.version>1.4.5</shibboleth-base-package.version>
-    <custom-remoteip-valve.version>1.1.0</custom-remoteip-valve.version>
+    <custom-remoteip-valve.version>1.1.1-SNAPSHOT</custom-remoteip-valve.version>
     <eidas-connector-sp.version>${project.version}</eidas-connector-sp.version>
-    <shibboleth.redis.version>1.0.0</shibboleth.redis.version>
+    <shibboleth.redis.version>1.0.1-SNAPSHOT</shibboleth.redis.version>
     <eidas.pkcs11.version>1.1.0</eidas.pkcs11.version>
 
     <mockito.version>1.9.5</mockito.version>
