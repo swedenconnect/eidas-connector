@@ -54,7 +54,7 @@
     p:eidasAuthnContextService-ref="eidas.EidasAuthnContextService"
     p:authnRequestGenerator-ref="eidas.AuthnRequestGenerator"
     p:responseProcessor-ref="eidas.ResponseProcessor"
-    p:metadataConfig-ref="eidas.MetadataConfig"
+    p:euMetadata-ref="eidas.euMetadata"
     p:attributeProcessingService-ref="eidas.AttributeProcessingService"
     p:countrySelectionHandler-ref="eidas.CountrySelectionHandler"
     p:signMessageUiHandler-ref="eidas.SignMessageUiHandler"

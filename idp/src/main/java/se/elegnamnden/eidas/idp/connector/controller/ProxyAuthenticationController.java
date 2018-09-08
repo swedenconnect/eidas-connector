@@ -17,16 +17,20 @@ package se.elegnamnden.eidas.idp.connector.controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.ext.saml2mdattr.EntityAttributes;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.IDPEntry;
@@ -48,6 +52,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 
+import lombok.Setter;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
@@ -61,11 +66,12 @@ import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingInput;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingResult;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessor;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseStatusErrorException;
-import se.elegnamnden.eidas.metadataconfig.MetadataConfig;
-import se.elegnamnden.eidas.metadataconfig.data.EndPointConfig;
+import se.elegnamnden.eidas.idp.metadata.AggregatedEuMetadata;
 import se.litsec.eidas.opensaml.ext.SPTypeEnumeration;
+import se.litsec.opensaml.saml2.attribute.AttributeUtils;
 import se.litsec.opensaml.saml2.common.request.RequestGenerationException;
 import se.litsec.opensaml.saml2.common.request.RequestHttpObject;
+import se.litsec.opensaml.saml2.metadata.MetadataUtils;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
 import se.litsec.opensaml.utils.ObjectUtils;
 import se.litsec.shibboleth.idp.authn.ExternalAutenticationErrorCodeException;
@@ -105,6 +111,12 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   /** Prefix URI for country representation. */
   public static final String COUNTRY_URI_PREFIX = "http://id.swedenconnect.se/eidas/1.0/proxy-service/";
 
+  /**
+   * The attribute name for the assurance certification attribute stored as an attribute in the entity attributes
+   * extension.
+   */
+  public static final String ASSURANCE_CERTIFICATION_ATTRIBUTE_NAME = "urn:oasis:names:tc:SAML:attribute:assurance-certification";
+
   /** Logging instance. */
   private final Logger log = LoggerFactory.getLogger(ProxyAuthenticationController.class);
 
@@ -129,8 +141,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   /** Processor for handling of SAML responses received from the foreign IdP. */
   private ResponseProcessor responseProcessor;
 
-  /** Configurator for eIDAS metadata. */
-  private MetadataConfig metadataConfig;
+  /** The EU metadata. */
+  @Setter
+  private AggregatedEuMetadata euMetadata;
 
   /** Service for handling mappings of attributes. */
   private AttributeProcessingService attributeProcessingService;
@@ -207,14 +220,14 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       log.debug("SP has requested country {}", requestedCountries);
     }
 
-    List<String> availableCountries = this.metadataConfig.getProxyServiceCountryList();
-    if (availableCountries == null || availableCountries.isEmpty()) {
+    Collection<String> availableCountries = this.euMetadata.getCountries();
+    if (availableCountries.isEmpty()) {
       log.error("No available countries");
       this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
         "No countries available for authentication", null);
       return null;
     }
-    
+
     // If the SP requested a country, perform filtering ...
     if (!requestedCountries.isEmpty()) {
       List<String> _availableCountries = new ArrayList<>();
@@ -288,9 +301,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     // Get hold of all information needed for the foreign endpoint.
     //
-    EndPointConfig endPoint = this.metadataConfig.getProxyServiceConfig(selectedCountry);
-    if (endPoint == null) {
-      log.error("No endpoint found for country '{}'", selectedCountry);
+    EntityDescriptor foreignIdp = this.euMetadata.getProxyServiceIdp(selectedCountry);
+    if (foreignIdp == null) {
+      log.error("No metadata found for country '{}'", selectedCountry);
       this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
         "No services available for selected country", null);
       return null;
@@ -303,14 +316,14 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Next, generate an AuthnRequest and redirect or post the user there.
     //
     try {
-      EidasAuthnRequestGeneratorInput spInput = this.createAuthnRequestInput(context, endPoint, this.getAuthnRequest(context));
+      EidasAuthnRequestGeneratorInput spInput = this.createAuthnRequestInput(context, foreignIdp, selectedCountry, this.getAuthnRequest(context));
 
-      PeerMetadataResolver metadataResolver = (entityID) -> {
-        return (entityID.equals(endPoint.getEntityID())) ? endPoint.getMetadataRecord() : null;
+      PeerMetadataResolver metadataResolver = (entityID) -> {        
+        return entityID.equals(foreignIdp.getEntityID()) ? foreignIdp : null;
       };
 
       RequestHttpObject<AuthnRequest> authnRequest = this.authnRequestGenerator.generateRequest(spInput, metadataResolver);
-      this.saveProxyIdpState(context, authnRequest.getRequest(), spInput.getRelayState(), endPoint);
+      this.saveProxyIdpState(context, authnRequest.getRequest(), spInput.getRelayState(), selectedCountry);
 
       if (SAMLConstants.POST_METHOD.equals(authnRequest.getMethod())) {
         ModelAndView modelAndView = new ModelAndView("post-request");
@@ -335,8 +348,10 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    * 
    * @param context
    *          the profile request
-   * @param endPoint
-   *          the recipient endpoint info
+   * @param recipientMetadata
+   *          the recipient metadata record
+   * @param countryCode
+   *          the recipient country
    * @param authnRequest
    *          the {@code AuthnRequest}
    * @return an {@code AuthnRequestInput} object
@@ -344,18 +359,21 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    *           for errors creating the request
    */
   private EidasAuthnRequestGeneratorInput createAuthnRequestInput(ProfileRequestContext<?, ?> context,
-      EndPointConfig endPoint, AuthnRequest authnRequest) throws RequestGenerationException {
+      EntityDescriptor recipientMetadata, String countryCode, AuthnRequest authnRequest) throws RequestGenerationException {
 
     EidasAuthnRequestGeneratorInput spInput = new EidasAuthnRequestGeneratorInput();
 
-    spInput.setPeerEntityID(endPoint.getEntityID());
-    spInput.setCountry(endPoint.getCountry());
+    spInput.setPeerEntityID(recipientMetadata.getEntityID());
+    spInput.setCountry(countryCode);
 
     // Match assurance levels and calculate which LoA URI to use in the request.
     //
     try {
+      // EntityCategoryMetadataHelper.getEntityCategories(ed)
+      // MetadataUtils.getEntityAttributes(recipientMetadata).
+
       spInput.setRequestedAuthnContext(this.eidasAuthnContextService.getSendRequestedAuthnContext(
-        context, endPoint.getAssuranceCertifications()));
+        context, getAssuranceCertifications(recipientMetadata))); 
     }
     catch (ExternalAutenticationErrorCodeException e) {
       throw new RequestGenerationException(e.getActualMessage() != null ? e.getActualMessage() : e.getMessage(), e);
@@ -403,6 +421,31 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     return spInput;
   }
+  
+  /**
+   * Utility method that returns a list of assurance certification URI:s from a metadata record.
+   * 
+   * @param metadata
+   *          the metadata record
+   * @return a list of assurance certification URI:s
+   */
+  private static List<String> getAssuranceCertifications(EntityDescriptor metadata) {
+
+    Optional<EntityAttributes> entityAttributes = MetadataUtils.getEntityAttributes(metadata);
+    if (entityAttributes.isPresent()) {
+      return entityAttributes.get()
+        .getAttributes()
+        .stream()
+        .filter(ec -> ec.getName().equals(ASSURANCE_CERTIFICATION_ATTRIBUTE_NAME))
+        .map(a -> AttributeUtils.getAttributeStringValues(a))
+        .flatMap(List::stream)
+        .distinct()
+        .collect(Collectors.toList());
+    }
+    else {
+      return Collections.emptyList();
+    }
+  }  
 
   /**
    * Saves the authentication state for the Proxy IdP SP part.
@@ -413,19 +456,19 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    *          the AuthnRequest object that is sent
    * @param relayState
    *          the relay state that is sent
-   * @param endpoint
-   *          the IdP/endpoint information
+   * @param country
+   *          the country for the IdP
    * @throws ExternalAuthenticationException
    *           for session errors
    */
-  private void saveProxyIdpState(ProfileRequestContext<?, ?> context, AuthnRequest authnRequest, String relayState, EndPointConfig endpoint)
+  private void saveProxyIdpState(ProfileRequestContext<?, ?> context, AuthnRequest authnRequest, String relayState, String country)
       throws ExternalAuthenticationException {
 
     ProxyIdpAuthenticationContext proxyContext = new ProxyIdpAuthenticationContext(authnRequest, relayState);
 
     // In order not to store too much data in the session, we only store the country, and look up the rest
     // when we process the response.
-    proxyContext.addAdditionalData("country", endpoint.getCountry());
+    proxyContext.addAdditionalData("country", country);
 
     AuthenticationContext authenticationContext = authenticationContextLookupStrategy.apply(context);
     if (authenticationContext == null) {
@@ -466,11 +509,11 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Process the SAML response
     //
     ResponseProcessingInput input = this.createResponseProcessingInput(context, httpRequest);
-    EndPointConfig idpEndpoint = this.metadataConfig.getProxyServiceConfig(input.getCountry());
+    EntityDescriptor idpMetadata = this.euMetadata.getProxyServiceIdp(input.getCountry());
 
     try {
       PeerMetadataResolver idpMetadataResolver = (entityID) -> {
-        return (entityID.equals(idpEndpoint.getEntityID())) ? idpEndpoint.getMetadataRecord() : null;
+        return entityID.equals(idpMetadata.getEntityID()) ? idpMetadata : null;
       };
 
       ResponseProcessingResult result = this.responseProcessor.processSamlResponse(samlResponse, relayState, input, idpMetadataResolver);
@@ -840,16 +883,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   }
 
   /**
-   * Assigns the configurator object holding information about the eIDAS metadata.
-   * 
-   * @param metadataConfig
-   *          configurator object
-   */
-  public void setMetadataConfig(MetadataConfig metadataConfig) {
-    this.metadataConfig = metadataConfig;
-  }
-
-  /**
    * Assigns the service for handling mappings of attributes.
    * 
    * @param attributeProcessingService
@@ -905,7 +938,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   public void afterPropertiesSet() throws Exception {
     super.afterPropertiesSet();
     Assert.hasText(this.authenticatorName, "The property 'authenticatorName' must be assigned");
-    Assert.notNull(this.metadataConfig, "The property 'metadataConfig' must be assigned");
+    Assert.notNull(this.euMetadata, "The property 'euMetadata' must be assigned");
     Assert.notNull(this.eidasAuthnContextService, "The property 'eidasAuthnContextService' must be assigned");
     Assert.notNull(this.authnRequestGenerator, "The property 'authnRequestGenerator' must be assigned");
     Assert.notNull(this.responseProcessor, "The property 'responseProcessor' must be assigned");

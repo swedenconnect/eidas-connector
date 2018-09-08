@@ -23,6 +23,7 @@ package se.elegnamnden.eidas.idp.connector.controller;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -169,7 +170,7 @@ public class CountrySelectionHandler implements InitializingBean {
    *          a list of language codes
    * @return a sorted list of country objects
    */
-  public List<UiCountry> getSelectableCountries(List<String> isoCodes) {
+  public List<UiCountry> getSelectableCountries(Collection<String> isoCodes) {
 
     if (isoCodes == null) {
       log.error("No countries available");

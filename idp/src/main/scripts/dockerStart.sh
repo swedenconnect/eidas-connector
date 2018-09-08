@@ -223,7 +223,7 @@ export IDP_METADATA_RESOURCES_BEAN
 
 : ${FEDERATION_METADATA_URL:=https://qa.md.swedenconnect.se/entities}
 : ${FEDERATION_METADATA_VALIDATION_CERT:=$IDP_HOME/metadata/sc-qa-metadata-validation-cert.crt}
-: ${EIDAS_METADATA_SERVICE_LIST_URL:=https://eid.svelegtest.se/nodeconfig/mdservicelist}
+: ${EIDAS_METADATA_SERVICE_LIST_URL:=""}
 : ${EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT:=${IDP_HOME}/metadata/eidas-servicelist-validation-cert.crt}
 : ${EIDAS_METADATA_URL:=https://eid.svelegtest.se/nodeconfig/metadata}
 : ${EIDAS_METADATA_VALIDATION_CERT:=$IDP_HOME/metadata/eidas-metadata-validation-cert.crt}
