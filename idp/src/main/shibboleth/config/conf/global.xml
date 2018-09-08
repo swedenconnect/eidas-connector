@@ -26,7 +26,8 @@
   <task:scheduler id="eidas.Scheduler" pool-size="5" />
   
   <task:scheduled-tasks scheduler="eidas.Scheduler">
-    <task:scheduled ref="eidas.MetadataConfig" method="recache" fixed-delay="600000" initial-delay="3000" />
+    <!-- <task:scheduled ref="eidas.MetadataConfig" method="recache" fixed-delay="600000" initial-delay="3000" /> -->
+    <task:scheduled ref="eidas.euMetadata" method="refresh" fixed-delay="600000" initial-delay="3000" />
   </task:scheduled-tasks>
   
   <!-- PKCS#11/HSM support -->
@@ -50,6 +51,7 @@
       p:providerNameList-ref="pkcs11ProviderList" />
               
   <!-- eIDAS metadata -->
+  <!-- 
   <bean id="eidas.MetadataConfig" class="se.elegnamnden.eidas.metadataconfig.MetadataConfig" scope="singleton" depends-on="shibboleth.OpenSAMLConfig"
     c:dataDirectory="%{idp.metadata.eidas.cache-directory}"
     c:metadataListUrl="%{idp.metadata.eidas.service-list.url}"
@@ -63,6 +65,16 @@
     <bean class="se.elegnamnden.eidas.metadataconfig.data.MiddleWareParams"
       c:entityID="https://demw.eidastest.se" c:serviceUrlPrefix="https://demw.eidastest.se" />
   </util:list>
+  -->
+   
+  <bean id="eidas.euMetadata" class="se.elegnamnden.eidas.idp.metadata.MdslAggregatedEuMetadata" scope="singleton" depends-on="shibboleth.OpenSAMLConfig"
+    p:cacheDirectory="%{idp.metadata.eidas.cache-directory}"
+    p:euMetadataUrl="%{idp.metadata.eidas.federation.url}"
+    p:euMetadataValidationCertificate="%{idp.metadata.eidas.federation.validation-certificate}"
+    p:mdslUrl="%{idp.metadata.eidas.service-list.url:#{null}}"
+    p:mdslValidationCertificate="%{idp.metadata.eidas.service-list.validation-certificate:#{null}}"
+    p:ignoreSignatureValidation="%{idp.metadata.eidas.ignore-signature-validation:false}" />
+
       
   <!-- Connector services -->
       
