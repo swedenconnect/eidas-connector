@@ -22,11 +22,10 @@ import org.opensaml.security.x509.BasicX509Credential;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.util.StringUtils;
 
 import net.shibboleth.idp.profile.spring.factory.BasicX509CredentialFactoryBean;
-import se.elegnamnden.eidas.pkcs11.PKCS11Credential;
 import se.elegnamnden.eidas.pkcs11.PKCS11CredentialFactoryBean;
+import se.elegnamnden.eidas.pkcs11.SimplePKCS11CredentialFactoryBean;
 
 /**
  * Utility factory bean that is used to simplify the Shibboleth Spring context files when setting up either soft keys or
@@ -47,13 +46,16 @@ public class ShibbolethCredentialFactoryBean extends BasicX509CredentialFactoryB
   private boolean pkcs11Enabled = false;
 
   /** The name of the security provider holding the private key object. */
-  private List<String> providerNameList;
+//  private List<String> providerNameList;
 
   /** The private key alias. */
   private String alias;
 
   /** The private key PIN. */
   private String pin;
+  
+  /** PKCS#11 configuration. */
+  private String pkcs11cfg;
 
   /** {@inheritDoc} */
   @Override
@@ -63,16 +65,8 @@ public class ShibbolethCredentialFactoryBean extends BasicX509CredentialFactoryB
       return super.doCreateInstance();
     }
     else {
-      if (this.providerNameList == null || this.providerNameList.isEmpty()) {
-        throw new BeanCreationException("Property 'providerNameList' is empty");
-      }
-      if (!StringUtils.hasText(this.alias)) {
-        throw new BeanCreationException("Property 'alias' has not been assigned");
-      }
-      if (!StringUtils.hasText(this.pin)) {
-        throw new BeanCreationException("Property 'pin' has not been assigned");
-      }
-
+      SimplePKCS11CredentialFactoryBean p11Factory = new SimplePKCS11CredentialFactoryBean();
+      
       final List<X509Certificate> certificates = this.getCertificates();
       if (null == certificates || certificates.isEmpty()) {
         log.error("No certificates provided");
@@ -82,13 +76,42 @@ public class ShibbolethCredentialFactoryBean extends BasicX509CredentialFactoryB
       if (null == entityCertificate) {
         entityCertificate = certificates.get(0);
       }
-
-      PKCS11Credential credential = new PKCS11Credential(entityCertificate, this.providerNameList, this.alias, this.pin);
-      final String entityID = this.getEntityID();
-      if (entityID != null) {
-        credential.setEntityId(entityID);
-      }
-      return credential;
+      p11Factory.setEntityCertificate(entityCertificate);
+      
+      p11Factory.setAlias(this.alias);
+      p11Factory.setPin(this.pin);
+      p11Factory.setPkcs11ConfigFile(this.pkcs11cfg);
+      p11Factory.setEntityID(this.getEntityID());
+      p11Factory.afterPropertiesSet();
+      
+      return p11Factory.getObject();
+      
+//      if (this.providerNameList == null || this.providerNameList.isEmpty()) {
+//        throw new BeanCreationException("Property 'providerNameList' is empty");
+//      }
+//      if (!StringUtils.hasText(this.alias)) {
+//        throw new BeanCreationException("Property 'alias' has not been assigned");
+//      }
+//      if (!StringUtils.hasText(this.pin)) {
+//        throw new BeanCreationException("Property 'pin' has not been assigned");
+//      }
+//
+//      final List<X509Certificate> certificates = this.getCertificates();
+//      if (null == certificates || certificates.isEmpty()) {
+//        log.error("No certificates provided");
+//        throw new BeanCreationException("No certificates provided");
+//      }
+//      X509Certificate entityCertificate = this.getEntityCertificate();
+//      if (null == entityCertificate) {
+//        entityCertificate = certificates.get(0);
+//      }
+//
+//      PKCS11Credential credential = new PKCS11Credential(entityCertificate, this.providerNameList, this.alias, this.pin);
+//      final String entityID = this.getEntityID();
+//      if (entityID != null) {
+//        credential.setEntityId(entityID);
+//      }
+//      return credential;
     }
   }
 
@@ -108,9 +131,11 @@ public class ShibbolethCredentialFactoryBean extends BasicX509CredentialFactoryB
    * @param providerNameList
    *          provider names
    */
-  public void setProviderNameList(List<String> providerNameList) {
-    this.providerNameList = providerNameList;
-  }
+//  public void setProviderNameList(List<String> providerNameList) {
+//    this.providerNameList = providerNameList;
+//  }
+  
+  
 
   /**
    * Assigns the PKCS#11 alias.
@@ -120,6 +145,10 @@ public class ShibbolethCredentialFactoryBean extends BasicX509CredentialFactoryB
    */
   public void setAlias(String alias) {
     this.alias = alias;
+  }
+
+  public void setPkcs11cfg(String pkcs11cfg) {
+    this.pkcs11cfg = pkcs11cfg;
   }
 
   /**
