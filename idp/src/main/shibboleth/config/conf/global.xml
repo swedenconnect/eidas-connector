@@ -31,6 +31,7 @@
   </task:scheduled-tasks>
   
   <!-- PKCS#11/HSM support -->
+  <!-- 
   <bean id="pkcs11Configuration" class="se.elegnamnden.eidas.pkcs11.PKCS11SoftHsmProviderConfiguration" scope="singleton" lazy-init="true"
     p:library="%{idp.pkcs11.library:}"
     p:name="%{idp.pkcs11.name:connector}"
@@ -39,16 +40,19 @@
     p:slotListIndexMaxRange="%{idp.pkcs11.slotListIndexMaxRange:-1}" 
     p:keyLocation="%{idp.pkcs11.soft.keyLocation:}"
     p:pin="%{idp.pkcs11.soft.pin:}" />
-      
+  -->
+  <!--    
   <bean id="pkcs11Provider" class="se.elegnamnden.eidas.pkcs11.PKCS11ProviderFactoryBean" scope="singleton" lazy-init="true"
     c:configuration-ref="pkcs11Configuration" />
     
   <bean id="pkcs11ProviderList" factory-bean="pkcs11Provider" factory-method="getProviderNameList" scope="singleton" lazy-init="true" />
+  -->
   
   <bean id="shibboleth.AbstractCredential" class="se.elegnamnden.eidas.idp.connector.config.ShibbolethCredentialFactoryBean" abstract="true"
       p:pkcs11Enabled="%{idp.pkcs11.enabled:false}"
       p:entityId="%{idp.entityID}"
-      p:providerNameList-ref="pkcs11ProviderList" />
+      p:pkcs11cfg="dummy" />
+      <!-- p:providerNameList-ref="pkcs11ProviderList" />  -->
               
   <!-- eIDAS metadata -->
   <!-- 
@@ -170,7 +174,8 @@
     p:privateKeyResource="%{idp.sp.signing.key:%{idp.home}/conf/credentials/dummy.key}"
     p:certificateResource="%{idp.sp.signing.cert}"
     p:alias="%{idp.sp.signing.pkcs11.alias:}"
-    p:pin="%{idp.sp.signing.pkcs11.pin:}" />
+    p:pin="%{idp.sp.signing.pkcs11.pin:}"
+    p:pkcs11cfg="%{idp.sp.signing.pkcs11.cfg:}" />
     
   <util:list id="eidas.SpEncryptionCredentials">
   
@@ -179,7 +184,8 @@
       p:privateKeyResource="%{idp.sp.encryption.key:%{idp.home}/conf/credentials/dummy.key}"
       p:certificateResource="%{idp.sp.encryption.cert}" 
       p:alias="%{idp.sp.encryption.pkcs11.alias:}"
-      p:pin="%{idp.sp.encryption.pkcs11.pin:}" />  
+      p:pin="%{idp.sp.encryption.pkcs11.pin:}"
+      p:pkcs11cfg="%{idp.sp.encryption.pkcs11.cfg:}" />  
   
 <!--   
     <bean class="net.shibboleth.idp.profile.spring.factory.BasicX509CredentialFactoryBean"
@@ -191,52 +197,9 @@
   
   <bean id="eidas.Decrypter" class="se.litsec.opensaml.xmlsec.SAMLObjectDecrypter" scope="singleton">
     <constructor-arg name="decryptionCredentials" ref="eidas.SpEncryptionCredentials" />
-    <!-- 
-    <constructor-arg name="decryptionConfiguration">
-      <bean parent="shibboleth.BasicDecryptionConfiguration"
-        p:KEKKeyInfoCredentialResolver-ref="eidas.KeyEncryptionCredentialResolver"
-        p:encryptedKeyResolver-ref="eidas.EncryptedKeyResolver" />
-    </constructor-arg>
-    -->
     <property name="pkcs11Workaround" value="true" />
   </bean>
-  
-  <!-- 
-  <bean id="eidas.KeyEncryptionCredentialResolver" class="org.opensaml.xmlsec.keyinfo.impl.ChainingKeyInfoCredentialResolver">
-    <constructor-arg>
-      <list>
-        <bean class="org.opensaml.xmlsec.keyinfo.impl.LocalKeyInfoCredentialResolver">
-          <constructor-arg name="localCredentialResolver">
-            <bean class="org.opensaml.xmlsec.keyinfo.impl.CollectionKeyInfoCredentialResolver"
-              c:credentials-ref="eidas.SpEncryptionCredentials" />
-          </constructor-arg>
-          <constructor-arg name="keyInfoProviders">
-            <list>
-              <bean class="org.opensaml.xmlsec.keyinfo.impl.provider.RSAKeyValueProvider" />
-              <bean class="org.opensaml.xmlsec.keyinfo.impl.provider.DSAKeyValueProvider" />
-              <bean class="org.opensaml.xmlsec.keyinfo.impl.provider.DEREncodedKeyValueProvider" />
-              <bean class="org.opensaml.xmlsec.keyinfo.impl.provider.InlineX509DataProvider" />
-            </list>
-          </constructor-arg>
-        </bean>
-        <bean class="org.opensaml.xmlsec.keyinfo.impl.StaticKeyInfoCredentialResolver"
-          c:credentials-ref="eidas.SpEncryptionCredentials" />
-      </list>
-    </constructor-arg>
-  </bean>
-  
-  <bean id="eidas.EncryptedKeyResolver" class="org.opensaml.xmlsec.encryption.support.ChainingEncryptedKeyResolver" c:recipient="%{idp.sp.entityID}">
-    <constructor-arg name="encKeyResolvers">
-      <list>
-        <bean class="org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver" />
-        <bean class="org.opensaml.saml.saml2.encryption.EncryptedElementTypeEncryptedKeyResolver" />
-        <bean class="org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver" />
-        <bean class="org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver" />
-      </list>
-    </constructor-arg>
-  </bean>
-  -->  
-  
+    
   <!-- Redis - lazy init -->
   <import resource="storage-redis.xml" />
           

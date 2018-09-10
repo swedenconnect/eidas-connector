@@ -396,15 +396,15 @@ fi
 
 if [ "$IDP_PKCS11_ENABLED" == true ]; then
 
-  if [ -z "$IDP_PKCS11_LIBRARY" ]; then
-    echo "IDP_PKCS11_LIBRARY must be set" >&2
-    exit 1
-  fi
+#  if [ -z "$IDP_PKCS11_LIBRARY" ]; then
+#    echo "IDP_PKCS11_LIBRARY must be set" >&2
+#    exit 1
+#  fi
   
-  : ${IDP_PKCS11_NAME:=connector}
-  : ${IDP_PKCS11_SLOT:=""}
-  : ${IDP_PKCS11_SLOT_LIST_INDEX:=0}
-  : ${IDP_PKCS11_SLOT_LIST_INDEX_MAX_RANGE:=-1}
+#  : ${IDP_PKCS11_NAME:=connector}
+#  : ${IDP_PKCS11_SLOT:=""}
+#  : ${IDP_PKCS11_SLOT_LIST_INDEX:=0}
+#  : ${IDP_PKCS11_SLOT_LIST_INDEX_MAX_RANGE:=-1}
   
   if [ -z "$IDP_SIGNING_PKCS11_ALIAS" ]; then
     echo "IDP_SIGNING_PKCS11_ALIAS must be set" >&2
@@ -414,6 +414,11 @@ if [ "$IDP_PKCS11_ENABLED" == true ]; then
     echo "IDP_SIGNING_PKCS11_PIN must be set" >&2
     exit 1
   fi
+  if [ -z "$IDP_SIGNING_PKCS11_CFG" ]; then
+    echo "IDP_SIGNING_PKCS11_CFG must be set" >&2
+    exit 1
+  fi
+  
   if [ -z "$IDP_ENCRYPTION_PKCS11_ALIAS" ]; then
     echo "IDP_ENCRYPTION_PKCS11_ALIAS must be set" >&2
     exit 1
@@ -422,6 +427,11 @@ if [ "$IDP_PKCS11_ENABLED" == true ]; then
     echo "IDP_ENCRYPTION_PKCS11_PIN must be set" >&2
     exit 1
   fi
+  if [ -z "$IDP_ENCRYPTION_PKCS11_CFG" ]; then
+    echo "IDP_ENCRYPTION_PKCS11_CFG must be set" >&2
+    exit 1
+  fi  
+  
   if [ -z "$SP_SIGNING_PKCS11_ALIAS" ]; then
     echo "SP_SIGNING_PKCS11_ALIAS must be set" >&2
     exit 1
@@ -430,6 +440,11 @@ if [ "$IDP_PKCS11_ENABLED" == true ]; then
     echo "SP_SIGNING_PKCS11_PIN must be set" >&2
     exit 1
   fi
+  if [ -z "$SP_SIGNING_PKCS11_CFG" ]; then
+    echo "SP_SIGNING_PKCS11_CFG must be set" >&2
+    exit 1
+  fi  
+  
   if [ -z "$SP_ENCRYPTION_PKCS11_ALIAS" ]; then
     echo "SP_ENCRYPTION_PKCS11_ALIAS must be set" >&2
     exit 1
@@ -438,6 +453,10 @@ if [ "$IDP_PKCS11_ENABLED" == true ]; then
     echo "SP_ENCRYPTION_PKCS11_PIN must be set" >&2
     exit 1
   fi
+  if [ -z "$SP_ENCRYPTION_PKCS11_CFG" ]; then
+    echo "SP_ENCRYPTION_PKCS11_CFG must be set" >&2
+    exit 1
+  fi  
   
   # For testing only
   : ${IDP_PKCS11_SOFTHSM_KEYLOCATION:=""}
@@ -445,21 +464,26 @@ if [ "$IDP_PKCS11_ENABLED" == true ]; then
   
   export JAVA_OPTS="${JAVA_OPTS} \
     -Didp.pkcs11.enabled=true \
-    -Didp.pkcs11.library=$IDP_PKCS11_LIBRARY \
-    -Didp.pkcs11.name=$IDP_PKCS11_NAME \
-    -Didp.pkcs11.slot=$IDP_PKCS11_SLOT \
-    -Didp.pkcs11.slotListIndex=$IDP_PKCS11_SLOT_LIST_INDEX \
-    -Didp.pkcs11.slotListIndexMaxRange=$IDP_PKCS11_SLOT_LIST_INDEX_MAX_RANGE \
     -Didp.signing.pkcs11.alias=$IDP_SIGNING_PKCS11_ALIAS \
     -Didp.signing.pkcs11.pin=$IDP_SIGNING_PKCS11_PIN \
+    -Didp.signing.pkcs11.cfg=$IDP_SIGNING_PKCS11_CFG \
     -Didp.encryption.pkcs11.alias=$IDP_ENCRYPTION_PKCS11_ALIAS \
     -Didp.encryption.pkcs11.pin=$IDP_ENCRYPTION_PKCS11_PIN \
+    -Didp.encryption.pkcs11.cfg=$IDP_ENCRYPTION_PKCS11_CFG \
     -Didp.sp.signing.pkcs11.alias=$SP_SIGNING_PKCS11_ALIAS \
     -Didp.sp.signing.pkcs11.pin=$SP_SIGNING_PKCS11_PIN \
+    -Didp.sp.signing.pkcs11.cfg=$SP_SIGNING_PKCS11_CFG \
     -Didp.sp.encryption.pkcs11.alias=$SP_ENCRYPTION_PKCS11_ALIAS \
     -Didp.sp.encryption.pkcs11.pin=$SP_ENCRYPTION_PKCS11_PIN \
+    -Didp.sp.encryption.pkcs11.cfg=$SP_ENCRYPTION_PKCS11_CFG \
     -Didp.pkcs11.soft.keyLocation=$IDP_PKCS11_SOFTHSM_KEYLOCATION \
     -Didp.pkcs11.soft.pin=$IDP_PKCS11_SOFTHSM_PIN"
+
+#     -Didp.pkcs11.library=$IDP_PKCS11_LIBRARY \
+#    -Didp.pkcs11.name=$IDP_PKCS11_NAME \
+#    -Didp.pkcs11.slot=$IDP_PKCS11_SLOT \
+#    -Didp.pkcs11.slotListIndex=$IDP_PKCS11_SLOT_LIST_INDEX \
+#    -Didp.pkcs11.slotListIndexMaxRange=$IDP_PKCS11_SLOT_LIST_INDEX_MAX_RANGE \
     
   
   if [ "$IDP_METADATA_SIGNING_PKCS11_ENABLED" == true ]; then
@@ -472,11 +496,16 @@ if [ "$IDP_PKCS11_ENABLED" == true ]; then
       echo "IDP_METADATA_SIGNING_PKCS11_PIN must be set" >&2
       exit 1
     fi
+	if [ -z "$IDP_METADATA_SIGNING_PKCS11_CFG" ]; then
+      echo "IDP_METADATA_SIGNING_PKCS11_CFG must be set" >&2
+      exit 1
+    fi    
     
     export JAVA_OPTS="${JAVA_OPTS} \
       -Didp.metadata.signing.pkcs11.enabled=true \
       -Didp.metadata.signing.pkcs11.alias=$IDP_METADATA_SIGNING_PKCS11_ALIAS \
-      -Didp.metadata.signing.pkcs11.pin=$IDP_METADATA_SIGNING_PKCS11_PIN"
+      -Didp.metadata.signing.pkcs11.pin=$IDP_METADATA_SIGNING_PKCS11_PIN \
+      -Didp.metadata.signing.pkcs11.cfg=$IDP_METADATA_SIGNING_PKCS11_CFG"
       
   fi
   
@@ -490,11 +519,16 @@ if [ "$IDP_PKCS11_ENABLED" == true ]; then
       echo "SP_METADATA_SIGNING_PKCS11_PIN must be set" >&2
       exit 1
     fi
+	if [ -z "$SP_METADATA_SIGNING_PKCS11_CFG" ]; then
+      echo "SP_METADATA_SIGNING_PKCS11_CFG must be set" >&2
+      exit 1
+    fi    
     
     export JAVA_OPTS="${JAVA_OPTS} \
       -Didp.sp.metadata.signing.pkcs11.enabled=true \
       -Didp.sp.metadata.signing.pkcs11.alias=$SP_METADATA_SIGNING_PKCS11_ALIAS \
-      -Didp.sp.metadata.signing.pkcs11.pin=$SP_METADATA_SIGNING_PKCS11_PIN"
+      -Didp.sp.metadata.signing.pkcs11.pin=$SP_METADATA_SIGNING_PKCS11_PIN \
+      -Didp.sp.metadata.signing.pkcs11.cfg=$SP_METADATA_SIGNING_PKCS11_CFG"
 
   fi
 
