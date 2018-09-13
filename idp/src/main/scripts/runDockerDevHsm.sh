@@ -35,25 +35,22 @@ docker run -d --name eidas-connector-hsm --restart=always \
   -e IDP_SEALER_PASSWORD=3eifrUFrujUefIo8FJN4 \
   -e TOMCAT_PROXY_SHARED_SECRET=123456 \
   -e IDP_PKCS11_ENABLED=true \
+  -e IDP_PKCS11_SOFTHSM=true \
   -e IDP_METADATA_SIGNING_PKCS11_ENABLED=true \
   -e SP_METADATA_SIGNING_PKCS11_ENABLED=true \
-  -e IDP_PKCS11_SLOT_LIST_INDEX=0 \
-  -e IDP_PKCS11_SLOT_LIST_INDEX_MAX_RANGE=12 \
-  -e IDP_PKCS11_LIBRARY=/usr/lib/softhsm/libsofthsm2.so \
+  -e IDP_PKCS11_PIN=111111 \
   -e IDP_SIGNING_PKCS11_ALIAS=idp-signing \
-  -e IDP_SIGNING_PKCS11_PIN=111111 \
+  -e IDP_SIGNING_PKCS11_CFG=/etc/eidas-connector-credentials/softhsm.cfg \
   -e IDP_ENCRYPTION_PKCS11_ALIAS=idp-encryption \
-  -e IDP_ENCRYPTION_PKCS11_PIN=111111 \
+  -e IDP_ENCRYPTION_PKCS11_CFG=/etc/eidas-connector-credentials/softhsm.cfg \
   -e SP_SIGNING_PKCS11_ALIAS=sp-signing \
-  -e SP_SIGNING_PKCS11_PIN=111111 \
+  -e SP_SIGNING_PKCS11_CFG=/etc/eidas-connector-credentials/softhsm.cfg \
   -e SP_ENCRYPTION_PKCS11_ALIAS=sp-encryption \
-  -e SP_ENCRYPTION_PKCS11_PIN=111111 \
+  -e SP_ENCRYPTION_PKCS11_CFG=/etc/eidas-connector-credentials/softhsm.cfg \
   -e IDP_METADATA_SIGNING_PKCS11_ALIAS=metadata-signing \
-  -e IDP_METADATA_SIGNING_PKCS11_PIN=111111 \
-  -e SP_METADATA_SIGNING_PKCS11_ALIAS=metadata-signing \
-  -e SP_METADATA_SIGNING_PKCS11_PIN=111111 \
-  -e IDP_PKCS11_SOFTHSM_KEYLOCATION=/etc/eidas-connector-credentials \
-  -e IDP_PKCS11_SOFTHSM_PIN=111111 \
+  -e IDP_METADATA_SIGNING_PKCS11_CFG=/etc/eidas-connector-credentials/softhsm.cfg \
+  -e SP_METADATA_SIGNING_PKCS11_ALIAS=sp-metadata-signing \
+  -e SP_METADATA_SIGNING_PKCS11_CFG=/etc/eidas-connector-credentials/softhsm.cfg \
   -v /tmp/eidas-connector-credentials:/etc/eidas-connector-credentials \
   -v /tmp/eidas-connector:/var/log/eidas-connector \
   -v ${EIDAS_LOCAL_ENV}:/etc/eidas-connector \

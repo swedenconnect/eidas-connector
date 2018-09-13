@@ -160,20 +160,9 @@
   <!--
     The credential used to sign the metadata. 
    -->
-  <bean id="sweid.MetadataSigningCredential" parent="shibboleth.AbstractCredential"
-    p:pkcs11Enabled="%{idp.metadata.signing.pkcs11.enabled:false}"
-    p:privateKeyResource="%{idp.metadata.signing.key:%{idp.home}/conf/credentials/dummy.key}"
-    p:certificateResource="%{idp.metadata.signing.cert}" 
-    p:alias="%{idp.metadata.signing.pkcs11.alias:}"
-    p:pin="%{idp.metadata.signing.pkcs11.pin:}"
-    p:pkcs11cfg="%{idp.metadata.signing.pkcs11.cfg:}" />   
-
-<!--    
-  <bean id="sweid.MetadataSigningCredential" class="net.shibboleth.idp.profile.spring.factory.BasicX509CredentialFactoryBean"
-    p:privateKeyResource="%{idp.metadata.signing.key}"
-    p:certificateResource="%{idp.metadata.signing.cert}"
-    p:entityId="%{idp.entityID}" />
--->
+  <bean id="sweid.MetadataSigningCredential" parent="shibboleth.AbstractConnectorCredential"
+    p:pkcs11enabled="%{idp.metadata.signing.pkcs11.enabled:false}"
+    p:credentialsConfig-ref="cred.idp.metadata-signing" />
     
   <!--
     The container wrapping the metadata and is used for publishing. 
