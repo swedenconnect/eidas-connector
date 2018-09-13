@@ -217,15 +217,16 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Did the SP pass along a Scoping element with one or several country URI:s?
     List<String> requestedCountries = this.getRequestedCountries(httpRequest);
     if (!requestedCountries.isEmpty()) {
-      log.debug("SP has requested country {}", requestedCountries);
+      log.debug("SP has requested country/countries: {}", requestedCountries);
     }
 
     Collection<String> availableCountries = this.euMetadata.getCountries();
     if (availableCountries.isEmpty()) {
       log.error("No available countries");
-      this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
-        "No countries available for authentication", null);
-      return null;
+//      this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
+//        "No countries available for authentication", null);
+      
+      // We'll display an error message in the country selection view instead...
     }
 
     // If the SP requested a country, perform filtering ...

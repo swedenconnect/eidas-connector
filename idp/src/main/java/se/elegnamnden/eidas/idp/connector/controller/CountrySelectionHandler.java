@@ -173,7 +173,6 @@ public class CountrySelectionHandler implements InitializingBean {
   public List<UiCountry> getSelectableCountries(Collection<String> isoCodes) {
 
     if (isoCodes == null) {
-      log.error("No countries available");
       return Collections.emptyList();
     }
 

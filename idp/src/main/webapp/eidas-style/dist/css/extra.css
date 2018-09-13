@@ -41,6 +41,11 @@
   line-height: 16px;
 }
 
+.large-btn-link-text {
+	font-size: 16px;
+  line-height: 14px;
+}
+
 .country-button {
   background-color: transparent;  
   border: none; 

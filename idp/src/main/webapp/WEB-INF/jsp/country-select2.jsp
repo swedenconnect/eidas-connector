@@ -63,7 +63,7 @@
             </h2>
           </div>
           <div class="col-sm-12">
-            <p class="info content-heading-text">
+            <p class="info"> <!-- content-heading-text -->
               <spring:message code="connector.ui.select-country.info.default-sp-name" var="defaultName" />
               <c:set var="displayName" value="${not empty spInfo.displayName ? spInfo.displayName : defaultName}" />
               <spring:message code="connector.ui.select-country.info.1" arguments="${displayName}" />
@@ -74,6 +74,22 @@
         <hr class="full-width">
 
         <form action="/idp/extauth/proxyauth" method="POST" id="countrySelectForm">
+        
+          <c:if test="${empty countries}">
+            <div class="row">
+              <div class="col-sm error">                
+                <p class="error-text">
+                  <spring:message code='connector.ui.no-countries' />                  
+                </p>
+                <p class="error-text">                
+                  <button type="submit" class="btn btn-primary" name="selectedCountry" value="cancel" id="cancelLink2">
+                    <spring:message code='connector.ui.button.return' />
+                  </button>
+                </p>
+              </div>
+            </div>
+          </c:if>
+        
           <div class="tablet-up">
             <c:set var="counter" value="0" />
 
@@ -159,6 +175,7 @@
         
       </div> <!-- /.content-container -->
 
+      <c:if test="${not empty countries}">
       <div class="col-sm-12 return">
         <form action="/idp/extauth/proxyauth" method="POST" id="countrySelectForm2">
           <button type="submit" class="btn btn-link" name="selectedCountry" value="cancel" id="cancelLink">
@@ -166,6 +183,7 @@
           </button>        
         </form>
       </div>
+      </c:if>
 
       <jsp:include page="footer2.jsp" />
 
