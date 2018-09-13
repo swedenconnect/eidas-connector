@@ -30,47 +30,69 @@
     <task:scheduled ref="eidas.euMetadata" method="refresh" fixed-delay="600000" initial-delay="3000" />
   </task:scheduled-tasks>
   
-  <!-- PKCS#11/HSM support -->
-  <!-- 
-  <bean id="pkcs11Configuration" class="se.elegnamnden.eidas.pkcs11.PKCS11SoftHsmProviderConfiguration" scope="singleton" lazy-init="true"
-    p:library="%{idp.pkcs11.library:}"
-    p:name="%{idp.pkcs11.name:connector}"
-    p:slot="%{idp.pkcs11.slot:}"
-    p:slotListIndex="%{idp.pkcs11.slotListIndex:0}"    
-    p:slotListIndexMaxRange="%{idp.pkcs11.slotListIndexMaxRange:-1}" 
-    p:keyLocation="%{idp.pkcs11.soft.keyLocation:}"
-    p:pin="%{idp.pkcs11.soft.pin:}" />
-  -->
-  <!--    
-  <bean id="pkcs11Provider" class="se.elegnamnden.eidas.pkcs11.PKCS11ProviderFactoryBean" scope="singleton" lazy-init="true"
-    c:configuration-ref="pkcs11Configuration" />
+  <!-- Credentials declarations -->
+  <bean id="cred.base" class="se.elegnamnden.eidas.idp.connector.credential.CredentialsConfiguration" abstract="true"
+    p:entityId="%{idp.entityID}" />
     
-  <bean id="pkcs11ProviderList" factory-bean="pkcs11Provider" factory-method="getProviderNameList" scope="singleton" lazy-init="true" />
-  -->
+  <bean id="cred.idp.signing" parent="cred.base" scope="singleton"
+    p:certificateResource="%{idp.signing.cert}"
+    p:privateKeyResource="%{idp.signing.key:%{idp.home}/conf/credentials/dummy.key}"
+    p:alias="%{idp.signing.pkcs11.alias:}"
+    p:pkcs11Config="%{idp.signing.pkcs11.cfg:}" />
+    
+  <bean id="cred.idp.encryption" parent="cred.base" scope="singleton"
+    p:certificateResource="%{idp.encryption.cert}"
+    p:privateKeyResource="%{idp.encryption.key:%{idp.home}/conf/credentials/dummy.key}"
+    p:alias="%{idp.encryption.pkcs11.alias:}"
+    p:pkcs11Config="%{idp.encryption.pkcs11.cfg:}" />
+    
+  <bean id="cred.sp.signing" parent="cred.base" scope="singleton"
+    p:entityId="%{idp.sp.entityID}"
+    p:certificateResource="%{idp.sp.signing.cert}"
+    p:privateKeyResource="%{idp.sp.signing.key:%{idp.home}/conf/credentials/dummy.key}"
+    p:alias="%{idp.sp.signing.pkcs11.alias:}"
+    p:pkcs11Config="%{idp.sp.signing.pkcs11.cfg:}" />
+    
+  <bean id="cred.sp.encryption" parent="cred.base" scope="singleton"
+    p:entityId="%{idp.sp.entityID}"
+    p:certificateResource="%{idp.sp.encryption.cert}"
+    p:privateKeyResource="%{idp.sp.encryption.key:%{idp.home}/conf/credentials/dummy.key}"
+    p:alias="%{idp.sp.encryption.pkcs11.alias:}"
+    p:pkcs11Config="%{idp.sp.encryption.pkcs11.cfg:}" />
+    
+  <bean id="cred.idp.metadata-signing" parent="cred.base" scope="singleton"
+    p:certificateResource="%{idp.metadata.signing.cert}"
+    p:privateKeyResource="%{idp.metadata.signing.key:%{idp.home}/conf/credentials/dummy.key}"
+    p:alias="%{idp.metadata.signing.pkcs11.alias:}"
+    p:pkcs11Config="%{idp.metadata.signing.pkcs11.cfg:}" />
+    
+  <bean id="cred.sp.metadata-signing" parent="cred.base" scope="singleton"
+    p:entityId="%{idp.sp.entityID}"
+    p:certificateResource="%{idp.sp.metadata.signing.cert}"
+    p:privateKeyResource="%{idp.sp.metadata.signing.key:%{idp.home}/conf/credentials/dummy.key}"
+    p:alias="%{idp.sp.metadata.signing.pkcs11.alias:}"
+    p:pkcs11Config="%{idp.sp.metadata.signing.pkcs11.cfg:}" />
   
-  <bean id="shibboleth.AbstractCredential" class="se.elegnamnden.eidas.idp.connector.config.ShibbolethCredentialFactoryBean" abstract="true"
-      p:pkcs11Enabled="%{idp.pkcs11.enabled:false}"
-      p:entityId="%{idp.entityID}"
-      p:pkcs11cfg="dummy" />
-      <!-- p:providerNameList-ref="pkcs11ProviderList" />  -->
-              
-  <!-- eIDAS metadata -->
-  <!-- 
-  <bean id="eidas.MetadataConfig" class="se.elegnamnden.eidas.metadataconfig.MetadataConfig" scope="singleton" depends-on="shibboleth.OpenSAMLConfig"
-    c:dataDirectory="%{idp.metadata.eidas.cache-directory}"
-    c:metadataListUrl="%{idp.metadata.eidas.service-list.url}"
-    c:metadataListCertFile="%{idp.metadata.eidas.service-list.validation-certificate}"
-    c:metadataUrl="%{idp.metadata.eidas.federation.url}"
-    c:metadataCertFile="%{idp.metadata.eidas.federation.validation-certificate}"
-    c:mwParamList-ref="eidas.mwParamList" 
-    p:ignoreSignatureValidation="%{idp.metadata.eidas.ignore-signature-validation:false}" />
+  <bean id="pkcs11Configuration" class="se.elegnamnden.eidas.idp.connector.credential.pkcs11.ExtendedPKCS11Configuration" scope="singleton"
+    c:pkcs11enabled="%{idp.pkcs11.enabled:false}" 
+    c:softHsmEnabled="%{idp.pkcs11.softhsm.enabled:false}"
+    c:idpMetadataSigningEnabled="%{idp.metadata.signing.pkcs11.enabled:false}"
+    c:spMetadataSigningEnabled="%{idp.sp.metadata.signing.pkcs11.enabled:false}"
+    p:pkcs11pin="%{idp.pkcs11.pin:}"
+    p:softHsmLib="/usr/lib/softhsm/libsofthsm2.so"
+    p:pkcs11label="connector"
+    p:pkcs11slot="0"
+    p:idpSigningCredential-ref="cred.idp.signing"
+    p:idpEncryptionCredential-ref="cred.idp.encryption"
+    p:spSigningCredential-ref="cred.sp.signing"
+    p:spEncryptionCredential-ref="cred.sp.encryption"
+    p:idpMetadataSigningCredential-ref="cred.idp.metadata-signing"
+    p:spMetadataSigningCredential-ref="cred.sp.metadata-signing" />
     
-  <util:list id="eidas.mwParamList">
-    <bean class="se.elegnamnden.eidas.metadataconfig.data.MiddleWareParams"
-      c:entityID="https://demw.eidastest.se" c:serviceUrlPrefix="https://demw.eidastest.se" />
-  </util:list>
-  -->
-   
+  <bean id="shibboleth.AbstractConnectorCredential" class="se.elegnamnden.eidas.idp.connector.credential.ConnectorCredentialFactoryBean" abstract="true"
+    p:pkcs11enabled="%{idp.pkcs11.enabled:false}" p:pkcs11Configuration-ref="pkcs11Configuration" />    
+    
+  <!-- EU metadata -->   
   <bean id="eidas.euMetadata" class="se.elegnamnden.eidas.idp.metadata.MdslAggregatedEuMetadata" scope="singleton" depends-on="shibboleth.OpenSAMLConfig"
     p:cacheDirectory="%{idp.metadata.eidas.cache-directory}"
     p:euMetadataUrl="%{idp.metadata.eidas.federation.url}"
@@ -161,38 +183,15 @@
     p:replayCache-ref="shibboleth.ReplayCache"
     p:replayCacheExpiration="%{idp.policy.messageLifetime:PT5M}"
     p:replayCacheName="eidas-sp-replaycache" />
-  
-  <!-- 
-  <bean id="eidas.SpSigningCredential" class="net.shibboleth.idp.profile.spring.factory.BasicX509CredentialFactoryBean"
-    p:privateKeyResource="%{idp.sp.signing.key}"
-    p:certificateResource="%{idp.sp.signing.cert}"
-    p:entityId="%{idp.sp.entityID}" />
-    -->
-    
-  <bean id="eidas.SpSigningCredential" parent="shibboleth.AbstractCredential"
-    p:entityId="%{idp.sp.entityID}"
-    p:privateKeyResource="%{idp.sp.signing.key:%{idp.home}/conf/credentials/dummy.key}"
-    p:certificateResource="%{idp.sp.signing.cert}"
-    p:alias="%{idp.sp.signing.pkcs11.alias:}"
-    p:pin="%{idp.sp.signing.pkcs11.pin:}"
-    p:pkcs11cfg="%{idp.sp.signing.pkcs11.cfg:}" />
-    
+      
+  <bean id="eidas.SpSigningCredential" parent="shibboleth.AbstractConnectorCredential"
+    p:credentialsConfig-ref="cred.sp.signing" />
+        
   <util:list id="eidas.SpEncryptionCredentials">
   
-    <bean parent="shibboleth.AbstractCredential"
-      p:entityId="%{idp.sp.entityID}"
-      p:privateKeyResource="%{idp.sp.encryption.key:%{idp.home}/conf/credentials/dummy.key}"
-      p:certificateResource="%{idp.sp.encryption.cert}" 
-      p:alias="%{idp.sp.encryption.pkcs11.alias:}"
-      p:pin="%{idp.sp.encryption.pkcs11.pin:}"
-      p:pkcs11cfg="%{idp.sp.encryption.pkcs11.cfg:}" />  
-  
-<!--   
-    <bean class="net.shibboleth.idp.profile.spring.factory.BasicX509CredentialFactoryBean"
-      p:privateKeyResource="%{idp.sp.encryption.key}"
-      p:certificateResource="%{idp.sp.encryption.cert}"
-      p:entityId="%{idp.sp.entityID}" />
--->  
+    <bean parent="shibboleth.AbstractConnectorCredential"
+      p:credentialsConfig-ref="cred.sp.encryption" />  
+
   </util:list>
   
   <bean id="eidas.Decrypter" class="se.litsec.opensaml.xmlsec.SAMLObjectDecrypter" scope="singleton">
