@@ -370,9 +370,6 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Match assurance levels and calculate which LoA URI to use in the request.
     //
     try {
-      // EntityCategoryMetadataHelper.getEntityCategories(ed)
-      // MetadataUtils.getEntityAttributes(recipientMetadata).
-
       spInput.setRequestedAuthnContext(this.eidasAuthnContextService.getSendRequestedAuthnContext(
         context, getAssuranceCertifications(recipientMetadata))); 
     }
@@ -390,7 +387,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       spInput.setRelayState(UUID.randomUUID().toString());
     }
 
-    // SP type
+    // SP type and National SP entityID
     //
     EntityDescriptor spMetadata = this.getPeerMetadata(context);
     if (spMetadata != null) {
@@ -404,6 +401,11 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       else {
         log.warn("Entity '{}' does not specify entity category for public or private SP", spMetadata.getEntityID());
       }
+      
+      spInput.setNationalSpEntityID(spMetadata.getEntityID());
+    }
+    else {
+      log.warn("No metadata found for peer");
     }
 
     // Requested attributes
