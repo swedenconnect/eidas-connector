@@ -49,6 +49,9 @@ public class EidasAuthnRequestGeneratorInput extends AbstractRequestGeneratorInp
   /** The type of SP that makes the request. */
   private SPTypeEnumeration spType;
 
+  /** The entityID of the national SP that requested authentication. */
+  private String nationalSpEntityID;
+
   /**
    * Returns the country in which the IdP resides.
    * 
@@ -145,6 +148,25 @@ public class EidasAuthnRequestGeneratorInput extends AbstractRequestGeneratorInp
    */
   public void setSpType(SPTypeEnumeration spType) {
     this.spType = spType;
+  }
+
+  /**
+   * Returns the entityID of the national SP that requested authentication
+   * 
+   * @return entityID
+   */
+  public String getNationalSpEntityID() {
+    return this.nationalSpEntityID;
+  }
+
+  /**
+   * Assigns the entityID of the national SP that requested authentication
+   * 
+   * @param nationalSpEntityID
+   *          entityID
+   */
+  public void setNationalSpEntityID(String nationalSpEntityID) {
+    this.nationalSpEntityID = nationalSpEntityID;
   }
 
 }

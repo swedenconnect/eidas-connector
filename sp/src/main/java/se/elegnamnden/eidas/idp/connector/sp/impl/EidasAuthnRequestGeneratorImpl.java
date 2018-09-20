@@ -43,6 +43,7 @@ import se.litsec.opensaml.saml2.common.request.RequestGenerationException;
 import se.litsec.opensaml.saml2.common.request.RequestHttpObject;
 import se.litsec.opensaml.saml2.core.build.AuthnRequestBuilder;
 import se.litsec.opensaml.saml2.core.build.NameIDPolicyBuilder;
+import se.litsec.opensaml.saml2.core.build.ScopingBuilder;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
 import se.litsec.opensaml.utils.ObjectUtils;
 
@@ -76,7 +77,8 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
   public RequestHttpObject<AuthnRequest> generateRequest(EidasAuthnRequestGeneratorInput input, PeerMetadataResolver metadataResolver)
       throws RequestGenerationException {
 
-    log.debug("Generating AuthnRequest for IdP '{}' [{}] ...", input.getPeerEntityID(), input.getCountry());
+    log.debug("Generating AuthnRequest for IdP '{}' ({}) based on request from SP {} ...", 
+      input.getPeerEntityID(), input.getCountry(), input.getNationalSpEntityID());
 
     // IdP metadata
     final EntityDescriptor idp = this.getPeerMetadata(input, metadataResolver);
@@ -107,7 +109,7 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
     extensions.getUnknownXMLObjects().add(input.getRequestedAttributes());
 
     // TODO: We should ensure that the NameIDFormat is accepted by the IdP.
-
+        
     AuthnRequest authnRequest = builder
       .id(this.generateID())
       .destination(serviceUrl.getLocation())
@@ -120,6 +122,8 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
       .requestedAuthnContext(input.getRequestedAuthnContext())
       .consent(StatusResponseType.UNSPECIFIED_CONSENT)
       .extensions(extensions)
+      .scoping(
+        ScopingBuilder.builder().requesterIDs(input.getNationalSpEntityID()).build())
       .build();
 
     if (log.isTraceEnabled()) {
