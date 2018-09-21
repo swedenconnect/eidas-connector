@@ -266,6 +266,17 @@ if [ "$IDP_LOG_CONSOLE" = true ]; then
   export IDP_PROCESS_APPENDER=CONSOLE
 fi
 
+: ${IDP_PROCESS_SYSLOG_PORT:=514}
+: ${IDP_PROCESS_SYSLOG_FACILITY:=AUTH}
+export IDP_PROCESS_SYSLOG_PORT IDP_PROCESS_SYSLOG_FACILITY
+
+export IDP_PROCESS_SYSLOG_HOST_INT=localhost
+
+if [ -n "IDP_PROCESS_SYSLOG_HOST" ]; then
+  export IDP_PROCESS_APPENDER=IDP_PROCESS_SYSLOG
+  export IDP_PROCESS_SYSLOG_HOST_INT=$IDP_SYSLOG_HOST
+fi
+
 #
 # Devel only
 #
@@ -342,6 +353,9 @@ export JAVA_OPTS="\
           -Didp.fticks.logport=$IDP_SYSLOG_PORT \
           -Didp.fticks.algorithm=$IDP_FTICKS_ALGORITHM \
           -Didp.fticks.salt=$IDP_FTICKS_SALT \
+          -Didp.process.syslog.host=$IDP_PROCESS_SYSLOG_HOST_INT \
+          -Didp.process.syslog.facility=$IDP_PROCESS_SYSLOG_FACILITY \
+          -Didp.process.syslog.port=$IDP_PROCESS_SYSLOG_PORT \
           -Didp.consent.appender=NOOP_APPENDER \
           -Didp.warn.appender=NOOP_APPENDER \
           -Didp.process.appender=$IDP_PROCESS_APPENDER \
