@@ -17,12 +17,18 @@ package se.elegnamnden.eidas.idp.connector.sp.validation;
 
 import java.util.Arrays;
 
+import javax.xml.namespace.QName;
+
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
+import org.opensaml.saml.common.assertion.AssertionValidationException;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.common.assertion.ValidationResult;
+import org.opensaml.saml.saml2.assertion.ConditionValidator;
 import org.opensaml.saml.saml2.assertion.impl.AudienceRestrictionConditionValidator;
 import org.opensaml.saml.saml2.core.Assertion;
+import org.opensaml.saml.saml2.core.Condition;
+import org.opensaml.saml.saml2.core.OneTimeUse;
 import org.opensaml.xmlsec.signature.support.SignaturePrevalidator;
 import org.opensaml.xmlsec.signature.support.SignatureTrustEngine;
 import org.slf4j.Logger;
@@ -58,7 +64,7 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
   public EidasAssertionValidator(SignatureTrustEngine trustEngine, SignaturePrevalidator signaturePrevalidator) {
     super(trustEngine, signaturePrevalidator, 
       Arrays.asList(new SwedishEidSubjectConfirmationValidator()),
-      Arrays.asList(new AudienceRestrictionConditionValidator()), 
+      Arrays.asList(new AudienceRestrictionConditionValidator(), new OneTimeUseDummyConditionValidator()), 
       Arrays.asList(new EidasAuthnStatementValidator(), new EidasAttributeStatementValidator()));
   }
 
@@ -91,6 +97,22 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
     return ValidationResult.VALID;
   }
   
-  
+  /**
+   * Just here to turn off warn logging from the default implementation.
+   */
+  private static class OneTimeUseDummyConditionValidator implements ConditionValidator {
+
+    @Override
+    public QName getServicedCondition() {
+      return OneTimeUse.DEFAULT_ELEMENT_NAME;
+    }
+
+    @Override
+    public ValidationResult validate(Condition condition, Assertion assertion, ValidationContext context)
+        throws AssertionValidationException {
+      return ValidationResult.VALID;
+    }
+    
+  }
 
 }

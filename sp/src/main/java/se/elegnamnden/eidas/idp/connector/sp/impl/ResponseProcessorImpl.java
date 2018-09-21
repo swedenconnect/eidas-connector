@@ -249,6 +249,7 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
     }
 
     ValidationContext context = ResponseValidationParametersBuilder.builder()
+      .expectedIssuer(idpMetadata.getEntityID())
       .strictValidation(this.responseValidationSettings.isStrictValidation())
       .allowedClockSkew(this.responseValidationSettings.getAllowedClockSkew())
       .maxAgeReceivedMessage(this.responseValidationSettings.getMaxAgeResponse())

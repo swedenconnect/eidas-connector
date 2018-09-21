@@ -173,6 +173,15 @@
         <port>${idp.syslog.port:-514}</port>
         <facility>${idp.syslog.facility:-AUTH}</facility>
         <suffixPattern>%logger %msg</suffixPattern>
+    </appender>
+    
+    <!-- Process log directed to syslog -->
+    <appender name="IDP_PROCESS_SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+        <syslogHost>${idp.process.syslog.host:-localhost}</syslogHost>
+        <port>${idp.process.syslog.port:-514}</port>
+        <facility>${idp.process.syslog.facility:-AUTH}</facility>
+        <!-- <throwableExcluded>true</throwableExcluded> -->
+        <suffixPattern>%d{ISO8601} %p %t %c %M - %m%n %ex</suffixPattern>
     </appender>    
     
     <!-- Consent audit log. -->
