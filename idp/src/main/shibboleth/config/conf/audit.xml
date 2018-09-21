@@ -21,7 +21,8 @@
     </util:map>
     -->
     <util:map id="shibboleth.AuditFormattingMap">
-        <entry key="Shibboleth-Audit" value="Timestamp:%T|ClientIP:%a|Status:%S [%SS]|RequestID:%I|SP:%SP|IdP:%IDP|ResponseID:%III|Username:%u|AuthnCtx:%ac|AuthnInstant:%t|Attributes:%attrValue|AssertionID:%i|" />
+        <!-- <entry key="Shibboleth-Audit" value="Timestamp:%T|ClientIP:%a|Status:%S [%SS]|RequestID:%I|SP:%SP|IdP:%IDP|ResponseID:%III|Username:%u|AuthnCtx:%ac|AuthnInstant:%t|Attributes:%attrValue|AssertionID:%i|" />-->
+      <entry key="Shibboleth-Audit" value="Timestamp:%T|Status:%S [%SS]|RequestID:%I|SP:%SP|IdP:%IDP|ResponseID:%III|AuthnCtx:%ac|AuthnInstant:%t|AssertionID:%i|eidasAssertion:%eidasAssertionId|" />
     </util:map>
 
 
@@ -39,6 +40,10 @@
     <bean id="shibboleth.PostResponseAuditExtractors" parent="shibboleth.DefaultPostResponseAuditExtractors">
       <property name="sourceMap">
         <map merge="true">
+          <entry key="eidasAssertionId">
+            <bean class="se.elegnamnden.eidas.idp.audit.EidasAssertionIdAuditExtractor" />
+          </entry>
+          <!-- 
           <entry key="attrValue">
             <bean class="se.elegnamnden.eidas.idp.audit.AttributeValuesAuditExtractor">
               <property name="activationCondition">
@@ -51,6 +56,7 @@
               </property>
             </bean>            
           </entry>
+          -->
         </map>
       </property>
     </bean>
