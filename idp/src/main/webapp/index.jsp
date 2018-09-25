@@ -26,7 +26,7 @@
         <div class="container"> 
           <div class="row no-gutter">
             <div class="top-logo">
-              <img class="top-logo-dim" src="/idp/img/sc-logo-temporary.svg" />
+              <img class="top-logo-dim" src="/idp/img/sc-logo.svg" />
             </div>
           </div>
         </div>
