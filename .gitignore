@@ -19,6 +19,7 @@ logs
 generated
 MANIFEST.MF
 test-output
+.factorypath
 
 # Intelij
 *.iml
