@@ -28,16 +28,16 @@
 
   <developers>
     <developer>
-      <name>Stefan Santesson</name>
-      <email>stefan@aaa-sec.com</email>
-      <organization>3xA Security AB</organization>
-      <organizationUrl>http://aaa-sec.com</organizationUrl>
-    </developer>
-    <developer>
       <name>Martin Lindström</name>
       <email>martin.lindstrom@litsec.se</email>
       <organization>Litsec AB</organization>
       <organizationUrl>http://www.litsec.se</organizationUrl>
+    </developer>  
+    <developer>
+      <name>Stefan Santesson</name>
+      <email>stefan@aaa-sec.com</email>
+      <organization>3xA Security AB</organization>
+      <organizationUrl>http://aaa-sec.com</organizationUrl>
     </developer>
   </developers>
 
@@ -46,7 +46,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.8</java.version>
     
-    <tomcat.version>8.5.23</tomcat.version>
+    <tomcat.version>8.5.34</tomcat.version>
     
     <opensaml.eidas.version>1.2.0</opensaml.eidas.version>
             

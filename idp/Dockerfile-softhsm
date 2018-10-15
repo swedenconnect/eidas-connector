@@ -13,7 +13,7 @@ RUN apt-get install -y pcscd libccid libpcsclite-dev libssl-dev libreadline-dev 
 RUN mkdir /var/lib/softhsm/tokens
 
 RUN mkdir /opt/eidas-connector
-ADD target/dependency/apache-tomcat-8.5.23 /opt/eidas-connector/tomcat/
+ADD target/dependency/apache-tomcat-8.5.34 /opt/eidas-connector/tomcat/
 ADD target/shibboleth /opt/eidas-connector/shibboleth/
 
 # Redirecting log directories
