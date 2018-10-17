@@ -41,6 +41,9 @@
         <p style="padding-bottom: 0px; margin-bottom: 0px;">
           <spring:message code="connector.ui.development.text" /> <a href="https://swedenconnect.se">swedenconnect.se</a>.
         </p>
+		<p style="padding-bottom: 0px; margin-bottom: 0px;">
+          <spring:message code="connector.ui.development.logs" />
+        </p>                
       </div>
     </div>  
 
