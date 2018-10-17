@@ -28,6 +28,8 @@ docker run -d --name eidas-connector-dev-idp --restart=always \
   -e IDP_PERSISTENT_ID_SALT=jkio98gbnmklop0Pr5WTvCgh \
   -e IDP_ERRORS_VERBOSE=true \
   -e IDP_DEVEL_MODE=true \
+  -e IDP_LOG_PUBLISH_ENABLED=true \
+  -e IDP_LOG_PUBLISH_PATH=/var/log/eidas-connector/idp-process.log \
   -v /etc/localtime:/etc/localtime:ro \
   -v /opt/docker/eidas-connector/logs:/var/log/eidas-connector \
   -v /opt/docker/eidas-connector/etc:/etc/eidas-connector \
