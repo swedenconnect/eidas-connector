@@ -31,7 +31,7 @@
 #elseif ($exception)
 	## This handles exceptions that reach the Spring-MVC exception handler.
     #set ($eventId = $exception.getClass().getSimpleName())
-    #set ($eventKey = $springMacroRequestContext.getMessage("$eventId", "error"))
+    #set ($eventKey = $springMacroRequestContext.getMessage("$eventId", "exception-error"))
     #set ($titleSuffix = $springMacroRequestContext.getMessage("${eventKey}.title", "$defaultTitleSuffix"))
     #set ($message = $springMacroRequestContext.getMessage("${eventKey}.message", "$defaultTitleSuffix: $eventId"))
 #else
