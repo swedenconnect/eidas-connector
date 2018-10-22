@@ -118,6 +118,7 @@ public class CountrySelectionHandler implements InitializingBean {
     }
     cookie.setPath("/idp");
     cookie.setHttpOnly(true);
+    cookie.setSecure(true);
     cookie.setMaxAge(FOREVER);
     httpResponse.addCookie(cookie);
     
@@ -127,6 +128,7 @@ public class CountrySelectionHandler implements InitializingBean {
     }
     cookie.setPath("/idp");
     cookie.setHttpOnly(true);
+    cookie.setSecure(true);
     cookie.setMaxAge(-1);
     httpResponse.addCookie(cookie);
   }
