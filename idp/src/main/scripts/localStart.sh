@@ -8,7 +8,7 @@ SCRIPT_DIR_WIN=`echo $SCRIPT_DIR | sed 's/\/cygdrive\/c/c:/g'`
 BASE_DIR_WIN=`echo $SCRIPT_DIR_WIN | sed 's/\/src\/main\/scripts//g'`
 
 # Tomcat
-TOMCAT_HOME=$BASE_DIR_WIN/target/dependency/apache-tomcat-8.5.34
+TOMCAT_HOME=$BASE_DIR_WIN/target/dependency/apache-tomcat-8.5.37
 CATALINA_HOME=$TOMCAT_HOME
 
 # Home
