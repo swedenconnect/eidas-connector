@@ -48,7 +48,6 @@
   <properties>
     <docker.image.prefix>docker.eidastest.se:5000</docker.image.prefix>
 
-    <shibboleth-base-package.version>1.5.0</shibboleth-base-package.version>
     <custom-remoteip-valve.version>1.1.2</custom-remoteip-valve.version>
     <eidas-connector-sp.version>${project.version}</eidas-connector-sp.version>
     <shibboleth.redis.version>1.1.0</shibboleth.redis.version>
@@ -101,24 +100,10 @@
 
     <dependency>
       <groupId>se.litsec.sweid.idp</groupId>
-      <artifactId>shibboleth-authn-support</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>se.litsec.sweid.idp</groupId>
-      <artifactId>shibboleth-attribute-support</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>se.litsec.sweid.idp</groupId>
-      <artifactId>shibboleth-metadata-support</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>se.litsec.sweid.idp</groupId>
       <artifactId>shibboleth-sweid-extensions</artifactId>
     </dependency>
 
+<!-- 
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
@@ -127,6 +112,21 @@
     <dependency>
       <groupId>jstl</groupId>
       <artifactId>jstl</artifactId>
+    </dependency>
+-->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.taglibs</groupId>
+      <artifactId>taglibs-standard-spec</artifactId>
+    </dependency>
+      
+    <dependency>
+      <groupId>org.apache.taglibs</groupId>
+      <artifactId>taglibs-standard-impl</artifactId>
     </dependency>
 
     <dependency>
@@ -295,7 +295,7 @@
                 <artifactItem>
                   <groupId>se.litsec.sweid.idp</groupId>
                   <artifactId>shibboleth-base</artifactId>
-                  <version>${shibboleth-base-package.version}</version>
+                  <version>${shibboleth-base.version}</version>
                   <type>zip</type>
                 </artifactItem>
                 <artifactItem>
