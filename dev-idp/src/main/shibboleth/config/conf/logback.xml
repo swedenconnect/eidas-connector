@@ -1,6 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
+    <!-- Exclude filters -->
+    <turboFilter class="se.elegnamnden.eidas.idp.audit.log.ExcludeFilter">
+      <Name>velocity-exclude</Name>
+      <Level>ERROR</Level>
+      <Contents>ResourceManager : unable to find resource</Contents>
+    </turboFilter>
+        
+    <turboFilter class="se.elegnamnden.eidas.idp.audit.log.ExcludeFilter">
+      <Name>no-conversation-state-exclude</Name>
+      <Level>ERROR</Level>
+      <Exception>net.shibboleth.idp.authn.ExternalAuthenticationException</Exception>
+      <Contents>No conversation state found in session for key</Contents>
+    </turboFilter>
+    
+    <turboFilter class="se.elegnamnden.eidas.idp.audit.log.ExcludeFilter">
+      <Name>no-such-flow-exclude</Name>
+      <Level>ERROR</Level>
+      <Exception>org.springframework.webflow.execution.repository.NoSuchFlowExecutionException</Exception>
+    </turboFilter>
+    
+    <turboFilter class="se.elegnamnden.eidas.idp.audit.log.ExcludeFilter">
+      <Name>no-ext-authn-exclude</Name>
+      <Level>ERROR</Level>
+      <Contents>No external authentication process is active</Contents>      
+    </turboFilter>    
+     
+    <turboFilter class="se.elegnamnden.eidas.idp.audit.log.ExcludeFilter">
+      <Name>no-keyinfo-criteria-exclude</Name>
+      <Level>ERROR</Level>
+      <Logger>org.opensaml.xmlsec.keyinfo.impl.BasicProviderKeyInfoCredentialResolver</Logger>
+      <Contents>No KeyInfo criteria supplied</Contents>
+    </turboFilter>
+    
+    <turboFilter class="se.elegnamnden.eidas.idp.audit.log.ExcludeFilter">
+      <Name>error-resolving-exclude</Name>
+      <Level>ERROR</Level>
+      <Logger>org.opensaml.security.credential.impl.AbstractChainingCredentialResolver$CredentialIterator</Logger>
+      <Contents>Error resolving credentials from chaining resolver member</Contents>
+    </turboFilter>
+    
+    <turboFilter class="se.elegnamnden.eidas.idp.audit.log.ExcludeFilter">
+      <Name>resolver-attempt-exclude</Name>
+      <Level>ERROR</Level>
+      <Logger>org.opensaml.security.credential.impl.AbstractChainingCredentialResolver$CredentialIterator</Logger>
+      <Contents>Will attempt to resolve credentials from next member of resolver chain</Contents>
+    </turboFilter>
+    
+    <turboFilter class="se.elegnamnden.eidas.idp.audit.log.ExcludeFilter">
+      <Name>non-proceed-log-event-exclude</Name>
+      <Level>WARN</Level>
+      <Logger>org.opensaml.profile.action.impl.LogEvent</Logger>
+      <Contents>A non-proceed event occurred while processing the request</Contents>
+    </turboFilter>
+
     <variable name="idp.logfiles" value="${idp.home}/logs" />    
     <variable name="idp.loghistory" value="180" />
     
@@ -65,6 +119,8 @@
     <logger name="org.eclipse.jetty" level="${idp.loglevel.container:-ERROR}"/>
     <logger name="net.shibboleth.idp.attribute.resolver.ad.impl.ContextDerivedAttributeDefinition" level="WARN" />
     <logger name="net.shibboleth.idp.attribute.resolver.spring.BaseResolverPluginParser" level="WARN" />
+    <logger name="net.shibboleth.ext.spring.error.ExtendedMappingExceptionResolver" level="ERROR" />
+    <logger name="net.shibboleth.idp.profile.impl.WebFlowMessageHandlerAdaptor" level="ERROR" />    
 
     <!-- =========================================================== -->
     <!-- ============== Low Level Details or Changes =============== -->
@@ -81,10 +137,11 @@
 
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <charset>UTF-8</charset>
-            <Pattern>%date{ISO8601} - %level [%logger:%line] - %msg%n%ex{short}</Pattern>
+            <Pattern>%date{ISO8601} - %level [%logger:%line] - [%mdc{idp.remote_addr}] %msg%n%ex{short}</Pattern>
         </encoder>
 
         <!-- Ignore Velocity status page error. -->
+        <!-- 
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <evaluator>
                 <matcher>
@@ -95,16 +152,18 @@
             </evaluator>
             <OnMatch>DENY</OnMatch>
         </filter>
+        -->
     </appender>
     
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
 
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <charset>UTF-8</charset>
-            <Pattern>%date{ISO8601} - %level [%logger:%line] - %msg%n%ex{short}</Pattern>
+            <Pattern>%date{ISO8601} - %level [%logger:%line] - [%mdc{idp.remote_addr}] %msg%n%ex{short}</Pattern>
         </encoder>
 
         <!-- Ignore Velocity status page error. -->
+        <!-- 
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <evaluator>
                 <matcher>
@@ -115,6 +174,7 @@
             </evaluator>
             <OnMatch>DENY</OnMatch>
         </filter>
+        -->
     </appender>    
 
     <appender name="ASYNC_PROCESS" class="ch.qos.logback.classic.AsyncAppender">
@@ -137,10 +197,11 @@
         
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <charset>UTF-8</charset>
-            <Pattern>%date{ISO8601} - %level [%logger:%line] - %msg%n%ex{short}</Pattern>
+            <Pattern>%date{ISO8601} - %level [%logger:%line] - [%mdc{idp.remote_addr}] %msg%n%ex{short}</Pattern>
         </encoder>
         
         <!-- Ignore Velocity status page error. -->
+        <!-- 
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <evaluator>
                 <matcher>
@@ -151,6 +212,7 @@
             </evaluator>
             <OnMatch>DENY</OnMatch>
         </filter>
+        -->
     </appender>
     
     <!-- Audit log. -->
