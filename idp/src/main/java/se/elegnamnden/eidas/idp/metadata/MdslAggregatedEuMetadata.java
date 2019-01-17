@@ -18,6 +18,7 @@ package se.elegnamnden.eidas.idp.metadata;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.springframework.util.Assert;
@@ -25,6 +26,7 @@ import org.springframework.util.StringUtils;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import se.elegnamnden.eidas.metadataconfig.ConfigurationManager;
 import se.elegnamnden.eidas.metadataconfig.MetadataConfig;
 import se.elegnamnden.eidas.metadataconfig.data.EndPointConfig;
 
@@ -35,24 +37,26 @@ import se.elegnamnden.eidas.metadataconfig.data.EndPointConfig;
  */
 @Slf4j
 public class MdslAggregatedEuMetadata extends AggregatedEuMetadataImpl {
-  
+
   /** The URL for the MDSL file. */
   @Setter
   private String mdslUrl;
-  
+
   /** The certificate for validating MDSL signatures. */
   @Setter
   private String mdslValidationCertificate;
-  
+
   /** Metadata config. */
   private MetadataConfig config;
 
   /** {@inheritDoc} */
   @Override
-  public Collection<String> getCountries() {
+  public Countries getCountries() {
     if (this.config != null) {
-      Collection<String> list = this.config.getProxyServiceCountryList(); 
-      return list != null ? list : Collections.emptyList();
+      Collection<ConfigurationManager.ProxyServiceEntry> list = this.config.getProxyServiceCountryListExt();
+      return new Countries(list != null
+          ? list.stream().map(c -> new Countries.CountryEntry(c.getCountry(), c.isHideFromDiscovery())).collect(Collectors.toList())
+          : Collections.emptyList());
     }
     else {
       return super.getCountries();
@@ -70,7 +74,7 @@ public class MdslAggregatedEuMetadata extends AggregatedEuMetadataImpl {
       return super.getProxyServiceIdp(country);
     }
   }
-  
+
   /**
    * Refreshes the metadata from source.
    */
@@ -106,7 +110,7 @@ public class MdslAggregatedEuMetadata extends AggregatedEuMetadataImpl {
   @Override
   protected void init() throws Exception {
     if (StringUtils.hasText(this.mdslUrl)) {
-      this.config = new MetadataConfig(new File(this.cacheDirectory), 
+      this.config = new MetadataConfig(new File(this.cacheDirectory),
         this.mdslUrl, new File(this.mdslValidationCertificate), this.euMetadataUrl, new File(this.euMetadataValidationCertificate), null);
       this.config.setIgnoreSignatureValidation(this.ignoreSignatureValidation);
     }
