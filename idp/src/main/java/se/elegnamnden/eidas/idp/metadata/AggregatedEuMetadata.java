@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 Sweden Connect
+ * Copyright 2017-2019 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package se.elegnamnden.eidas.idp.metadata;
 
-import java.util.Collection;
-
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 
 /**
@@ -27,12 +25,11 @@ import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 public interface AggregatedEuMetadata {
 
   /**
-   * Returns a collection of country code identifiers for all active eIDAS Proxy Service IdP:s found in the aggregated
-   * metadata.
+   * Returns a collection of countries for all active eIDAS Proxy Service IdP:s found in the aggregated metadata.
    * 
-   * @return a collection of country codes
+   * @return a Countries object
    */
-  Collection<String> getCountries();
+  Countries getCountries();
 
   /**
    * Returns the entity descriptor for the Proxy Service IdP for the given country.

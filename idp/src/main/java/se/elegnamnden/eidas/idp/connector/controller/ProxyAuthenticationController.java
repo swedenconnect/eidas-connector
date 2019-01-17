@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 E-legitimationsnämnden
+ * Copyright 2017-2019 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package se.elegnamnden.eidas.idp.connector.controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +66,7 @@ import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingResult;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessor;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseStatusErrorException;
 import se.elegnamnden.eidas.idp.metadata.AggregatedEuMetadata;
+import se.elegnamnden.eidas.idp.metadata.Countries;
 import se.litsec.eidas.opensaml.ext.SPTypeEnumeration;
 import se.litsec.opensaml.saml2.attribute.AttributeUtils;
 import se.litsec.opensaml.saml2.common.request.RequestGenerationException;
@@ -220,36 +220,19 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       log.debug("SP has requested country/countries: {}", requestedCountries);
     }
 
-    Collection<String> availableCountries = this.euMetadata.getCountries();
-    if (availableCountries.isEmpty()) {
-      log.error("No available countries");
-//      this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
-//        "No countries available for authentication", null);
-      
-      // We'll display an error message in the country selection view instead...
-    }
-
-    // If the SP requested a country, perform filtering ...
+    Countries euCountries = this.euMetadata.getCountries();
+    
+    List<String> availableCountries = euCountries.getCountries(requestedCountries);
     if (!requestedCountries.isEmpty()) {
-      List<String> _availableCountries = new ArrayList<>();
-      for (String c : availableCountries) {
-        boolean exists = requestedCountries.stream().filter(r -> r.equalsIgnoreCase(c)).findFirst().isPresent();
-        if (exists) {
-          _availableCountries.add(c);
-        }
-      }
-      if (_availableCountries.isEmpty()) {
-        log.error("None of the requested countries ({}) exists in EU metadata", requestedCountries);
+      if (availableCountries.isEmpty()) {
+        log.info("None of the requested countries ({}) exists in EU metadata", requestedCountries);
         this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
           String.format("Country/countries %s is not available for authentication", requestedCountries), null);
         return null;
       }
-      else if (_availableCountries.size() == 1 && requestedCountries.size() == 1) {
-        log.info("Using country {} (selected by SP)", _availableCountries.get(0));
-        return this.processAuthentication(httpRequest, httpResponse, _availableCountries.get(0));
-      }
-      else {
-        availableCountries = _availableCountries;
+      else if (requestedCountries.size() == 1 && availableCountries.size() == 1) {
+        log.info("Using country {} (selected by SP)", availableCountries.get(0));
+        return this.processAuthentication(httpRequest, httpResponse, availableCountries.get(0));
       }
     }
 

@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +37,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.utilities.java.support.resolver.ResolverException;
@@ -48,6 +48,7 @@ import se.litsec.opensaml.saml2.metadata.provider.FilesystemMetadataProvider;
 import se.litsec.opensaml.saml2.metadata.provider.HTTPMetadataProvider;
 import se.litsec.opensaml.saml2.metadata.provider.MetadataProvider;
 import se.litsec.opensaml.utils.X509CertificateUtils;
+import se.litsec.swedisheid.opensaml.saml2.metadata.entitycategory.EntityCategoryMetadataHelper;
 
 /**
  * Implementation of aggregated EU metadata where the metadata contains {@code eidas:NodeCountry} elements for each IdP.
@@ -56,6 +57,9 @@ import se.litsec.opensaml.utils.X509CertificateUtils;
  */
 @Slf4j
 public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, InitializingBean, DisposableBean {
+
+  /** Entity category value for "hide from discovery". */
+  public static final String HIDE_FROM_DISCOVERY_ENTITY_CATEGORY = "http://refeds.org/category/hide-from-discovery";
 
   /** File name for caching downloaded metadata. */
   protected static final String CACHE_FILE = "eu-metadata.xml";
@@ -80,7 +84,7 @@ public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, Initializ
   protected MetadataProvider metadataProvider;
 
   /** An index of country codes and their respective entity descriptors. */
-  private Map<String, EntityDescriptor> countries = Collections.emptyMap();
+  private Map<String, MetadataEntry> countries = Collections.emptyMap();
 
   /** The last time the country list was indexed. */
   private long countryIndexingTime = 0L;
@@ -95,17 +99,29 @@ public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, Initializ
   };
 
   /**
+   * Function that returns {@code true} if the "hide from discovery" entity category is present in the supplied metadata
+   * and {@code false} otherwise.
+   */
+  private static Function<EntityDescriptor, Boolean> hideFromDiscovery = (e) -> {
+    return EntityCategoryMetadataHelper.getEntityCategories(e)
+      .stream()
+      .filter(a -> HIDE_FROM_DISCOVERY_ENTITY_CATEGORY.equals(a))
+      .findFirst()
+      .isPresent();
+  };
+
+  /**
    * Performs a re-index of the country list every time new metadata has been downloaded.
    */
   @Override
-  public synchronized Collection<String> getCountries() {
+  public synchronized Countries getCountries() {
     if (this.metadataProvider.getLastUpdate().orElse(new DateTime()).isAfter(this.countryIndexingTime)) {
       try {
-        Map<String, EntityDescriptor> cm = new HashMap<>();
+        Map<String, MetadataEntry> cm = new HashMap<>();
         for (EntityDescriptor ed : this.metadataProvider.getIdentityProviders()) {
           String countryCode = getNodeCountry.apply(ed);
           if (countryCode != null) {
-            cm.put(countryCode.toUpperCase(), ed);
+            cm.put(countryCode.toUpperCase(), new MetadataEntry(ed));
           }
           else {
             log.error("Found IdP '{}' in EU metadata that does not have NodeCountry extension", ed.getEntityID());
@@ -117,7 +133,11 @@ public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, Initializ
         log.error("Failed to list metadata from {}", this.metadataProvider.getID(), e);
       }
     }
-    return this.countries.keySet().stream().sorted().collect(Collectors.toList());
+    return new Countries(this.countries.entrySet()
+      .stream()
+      .map(e -> new Countries.CountryEntry(e.getKey(), e.getValue().isHideFromDiscovery()))
+      .sorted()
+      .collect(Collectors.toList()));
   }
 
   /** {@inheritDoc} */
@@ -126,7 +146,8 @@ public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, Initializ
     if (!StringUtils.hasText(country)) {
       return null;
     }
-    return this.countries.get(country.toUpperCase());
+    MetadataEntry entry = this.countries.get(country.toUpperCase());
+    return entry != null ? entry.getEntityDescriptor() : null;
   }
 
   /** {@inheritDoc} */
@@ -196,9 +217,20 @@ public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, Initializ
     else {
       log.warn("Signature validation of EU metadata turned off");
     }
-    
+
     this.metadataProvider = _metadataProvider;
     this.metadataProvider.initialize();
+  }
+
+  @Data
+  public static class MetadataEntry {
+    private EntityDescriptor entityDescriptor;
+    private boolean hideFromDiscovery;
+
+    public MetadataEntry(EntityDescriptor entityDescriptor) {
+      this.entityDescriptor = entityDescriptor;
+      this.hideFromDiscovery = AggregatedEuMetadataImpl.hideFromDiscovery.apply(entityDescriptor);
+    }
   }
 
 }

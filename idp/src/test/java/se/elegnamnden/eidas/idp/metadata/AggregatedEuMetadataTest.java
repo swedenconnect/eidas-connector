@@ -15,7 +15,10 @@
  */
 package se.elegnamnden.eidas.idp.metadata;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -46,16 +49,23 @@ public class AggregatedEuMetadataTest {
   public void testLocal() throws Exception {
     Resource mdFile = new ClassPathResource("aggregate-simple.xml");
     
+    // The aggregated metadata has two countries, SE and XA. XA is marked with "hide-from-discovery".
+    
     AggregatedEuMetadataImpl euMetadata = new AggregatedEuMetadataImpl();
     euMetadata.setCacheDirectory(tempDir.getRoot().getAbsolutePath());
     euMetadata.setEuMetadataUrl("file://" + mdFile.getFile().getAbsolutePath());
     euMetadata.setIgnoreSignatureValidation(true);
     euMetadata.afterPropertiesSet();
     
-    Collection<String> countries = euMetadata.getCountries();
-    Assert.assertTrue("Expected two countries", countries.size() == 2);
-    Assert.assertTrue("Expected SE", countries.contains("SE"));
-    Assert.assertTrue("Expected XA", countries.contains("XA"));
+    Countries countries = euMetadata.getCountries();
+    List<String> _countries = countries.getCountries(Collections.emptyList());
+    Assert.assertTrue("Expected one country", _countries.size() == 1);
+    Assert.assertTrue("Expected SE", _countries.contains("SE"));
+    
+    // If we explictly request XA, we should get it.
+    _countries = countries.getCountries(Arrays.asList("XA"));
+    Assert.assertTrue("Expected one country", _countries.size() == 1);
+    Assert.assertTrue("Expected XA", _countries.contains("XA"));
   }
   
   @Test
@@ -69,10 +79,10 @@ public class AggregatedEuMetadataTest {
     euMetadata.afterPropertiesSet();
     euMetadata.setMdslUrl("");
     
-    Collection<String> countries = euMetadata.getCountries();
-    Assert.assertTrue("Expected two countries", countries.size() == 2);
-    Assert.assertTrue("Expected SE", countries.contains("SE"));
-    Assert.assertTrue("Expected XA", countries.contains("XA"));
+    Countries countries = euMetadata.getCountries();
+    List<String> _countries = countries.getCountries(Collections.emptyList());
+    Assert.assertTrue("Expected one country", _countries.size() == 1);
+    Assert.assertTrue("Expected SE", _countries.contains("SE"));
   }
   
   @Test
@@ -85,8 +95,9 @@ public class AggregatedEuMetadataTest {
     euMetadata.setIgnoreSignatureValidation(true);
     euMetadata.afterPropertiesSet();
     
-    Collection<String> countries = euMetadata.getCountries();
-    Assert.assertTrue("Expected 6 countries", countries.size() == 6);
+    Countries countries = euMetadata.getCountries();
+    Collection<String> _countries = countries.getCountries(Collections.emptyList());
+    Assert.assertTrue("Expected 6 countries", _countries.size() == 6);
   }  
   
 }
