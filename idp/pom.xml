@@ -9,7 +9,7 @@
   <parent>
     <groupId>se.elegnamnden.eidas.idp</groupId>
     <artifactId>eidas-connector-base-parent</artifactId>
-    <version>1.5.1-SNAPSHOT</version>
+    <version>1.5.1</version>
   </parent>
 
   <name>eIDAS :: Swedish eIDAS connector</name>
@@ -103,17 +103,6 @@
       <artifactId>shibboleth-sweid-extensions</artifactId>
     </dependency>
 
-<!-- 
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>jstl</groupId>
-      <artifactId>jstl</artifactId>
-    </dependency>
--->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
