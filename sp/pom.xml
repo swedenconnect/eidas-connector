@@ -9,7 +9,7 @@
   <parent>
     <groupId>se.elegnamnden.eidas.idp</groupId>
     <artifactId>eidas-connector-base-parent</artifactId>
-    <version>1.5.2</version>
+    <version>1.6.0-SNAPSHOT</version>
   </parent>
 
   <name>eIDAS :: Swedish eIDAS connector SP</name>
@@ -97,6 +97,11 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>se.swedenconnect.opensaml</groupId>
+      <artifactId>opensaml-security-ext</artifactId>
     </dependency>
 
     <dependency>
