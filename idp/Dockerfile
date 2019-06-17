@@ -1,7 +1,7 @@
 FROM openjdk:8-jre
 
 RUN mkdir /opt/eidas-connector
-ADD target/dependency/apache-tomcat-8.5.34 /opt/eidas-connector/tomcat/
+ADD target/dependency/apache-tomcat-8.5.42 /opt/eidas-connector/tomcat/
 ADD target/shibboleth /opt/eidas-connector/shibboleth/
 
 # Redirecting log directories
