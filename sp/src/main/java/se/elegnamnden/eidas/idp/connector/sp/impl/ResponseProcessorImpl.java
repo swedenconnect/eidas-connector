@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 E-legitimationsnämnden
+ * Copyright 2017-2019 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,13 @@ import org.opensaml.saml.security.impl.MetadataCredentialResolver;
 import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
 import org.opensaml.security.credential.UsageType;
 import org.opensaml.security.criteria.UsageCriterion;
+import org.opensaml.xmlsec.SignatureValidationConfiguration;
+import org.opensaml.xmlsec.SignatureValidationParameters;
 import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xmlsec.encryption.support.DecryptionException;
 import org.opensaml.xmlsec.signature.support.SignaturePrevalidator;
 import org.opensaml.xmlsec.signature.support.SignatureTrustEngine;
+import org.opensaml.xmlsec.signature.support.SignatureValidationParametersCriterion;
 import org.opensaml.xmlsec.signature.support.impl.ExplicitKeySignatureTrustEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +59,7 @@ import se.elegnamnden.eidas.idp.connector.sp.ResponseValidationException;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseValidationSettings;
 import se.elegnamnden.eidas.idp.connector.sp.validation.EidasAssertionValidator;
 import se.elegnamnden.eidas.idp.connector.sp.validation.EidasResponseValidator;
+import se.litsec.eidas.opensaml.xmlsec.RelaxedEidasSecurityConfiguration;
 import se.litsec.opensaml.common.validation.ValidatorException;
 import se.litsec.opensaml.saml2.common.assertion.AssertionValidationParametersBuilder;
 import se.litsec.opensaml.saml2.common.assertion.AssertionValidator;
@@ -66,12 +70,13 @@ import se.litsec.opensaml.saml2.common.response.ResponseValidator;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
 import se.litsec.opensaml.utils.ObjectUtils;
 import se.litsec.opensaml.xmlsec.SAMLObjectDecrypter;
+import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 
 /**
  * Response processor for eIDAS SAML Response messages.
  * 
- * @author Martin Lindström (martin.lindstrom@litsec.se)
- * @author Stefan Santesson (stefan@aaa-sec.com)
+ * @author Martin Lindström (martin@idsec.se)
+ * @author Stefan Santesson (stefan@idsec.se)
  */
 public class ResponseProcessorImpl implements ResponseProcessor, InitializingBean {
 
@@ -80,6 +85,9 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
 
   /** The decrypter instance. */
   private SAMLObjectDecrypter decrypter;
+
+  /** The security configuration for the eIDAS SP part. */
+  private SecurityConfiguration spSecurityConfiguration;
 
   /** The replay checker. */
   private MessageReplayChecker messageReplayChecker;
@@ -182,6 +190,15 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
     Assert.notNull(this.messageReplayChecker, "Property 'messageReplayChecker' must be assigned");
     Assert.notNull(this.responseValidationSettings, "Property 'responseValidationSettings' must be assigned");
 
+    if (this.spSecurityConfiguration == null) {
+      this.spSecurityConfiguration = new RelaxedEidasSecurityConfiguration();
+      log.info("SP security configuration has not been assigned - using '{}' as default",
+        this.spSecurityConfiguration.getProfileName());
+    }
+    else {
+      log.debug("Using '{}' SP security configuration", this.spSecurityConfiguration.getProfileName());
+    }
+
     if (!this.isInitialized) {
 
       this.metadataCredentialResolver = new MetadataCredentialResolver();
@@ -254,7 +271,10 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
       .allowedClockSkew(this.responseValidationSettings.getAllowedClockSkew())
       .maxAgeReceivedMessage(this.responseValidationSettings.getMaxAgeResponse())
       .signatureRequired(Boolean.TRUE)
-      .signatureValidationCriteriaSet(new CriteriaSet(new RoleDescriptorCriterion(descriptor), new UsageCriterion(UsageType.SIGNING)))
+      .signatureValidationCriteriaSet(
+        new CriteriaSet(new RoleDescriptorCriterion(descriptor),
+          new UsageCriterion(UsageType.SIGNING),
+          this.buildSignatureValidationParametersCriterion()))
       .receiveInstant(input.getReceiveInstant())
       .receiveUrl(input.getReceiveURL())
       .authnRequest(input.getAuthnRequest())
@@ -292,7 +312,8 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
     Optional<String> relayStateOptional = relayState == null || relayState.trim().length() == 0 ? Optional.empty()
         : Optional.of(relayState);
     Optional<String> relayStateInputOptional = input.getRelayState() == null || input.getRelayState().trim().length() == 0
-        ? Optional.empty() : Optional.of(input.getRelayState());
+        ? Optional.empty()
+        : Optional.of(input.getRelayState());
 
     boolean relayStateMatch = (!relayStateOptional.isPresent() && !relayStateInputOptional.isPresent())
         || (relayStateOptional.isPresent() && relayState.equals(input.getRelayState()))
@@ -337,7 +358,10 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
       .allowedClockSkew(this.responseValidationSettings.getAllowedClockSkew())
       .maxAgeReceivedMessage(this.responseValidationSettings.getMaxAgeResponse())
       .signatureRequired(this.responseValidationSettings.isRequireSignedAssertions())
-      .signatureValidationCriteriaSet(new CriteriaSet(new RoleDescriptorCriterion(descriptor), new UsageCriterion(UsageType.SIGNING)))
+      .signatureValidationCriteriaSet(new CriteriaSet(
+        new RoleDescriptorCriterion(descriptor), 
+        new UsageCriterion(UsageType.SIGNING),
+        this.buildSignatureValidationParametersCriterion()))
       .receiveInstant(input.getReceiveInstant())
       .receiveUrl(input.getReceiveURL())
       .authnRequest(authnRequest)
@@ -364,6 +388,21 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
       throw new ValidatorException(context);
     }
   }
+  
+  /**
+   * Builds a signature validation criterion based on the installed security configuration. This is used during
+   * validation of the signature of a response or assertion.
+   * 
+   * @return a {@code SignatureValidationParametersCriterion}
+   */
+  private SignatureValidationParametersCriterion buildSignatureValidationParametersCriterion() {
+    SignatureValidationParameters parameters = new SignatureValidationParameters();
+    final SignatureValidationConfiguration config = this.spSecurityConfiguration.getSignatureValidationConfiguration();
+    parameters.setSignatureTrustEngine(this.signatureTrustEngine);
+    parameters.setBlacklistedAlgorithms(config.getBlacklistedAlgorithms());
+    parameters.setWhitelistedAlgorithms(config.getWhitelistedAlgorithms());
+    return new SignatureValidationParametersCriterion(parameters);
+  }  
 
   /**
    * Assigns the decrypter instance.
@@ -373,6 +412,16 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
    */
   public void setDecrypter(SAMLObjectDecrypter decrypter) {
     this.decrypter = decrypter;
+  }
+
+  /**
+   * Assigns the security configuration for the SP.
+   * 
+   * @param spSecurityConfiguration
+   *          the security configuration
+   */
+  public void setSpSecurityConfiguration(SecurityConfiguration spSecurityConfiguration) {
+    this.spSecurityConfiguration = spSecurityConfiguration;
   }
 
   /**

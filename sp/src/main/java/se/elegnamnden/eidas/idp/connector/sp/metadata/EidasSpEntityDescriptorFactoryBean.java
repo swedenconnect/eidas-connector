@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 E-legitimationsnämnden
+ * Copyright 2017-2019 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,7 +160,7 @@ public class EidasSpEntityDescriptorFactoryBean extends SpEntityDescriptorFactor
     this.addEntityAttributeExtension(
       PROTOCOL_VERSION_TEMPLATE.createBuilder().value(Arrays.asList(v)).build());
   }
-
+  
   /**
    * Adds an attribute to the {@code mdattr:EntityAttributes} element that is part of the metadata extension element.
    * 

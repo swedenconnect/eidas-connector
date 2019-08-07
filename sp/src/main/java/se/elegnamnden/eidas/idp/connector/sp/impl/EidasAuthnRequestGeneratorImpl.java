@@ -1,22 +1,17 @@
 /*
- * The eidas-connector project is the implementation of the Swedish eIDAS 
- * connector built on top of the Shibboleth IdP.
+ * Copyright 2017-2019 Sweden Connect
  *
- * More details on <https://github.com/elegnamnden/eidas-connector> 
- * Copyright (C) 2017 E-legitimationsnämnden
- * 
- * This program is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License 
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package se.elegnamnden.eidas.idp.connector.sp.impl;
 
@@ -50,8 +45,8 @@ import se.litsec.opensaml.utils.ObjectUtils;
 /**
  * SAML Authentication Request generator implementation for eIDAS.
  * 
- * @author Martin Lindström (martin.lindstrom@litsec.se)
- * @author Stefan Santesson (stefan@aaa-sec.com)
+ * @author Martin Lindström (martin@idsec.se)
+ * @author Stefan Santesson (stefan@idsec.se)
  */
 public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerator<EidasAuthnRequestGeneratorInput> implements
     EidasAuthnRequestGenerator, InitializingBean {
@@ -108,8 +103,6 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
     }
     extensions.getUnknownXMLObjects().add(input.getRequestedAttributes());
 
-    // TODO: We should ensure that the NameIDFormat is accepted by the IdP.
-        
     AuthnRequest authnRequest = builder
       .id(this.generateID())
       .destination(serviceUrl.getLocation())
@@ -130,9 +123,8 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
       log.trace("Connector SP sending AuthnRequest: {}", ObjectUtils.toStringSafe(authnRequest));
     }
 
-    // TODO: We should make sure that we use an algorithm that is accepted by the recipient.
-
-    return this.buildRequestHttpObject(authnRequest, input, serviceUrl.getBinding(), serviceUrl.getLocation());
+    return this.buildRequestHttpObject(authnRequest, input, serviceUrl.getBinding(), serviceUrl.getLocation(), idp, 
+      this.config.getSpSecurityConfiguration().getSignatureSigningConfiguration());
   }
 
   /** {@inheritDoc} */

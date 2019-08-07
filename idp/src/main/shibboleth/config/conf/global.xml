@@ -154,6 +154,15 @@
     
   <!-- Connector SP -->
   
+  <!-- Security configuration for the SP -->
+  <bean id="eidas.RelaxedEidasSecurityConfiguration" class="se.litsec.eidas.opensaml.xmlsec.RelaxedEidasSecurityConfiguration" 
+    scope="singleton" depends-on="shibboleth.OpenSAMLConfig" lazy-init="true" />
+    
+  <bean id="eidas.EidasSecurityConfiguration" class="se.litsec.eidas.opensaml.xmlsec.EidasSecurityConfiguration" 
+    scope="singleton" depends-on="shibboleth.OpenSAMLConfig" lazy-init="true" />
+    
+  <alias alias="eidas.SpSecurityConfiguration" name="%{idp.sp.security-config-bean:eidas.RelaxedEidasSecurityConfiguration}" />
+  
   <!-- TODO: move the connector SP into a reloadable Spring subsystem so that we get support for reloading of keys etc. -->
       
   <bean id="eidas.AuthnRequestGenerator" class="se.elegnamnden.eidas.idp.connector.sp.impl.EidasAuthnRequestGeneratorImpl" scope="singleton"
@@ -162,6 +171,7 @@
     p:signingCredentials-ref="eidas.SpSigningCredential">
     <property name="config">
       <bean class="se.elegnamnden.eidas.idp.connector.sp.impl.AuthnRequestGeneratorConfig"
+        p:spSecurityConfiguration-ref="eidas.SpSecurityConfiguration"
         p:includeSpType="%{idp.sp.request.include-sptype:true}" 
         p:preferredBinding="%{idp.sp.request.preferred-binding:urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST}" />
     </property>
@@ -169,6 +179,7 @@
     
   <bean id="eidas.ResponseProcessor" class="se.elegnamnden.eidas.idp.connector.sp.impl.ResponseProcessorImpl" scope="singleton"
     p:decrypter-ref="eidas.Decrypter"
+    p:spSecurityConfiguration-ref="eidas.SpSecurityConfiguration"
     p:messageReplayChecker-ref="eidas.MessageReplayChecker"  
     p:responseValidationSettings-ref="eidas.ResponseValidationSettings" />
     
@@ -187,15 +198,19 @@
   <bean id="eidas.SpSigningCredential" parent="shibboleth.AbstractConnectorCredential"
     p:credentialsConfig-ref="cred.sp.signing" />
         
+        
+  <bean id="eidas.SpPrimaryEncryptionCredential" parent="shibboleth.AbstractConnectorCredential" p:credentialsConfig-ref="cred.sp.encryption" />
   <util:list id="eidas.SpEncryptionCredentials">
-  
-    <bean parent="shibboleth.AbstractConnectorCredential"
-      p:credentialsConfig-ref="cred.sp.encryption" />  
+    <ref bean="eidas.SpPrimaryEncryptionCredential" />
+    
+    <!-- <bean parent="shibboleth.AbstractConnectorCredential"
+      p:credentialsConfig-ref="cred.sp.encryption" /> -->  
 
   </util:list>
   
-  <bean id="eidas.Decrypter" class="se.litsec.opensaml.xmlsec.SAMLObjectDecrypter" scope="singleton">
+  <bean id="eidas.Decrypter" class="se.elegnamnden.eidas.idp.connector.sp.impl.ExtendedSAMLObjectDecrypter" scope="singleton">
     <constructor-arg name="decryptionCredentials" ref="eidas.SpEncryptionCredentials" />
+    <constructor-arg name="securityConfiguration" ref="eidas.SpSecurityConfiguration" />
     <property name="pkcs11Workaround" value="true" />
   </bean>
     

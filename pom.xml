@@ -48,10 +48,10 @@
     
     <tomcat.version>8.5.42</tomcat.version>
     
-    <shibboleth-base.version>1.7.0</shibboleth-base.version>
-    <shibboleth-base-deps.version>1.7.0</shibboleth-base-deps.version>    
+    <shibboleth-base.version>1.7.1-SNAPSHOT</shibboleth-base.version>
+    <shibboleth-base-deps.version>1.7.1-SNAPSHOT</shibboleth-base-deps.version>    
     
-    <opensaml.eidas.version>1.4.0</opensaml.eidas.version>
+    <opensaml.eidas.version>1.4.1</opensaml.eidas.version>
             
     <lombok.version>1.18.2</lombok.version>
   </properties>
@@ -99,7 +99,7 @@
   <dependencyManagement>
 
     <dependencies>
-    
+          
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-dependency-bom</artifactId>
