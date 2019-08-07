@@ -39,8 +39,11 @@
       <util:list>
         <bean class="se.litsec.opensaml.saml2.metadata.build.spring.KeyDescriptorFactoryBean" p:use="SIGNING" p:certificateResource="%{idp.sp.signing.cert}" />
         <bean class="se.litsec.opensaml.saml2.metadata.build.spring.KeyDescriptorFactoryBean" p:use="ENCRYPTION" p:certificateResource="%{idp.sp.encryption.cert}">
-          <property name="encryptionMethods">
-            <bean parent="shibboleth.CommaDelimStringArray" c:_0="#{'%{idp.sp.metadata.encryption-methods:}'.trim()}" />
+          <property name="encryptionMethodsExt">
+            <bean class="se.elegnamnden.eidas.idp.connector.sp.metadata.EncryptionMethodsFactoryBean">
+              <constructor-arg ref="eidas.EidasSecurityConfiguration" />
+              <constructor-arg ref="eidas.SpPrimaryEncryptionCredential" />
+            </bean>
           </property>
         </bean>
       </util:list>
