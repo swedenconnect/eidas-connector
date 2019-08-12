@@ -588,6 +588,7 @@
                         <versionRange>2.8</versionRange>
                         <goals>
                           <goal>copy</goal>
+                          <goal>copy-dependencies</goal>
                         </goals>
                       </pluginExecutionFilter>
                       <action>
