@@ -39,7 +39,7 @@
       <div class="col-sm-12">
         <c:choose>
           <c:when test="${not empty uiLanguages}">
-            <form action="/idp/extauth/start" method="POST">
+            <form action="<%=request.getContextPath()%>/extauth/start" method="POST">
               <c:forEach items="${uiLanguages}" var="uiLang">
                 <button class="lang float-right btn btn-link" type="submit" value="${uiLang.languageTag}"
                   name="language" id="language_${uiLang.languageTag}">${uiLang.altText}</button>
@@ -73,7 +73,7 @@
 
         <hr class="full-width">
 
-        <form action="/idp/extauth/proxyauth" method="POST" id="countrySelectForm">
+        <form action="<%=request.getContextPath()%>/extauth/proxyauth" method="POST" id="countrySelectForm">
         
           <c:if test="${empty countries}">
             <div class="row">
@@ -177,7 +177,7 @@
 
       <c:if test="${not empty countries}">
       <div class="col-sm-12 return">
-        <form action="/idp/extauth/proxyauth" method="POST" id="countrySelectForm2">
+        <form action="<%=request.getContextPath()%>/extauth/proxyauth" method="POST" id="countrySelectForm2">
           <button type="submit" class="btn btn-link" name="selectedCountry" value="cancel" id="cancelLink">
             <spring:message code='connector.ui.button.cancel-return' />
           </button>        

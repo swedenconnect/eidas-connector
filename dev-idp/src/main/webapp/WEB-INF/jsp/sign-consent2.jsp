@@ -48,7 +48,7 @@
       <div class="col-sm-12">
         <c:choose>
           <c:when test="${not empty uiLanguages}">
-            <form action="/idp/extauth/proxyauth/complete" method="POST" name="languageForm">
+            <form action="<%=request.getContextPath()%>/extauth/proxyauth/complete" method="POST" name="languageForm">
               <c:forEach items="${uiLanguages}" var="uiLang">
                 <button class="lang float-right btn btn-link" type="submit" value="${uiLang.languageTag}"
                   name="language" id="language_${uiLang.languageTag}">${uiLang.altText}</button>
@@ -124,7 +124,7 @@
                 <span class="info-line">Sweden</span>
                 -->
                 
-                <form class="form-horizontal" role="form" action="/idp/extauth/proxyauth/complete" method="post" name="okForm">                  
+                <form class="form-horizontal" role="form" action="<%=request.getContextPath()%>/extauth/proxyauth/complete" method="post" name="okForm">                  
                   <button type="submit" class="btn btn-primary" name="action" value="ok" id="okButton">
                     <spring:message code='connector.ui.sign.button.sign' />
                   </button>            
@@ -137,7 +137,7 @@
       </div> <!-- ./content-container -->
       
       <div class="col-sm-12 return">
-        <form class="form-horizontal" role="form" action="/idp/extauth/proxyauth/complete" method="post" name="cancelForm">
+        <form class="form-horizontal" role="form" action="<%=request.getContextPath()%>/extauth/proxyauth/complete" method="post" name="cancelForm">
           <button type="submit" class="btn btn-link" name="action" value="cancel" id="cancelLink">
             <spring:message code='connector.ui.button.cancel-return' />
           </button>            
