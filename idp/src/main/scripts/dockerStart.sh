@@ -34,7 +34,8 @@ if [ "x$IDP_SERVER_SCHEME" = "xhttp" -a "x$IDP_SERVER_PORT" = "x80" ]; then
   export IDP_SERVER_PORT_SUFFIX=""
 fi
 
-export IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFFIX}/${IDP_SERVER_SERVLET_NAME}
+: ${IDP_BASE_URL:=$IDP_SERVER_SCHEME://$IDP_SERVER_HOSTNAME$IDP_SERVER_PORT_SUFFIX/$IDP_SERVER_SERVLET_NAME}
+export IDP_BASE_URL
 
 #
 # Tomcat settings
@@ -152,6 +153,8 @@ export IDP_ERRORS_VERBOSE
 #
 : ${SP_ENTITY_ID:=https://eunode.eidastest.se/idp/metadata/sp}
 export SP_ENTITY_ID
+
+: ${SP_SECURITY_CONFIG_BEAN:=eidas.RelaxedEidasSecurityConfiguration}
 
 : ${SP_CREDENTIALS:=$IDP_CREDENTIALS/sp}
 export SP_CREDENTIALS
@@ -325,6 +328,7 @@ export JAVA_OPTS="\
           -Didp.metadata.validity=$IDP_METADATA_VALIDITY_MINUTES \
           -Didp.metadata.cacheDuration=$IDP_METADATA_CACHEDURATION_MILLIS \
           -Didp.sp.entityID=$SP_ENTITY_ID \
+          -Didp.sp.security-config-bean=$SP_SECURITY_CONFIG_BEAN \
           -Didp.sp.signing.key=$SP_SIGNING_KEY \
           -Didp.sp.signing.cert=$SP_SIGNING_CERT \
           -Didp.sp.encryption.key=$SP_ENCRYPTION_KEY \

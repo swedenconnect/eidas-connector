@@ -13,10 +13,10 @@
   <meta http-equiv="Expires" content="-1"/>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
       
-  <link rel="stylesheet" type="text/css" href="/idp/css/bootstrap-4.1.0.min.css" >
-  <!--<link rel="stylesheet" type="text/css" href="/idp/css/open-sans-fonts.css" >-->
-  <link rel="stylesheet" type="text/css" href="/idp/eidas-style/dist/css/main.css" >
-  <link rel="stylesheet" type="text/css" href="/idp/eidas-style/dist/css/extra.css" >
+  <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/css/bootstrap-4.1.0.min.css" >
+  <!--<link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/css/open-sans-fonts.css" >-->
+  <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/eidas-style/dist/css/main.css" >
+  <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/eidas-style/dist/css/extra.css" >
 </head>
 
 <body onload="document.forms[0].submit()">
@@ -31,7 +31,7 @@
         <div class="container">
           <div class="row no-gutter">        
             <div class="top-logo">
-              <img class="top-logo-dim" src="/idp/img/sc-logo.svg" />
+              <img class="top-logo-dim" src="<%=request.getContextPath()%>/img/sc-logo.svg" />
             </div>                  
           </div>
         </div>
