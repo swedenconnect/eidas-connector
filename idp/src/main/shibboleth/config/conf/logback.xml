@@ -108,7 +108,8 @@
     <logger name="se.elegnamnden.eidas" level="${idp.loglevel.eidas:-INFO}" />
     <logger name="se.litsec.shibboleth.idp" level="${idp.loglevel.eidas:-INFO}" />
     <logger name="se.litsec" level="${idp.loglevel.eln:-INFO}" />
-    <logger name="se.elegnamnden" level="${idp.loglevel.eln:-INFO}" />    
+    <logger name="se.elegnamnden" level="${idp.loglevel.eln:-INFO}" />
+    <logger name="se.swedenconnect" level="${idp.loglevel.eln:-INFO}" />    
 
     <!-- Especially chatty. -->
     <logger name="se.litsec.shibboleth.idp.attribute.resolver.SAML2AttributeNameToIdMapperService" level="INFO" />

@@ -154,12 +154,15 @@
     
   <!-- Connector SP -->
   
+  <bean id="bouncyCastleProviderBean" class="se.elegnamnden.eidas.idp.config.BouncyCastleInitializer" scope="singleton"
+    depends-on="shibboleth.OpenSAMLConfig" lazy-init="true" />
+  
   <!-- Security configuration for the SP -->
   <bean id="eidas.RelaxedEidasSecurityConfiguration" class="se.litsec.eidas.opensaml.xmlsec.RelaxedEidasSecurityConfiguration" 
-    scope="singleton" depends-on="shibboleth.OpenSAMLConfig" lazy-init="true" />
+    scope="singleton" depends-on="bouncyCastleProviderBean" lazy-init="true" />
     
   <bean id="eidas.EidasSecurityConfiguration" class="se.litsec.eidas.opensaml.xmlsec.EidasSecurityConfiguration" 
-    scope="singleton" depends-on="shibboleth.OpenSAMLConfig" lazy-init="true" />
+    scope="singleton" depends-on="bouncyCastleProviderBean" lazy-init="true" />
     
   <alias alias="eidas.SpSecurityConfiguration" name="%{idp.sp.security-config-bean:eidas.RelaxedEidasSecurityConfiguration}" />
   
