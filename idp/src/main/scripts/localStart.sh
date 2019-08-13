@@ -92,7 +92,7 @@ EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT=""
 #${IDP_HOME}/metadata/eidas-servicelist-validation-cert.crt
 # https://eid.svelegtest.se/nodeconfig/metadata
 
-EIDAS_METADATA_URL=file://${EIDAS_LOCAL_ENV}/metadata/metadata.xml
+EIDAS_METADATA_URL=file://${LOCAL_ENV_PATH}/eidas/eu-metadata/metadata.xml
 #https://qa.md.eidas.swedenconnect.se/entities/
 EIDAS_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/eidas-metadata-validation-cert.crt
 
