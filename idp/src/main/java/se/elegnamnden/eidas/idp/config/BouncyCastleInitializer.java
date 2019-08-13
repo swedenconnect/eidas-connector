@@ -39,7 +39,7 @@ public class BouncyCastleInitializer {
       log.info("{}: Crypto provider '{}' was installed", BouncyCastleProvider.PROVIDER_NAME);
     }
     else {
-      log.debug("Crypto provider '{}' is already installed", BouncyCastleProvider.PROVIDER_NAME);
+      log.info("Crypto provider '{}' is already installed", BouncyCastleProvider.PROVIDER_NAME);
     }
   }
 
