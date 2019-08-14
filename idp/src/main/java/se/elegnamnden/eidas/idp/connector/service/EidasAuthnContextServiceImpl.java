@@ -96,8 +96,11 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
     eidasNotifiedRank.put(EidasConstants.EIDAS_LOA_LOW, 1);
 
     eidasNonNotifiedRank.put(EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED, 3);
+    eidasNonNotifiedRank.put(EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED2, 3);
     eidasNonNotifiedRank.put(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED, 2);
+    eidasNonNotifiedRank.put(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2, 2);
     eidasNonNotifiedRank.put(EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED, 1);
+    eidasNonNotifiedRank.put(EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED2, 1);
   }
 
   /** {@inheritDoc} */
@@ -132,11 +135,12 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
 
         if (isNonNotifiedEidasUri(au)) {
           authnContextClassContext.setSupportsNonNotifiedConcept(true);
-          if (au.equals(EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED)) {
+          if (au.equals(EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED) || au.equals(EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED2)) {
             possibleDeliveryUris.addAll(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED,
               EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED));
           }
-          else if (au.equals(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED)) {
+          else if (au.equals(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED) 
+              || au.equals(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2)) {
             possibleDeliveryUris.add(EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED);
           }
         }
@@ -411,7 +415,10 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
   private static boolean isNonNotifiedEidasUri(String uri) {
     return EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.equals(uri)
         || EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED.equals(uri)
-        || EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED.equals(uri);
+        || EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED.equals(uri)
+        || EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2.equals(uri)
+        || EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED2.equals(uri)
+        || EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED2.equals(uri);
   }
 
   /**
@@ -451,13 +458,13 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
    * @return the base URI
    */
   private static String toEidasBaseUri(String uri) {
-    if (EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.equals(uri)) {
+    if (EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.equals(uri) || EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2.equals(uri)) {
       return EidasConstants.EIDAS_LOA_SUBSTANTIAL;
     }
-    else if (EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED.equals(uri)) {
+    else if (EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED.equals(uri) || EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED2.equals(uri)) {
       return EidasConstants.EIDAS_LOA_LOW;
     }
-    else if (EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED.equals(uri)) {
+    else if (EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED.equals(uri) || EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED2.equals(uri)) {
       return EidasConstants.EIDAS_LOA_HIGH;
     }
     else {
