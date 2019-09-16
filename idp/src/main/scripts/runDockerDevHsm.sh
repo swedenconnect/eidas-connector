@@ -20,8 +20,7 @@ docker run -d --name eidas-connector-hsm --restart=always \
   -e FEDERATION_METADATA_VALIDATION_CERT=/etc/eidas-connector-credentials/metadata/sc-qa-metadata-validation-cert.crt \
   -e SECONDARY_FEDERATION_METADATA_URL="https://eid.svelegtest.se/metadata/feed" \
   -e SECONDARY_FEDERATION_METADATA_VALIDATION_CERT=/etc/eidas-connector-credentials/metadata/sveleg-metadata-validation-cert.crt \
-  -e EIDAS_METADATA_SERVICE_LIST_URL=file:///etc/eidas-connector/metadata/metadataList.xml \
-  -e EIDAS_METADATA_URL=file:///etc/eidas-connector/metadata/metadata.xml \
+  -e EIDAS_METADATA_URL=file:///etc/eidas-connector/eidas/eu-metadata/metadata.xml \
   -e EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION=true \
   -e IDP_LOG_SETTINGS_FILE=/opt/eidas-connector/shibboleth/conf/logback-devel.xml \
   -e IDP_LOG_CONSOLE=true \
@@ -53,7 +52,7 @@ docker run -d --name eidas-connector-hsm --restart=always \
   -e SP_METADATA_SIGNING_PKCS11_CFG=/etc/eidas-connector-credentials/softhsm.cfg \
   -v /tmp/eidas-connector-credentials:/etc/eidas-connector-credentials \
   -v /tmp/eidas-connector:/var/log/eidas-connector \
-  -v ${EIDAS_LOCAL_ENV}:/etc/eidas-connector \
+  -v ${LOCAL_ENV_PATH}:/etc/eidas-connector \
   docker.eidastest.se:5000/eidas-connector-idp-hsm
     
 docker logs -f eidas-connector-hsm

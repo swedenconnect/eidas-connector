@@ -248,9 +248,16 @@ if [ -n "$IDP_TLS_TRUSTED_CERTS" ]; then
   rm -rf ${TMP_CA_STORE}
   mkdir ${TMP_CA_STORE}
  
-  csplit -s -f ${TMP_CA_STORE}/ca- ${IDP_TLS_TRUSTED_CERTS} '/-----BEGIN CERTIFICATE-----/'
-   
-#  split -p "-----BEGIN CERTIFICATE-----" ${IDP_TLS_TRUSTED_CERTS} ${TMP_CA_STORE}/ca-
+  # OSX workaround
+  TRUST_SIZE=`grep -c 'BEGIN CERTIFICATE' ${IDP_TLS_TRUSTED_CERTS}`
+  echo $TRUST_SIZE
+  REPEAT_COUNT=0
+  if [ "$TRUST_SIZE" -gt "2" ]; then
+  	REPEAT_COUNT=`expr $TRUST_SIZE - 2`
+  fi
+  echo $REPEAT_COUNT 
+ 
+  csplit -s -f ${TMP_CA_STORE}/ca- ${IDP_TLS_TRUSTED_CERTS} '/-----BEGIN CERTIFICATE-----/' {$REPEAT_COUNT}   
   
   for cafile in `\ls ${TMP_CA_STORE}/* 2>/dev/null`
   do

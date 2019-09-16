@@ -575,7 +575,7 @@ if [ -n "$IDP_TLS_TRUSTED_CERTS" ]; then
   rm -rf ${TMP_CA_STORE}
   mkdir ${TMP_CA_STORE}
   
-  csplit -s -f ${TMP_CA_STORE}/ca- ${IDP_TLS_TRUSTED_CERTS} '/-----BEGIN CERTIFICATE-----/'
+  csplit -s -f ${TMP_CA_STORE}/ca- ${IDP_TLS_TRUSTED_CERTS} '/-----BEGIN CERTIFICATE-----/' '{*}'
   
   for cafile in `\ls ${TMP_CA_STORE}/* 2>/dev/null`
   do
