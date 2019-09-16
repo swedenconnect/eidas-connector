@@ -15,12 +15,8 @@
  */
 package se.elegnamnden.eidas.idp.connector.aaclient.prid;
 
-import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyStore;
-import java.security.cert.X509Certificate;
-import java.util.Enumeration;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -58,23 +54,6 @@ public class PridServiceImpl implements PridService, InitializingBean {
   public PridResponse getPrid(String eidasPersonIdentifier, String country) throws AttributeAuthorityException {
     try {
       URI uri = new URI(String.format("%s/generate?id=%s&c=%s", this.pridServiceUrl, eidasPersonIdentifier, country));
-
-      log.info("PRID. Trust store: " + System.getProperty("javax.net.ssl.trustStore"));
-
-      try {
-        KeyStore trustStore = KeyStore.getInstance("JKS");
-        trustStore.load(new FileInputStream(System.getProperty("javax.net.ssl.trustStore")),
-          System.getProperty("javax.net.ssl.trustStorePassword").toCharArray());
-        Enumeration<String> aliases = trustStore.aliases();
-        int i = 1;
-        while (aliases.hasMoreElements()) {
-          X509Certificate cert = (X509Certificate) trustStore.getCertificate(aliases.nextElement());
-          log.info(String.format("Trust entry %d: %s", i++, cert.toString()));
-        }
-      }
-      catch (Exception e) {
-        log.error("", e);
-      }
 
       log.debug("Sending request to PRID service: {}", uri);
       PridResponse response = this.restTemplate.getForObject(uri, PridResponse.class);
