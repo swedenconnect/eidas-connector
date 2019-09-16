@@ -152,8 +152,7 @@
     p:pridService-ref="eidas.PridService" />
       
   <bean id="eidas.PridService" class="se.elegnamnden.eidas.idp.connector.aaclient.prid.PridServiceImpl" scope="singleton"
-    p:pridServiceUrl="%{idp.prid-service.url}"
-    p:develMode="%{idp.devel.mode}" />
+    p:pridServiceUrl="%{idp.prid-service.url}" />
     
   <!-- Connector SP -->
   

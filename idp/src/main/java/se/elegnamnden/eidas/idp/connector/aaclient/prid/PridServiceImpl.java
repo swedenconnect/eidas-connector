@@ -1,46 +1,28 @@
 /*
- * The eidas-connector project is the implementation of the Swedish eIDAS 
- * connector built on top of the Shibboleth IdP.
+ * Copyright 2017-2019 Sweden Connect
  *
- * More details on <https://github.com/elegnamnden/eidas-connector> 
- * Copyright (C) 2017 E-legitimationsnämnden
- * 
- * This program is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License 
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package se.elegnamnden.eidas.idp.connector.aaclient.prid;
 
-import java.io.IOException;
+import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContexts;
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -63,9 +45,6 @@ public class PridServiceImpl implements PridService, InitializingBean {
   /** The URL to the PRID service. */
   private String pridServiceUrl;
 
-  /** Flag for development mode. */
-  private boolean develMode = false;
-
   /**
    * Constructor.
    */
@@ -79,6 +58,23 @@ public class PridServiceImpl implements PridService, InitializingBean {
   public PridResponse getPrid(String eidasPersonIdentifier, String country) throws AttributeAuthorityException {
     try {
       URI uri = new URI(String.format("%s/generate?id=%s&c=%s", this.pridServiceUrl, eidasPersonIdentifier, country));
+
+      log.info("PRID. Trust store: " + System.getProperty("javax.net.ssl.trustStore"));
+
+      try {
+        KeyStore trustStore = KeyStore.getInstance("JKS");
+        trustStore.load(new FileInputStream(System.getProperty("javax.net.ssl.trustStore")),
+          System.getProperty("javax.net.ssl.trustStorePassword").toCharArray());
+        Enumeration<String> aliases = trustStore.aliases();
+        int i = 1;
+        while (aliases.hasMoreElements()) {
+          X509Certificate cert = (X509Certificate) trustStore.getCertificate(aliases.nextElement());
+          log.info(String.format("Trust entry %d: %s", i++, cert.toString()));
+        }
+      }
+      catch (Exception e) {
+        log.error("", e);
+      }
 
       log.debug("Sending request to PRID service: {}", uri);
       PridResponse response = this.restTemplate.getForObject(uri, PridResponse.class);
@@ -113,16 +109,6 @@ public class PridServiceImpl implements PridService, InitializingBean {
     this.pridServiceUrl = pridServiceUrl;
   }
 
-  /**
-   * Assigns whether we are running in devel mode.
-   * 
-   * @param develMode
-   *          devel mode flag
-   */
-  public void setDevelMode(boolean develMode) {
-    this.develMode = develMode;
-  }
-
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
@@ -130,62 +116,7 @@ public class PridServiceImpl implements PridService, InitializingBean {
     if (this.pridServiceUrl.endsWith("/")) {
       this.pridServiceUrl = this.pridServiceUrl.substring(0, this.pridServiceUrl.length() - 1);
     }
-
-    if (this.develMode) {
-      CloseableHttpClient httpClient = HttpClients.custom().setHostnameVerifier(new NullHostnameVerifier()).build();
-      HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-      requestFactory.setHttpClient(httpClient);
-      this.restTemplate = new RestTemplate(requestFactory);
-    }
-    else {
-      this.restTemplate = new RestTemplate();
-    }
+    this.restTemplate = new RestTemplate();
   }
-  
-  public static class NullHostnameVerifier implements X509HostnameVerifier {
-
-    @Override
-    public boolean verify(String hostname, SSLSession session) {
-      return true;
-    }
-
-    @Override
-    public void verify(String host, SSLSocket ssl) throws IOException {
-    }
-
-    @Override
-    public void verify(String host, X509Certificate cert) throws SSLException {
-    }
-
-    @Override
-    public void verify(String host, String[] cns, String[] subjectAlts) throws SSLException {
-    }
-
-  }
-
-  private RestTemplate createTrustAllRestTemplate() {
-    try {
-      TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
-
-      SSLContext sslContext = SSLContexts.custom()
-        .loadTrustMaterial(null, acceptingTrustStrategy)
-        .build();
-
-      SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
-
-      CloseableHttpClient httpClient = HttpClients.custom()
-        .setSSLSocketFactory(csf)
-        .build();
-
-      HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-      requestFactory.setHttpClient(httpClient);
-
-      return new RestTemplate(requestFactory);
-    }
-    catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-      throw new SecurityException(e);
-    }
-  }
-  
 
 }
