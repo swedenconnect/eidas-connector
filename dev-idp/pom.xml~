@@ -53,7 +53,7 @@
     <display-name.en>eIDAS International eID - Sandbox</display-name.en>
     <display-name.sv>eIDAS Internationell eID - Sandbox</display-name.sv>
     <description.en>Test IdP for eIDAS authentication - Sandbox</description.en>
-    <description.sv>Test-legitimeringstj\u00e4nst f\u00f6r eIDAS legitimering - Sandbox</description.sv>    
+    <description.sv>Test-legitimeringstjänst för eIDAS legitimering - Sandbox</description.sv>    
     
   </properties>
 
@@ -271,9 +271,9 @@
         
         <!-- For filtering -->
         <display-name.en>eIDAS International eID - For internal tests</display-name.en>
-        <display-name.sv>eIDAS Internationell eID - F\u00f6r interna tester</display-name.sv>
+        <display-name.sv>eIDAS Internationell eID - För interna tester</display-name.sv>
         <description.en>Test IdP for eIDAS authentication - For internal tests</description.en>
-	      <description.sv>Test-legitimeringstj\u00e4nst f\u00f6r eIDAS legitimering -  F\u00f6r interna tester</description.sv>
+        <description.sv>Test-legitimeringstjänst för eIDAS legitimering - För interna tester</description.sv>        
       </properties>
       
       <build>
