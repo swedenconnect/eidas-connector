@@ -117,8 +117,14 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
     attributesForRelease.add(AttributeConstants.ATTRIBUTE_TEMPLATE_TRANSACTION_IDENTIFIER.createBuilder()
       .value(responseResult.getAssertion().getID())
       .build());
+    
+    // Step 3. Add the 'c' attribute holding the country code for the country.
+    //
+    attributesForRelease.add(AttributeConstants.ATTRIBUTE_TEMPLATE_C.createBuilder()
+      .value(responseResult.getCountry())
+      .build());
 
-    // Step 3. Get extra attributes from the AA service.
+    // Step 4. Get extra attributes from the AA service.
     //
     try {
       List<Attribute> additionalAttributes = this.attributeAuthority.resolveAttributes(attributesForRelease, responseResult.getCountry());
