@@ -219,7 +219,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     if (!requestedCountries.isEmpty()) {
       log.debug("SP has requested country/countries: {}", requestedCountries);
     }
-
+    
     Countries euCountries = this.euMetadata.getCountries();
     
     List<String> availableCountries = euCountries.getCountries(requestedCountries);
@@ -629,7 +629,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       return null;
     }
 
-    boolean signMessageDisplayed = ACTION_OK.equals(action);
+    final SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
+    boolean signMessageDisplayed = ACTION_OK.equals(action) && signMessageContext != null && signMessageContext.isDoDisplayMessage();
     try {
       String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(context, result.getAuthnContextClassUri(),
         signMessageDisplayed);
