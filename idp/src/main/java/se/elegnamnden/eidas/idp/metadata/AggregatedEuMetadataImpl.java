@@ -115,6 +115,14 @@ public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, Initializ
    */
   @Override
   public synchronized Countries getCountries() {
+    return new Countries(this.getCountryMap().entrySet()
+      .stream()
+      .map(e -> new Countries.CountryEntry(e.getKey(), e.getValue().isHideFromDiscovery()))
+      .sorted()
+      .collect(Collectors.toList()));
+  }
+  
+  private synchronized Map<String, MetadataEntry> getCountryMap() {
     if (this.metadataProvider.getLastUpdate().orElse(new DateTime()).isAfter(this.countryIndexingTime)) {
       try {
         Map<String, MetadataEntry> cm = new HashMap<>();
@@ -133,11 +141,7 @@ public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, Initializ
         log.error("Failed to list metadata from {}", this.metadataProvider.getID(), e);
       }
     }
-    return new Countries(this.countries.entrySet()
-      .stream()
-      .map(e -> new Countries.CountryEntry(e.getKey(), e.getValue().isHideFromDiscovery()))
-      .sorted()
-      .collect(Collectors.toList()));
+    return this.countries;
   }
 
   /** {@inheritDoc} */
@@ -146,7 +150,7 @@ public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, Initializ
     if (!StringUtils.hasText(country)) {
       return null;
     }
-    MetadataEntry entry = this.countries.get(country.toUpperCase());
+    MetadataEntry entry = this.getCountryMap().get(country.toUpperCase());
     return entry != null ? entry.getEntityDescriptor() : null;
   }
 
