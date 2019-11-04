@@ -75,6 +75,7 @@ import se.litsec.opensaml.saml2.metadata.MetadataUtils;
 import se.litsec.opensaml.saml2.metadata.PeerMetadataResolver;
 import se.litsec.opensaml.utils.ObjectUtils;
 import se.litsec.shibboleth.idp.authn.ExternalAutenticationErrorCodeException;
+import se.litsec.shibboleth.idp.authn.IdpErrorStatusException;
 import se.litsec.shibboleth.idp.authn.context.ProxyIdpAuthenticationContext;
 import se.litsec.shibboleth.idp.authn.context.SignMessageContext;
 import se.litsec.shibboleth.idp.authn.context.SignatureActivationDataContext;
@@ -84,6 +85,7 @@ import se.litsec.shibboleth.idp.authn.controller.AbstractExternalAuthenticationC
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeConstants;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSet;
 import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSetConstants;
+import se.litsec.swedisheid.opensaml.saml2.authentication.psc.PrincipalSelection;
 import se.litsec.swedisheid.opensaml.saml2.metadata.entitycategory.EntityCategoryConstants;
 import se.litsec.swedisheid.opensaml.saml2.metadata.entitycategory.EntityCategoryMetadataHelper;
 
@@ -219,9 +221,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     if (!requestedCountries.isEmpty()) {
       log.debug("SP has requested country/countries: {}", requestedCountries);
     }
-    
+
     Countries euCountries = this.euMetadata.getCountries();
-    
+
     List<String> availableCountries = euCountries.getCountries(requestedCountries);
     if (!requestedCountries.isEmpty()) {
       if (availableCountries.isEmpty()) {
@@ -300,9 +302,10 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Next, generate an AuthnRequest and redirect or post the user there.
     //
     try {
-      EidasAuthnRequestGeneratorInput spInput = this.createAuthnRequestInput(context, foreignIdp, selectedCountry, this.getAuthnRequest(context));
+      EidasAuthnRequestGeneratorInput spInput = this.createAuthnRequestInput(context, foreignIdp, selectedCountry, this.getAuthnRequest(
+        context));
 
-      PeerMetadataResolver metadataResolver = (entityID) -> {        
+      PeerMetadataResolver metadataResolver = (entityID) -> {
         return entityID.equals(foreignIdp.getEntityID()) ? foreignIdp : null;
       };
 
@@ -354,7 +357,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     //
     try {
       spInput.setRequestedAuthnContext(this.eidasAuthnContextService.getSendRequestedAuthnContext(
-        context, getAssuranceCertifications(recipientMetadata))); 
+        context, getAssuranceCertifications(recipientMetadata)));
     }
     catch (ExternalAutenticationErrorCodeException e) {
       throw new RequestGenerationException(e.getActualMessage() != null ? e.getActualMessage() : e.getMessage(), e);
@@ -384,7 +387,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       else {
         log.warn("Entity '{}' does not specify entity category for public or private SP", spMetadata.getEntityID());
       }
-      
+
       spInput.setNationalSpEntityID(spMetadata.getEntityID());
     }
     else {
@@ -407,7 +410,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     return spInput;
   }
-  
+
   /**
    * Utility method that returns a list of assurance certification URI:s from a metadata record.
    * 
@@ -431,7 +434,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     else {
       return Collections.emptyList();
     }
-  }  
+  }
 
   /**
    * Saves the authentication state for the Proxy IdP SP part.
@@ -598,40 +601,48 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       throw new ExternalAuthenticationException("No result in ProxyIdpAuthenticationContext");
     }
 
-    // If 'action' is null we were called internally.
-    if (action == null) {
+    try {
 
-      if (this.getSignSupportService().isSignatureServicePeer(context)) {
-        ModelAndView modelAndView = new ModelAndView("sign-consent2");
-        modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
+      // If 'action' is null we were called internally.
+      if (action == null) {
 
-        SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
+        if (this.getSignSupportService().isSignatureServicePeer(context)) {
 
-        if (signMessageContext != null && signMessageContext.isDoDisplayMessage()) {
-          modelAndView.addObject("signMessageConsent", this.signMessageUiHandler.getSignMessageConsentModel(
-            signMessageContext.getMessageToDisplay(), attributes,
-            (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
+          // Before we proceed, we check if there was a principal selection in the authentication
+          // request that stated a requested principal. We need to check that there is a match there.
+          //
+          this.assertPrincipalSelection(context, attributes);
 
-          return modelAndView;
-        }
-        else {
-          modelAndView.addObject("signMessageConsent", this.signMessageUiHandler.getSignMessageConsentModel(
-            null, attributes, (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
-          return modelAndView;
+          ModelAndView modelAndView = new ModelAndView("sign-consent2");
+          modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
+
+          SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
+
+          if (signMessageContext != null && signMessageContext.isDoDisplayMessage()) {
+            modelAndView.addObject("signMessageConsent", this.signMessageUiHandler.getSignMessageConsentModel(
+              signMessageContext.getMessageToDisplay(), attributes,
+              (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
+
+            return modelAndView;
+          }
+          else {
+            modelAndView.addObject("signMessageConsent", this.signMessageUiHandler.getSignMessageConsentModel(
+              null, attributes, (String) proxyContext.getAdditionalData("country"), this.getPeerMetadata(context)));
+            return modelAndView;
+          }
         }
       }
-    }
 
-    if (ACTION_CANCEL.equals(action)) {
-      // User did not approve to the sign consent.
-      log.info("User did not approve to sign consent");
-      this.cancel(httpRequest, httpResponse);
-      return null;
-    }
+      if (ACTION_CANCEL.equals(action)) {
+        // User did not approve to the sign consent.
+        log.info("User did not approve to sign consent");
+        this.cancel(httpRequest, httpResponse);
+        return null;
+      }
 
-    final SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
-    boolean signMessageDisplayed = ACTION_OK.equals(action) && signMessageContext != null && signMessageContext.isDoDisplayMessage();
-    try {
+      final SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
+      boolean signMessageDisplayed = ACTION_OK.equals(action) && signMessageContext != null && signMessageContext.isDoDisplayMessage();
+
       String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(context, result.getAuthnContextClassUri(),
         signMessageDisplayed);
 
@@ -639,8 +650,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       //
       SignatureActivationDataContext sadContext = this.getSignSupportService().getSadContext(context);
       if (sadContext != null && signMessageDisplayed && this.getSignSupportService().isSignatureServicePeer(context)) {
-        String sad = this.getSignSupportService().issueSAD(context, attributes,
-          this.attributeProcessingService.getPrincipalAttributeName(), loaToIssue);
+        String sad = this.getSignSupportService()
+          .issueSAD(context, attributes,
+            this.attributeProcessingService.getPrincipalAttributeName(), loaToIssue);
 
         attributes.add(AttributeConstants.ATTRIBUTE_TEMPLATE_SAD.createBuilder().value(sad).build());
       }
@@ -658,6 +670,65 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       log.warn("Error during attribute release process - {}", e.getMessage(), e);
       this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION);
       return null;
+    }
+  }
+
+  /**
+   * A signature service may pass requested principals in the authentication request. This method ensures that we don't
+   * proceed if there is a mismatch.
+   * 
+   * @param context
+   *          the profile context
+   * @param attributes
+   *          the attributes for the principal
+   * @throws ExternalAutenticationErrorCodeException
+   *           if there is a mismatch
+   */
+  protected void assertPrincipalSelection(ProfileRequestContext<?, ?> context, List<Attribute> attributes)
+      throws ExternalAutenticationErrorCodeException {
+
+    final PrincipalSelection principalSelection = this.getPrincipalSelection(context);
+    if (principalSelection == null) {
+      return;
+    }
+    // We assert the typical identity attributes.
+    //
+    final String prid = attributes.stream()
+      .filter(a -> AttributeConstants.ATTRIBUTE_NAME_PRID.equals(a.getName()))
+      .map(a -> AttributeUtils.getAttributeStringValue(a))
+      .findFirst()
+      .orElse(null);
+    if (prid != null && this.checkAgainstPrincipalSelection(AttributeConstants.ATTRIBUTE_NAME_PRID, prid, principalSelection)) {
+      log.warn("Will not proceed with authentication. Mismatch between PRID values from authentication and principal selection");
+      throw new IdpErrorStatusException(AuthnEventIds.AUTHN_EXCEPTION, StatusCode.RESPONDER, StatusCode.UNKNOWN_PRINCIPAL,
+        "PRID attribute from authentication does not match PRID from request");
+    }
+
+    final String eidasId = attributes.stream()
+      .filter(a -> AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER.equals(a.getName()))
+      .map(a -> AttributeUtils.getAttributeStringValue(a))
+      .findFirst()
+      .orElse(null);
+    if (eidasId != null
+        && this.checkAgainstPrincipalSelection(AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER, eidasId, principalSelection)) {
+      log.warn(
+        "Will not proceed with authentication. Mismatch between eIDAS person identifier values from authentication and principal selection");
+      throw new IdpErrorStatusException(AuthnEventIds.AUTHN_EXCEPTION, StatusCode.RESPONDER, StatusCode.UNKNOWN_PRINCIPAL,
+        "eIDAS person identifier attribute from authentication does not match eIDAS person identifier from request");
+    }
+
+    final String personalIdentityNumber = attributes.stream()
+      .filter(a -> AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER.equals(a.getName()))
+      .map(a -> AttributeUtils.getAttributeStringValue(a))
+      .findFirst()
+      .orElse(null);
+    if (personalIdentityNumber != null
+        && this.checkAgainstPrincipalSelection(AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER, personalIdentityNumber,
+          principalSelection)) {
+      log.warn(
+        "Will not proceed with authentication. Mismatch between personal identity number values from authentication and principal selection");
+      throw new IdpErrorStatusException(AuthnEventIds.AUTHN_EXCEPTION, StatusCode.RESPONDER, StatusCode.UNKNOWN_PRINCIPAL,
+        "Personal identity number attribute from authentication does not match personal identity number from request");
     }
   }
 
@@ -724,7 +795,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       String subStatusCode,
       String statusMessage,
       String verboseStatusMessage)
-          throws ExternalAuthenticationException, IOException {
+      throws ExternalAuthenticationException, IOException {
 
     Status status = ObjectUtils.createSamlObject(Status.class);
     StatusCode _statusCode = ObjectUtils.createSamlObject(StatusCode.class);
