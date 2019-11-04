@@ -37,7 +37,8 @@ public class Countries {
   /**
    * Constructor.
    * 
-   * @param countries the countries read from the metadata
+   * @param countries
+   *          the countries read from the metadata
    */
   public Countries(List<CountryEntry> countries) {
     Assert.notNull(countries, "countries must not be null");
@@ -45,20 +46,41 @@ public class Countries {
   }
 
   /**
+   * Predicate that tells whether the supplied country is among to stored countries.
+   * 
+   * @param country
+   *          the country code to check
+   * @param hiddenOk
+   *          is it OK if the country is "hidden from discovery"?
+   * @return {@code true} if the country is among to stored countries
+   */
+  public boolean contains(final String country, final boolean hiddenOk) {
+    return this.countries.stream()
+      .filter(c -> country.equalsIgnoreCase(c.getCode()))
+      .filter(c -> (hiddenOk || !c.isHideFromDiscovery()))
+      .findFirst()
+      .isPresent();
+  }
+
+  /**
    * Lists all countries that may be displayed on the connector country selection page.
    * <p>
-   * If a country has its "hide-from-discovery" field set it is filtered from the resulting list 
-   * <b>unless</b> it is explicitly given by the {@code requestedCountries} parameter.
+   * If a country has its "hide-from-discovery" field set it is filtered from the resulting list <b>unless</b> it is
+   * explicitly given by the {@code requestedCountries} parameter.
    * </p>
    * 
-   * @param requestedCountries a (possibly empty) list of requested countries
+   * @param requestedCountries
+   *          a (possibly empty) list of requested countries
    * @return a list of matching countries
    */
   public List<String> getCountries(final List<String> requestedCountries) {
     if (requestedCountries.isEmpty()) {
       return this.countries.stream().filter(c -> !c.isHideFromDiscovery()).map(CountryEntry::getCode).collect(Collectors.toList());
     }
-    Predicate<CountryEntry> isRequested = c -> requestedCountries.stream().filter(r -> r.equalsIgnoreCase(c.getCode())).findFirst().isPresent();
+    Predicate<CountryEntry> isRequested = c -> requestedCountries.stream()
+      .filter(r -> r.equalsIgnoreCase(c.getCode()))
+      .findFirst()
+      .isPresent();
     return this.countries.stream().filter(isRequested).map(CountryEntry::getCode).collect(Collectors.toList());
   }
 
@@ -79,7 +101,7 @@ public class Countries {
   public static class CountryEntry implements Comparable<CountryEntry> {
     private String code;
     private boolean hideFromDiscovery = false;
-    
+
     @Override
     public int compareTo(CountryEntry o) {
       return this.code.compareTo(o.getCode());
