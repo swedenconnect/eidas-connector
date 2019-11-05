@@ -13,8 +13,7 @@
   <meta http-equiv="Expires" content="-1"/>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
       
-  <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/css/bootstrap-4.1.0.min.css" >
-  <!--<link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/css/open-sans-fonts.css" >-->
+  <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/bootstrap/css/bootstrap.min.css" >
   <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/eidas-style/dist/css/main.css" >
   <link rel="stylesheet" type="text/css" href="<%=request.getContextPath()%>/eidas-style/dist/css/extra.css" >
 </head>
