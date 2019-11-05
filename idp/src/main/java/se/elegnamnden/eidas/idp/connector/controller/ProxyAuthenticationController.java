@@ -698,7 +698,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       .map(a -> AttributeUtils.getAttributeStringValue(a))
       .findFirst()
       .orElse(null);
-    if (prid != null && this.checkAgainstPrincipalSelection(AttributeConstants.ATTRIBUTE_NAME_PRID, prid, principalSelection)) {
+    if (prid != null && !this.checkAgainstPrincipalSelection(AttributeConstants.ATTRIBUTE_NAME_PRID, prid, principalSelection)) {
       log.warn("Will not proceed with authentication. Mismatch between PRID values from authentication and principal selection");
       throw new IdpErrorStatusException(AuthnEventIds.AUTHN_EXCEPTION, StatusCode.RESPONDER, StatusCode.UNKNOWN_PRINCIPAL,
         "PRID attribute from authentication does not match PRID from request");
@@ -710,7 +710,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       .findFirst()
       .orElse(null);
     if (eidasId != null
-        && this.checkAgainstPrincipalSelection(AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER, eidasId, principalSelection)) {
+        && !this.checkAgainstPrincipalSelection(AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER, eidasId, principalSelection)) {
       log.warn(
         "Will not proceed with authentication. Mismatch between eIDAS person identifier values from authentication and principal selection");
       throw new IdpErrorStatusException(AuthnEventIds.AUTHN_EXCEPTION, StatusCode.RESPONDER, StatusCode.UNKNOWN_PRINCIPAL,
@@ -723,7 +723,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       .findFirst()
       .orElse(null);
     if (personalIdentityNumber != null
-        && this.checkAgainstPrincipalSelection(AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER, personalIdentityNumber,
+        && !this.checkAgainstPrincipalSelection(AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER, personalIdentityNumber,
           principalSelection)) {
       log.warn(
         "Will not proceed with authentication. Mismatch between personal identity number values from authentication and principal selection");
