@@ -6,7 +6,7 @@
   <groupId>se.elegnamnden.eidas.idp</groupId>
   <artifactId>eidas-connector-base-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.5.2</version>
+  <version>1.5.3</version>
 
   <name>eIDAS :: Parent POM for the Swedish eIDAS connector</name>
   <description>Parent POM for the Swedish eIDAS connector IdP</description>
@@ -46,7 +46,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.8</java.version>
     
-    <tomcat.version>8.5.37</tomcat.version>
+    <tomcat.version>8.5.42</tomcat.version>
     
     <shibboleth-base.version>1.6.1</shibboleth-base.version>
     <shibboleth-base-deps.version>1.6.1</shibboleth-base-deps.version>    
