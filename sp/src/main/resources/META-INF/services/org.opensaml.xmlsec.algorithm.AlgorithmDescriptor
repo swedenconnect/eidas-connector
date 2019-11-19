@@ -1,0 +1,4 @@
+se.elegnamnden.eidas.idp.connector.algsupport.SignatureSHA224_RSA_MGF1
+se.elegnamnden.eidas.idp.connector.algsupport.SignatureSHA256_RSA_MGF1
+se.elegnamnden.eidas.idp.connector.algsupport.SignatureSHA384_RSA_MGF1
+se.elegnamnden.eidas.idp.connector.algsupport.SignatureSHA512_RSA_MGF1
