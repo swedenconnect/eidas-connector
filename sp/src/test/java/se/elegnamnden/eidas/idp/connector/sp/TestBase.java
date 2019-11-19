@@ -20,6 +20,9 @@
  */
 package se.elegnamnden.eidas.idp.connector.sp;
 
+import java.security.Security;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 
 import se.litsec.opensaml.config.OpenSAMLInitializer;
@@ -40,6 +43,11 @@ public abstract class TestBase {
    */
   @BeforeClass
   public static void initializeOpenSAML() throws Exception {
+    
+    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+      Security.addProvider(new BouncyCastleProvider());
+    }    
+    
     OpenSAMLInitializer bootstrapper = OpenSAMLInitializer.getInstance();
     if (!bootstrapper.isInitialized()) {
       bootstrapper.initialize();

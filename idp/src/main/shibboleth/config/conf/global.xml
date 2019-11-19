@@ -14,6 +14,9 @@
        default-init-method="initialize"
        default-destroy-method="destroy">
        
+  <!-- Make sure the Bouncy Castle is installed -->
+  <bean id="bouncyCastleProviderBean" class="se.elegnamnden.eidas.idp.config.BouncyCastleInitializer" scope="singleton" lazy-init="false" />       
+       
   <bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver"
     p:cookieName="idpUiLanguage"
     p:cookieDomain="%{idp.cookie.domain:}"
