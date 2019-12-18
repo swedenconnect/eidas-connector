@@ -508,7 +508,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       ResponseProcessingResult result = this.responseProcessor.processSamlResponse(samlResponse, relayState, input, idpMetadataResolver);
       log.debug("Successfully processed SAML response");
 
-      // Perform the attribute relase ...
+      // Perform the attribute release ...
       //
       List<Attribute> attributes = this.attributeProcessingService.performAttributeRelease(result);
 
@@ -645,6 +645,12 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
       String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(context, result.getAuthnContextClassUri(),
         signMessageDisplayed);
+      
+      // If the sign message was displayed, issue the signMessageDigest attribute.
+      //
+      if (signMessageDisplayed) {
+        attributes.add(this.createSignMessageDigestAttribute(context, signMessageContext.getMessage()));
+      }
 
       // Check if we should issue a SAD attribute.
       //
