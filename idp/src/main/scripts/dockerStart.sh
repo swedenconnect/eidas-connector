@@ -296,6 +296,7 @@ fi
 
 : ${IDP_LOG_PUBLISH_ENABLED:=false}
 : ${IDP_LOG_PUBLISH_PATH:=""}
+: ${IDP_STATS_PUBLISH_PATH:=""}
 
 #
 # JVM and JMX
@@ -367,6 +368,7 @@ export JAVA_OPTS="\
           -Didp.process.appender=$IDP_PROCESS_APPENDER \
           -Didp.log-publish.enabled=$IDP_LOG_PUBLISH_ENABLED \
           -Didp.log-publish.path=$IDP_LOG_PUBLISH_PATH \
+          -Didp.stats-publish.path=$IDP_STATS_PUBLISH_PATH \
           ${JAVA_OPTS}"
 
 #

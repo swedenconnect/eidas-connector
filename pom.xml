@@ -48,8 +48,8 @@
 
     <tomcat.version>8.5.50</tomcat.version>
 
-    <shibboleth-base.version>1.7.1-SNAPSHOT</shibboleth-base.version>
-    <shibboleth-base-deps.version>1.7.1-SNAPSHOT</shibboleth-base-deps.version>
+    <shibboleth-base.version>1.7.1</shibboleth-base.version>
+    <shibboleth-base-deps.version>1.7.1</shibboleth-base-deps.version>
 
     <opensaml.eidas.version>1.4.3</opensaml.eidas.version>
     <eidas-mappings.version>1.2.1-SNAPSHOT</eidas-mappings.version>

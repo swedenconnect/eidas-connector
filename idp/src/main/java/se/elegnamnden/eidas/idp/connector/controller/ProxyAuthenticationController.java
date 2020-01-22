@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 Sweden Connect
+ * Copyright 2017-2020 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,9 @@ import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessor;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseStatusErrorException;
 import se.elegnamnden.eidas.idp.metadata.AggregatedEuMetadata;
 import se.elegnamnden.eidas.idp.metadata.Countries;
+import se.elegnamnden.eidas.idp.statistics.StatisticsEngine;
+import se.elegnamnden.eidas.idp.statistics.StatisticsEntry;
+import se.elegnamnden.eidas.idp.statistics.StatisticsEventType;
 import se.litsec.eidas.opensaml.ext.SPTypeEnumeration;
 import se.litsec.opensaml.saml2.attribute.AttributeUtils;
 import se.litsec.opensaml.saml2.common.request.RequestGenerationException;
@@ -124,7 +127,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
   /** Strategy that gives us the AuthenticationContext. */
   @SuppressWarnings("rawtypes")
-  private static Function<ProfileRequestContext, AuthenticationContext> authenticationContextLookupStrategy = new AuthenticationContextLookup();
+  private static Function<ProfileRequestContext, AuthenticationContext> authenticationContextLookupStrategy =
+      new AuthenticationContextLookup();
 
   /** Strategy used to locate the ProxyIdpAuthenticationContext. */
   @SuppressWarnings("rawtypes")
@@ -162,6 +166,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
   /** Flag telling whether we should include verbose status messages in response messages. Default is {@code false}. */
   private boolean verboseStatusMessage = false;
 
+  /** The statistics bean. */
+  private StatisticsEngine statistics;
+
   /**
    * The first step for the connector authentication is to prompt the user for the eID country.
    */
@@ -198,6 +205,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
 
+    StatisticsEntry stats = this.statistics.event(context);
+    stats.authnRequest(this.getAuthnRequest(context));
+
     if (language != null) {
       this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
     }
@@ -213,10 +223,14 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     //
     if (this.getSignSupportService().isSignatureServicePeer(context) && selectedCountry != null) {
       log.info("Request is from a signature service. Will default to previously selected country: '{}'", selectedCountry);
+      stats.preSelectedCountry(selectedCountry);
+      this.statistics.commit(stats, StatisticsEventType.RECEIVED_AUTHN_REQUEST);
       return this.processAuthentication(httpRequest, httpResponse, selectedCountry);
     }
 
     // Did the SP pass along a Scoping element with one or several country URI:s?
+    // We also check if the 'c' attribute is given among the PrincipalSelection attributes.
+    //
     List<String> requestedCountries = this.getRequestedCountries(httpRequest);
     if (!requestedCountries.isEmpty()) {
       log.debug("SP has requested country/countries: {}", requestedCountries);
@@ -228,12 +242,15 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     if (!requestedCountries.isEmpty()) {
       if (availableCountries.isEmpty()) {
         log.info("None of the requested countries ({}) exists in EU metadata", requestedCountries);
-        this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
-          String.format("Country/countries %s is not available for authentication", requestedCountries), null);
+        final String msg = String.format("Country/countries %s not available for authentication", requestedCountries);
+        this.statistics.commitError(stats, StatisticsEventType.ERROR_BAD_REQUEST, StatusCode.NO_AVAILABLE_IDP, msg);
+        this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP, msg, null);
         return null;
       }
       else if (requestedCountries.size() == 1 && availableCountries.size() == 1) {
         log.info("Using country {} (selected by SP)", availableCountries.get(0));
+        stats.preSelectedCountry(availableCountries.get(0));
+        this.statistics.commit(stats, StatisticsEventType.RECEIVED_AUTHN_REQUEST);
         return this.processAuthentication(httpRequest, httpResponse, availableCountries.get(0));
       }
     }
@@ -252,6 +269,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       modelAndView.addObject("selectedCountry", this.countrySelectionHandler.getSelectedCountry(httpRequest, false));
     }
 
+    this.statistics.commit(stats, StatisticsEventType.RECEIVED_AUTHN_REQUEST);
     return modelAndView;
   }
 
@@ -277,33 +295,37 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       HttpServletResponse httpResponse,
       @RequestParam(name = "selectedCountry") String selectedCountry) throws ExternalAuthenticationException, IOException {
 
+    final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
+    StatisticsEntry stats = this.statistics.event(context);
+
     if (ACTION_CANCEL.equals(selectedCountry)) {
       log.info("User cancelled country selection - aborting authentication");
+      this.statistics.commit(stats, StatisticsEventType.CANCELLED_COUNTRY_SELECTION);
       this.cancel(httpRequest, httpResponse);
       return null;
     }
 
     log.debug("User selected country '{}'", selectedCountry);
+    stats.country(selectedCountry);
 
     // Get hold of all information needed for the foreign endpoint.
     //
     EntityDescriptor foreignIdp = this.euMetadata.getProxyServiceIdp(selectedCountry);
     if (foreignIdp == null) {
+      final String msg = "No services available for selected country";
       log.error("No metadata found for country '{}'", selectedCountry);
-      this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP,
-        "No services available for selected country", null);
+      this.statistics.commitError(stats, StatisticsEventType.ERROR_CONFIG, StatusCode.NO_AVAILABLE_IDP, msg);
+      this.error(httpRequest, httpResponse, StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP, msg, null);
       return null;
     }
 
     this.countrySelectionHandler.saveSelectedCountry(httpResponse, selectedCountry);
 
-    final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
-
     // Next, generate an AuthnRequest and redirect or post the user there.
     //
     try {
-      EidasAuthnRequestGeneratorInput spInput = this.createAuthnRequestInput(context, foreignIdp, selectedCountry, this.getAuthnRequest(
-        context));
+      EidasAuthnRequestGeneratorInput spInput = this.createAuthnRequestInput(
+        context, foreignIdp, selectedCountry, this.getAuthnRequest(context));
 
       PeerMetadataResolver metadataResolver = (entityID) -> {
         return entityID.equals(foreignIdp.getEntityID()) ? foreignIdp : null;
@@ -312,20 +334,24 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       RequestHttpObject<AuthnRequest> authnRequest = this.authnRequestGenerator.generateRequest(spInput, metadataResolver);
       this.saveProxyIdpState(context, authnRequest.getRequest(), spInput.getRelayState(), selectedCountry);
 
+      this.statistics.commit(stats, StatisticsEventType.DIRECTED_USER_TO_FOREIGN_IDP);
+      
       if (SAMLConstants.POST_METHOD.equals(authnRequest.getMethod())) {
         ModelAndView modelAndView = new ModelAndView("post-request");
         modelAndView.addObject("action", authnRequest.getSendUrl());
         modelAndView.addAllObjects(authnRequest.getRequestParameters());
         return modelAndView;
       }
-      else {
+      else {        
         return new ModelAndView("redirect:" + authnRequest.getSendUrl());
       }
     }
     catch (RequestGenerationException e) {
       log.error("Error while creating eIDAS AuthnContext - {}", e.getMessage(), e);
-      this.error(httpRequest, httpResponse, StatusCode.REQUESTER, StatusCode.REQUEST_UNSUPPORTED,
-        "Can not create valid request to foreign service", e.getMessage());
+      final String msg = "Can not create valid request to foreign service";
+      this.statistics.commitError(stats, StatisticsEventType.ERROR_BAD_REQUEST, 
+        StatusCode.REQUEST_UNSUPPORTED, msg + " - " + e.getMessage());
+      this.error(httpRequest, httpResponse, StatusCode.REQUESTER, StatusCode.REQUEST_UNSUPPORTED, msg, e.getMessage());
       return null;
     }
   }
@@ -494,6 +520,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Pick up the context from the session. If the request is stale, we'll get an exception.
     //
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
+    StatisticsEntry stats = this.statistics.event(context);
 
     // Process the SAML response
     //
@@ -507,6 +534,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
       ResponseProcessingResult result = this.responseProcessor.processSamlResponse(samlResponse, relayState, input, idpMetadataResolver);
       log.debug("Successfully processed SAML response");
+      
+      stats.eidasResponse(result.getResponseID(), result.getAssertion());
+      this.statistics.commit(stats, StatisticsEventType.RECEIVED_EIDAS_RESPONSE);
 
       // Perform the attribute release ...
       //
@@ -527,8 +557,12 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     }
     catch (ResponseProcessingException e) {
       log.warn("Error while processing eIDAS response - {}", e.getMessage(), e);
-      this.error(httpRequest, httpResponse, StatusCode.REQUESTER, StatusCode.REQUEST_DENIED,
-        "Validation failure of response from foreign service", e.getMessage());
+      final String msg = "Validation failure of response from foreign service";
+      
+      this.statistics.commitError(stats, StatisticsEventType.ERROR_RESPONSE_PROCESSING,
+        StatusCode.REQUEST_DENIED, msg + " - " + e.getMessage());
+      
+      this.error(httpRequest, httpResponse, StatusCode.REQUESTER, StatusCode.REQUEST_DENIED, msg, e.getMessage());
       return null;
     }
     catch (ResponseStatusErrorException e) {
@@ -547,12 +581,18 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
         sm.setMessage("Failure received from foreign service");
         status.setStatusMessage(sm);
       }
+      stats.setResponseId(e.getResponseId());
+      this.statistics.commitError(stats, StatisticsEventType.ERROR_EIDAS_ERROR_RESPONSE, status);
 
       this.error(httpRequest, httpResponse, status);
       return null;
     }
     catch (AttributeProcessingException e) {
       log.warn("Error during attribute release process - {}", e.getMessage(), e);
+
+      this.statistics.commitError(stats, StatisticsEventType.ERROR_RESPONSE_PROCESSING, 
+        StatusCode.REQUEST_DENIED, "Attribute release error - " + e.getMessage()); 
+
       this.error(httpRequest, httpResponse, StatusCode.REQUESTER, StatusCode.REQUEST_DENIED,
         "Attribute release error", e.getMessage());
       return null;
@@ -587,6 +627,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     // Pick up the context from the session. If the request is stale, we'll get an exception.
     //
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
+    StatisticsEntry stats = this.statistics.event(context);
 
     if (language != null) {
       this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
@@ -613,6 +654,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
           //
           this.assertPrincipalSelection(context, attributes);
 
+          this.statistics.commit(stats, StatisticsEventType.DISPLAY_SIGN_MESSAGE);
+
           ModelAndView modelAndView = new ModelAndView("sign-consent2");
           modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
 
@@ -636,6 +679,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       if (ACTION_CANCEL.equals(action)) {
         // User did not approve to the sign consent.
         log.info("User did not approve to sign consent");
+        this.statistics.commit(stats, StatisticsEventType.REJECTED_SIGNATURE);
         this.cancel(httpRequest, httpResponse);
         return null;
       }
@@ -643,9 +687,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       final SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
       boolean signMessageDisplayed = ACTION_OK.equals(action) && signMessageContext != null && signMessageContext.isDoDisplayMessage();
 
-      String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(context, result.getAuthnContextClassUri(),
-        signMessageDisplayed);
-      
+      String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(
+        context, result.getAuthnContextClassUri(), signMessageDisplayed);      
+
       // If the sign message was displayed, issue the signMessageDigest attribute.
       //
       if (signMessageDisplayed) {
@@ -663,17 +707,28 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
         attributes.add(AttributeConstants.ATTRIBUTE_TEMPLATE_SAD.createBuilder().value(sad).build());
       }
 
+      stats.loa(loaToIssue);
+      this.statistics.commit(stats, StatisticsEventType.AUTHN_SUCCESS);
+      
       this.success(httpRequest, httpResponse, this.attributeProcessingService.getPrincipal(attributes), attributes, loaToIssue, result
         .getAuthnInstant(), null);
       return null;
     }
     catch (ExternalAutenticationErrorCodeException e) {
       log.warn("Error during ProxyIdP assertion process - {} - {}", e.getMessage(), e.getActualMessage(), e);
+      
+      if (IdpErrorStatusException.class.isInstance(e)) {
+        this.statistics.commitError(stats, StatisticsEventType.ERROR_RESPONSE_PROCESSING, IdpErrorStatusException.class.cast(e).getStatus()); 
+      }
+      else {
+        this.statistics.commitError(stats, StatisticsEventType.ERROR_RESPONSE_PROCESSING, StatusCode.AUTHN_FAILED, e.getActualMessage());
+      }      
       this.error(httpRequest, httpResponse, e);
       return null;
     }
     catch (AttributeProcessingException e) {
       log.warn("Error during attribute release process - {}", e.getMessage(), e);
+      this.statistics.commitError(stats, StatisticsEventType.ERROR_RESPONSE_PROCESSING, StatusCode.AUTHN_FAILED, e.getMessage());
       this.error(httpRequest, httpResponse, AuthnEventIds.AUTHN_EXCEPTION);
       return null;
     }
@@ -747,11 +802,22 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    * @throws ExternalAuthenticationException
    *           for session errors
    */
-  protected List<String> getRequestedCountries(HttpServletRequest httpRequest) throws ExternalAuthenticationException {
+  protected List<String> getRequestedCountries(final HttpServletRequest httpRequest) throws ExternalAuthenticationException {
     AuthnRequest authnRequest = this.getAuthnRequest(httpRequest);
     if (authnRequest == null) {
       log.error("Failed to find AuthnRequest");
       return Collections.emptyList();
+    }
+    final PrincipalSelection principalSelection = this.getPrincipalSelection(httpRequest);
+    if (principalSelection != null) {
+      final String countryAttribute = principalSelection.getMatchValues().stream()
+        .filter(mv -> AttributeConstants.ATTRIBUTE_NAME_C.equals(mv.getName()))
+        .map(mv -> mv.getValue())
+        .findFirst()
+        .orElse(null);
+      if (countryAttribute != null) {
+        return Collections.singletonList(countryAttribute);
+      }
     }
     if (authnRequest.getScoping() == null || authnRequest.getScoping().getIDPList() == null) {
       return Collections.emptyList();
@@ -997,6 +1063,16 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     this.verboseStatusMessage = verboseStatusMessage;
   }
 
+  /**
+   * Assigns the statistics bean.
+   * 
+   * @param statistics
+   *          the statistics bean
+   */
+  public void setStatistics(final StatisticsEngine statistics) {
+    this.statistics = statistics;
+  }
+
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
@@ -1010,6 +1086,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     Assert.notNull(this.signMessageUiHandler, "The property 'signMessageUiHandler' must be assigned");
     Assert.notNull(this.uiLanguageHandler, "The property 'uiLanguageHandler' must be assigned");
     Assert.notNull(this.attributeProcessingService, "The property 'attributeProcessingService' must be assigned");
+    Assert.notNull(this.statistics, "The property 'statistics' must be assigned");
   }
 
 }

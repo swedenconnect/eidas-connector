@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 Sweden Connect
+ * Copyright 2017-2020 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,10 +118,13 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
   public ResponseProcessingResult processSamlResponse(String samlResponse, String relayState, ResponseProcessingInput input,
       PeerMetadataResolver peerMetadataResolver) throws ResponseStatusErrorException, ResponseProcessingException {
 
+    String responseID = null;
+    
     try {
       // Step 1: Decode the SAML response message.
       //
-      Response response = this.decodeResponse(samlResponse);
+      final Response response = this.decodeResponse(samlResponse);
+      responseID = response.getID();
 
       if (log.isTraceEnabled()) {
         log.trace("[{}] Decoded Response: {}", logId(response), ObjectUtils.toStringSafe(response));
@@ -165,16 +168,16 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
 
       // And finally, build the result.
       //
-      return new ResponseProcessingResultImpl(assertion, input.getCountry());
+      return new ResponseProcessingResultImpl(response.getID(), assertion, input.getCountry());
     }
     catch (ValidatorException e) {
-      throw new ResponseProcessingException("Validation of Response message failed: " + e.getMessage(), e);
+      throw new ResponseProcessingException(responseID, "Validation of Response message failed: " + e.getMessage(), e);
     }
     catch (MessageReplayException e) {
-      throw new ResponseProcessingException("Message replay: " + e.getMessage(), e);
+      throw new ResponseProcessingException(responseID, "Message replay: " + e.getMessage(), e);
     }
     catch (DecryptionException e) {
-      throw new ResponseProcessingException("Failed to decrypt assertion: " + e.getMessage(), e);
+      throw new ResponseProcessingException(responseID, "Failed to decrypt assertion: " + e.getMessage(), e);
     }
   }
 
@@ -235,7 +238,7 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
       return ObjectUtils.unmarshall(new ByteArrayInputStream(decodedBytes), Response.class);
     }
     catch (MessageDecodingException | XMLParserException | UnmarshallingException e) {
-      throw new ResponseProcessingException("Failed to decode message", e);
+      throw new ResponseProcessingException(null, "Failed to decode message", e);
     }
   }
 
@@ -257,12 +260,12 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
     if (input.getAuthnRequest() == null) {
       String msg = String.format("No AuthnRequest available when processing Response [%s]", logId(response));
       log.error("{}", msg);
-      throw new ResponseValidationException(msg);
+      throw new ResponseValidationException(response.getID(), msg);
     }
 
     IDPSSODescriptor descriptor = idpMetadata != null ? idpMetadata.getIDPSSODescriptor(SAMLConstants.SAML20P_NS) : null;
     if (descriptor == null) {
-      throw new ResponseValidationException("Invalid/missing IdP metadata - cannot verify Response signature");
+      throw new ResponseValidationException(response.getID(), "Invalid/missing IdP metadata - cannot verify Response signature");
     }
 
     ValidationContext context = ResponseValidationParametersBuilder.builder()
@@ -290,7 +293,7 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
       break;
     case INVALID:
       log.error("Validation of Response failed - {} [{}]", context.getValidationFailureMessage(), logId(response));
-      throw new ResponseValidationException(context.getValidationFailureMessage());
+      throw new ResponseValidationException(response.getID(), context.getValidationFailureMessage());
     }
   }
 
@@ -323,7 +326,7 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
       String msg = String.format("RelayState variable received with response (%s) does not match the sent one (%s)", relayState, input
         .getRelayState());
       log.error("{} [{}]", msg, logId(response));
-      throw new ResponseValidationException(msg);
+      throw new ResponseValidationException(response.getID(), msg);
     }
   }
 
@@ -344,7 +347,7 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
 
     IDPSSODescriptor descriptor = idpMetadata != null ? idpMetadata.getIDPSSODescriptor(SAMLConstants.SAML20P_NS) : null;
     if (descriptor == null) {
-      throw new ResponseValidationException("Invalid/missing IdP metadata - cannot verify Assertion");
+      throw new ResponseValidationException(response.getID(), "Invalid/missing IdP metadata - cannot verify Assertion");
     }
 
     AuthnRequest authnRequest = input.getAuthnRequest();

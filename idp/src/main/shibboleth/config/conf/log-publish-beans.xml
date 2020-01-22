@@ -18,6 +18,7 @@
    -->
   <bean class="se.elegnamnden.eidas.idp.connector.controller.IdpLogController"
     p:enabled="%{idp.log-publish.enabled:false}"
-    p:processLogPath="%{idp.log-publish.path:}" />
+    p:processLogPath="%{idp.log-publish.path:}"
+    p:statsPath="%{idp.stats-publish.path:}" />
         
 </beans>

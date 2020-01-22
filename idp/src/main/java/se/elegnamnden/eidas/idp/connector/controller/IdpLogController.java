@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 Sweden Connect
+ * Copyright 2017-2020 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -52,12 +53,18 @@ public class IdpLogController implements InitializingBean {
 
   /** The path for the process log. */
   private String processLogPath;
+  
+  /** The path for the statistics log. */
+  private String statsPath;
 
   /** Message returned if the log publisher is not active. */
   private final String NOT_ENABLED = "Log publishing is not enabled";
+  
+  /** Message returned if the stats publisher is not active. */
+  private final String STATS_NOT_ENABLED = "{ \"status\" : \"Statistics publishing is not enabled\" }";
 
   /**
-   * Published the log file.
+   * Publishes the log file.
    * 
    * @param request
    *          the HTTP request
@@ -78,9 +85,37 @@ public class IdpLogController implements InitializingBean {
       return new HttpEntity<byte[]>(contents);
     }
     catch (Exception e) {
+      logger.error("Failed to publish log", e);
       return new HttpEntity<byte[]>(String.format("Failed to publish log - %s", e.getMessage()).getBytes(Charset.defaultCharset()));
     }
   }
+  
+  /**
+   * Publishes the log file.
+   * 
+   * @param request
+   *          the HTTP request
+   * @return the bytes from the log file
+   */
+  @RequestMapping(path = "/stats", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseBody
+  public HttpEntity<byte[]> getStatsLog(HttpServletRequest request) {
+    logger.debug("Request to download statistics from {}", request.getRemoteAddr());
+
+    if (!this.enabled || !StringUtils.hasText(this.statsPath)) {
+      return new HttpEntity<byte[]>(STATS_NOT_ENABLED.getBytes(Charset.defaultCharset()));
+    }
+    
+    try {
+      File file = new File(this.statsPath);
+      byte[] contents = Files.readAllBytes(file.toPath());
+      return new HttpEntity<byte[]>(contents);
+    }
+    catch (Exception e) {
+      logger.error("Failed to publish statistics", e);
+      return new HttpEntity<byte[]>("{ \"status\" : \"Failed to publish log\" }".getBytes(Charset.defaultCharset()));
+    }
+  }  
 
   /**
    * Tells whether the log published is enabled or not.
@@ -100,6 +135,15 @@ public class IdpLogController implements InitializingBean {
    */
   public void setProcessLogPath(String processLogPath) {
     this.processLogPath = processLogPath;
+  }
+  
+  /**
+   * Assigns the path to the statistics log.
+   * 
+   * @param processStatsPath path
+   */
+  public void setStatsPath(String statsPath) {
+    this.statsPath = statsPath;
   }
 
   /** {@inheritDoc} */
