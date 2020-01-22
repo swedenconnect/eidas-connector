@@ -1,22 +1,17 @@
 /*
- * The eidas-connector project is the implementation of the Swedish eIDAS 
- * connector built on top of the Shibboleth IdP.
+ * Copyright 2017-2020 Sweden Connect
  *
- * More details on <https://github.com/elegnamnden/eidas-connector> 
- * Copyright (C) 2017 E-legitimationsnämnden
- * 
- * This program is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License 
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package se.elegnamnden.eidas.idp.connector.sp.impl;
 
@@ -38,23 +33,35 @@ import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingResult;
  */
 public class ResponseProcessingResultImpl implements ResponseProcessingResult {
 
+  /** The ID for the response. */
+  private final String responseID;
+
   /** The assertion. */
-  private Assertion assertion;
+  private final Assertion assertion;
 
   /** The country. */
-  private String country;
+  private final String country;
 
   /**
    * Constructor.
    * 
+   * @param responseID
+   *          the ID from the response
    * @param assertion
-   *          the {@code Assertion}
+   *          the Assertion
    * @param country
    *          the country code for the country in which the IdP that issued the assertion resides
    */
-  public ResponseProcessingResultImpl(Assertion assertion, String country) {
+  public ResponseProcessingResultImpl(final String responseID, final Assertion assertion, final String country) {
+    this.responseID = responseID;
     this.assertion = assertion;
     this.country = country;
+  }
+  
+  /** {@inheritDoc} */
+  @Override
+  public String getResponseID() {
+    return this.responseID;
   }
 
   /** {@inheritDoc} */
@@ -88,17 +95,17 @@ public class ResponseProcessingResultImpl implements ResponseProcessingResult {
   /** {@inheritDoc} */
   @Override
   public DateTime getAuthnInstant() {
-    
+
     DateTime authnInstant = this.assertion.getAuthnStatements().get(0).getAuthnInstant();
-    
+
     // We have already checked the validity of the authentication instant, but if it is
     // after the current time it means that it is within the allowed clock skew. If so,
     // we set it to the current time (it's the best we can do).
-    
+
     if (authnInstant.isAfterNow()) {
       return new DateTime();
     }
-    
+
     return authnInstant;
   }
 

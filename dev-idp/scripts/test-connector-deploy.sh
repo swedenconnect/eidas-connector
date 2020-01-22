@@ -35,6 +35,7 @@ docker run -d --name eidas-connector-dev-idp2 --restart=always \
   -e IDP_LOG_CONSOLE=false \
   -e IDP_LOG_PUBLISH_ENABLED=true \
   -e IDP_LOG_PUBLISH_PATH=/var/log/eidas-connector/idp-process.log \
+  -e IDP_STATS_PUBLISH_PATH=/var/log/eidas-connector/idp-stats.log \
   -v /etc/localtime:/etc/localtime:ro \
   -v /opt/docker/test-eidas-connector/logs:/var/log/eidas-connector \
   -v /opt/docker/test-eidas-connector/etc:/etc/eidas-connector \
