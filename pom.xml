@@ -6,7 +6,7 @@
   <groupId>se.elegnamnden.eidas.idp</groupId>
   <artifactId>eidas-connector-base-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.6.0-SNAPSHOT</version>
+  <version>1.6.0</version>
 
   <name>eIDAS :: Parent POM for the Swedish eIDAS connector</name>
   <description>Parent POM for the Swedish eIDAS connector IdP</description>
@@ -52,7 +52,7 @@
     <shibboleth-base-deps.version>1.7.1</shibboleth-base-deps.version>
 
     <opensaml.eidas.version>1.4.3</opensaml.eidas.version>
-    <eidas-mappings.version>1.2.1-SNAPSHOT</eidas-mappings.version>
+    <eidas-mappings.version>1.2.1</eidas-mappings.version>
 
     <lombok.version>1.18.2</lombok.version>
   </properties>
