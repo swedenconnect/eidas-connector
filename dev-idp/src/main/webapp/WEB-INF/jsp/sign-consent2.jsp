@@ -5,7 +5,7 @@
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <!DOCTYPE html>
 
-<html>
+<html lang="<spring:message code='connector.ui.lang' text='sv' />">
 
 <head>
 <jsp:include page="html-head2.jsp" />
