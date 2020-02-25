@@ -122,6 +122,9 @@
     <logger name="net.shibboleth.idp.attribute.resolver.spring.BaseResolverPluginParser" level="WARN" />
     <logger name="net.shibboleth.ext.spring.error.ExtendedMappingExceptionResolver" level="ERROR" />
     <logger name="net.shibboleth.idp.profile.impl.WebFlowMessageHandlerAdaptor" level="ERROR" />
+    
+    <!-- Stats -->
+    <logger name="EidasStatistics" level="INFO" />
 
     <!-- =========================================================== -->
     <!-- ============== Low Level Details or Changes =============== -->
@@ -276,9 +279,27 @@
         <level>OFF</level>
       </filter>
     </appender>
+    
+    <appender name="IDP_STATS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${idp.logfiles}/idp-stats.log</File>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${idp.logfiles}/idp-stats-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>${idp.loghistory:-180}</maxHistory>
+        </rollingPolicy>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>UTF-8</charset>
+            <Pattern>%msg%n</Pattern>
+        </encoder>
+    </appender>    
 
     <logger name="Shibboleth-Audit" level="ALL">
         <appender-ref ref="${idp.audit.appender:-IDP_AUDIT}"/>
+    </logger>
+
+    <logger name="EidasStatistics" level="INFO">
+        <appender-ref ref="IDP_STATS" />
     </logger>
 
     <logger name="Shibboleth-FTICKS" level="ALL" additivity="false">

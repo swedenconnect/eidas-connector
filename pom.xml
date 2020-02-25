@@ -32,7 +32,7 @@
       <email>martin.lindstrom@litsec.se</email>
       <organization>Litsec AB</organization>
       <organizationUrl>http://www.litsec.se</organizationUrl>
-    </developer>  
+    </developer>
     <developer>
       <name>Stefan Santesson</name>
       <email>stefan@aaa-sec.com</email>
@@ -45,15 +45,15 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.8</java.version>
-    
-    <tomcat.version>8.5.42</tomcat.version>
-    
-    <shibboleth-base.version>1.7.1-SNAPSHOT</shibboleth-base.version>
-    <shibboleth-base-deps.version>1.7.1-SNAPSHOT</shibboleth-base-deps.version>    
-    
-    <opensaml.eidas.version>1.4.1</opensaml.eidas.version>
+
+    <tomcat.version>8.5.50</tomcat.version>
+
+    <shibboleth-base.version>1.7.1</shibboleth-base.version>
+    <shibboleth-base-deps.version>1.7.1</shibboleth-base-deps.version>
+
+    <opensaml.eidas.version>1.4.3</opensaml.eidas.version>
     <eidas-mappings.version>1.2.1-SNAPSHOT</eidas-mappings.version>
-            
+
     <lombok.version>1.18.2</lombok.version>
   </properties>
 
@@ -83,7 +83,7 @@
       </snapshots>
       <name>eIDAS snapshots</name>
       <url>https://maven.eidastest.se/artifactory/eidas-snapshot-local</url>
-    </repository>    
+    </repository>
   </repositories>
 
   <distributionManagement>
@@ -96,11 +96,11 @@
       <url>https://maven.eidastest.se/artifactory/eidas-release-local</url>
     </repository>
   </distributionManagement>
-  
+
   <dependencyManagement>
 
     <dependencies>
-          
+
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-dependency-bom</artifactId>
@@ -108,14 +108,14 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      
+
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-sweid-extensions</artifactId>
         <version>${shibboleth-base.version}</version>
         <scope>provided</scope>
       </dependency>
-      
+
       <dependency>
         <groupId>se.litsec.eidas</groupId>
         <artifactId>eidas-opensaml3</artifactId>
@@ -123,7 +123,7 @@
         <type>jar</type>
         <scope>compile</scope>
       </dependency>
-      
+
       <dependency>
         <groupId>se.elegnamnden.eidas.commons</groupId>
         <artifactId>metadataconfig</artifactId>
@@ -136,26 +136,26 @@
           </exclusion>
         </exclusions>
       </dependency>
-      
+
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.6</version>
-      </dependency>      
-    
+      </dependency>
+
       <dependency>
         <groupId>se.elegnamnden.eidas.commons</groupId>
         <artifactId>eidas-mappings</artifactId>
         <version>${eidas-mappings.version}</version>
         <scope>compile</scope>
       </dependency>
-      
+
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
         <version>${lombok.version}</version>
       </dependency>
-      
+
     </dependencies>
 
   </dependencyManagement>
@@ -169,7 +169,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.6.2</version>
+          <version>3.8.1</version>
           <configuration>
             <source>${java.version}</source>
             <target>${java.version}</target>
@@ -179,13 +179,13 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.0.2</version>
+          <version>3.2.0</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.1.0</version>
           <configuration>
             <filesets>
               <fileset>
@@ -195,19 +195,49 @@
           </configuration>
         </plugin>
 
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.1.1</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.8</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>com.spotify</groupId>
+          <artifactId>dockerfile-maven-plugin</artifactId>
+          <version>1.4.13</version>
+        </plugin>
+
       </plugins>
 
     </pluginManagement>
 
   </build>
-  
+
   <profiles>
     <profile>
       <id>release</id>
-      
+
       <build>
         <plugins>
-        
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
@@ -226,7 +256,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.0.1</version>
+            <version>3.2.0</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
@@ -239,18 +269,18 @@
                 <goals>
                   <goal>test-jar-no-fork</goal>
                 </goals>
-              </execution>              
+              </execution>
             </executions>
           </plugin>
-          
+
         </plugins>
       </build>
-      
+
     </profile>
-  </profiles>  
+  </profiles>
 
   <modules>
-    <module>sp</module> 
+    <module>sp</module>
     <module>tomcat-ip-valve</module>
     <module>redis</module>
     <module>idp</module>

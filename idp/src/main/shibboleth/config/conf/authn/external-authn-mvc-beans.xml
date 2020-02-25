@@ -47,7 +47,9 @@
     p:sessionManager-ref="shibboleth.SessionManager"
     p:signSupportService-ref="eidas.SignSupportService"
     p:attributeToIdMapping-ref="sweid.SAML2AttributeNameToIdMapperService"    
-    p:flowName="authn/External" />    
+    p:flowName="authn/External" /> 
+    
+ <bean id="eidas.stats" class="se.elegnamnden.eidas.idp.statistics.StatisticsEngine" />
     
   <bean id="eidas.ProxyAuthenticationController" class="se.elegnamnden.eidas.idp.connector.controller.ProxyAuthenticationController" 
     parent="sweid.AbstractExternalAuthenticationController"
@@ -60,6 +62,7 @@
     p:countrySelectionHandler-ref="eidas.CountrySelectionHandler"
     p:signMessageUiHandler-ref="eidas.SignMessageUiHandler"
     p:uiLanguageHandler-ref="eidas.UiLanguageHandler" 
-    p:verboseStatusMessage="%{idp.errors.verbose:false}" />    
+    p:verboseStatusMessage="%{idp.errors.verbose:false}"
+    p:statistics-ref="eidas.stats" />
         
 </beans>
