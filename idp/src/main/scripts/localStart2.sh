@@ -282,6 +282,7 @@ export CATALINA_OPTS="-Xms512m -Xmx1536m \
   -Dtomcat.hostname=$TOMCAT_HOSTNAME \
   -Dtomcat.tls.port=${TOMCAT_TLS_PORT} \
   -Dtomcat.ajp.port=8099 \
+  -Dtomcat.session.cookie.name=JSESSIONID.CONNECTOR.LOCAL \
   -Dtomcat.tls.server-key=$TOMCAT_TLS_SERVER_KEY \
   -Dtomcat.tls.server-key-type=$TOMCAT_TLS_SERVER_KEY_TYPE \
   -Dtomcat.tls.server-certificate=$TOMCAT_TLS_SERVER_CERTIFICATE \

@@ -35,6 +35,7 @@ docker run -d --name eidas-connector --restart=always \
   -e IDP_PRID_SERVICE_URL=https://docker.for.mac.localhost:9443/prid \
   -e IDP_SEALER_PASSWORD=3eifrUFrujUefIo8FJN4 \
   -e TOMCAT_PROXY_SHARED_SECRET=123456 \
+  -e TOMCAT_SESSION_COOKIE_NAME=JSESSIONID.CONNECTOR.LOCAL \
   -v /tmp/eidas-connector-credentials:/etc/eidas-connector-credentials \
   -v /tmp/eidas-connector:/var/log/eidas-connector \
   -v ${LOCAL_ENV_PATH}:/etc/eidas-connector \
