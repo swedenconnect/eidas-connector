@@ -46,6 +46,8 @@ export TOMCAT_TLS_PORT
 export TOMCAT_AJP_PORT
 : ${TOMCAT_HOSTNAME:=localhost}
 export TOMCAT_HOSTNAME
+: ${TOMCAT_SESSION_COOKIE_NAME:=JSESSIONID.CONNECTOR}
+export TOMCAT_SESSION_COOKIE_NAME
 
 : ${TOMCAT_TLS_SERVER_KEY:=/etc/eidas-connector/credentials/tomcat/tomcat-key.pem}
 : ${TOMCAT_TLS_SERVER_CERTIFICATE:=/etc/eidas-connector/credentials/tomcat/tomcat-cert.pem}
@@ -627,6 +629,7 @@ export CATALINA_OPTS="\
           -Dtomcat.hostname=$TOMCAT_HOSTNAME \
           -Dtomcat.tls.port=$TOMCAT_TLS_PORT \
           -Dtomcat.ajp.port=$TOMCAT_AJP_PORT \
+          -Dtomcat.session.cookie.name=$TOMCAT_SESSION_COOKIE_NAME \
           -Dtomcat.tls.server-key=$TOMCAT_TLS_SERVER_KEY \
           -Dtomcat.tls.server-key-type=$TOMCAT_TLS_SERVER_KEY_TYPE \
           -Dtomcat.tls.server-certificate=$TOMCAT_TLS_SERVER_CERTIFICATE \

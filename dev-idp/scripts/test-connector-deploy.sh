@@ -25,6 +25,7 @@ docker run -d --name eidas-connector-dev-idp2 --restart=always \
   -e TOMCAT_TLS_SERVER_CERTIFICATE=/opt/eidas-connector/credentials/tomcat/tomcat-cert.pem \
   -e TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=/opt/eidas-connector/credentials/tomcat/tomcat-chain.pem \
   -e TOMCAT_PROXY_SHARED_SECRET=dummy \
+  -e TOMCAT_SESSION_COOKIE_NAME=JSESSIONID.CONNECTOR.SAND2 \
   -e IDP_CREDENTIALS=/opt/eidas-connector/credentials \
   -e SP_ENCRYPTION_KEY=/opt/eidas-connector/credentials/sp/sp-ec-encryption.key \
   -e SP_ENCRYPTION_CERT=/opt/eidas-connector/credentials/sp/sp-ec-encryption.crt \
