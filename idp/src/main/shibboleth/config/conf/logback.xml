@@ -292,14 +292,21 @@
             <charset>UTF-8</charset>
             <Pattern>%msg%n</Pattern>
         </encoder>
-    </appender>    
+    </appender>
+    
+    <appender name="IDP_STATS_SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+        <syslogHost>${idp.stats.syslog.host:-localhost}</syslogHost>
+        <port>${idp.stats.syslog.port:-514}</port>
+        <facility>${idp.stats.syslog.facility:-AUTH}</facility>
+        <suffixPattern>%msg</suffixPattern>
+    </appender>
 
     <logger name="Shibboleth-Audit" level="ALL">
         <appender-ref ref="${idp.audit.appender:-IDP_AUDIT}"/>
     </logger>
 
     <logger name="EidasStatistics" level="INFO">
-        <appender-ref ref="IDP_STATS" />
+        <appender-ref ref="${idp.stats.appender:-IDP_STATS}" />
     </logger>
 
     <logger name="Shibboleth-FTICKS" level="ALL" additivity="false">

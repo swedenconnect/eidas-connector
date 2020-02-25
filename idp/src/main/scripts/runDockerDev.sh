@@ -4,6 +4,9 @@
 # Start-up script for running the eIDAS connector locally in development mode in a Docker container
 #
 
+echo Undeploying eidas-connector ...
+docker rm eidas-connector --force
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 rm -rf /tmp/eidas-connector-credentials 2>/dev/null
