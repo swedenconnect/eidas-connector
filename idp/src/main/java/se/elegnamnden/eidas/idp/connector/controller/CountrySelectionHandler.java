@@ -1,22 +1,17 @@
 /*
- * The eidas-connector project is the implementation of the Swedish eIDAS 
- * connector built on top of the Shibboleth IdP.
+ * Copyright 2017-2020 Sweden Connect
  *
- * More details on <https://github.com/elegnamnden/eidas-connector> 
- * Copyright (C) 2017 E-legitimationsnämnden
- * 
- * This program is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License 
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package se.elegnamnden.eidas.idp.connector.controller;
 
@@ -90,6 +85,9 @@ public class CountrySelectionHandler implements InitializingBean {
   /** Cookie domain. */
   private String cookieDomain;
 
+  /** Cookie path. */
+  private String cookiePath;
+
   /**
    * Returns the selected country by inspecting the "selected country" cookies
    * 
@@ -116,17 +114,17 @@ public class CountrySelectionHandler implements InitializingBean {
     if (StringUtils.hasText(this.cookieDomain)) {
       cookie.setDomain(this.cookieDomain);
     }
-    cookie.setPath("/idp");
+    cookie.setPath(this.cookiePath);
     cookie.setHttpOnly(true);
     cookie.setSecure(true);
     cookie.setMaxAge(FOREVER);
     httpResponse.addCookie(cookie);
-    
+
     cookie = new Cookie(this.selectedSessionCountryCookieName, selectedCountry);
     if (StringUtils.hasText(this.cookieDomain)) {
       cookie.setDomain(this.cookieDomain);
     }
-    cookie.setPath("/idp");
+    cookie.setPath(this.cookiePath);
     cookie.setHttpOnly(true);
     cookie.setSecure(true);
     cookie.setMaxAge(-1);
@@ -281,6 +279,16 @@ public class CountrySelectionHandler implements InitializingBean {
     this.cookieDomain = cookieDomain;
   }
 
+  /**
+   * Assigns the cookie path.
+   * 
+   * @param cookiePath
+   *          the cookie path to use
+   */
+  public void setCookiePath(String cookiePath) {
+    this.cookiePath = cookiePath;
+  }
+
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
@@ -294,6 +302,9 @@ public class CountrySelectionHandler implements InitializingBean {
       this.selectedSessionCountryCookieName = DEFAULT_SELECTED_SESSION_COUNTRY_COOKIE_NAME;
       log.debug("Name of cookie that holds selected country for session was not given - defaulting to {}",
         this.selectedSessionCountryCookieName);
+    }
+    if (!StringUtils.hasText(this.cookiePath)) {
+      this.cookiePath = "/idp";
     }
   }
 
