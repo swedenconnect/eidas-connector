@@ -241,45 +241,63 @@ export FEDERATION_METADATA_URL FEDERATION_METADATA_VALIDATION_CERT EIDAS_METADAT
 : ${IDP_LOG_SETTINGS_FILE:=""}
 export IDP_LOG_SETTINGS_FILE
 
+# Audit syslog and F-TICKS
+#
 : ${IDP_SYSLOG_PORT:=514}
 export IDP_SYSLOG_PORT
 
+# The default is to log audit-logs to file and write F-TICKS entries to the process log
 export IDP_AUDIT_APPENDER=IDP_AUDIT
 export IDP_FTICKS_APPENDER=IDP_PROCESS
-export IDP_SYSLOG_HOST_INT=localhost
 
+# If IDP_SYSLOG_HOST is set, we use syslog for Audit and F-TICKS logging
 if [ -n "$IDP_SYSLOG_HOST" ]; then
   export IDP_AUDIT_APPENDER=IDP_AUDIT_SYSLOG
   export IDP_FTICKS_APPENDER=IDP_FTICKS
-  export IDP_SYSLOG_HOST_INT=$IDP_SYSLOG_HOST
 fi
 
+# Set syslog facility for audit and syslog
 : ${IDP_FTICKS_SYSLOG_FACILITY:=AUTH}
 : ${IDP_AUDIT_SYSLOG_FACILITY:=AUTH}
 export IDP_FTICKS_SYSLOG_FACILITY IDP_AUDIT_SYSLOG_FACILITY
 
+# F-TICKS settings
 : ${IDP_FTICKS_ALGORITHM:=SHA-256}
 : ${IDP_FTICKS_SALT:=kdssdjas987ghdasn}
 export IDP_FTICKS_ALGORITHM IDP_FTICKS_SALT
 
+# Statistics logging
+#
+
+# The default is to log statistics entries to file
+export IDP_STATS_APPENDER=IDP_STATS
+
+# If IDP_STATS_SYSLOG_HOST is set, we use syslog for Statistics logging
+if [ -n "$IDP_STATS_SYSLOG_HOST" ]; then
+  export IDP_STATS_APPENDER=IDP_STATS_SYSLOG
+fi
+
+: ${IDP_STATS_SYSLOG_PORT:=514}
+: ${IDP_STATS_SYSLOG_FACILITY:=AUTH}
+export IDP_STATS_SYSLOG_PORT IDP_STATS_SYSLOG_FACILITY
+
+# Process logging
+#
 : ${IDP_LOG_CONSOLE:=false}
 export IDP_LOG_CONSOLE
+
 export IDP_PROCESS_APPENDER=IDP_PROCESS
 if [ "$IDP_LOG_CONSOLE" = true ]; then
   export IDP_PROCESS_APPENDER=CONSOLE
 fi
 
+if [ -n "$IDP_PROCESS_SYSLOG_HOST" ]; then
+  export IDP_PROCESS_APPENDER=IDP_PROCESS_SYSLOG
+fi
+
 : ${IDP_PROCESS_SYSLOG_PORT:=514}
 : ${IDP_PROCESS_SYSLOG_FACILITY:=AUTH}
 export IDP_PROCESS_SYSLOG_PORT IDP_PROCESS_SYSLOG_FACILITY
-
-export IDP_PROCESS_SYSLOG_HOST_INT=localhost
-
-if [ -n "$IDP_PROCESS_SYSLOG_HOST" ]; then
-  export IDP_PROCESS_APPENDER=IDP_PROCESS_SYSLOG
-  export IDP_PROCESS_SYSLOG_HOST_INT=$IDP_SYSLOG_HOST
-fi
-
 #
 # Devel only
 #
@@ -351,21 +369,26 @@ export JAVA_OPTS="\
           -Didp.service.metadata.resources=${IDP_METADATA_RESOURCES_BEAN} \
           -Didp.log-settings.file=$IDP_LOG_SETTINGS_FILE \
           -Didp.audit.appender=$IDP_AUDIT_APPENDER \
-          -Didp.syslog.host=$IDP_SYSLOG_HOST_INT \
+          -Didp.syslog.host=$IDP_SYSLOG_HOST \
           -Didp.syslog.facility=$IDP_AUDIT_SYSLOG_FACILITY \
           -Didp.syslog.port=$IDP_SYSLOG_PORT \
           -Didp.fticks.appender=$IDP_FTICKS_APPENDER \
-          -Didp.fticks.loghost=$IDP_SYSLOG_HOST_INT \
+          -Didp.fticks.loghost=$IDP_SYSLOG_HOST \
           -Didp.fticks.facility=$IDP_FTICKS_SYSLOG_FACILITY \
           -Didp.fticks.logport=$IDP_SYSLOG_PORT \
           -Didp.fticks.algorithm=$IDP_FTICKS_ALGORITHM \
           -Didp.fticks.salt=$IDP_FTICKS_SALT \
-          -Didp.process.syslog.host=$IDP_PROCESS_SYSLOG_HOST_INT \
+          -Didp.process.syslog.host=$IDP_PROCESS_SYSLOG_HOST \
           -Didp.process.syslog.facility=$IDP_PROCESS_SYSLOG_FACILITY \
           -Didp.process.syslog.port=$IDP_PROCESS_SYSLOG_PORT \
           -Didp.consent.appender=NOOP_APPENDER \
           -Didp.warn.appender=NOOP_APPENDER \
           -Didp.process.appender=$IDP_PROCESS_APPENDER \
+          -Didp.process.appender=$IDP_PROCESS_APPENDER \
+          -Didp.stats.appender=$IDP_STATS_APPENDER \
+          -Didp.stats.syslog.host=$IDP_STATS_SYSLOG_HOST \
+          -Didp.stats.syslog.port=$IDP_STATS_SYSLOG_PORT \
+          -Didp.stats.syslog.facility=$IDP_STATS_SYSLOG_FACILITY \
           -Didp.log-publish.enabled=$IDP_LOG_PUBLISH_ENABLED \
           -Didp.log-publish.path=$IDP_LOG_PUBLISH_PATH \
           -Didp.stats-publish.path=$IDP_STATS_PUBLISH_PATH \
@@ -576,14 +599,17 @@ if [ -n "$IDP_TLS_TRUSTED_CERTS" ]; then
   TMP_CA_STORE=/tmp/trustedcas
   rm -rf ${TMP_CA_STORE}
   mkdir ${TMP_CA_STORE}
-  
+    
   csplit -s -f ${TMP_CA_STORE}/ca- ${IDP_TLS_TRUSTED_CERTS} '/-----BEGIN CERTIFICATE-----/' '{*}'
   
-  for cafile in `\ls ${TMP_CA_STORE}/* 2>/dev/null`
+  for cafile in ${TMP_CA_STORE}/ca-*
   do
-    keytool -import -file $cafile -alias `basename $cafile` -trustcacerts -keystore ${IDP_TLS_TRUST_KEYSTORE} -storepass ${IDP_TLS_TRUST_KEYSTORE_PASSWORD} -noprompt 2>/dev/null
+    # csplit sometimes creates empty files
+    if [ -s "$cafile" ]; then
+      keytool -import -file $cafile -alias `basename $cafile` -trustcacerts -keystore ${IDP_TLS_TRUST_KEYSTORE} -storepass ${IDP_TLS_TRUST_KEYSTORE_PASSWORD} -noprompt 2>/dev/null
+    fi
   done
-  
+    
   if ! [ "$(ls -A $TMP_CA_STORE)" ]; then
     echo "$IDP_TLS_TRUST_KEYSTORE contains no (valid) certificates - at least one is required" >&2
     exit 1

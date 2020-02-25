@@ -43,7 +43,7 @@ public enum StatisticsEventType {
   REJECTED_SIGNATURE("rejected-signature"),
   
   /** Issued for authentication success. */
-  AUTHN_SUCCESS("authn-sucess"),
+  AUTHN_SUCCESS("authn-success"),
   
   /** A bad request was received from Swedish SP. */
   ERROR_BAD_REQUEST("error-authnrequest"),

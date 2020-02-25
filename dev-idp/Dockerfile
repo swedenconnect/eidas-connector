@@ -3,7 +3,7 @@ FROM openjdk:8-jre
 RUN mkdir /opt/eidas-connector
 ADD target/tomcat /opt/eidas-connector/tomcat/
 ADD target/shibboleth /opt/eidas-connector/shibboleth/
-Add credentials /opt/eidas-connector/credentials
+ADD credentials /opt/eidas-connector/credentials
 
 # Redirecting log directories
 RUN rm -rf /opt/eidas-connector/tomcat/logs && ln -s /var/log/eidas-connector/ /opt/eidas-connector/tomcat/logs
