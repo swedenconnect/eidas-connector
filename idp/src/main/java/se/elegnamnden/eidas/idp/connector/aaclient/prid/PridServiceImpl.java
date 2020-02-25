@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 Sweden Connect
+ * Copyright 2017-2020 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -52,6 +53,7 @@ public class PridServiceImpl implements PridService, InitializingBean {
    */
   @Override
   public PridResponse getPrid(String eidasPersonIdentifier, String country) throws AttributeAuthorityException {
+    
     try {
       URI uri = new URI(String.format("%s/generate?id=%s&c=%s", this.pridServiceUrl, eidasPersonIdentifier, country));
 
@@ -74,6 +76,7 @@ public class PridServiceImpl implements PridService, InitializingBean {
     }
     catch (URISyntaxException | RestClientException e) {
       log.error("Failure communicating with PRID service - {}", e.getMessage(), e);
+      log.error("PRID: In case it's a TLS error: javax.net.ssl.trustStore={}", System.getProperty("javax.net.ssl.trustStore"));
       throw new AttributeAuthorityException("Failure querying PRID service", e);
     }
   }
@@ -96,6 +99,14 @@ public class PridServiceImpl implements PridService, InitializingBean {
       this.pridServiceUrl = this.pridServiceUrl.substring(0, this.pridServiceUrl.length() - 1);
     }
     this.restTemplate = new RestTemplate();
+    
+    final String trustStore = System.getProperty("javax.net.ssl.trustStore");
+    if (!StringUtils.hasText(trustStore)) {
+      log.warn("No TLS trust store set - PRID service may not work");
+    }
+    else {
+      log.info("PRID service will use TLS trust store: {}", trustStore);
+    }
   }
 
 }

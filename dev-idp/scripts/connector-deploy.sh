@@ -26,6 +26,7 @@ docker run -d --name eidas-connector-dev-idp --restart=always \
   -e IDP_CREDENTIALS=/opt/eidas-connector/credentials \
   -e SP_ENCRYPTION_KEY=/opt/eidas-connector/credentials/sp/sp-encryption.key \
   -e SP_ENCRYPTION_CERT=/opt/eidas-connector/credentials/sp/sp-encryption.crt \
+  -e IDP_TLS_TRUSTED_CERTS=/opt/eidas-connector/credentials/tlstrust.pem \
   -e IDP_SEALER_PASSWORD=3eifrUFrujUefIo8FJN4 \
   -e IDP_PERSISTENT_ID_SALT=jkio98gbnmklop0Pr5WTvCgh \
   -e IDP_ERRORS_VERBOSE=true \
