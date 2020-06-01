@@ -6,7 +6,7 @@
   <groupId>se.elegnamnden.eidas.idp</groupId>
   <artifactId>eidas-connector-base-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.6.0</version>
+  <version>1.6.1</version>
 
   <name>eIDAS :: Parent POM for the Swedish eIDAS connector</name>
   <description>Parent POM for the Swedish eIDAS connector IdP</description>
@@ -48,8 +48,8 @@
 
     <tomcat.version>8.5.50</tomcat.version>
 
-    <shibboleth-base.version>1.7.1</shibboleth-base.version>
-    <shibboleth-base-deps.version>1.7.1</shibboleth-base-deps.version>
+    <shibboleth-base.version>1.7.2</shibboleth-base.version>
+    <shibboleth-base-deps.version>1.7.2</shibboleth-base-deps.version>
 
     <opensaml.eidas.version>1.4.3</opensaml.eidas.version>
     <eidas-mappings.version>1.2.1</eidas-mappings.version>
@@ -100,7 +100,7 @@
   <dependencyManagement>
 
     <dependencies>
-
+    
       <dependency>
         <groupId>se.litsec.sweid.idp</groupId>
         <artifactId>shibboleth-base-dependency-bom</artifactId>
@@ -122,6 +122,12 @@
         <version>${opensaml.eidas.version}</version>
         <type>jar</type>
         <scope>compile</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>se.swedenconnect.opensaml</groupId>
+            <artifactId>opensaml-security-ext</artifactId>
+          </exclusion>
+        </exclusions>        
       </dependency>
 
       <dependency>
