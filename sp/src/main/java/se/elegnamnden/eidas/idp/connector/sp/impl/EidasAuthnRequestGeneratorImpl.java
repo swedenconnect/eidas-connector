@@ -118,6 +118,11 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
       .scoping(
         ScopingBuilder.builder().requesterIDs(input.getNationalSpEntityID()).build())
       .build();
+    
+    // The builder automatically adds the POST binding if not set. The eIDAS spec says that
+    // we shouldn't assign the binding attribute, so we remove it ...
+    //
+    authnRequest.setProtocolBinding(null);
 
     if (log.isTraceEnabled()) {
       log.trace("Connector SP sending AuthnRequest: {}", ObjectUtils.toStringSafe(authnRequest));
