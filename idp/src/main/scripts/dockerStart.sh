@@ -236,6 +236,12 @@ export IDP_METADATA_RESOURCES_BEAN
 export FEDERATION_METADATA_URL FEDERATION_METADATA_VALIDATION_CERT EIDAS_METADATA_SERVICE_LIST_URL EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT EIDAS_METADATA_URL EIDAS_METADATA_VALIDATION_CERT EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION
 
 #
+# Settings for interoperability
+#
+: ${IDP_SP_REQUEST_INCLUDE_SPTYPE:=true}
+: ${IDP_SP_REQUEST_SKIP_SCOPING_FOR:=""}
+
+#
 # Log settings
 #
 
@@ -369,6 +375,8 @@ export JAVA_OPTS="\
           -Didp.metadata.eidas.ignore-signature-validation=${EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION} \
           -Didp.test.sp.metadata=${DEVEL_TEST_SP_METADATA} \
           -Didp.service.metadata.resources=${IDP_METADATA_RESOURCES_BEAN} \
+          -Didp.sp.request.include-sptype=${IDP_SP_REQUEST_INCLUDE_SPTYPE} \
+          -Didp.sp.request.skip-scoping-for=${IDP_SP_REQUEST_SKIP_SCOPING_FOR} \
           -Didp.log-settings.file=$IDP_LOG_SETTINGS_FILE \
           -Didp.audit.appender=$IDP_AUDIT_APPENDER \
           -Didp.syslog.host=$IDP_SYSLOG_HOST \

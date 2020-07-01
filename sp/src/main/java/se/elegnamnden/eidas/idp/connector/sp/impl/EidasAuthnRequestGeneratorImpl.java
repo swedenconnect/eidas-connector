@@ -20,6 +20,7 @@ import org.opensaml.core.xml.Namespace;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Extensions;
 import org.opensaml.saml.saml2.core.NameID;
+import org.opensaml.saml.saml2.core.Scoping;
 import org.opensaml.saml.saml2.core.StatusResponseType;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.SingleSignOnService;
@@ -102,6 +103,13 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
       extensions.getUnknownXMLObjects().add(spType);      
     }
     extensions.getUnknownXMLObjects().add(input.getRequestedAttributes());
+    
+    // Scoping: Some countries can't handle requests containing the element.
+    //
+    Scoping scoping = null;
+    if (config.isIncludeScopingElement(input.getCountry())) {
+      scoping = ScopingBuilder.builder().requesterIDs(input.getNationalSpEntityID()).build();
+    }
 
     AuthnRequest authnRequest = builder
       .id(this.generateID())
@@ -115,8 +123,7 @@ public class EidasAuthnRequestGeneratorImpl extends AbstractAuthnRequestGenerato
       .requestedAuthnContext(input.getRequestedAuthnContext())
       .consent(StatusResponseType.UNSPECIFIED_CONSENT)
       .extensions(extensions)
-      .scoping(
-        ScopingBuilder.builder().requesterIDs(input.getNationalSpEntityID()).build())
+      .scoping(scoping)
       .build();
     
     // The builder automatically adds the POST binding if not set. The eIDAS spec says that
