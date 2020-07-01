@@ -174,7 +174,8 @@
     <property name="config">
       <bean class="se.elegnamnden.eidas.idp.connector.sp.impl.AuthnRequestGeneratorConfig"
         p:spSecurityConfiguration-ref="eidas.SpSecurityConfiguration"
-        p:includeSpType="%{idp.sp.request.include-sptype:true}" 
+        p:includeSpType="%{idp.sp.request.include-sptype:true}"
+        p:skipScopingElementFor="%{idp.sp.request.skip-scoping-for:}"
         p:preferredBinding="%{idp.sp.request.preferred-binding:urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST}" />
     </property>
   </bean>
