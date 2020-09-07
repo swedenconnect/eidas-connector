@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 E-legitimationsnämnden
+ * Copyright 2017-2020 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package se.elegnamnden.eidas.idp.connector.service;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,9 +28,11 @@ import java.util.stream.Collectors;
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
+import org.opensaml.saml.saml2.core.StatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import se.elegnamnden.eidas.mapping.loa.LevelOfAssuranceMappings;
@@ -37,6 +40,7 @@ import se.litsec.eidas.opensaml.common.EidasConstants;
 import se.litsec.eidas.opensaml.common.EidasLoaEnum;
 import se.litsec.opensaml.saml2.core.build.RequestedAuthnContextBuilder;
 import se.litsec.shibboleth.idp.authn.ExternalAutenticationErrorCodeException;
+import se.litsec.shibboleth.idp.authn.IdpErrorStatusException;
 import se.litsec.shibboleth.idp.authn.context.AuthnContextClassContext;
 import se.litsec.shibboleth.idp.authn.service.impl.AuthnContextServiceImpl;
 import se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.LoaEnum;
@@ -53,6 +57,9 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
 
   /** Mappings between eIDAs and national (Swedish) eID LoA URI:s. */
   private LevelOfAssuranceMappings loaMappings;
+
+  /** A whitelist for those SP:s that are allowed to send ping AuthnRequest messages. */
+  private List<String> pingWhitelist;
 
   /** Helper for sorting eIDAS notified URI:s. */
   private static Map<String, Integer> eidasNotifiedRank = new HashMap<>();
@@ -103,14 +110,57 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
     eidasNonNotifiedRank.put(EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED2, 1);
   }
 
+  /**
+   * Overrides implementation in order to support eIDAS test AuthnContext URI.
+   */
+  @Override
+  public void processRequest(final ProfileRequestContext<?, ?> context) throws ExternalAutenticationErrorCodeException {
+
+    final AuthnContextClassContext authnContextContext = this.getAuthnContextClassContext(context);
+
+    // Does this request hold a test AuthnContext URI?
+    //
+    if (this.containsEidasTestLoa(authnContextContext)) {
+      final String entityID = this.getPeerMetadata(context).getEntityID();
+      if (!this.pingWhitelist.contains(entityID)) {
+        // No reason to tell the SP that there is a eIDAS ping ...
+        throw new IdpErrorStatusException(IdpErrorStatusException.getStatusBuilder(StatusCode.REQUESTER)
+          .subStatusCode(StatusCode.NO_AUTHN_CONTEXT).statusMessage("Unknown authentication context class was requested").build());
+      }      
+      if (authnContextContext.getAuthnContextClassRefs().size() > 1) {
+        throw new IdpErrorStatusException(IdpErrorStatusException.getStatusBuilder(StatusCode.REQUESTER)
+          .subStatusCode(StatusCode.REQUEST_UNSUPPORTED)
+          .statusMessage(String.format("If '%s' is requested, no other LoA:s must be requested", EIDAS_TEST_LOA)).build());
+      }
+      if (this.isSignatureServicePeer(context)) {
+        throw new IdpErrorStatusException(IdpErrorStatusException.getStatusBuilder(StatusCode.REQUESTER)
+          .subStatusCode(StatusCode.NO_AUTHN_CONTEXT)
+          .statusMessage(String.format("A signature service may not use the '%s' LoA", EIDAS_TEST_LOA)).build());
+      }
+      log.info("Processing eIDAS ping request [{}]", this.getLogString(context));
+    }
+    else {
+      // The normal case ...
+      super.processRequest(context);
+    }
+  }
+
   /** {@inheritDoc} */
   @Override
-  public List<String> getSendAuthnContextClassRefs(ProfileRequestContext<?, ?> context, List<String> assuranceURIs,
-      boolean idpSupportsSignMessage) throws ExternalAutenticationErrorCodeException {
+  public List<String> getSendAuthnContextClassRefs(final ProfileRequestContext<?, ?> context, final List<String> assuranceURIs,
+      final boolean idpSupportsSignMessage) throws ExternalAutenticationErrorCodeException {
 
     final String logId = this.getLogString(context);
     AuthnContextClassContext authnContextClassContext = this.getAuthnContextClassContext(context);
     authnContextClassContext.setSupportsNonNotifiedConcept(false);
+
+    // Special purpose test URI?
+    //
+    if (this.containsEidasTestLoa(authnContextClassContext)) {
+      authnContextClassContext.setAuthnContextComparison(AuthnContextComparisonTypeEnumeration.EXACT);
+      authnContextClassContext.setProxiedAuthnContextClassRefs(Arrays.asList(EIDAS_TEST_LOA));
+      return authnContextClassContext.getAuthnContextClassRefs();
+    }
 
     // Iterate over all assurance-certification URI:s
     // - Delete those not understood
@@ -139,7 +189,7 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
             possibleDeliveryUris.addAll(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED,
               EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED));
           }
-          else if (au.equals(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED) 
+          else if (au.equals(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED)
               || au.equals(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2)) {
             possibleDeliveryUris.add(EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED);
           }
@@ -191,7 +241,8 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
     if (urisToRequest.isEmpty()) {
       final String msg = "No matching AuthnContext URI:s remain after matching against IdP declared assurance certification";
       log.info("{} - failing [{}]", msg, logId);
-      throw new ExternalAutenticationErrorCodeException(AuthnEventIds.REQUEST_UNSUPPORTED, msg);
+      throw new IdpErrorStatusException(IdpErrorStatusException.getStatusBuilder(StatusCode.REQUESTER)
+        .subStatusCode(StatusCode.NO_AUTHN_CONTEXT).statusMessage(msg).build());
     }
 
     if (authnContextClassContext.getAuthnContextComparison().equals(AuthnContextComparisonTypeEnumeration.MINIMUM)) {
@@ -215,9 +266,24 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
    *          the Swedish AuthnContext URI:s received in the SP request
    * @param supportsNonNotifiedConcept
    *          tells whether the foreign PS understands the non-notified URI:s
-   * @return if the URI is accepted as a valid LoA {@code true} is returned, otherwise {@code false}
+   * @return if the URI is accepted as a valid LoA true is returned, otherwise false
    */
-  private boolean canAccept(String eidasUri, List<String> requestedAuthnContextUris, boolean supportsNonNotifiedConcept) {
+  private boolean canAccept(final String eidasUri, final List<String> requestedAuthnContextUris, final boolean supportsNonNotifiedConcept) {
+
+    // Special handling for eIDAS ping URI
+    //
+    if (EIDAS_TEST_LOA.equals(eidasUri)) {
+      if (requestedAuthnContextUris != null && requestedAuthnContextUris.stream()
+        .filter(a -> EIDAS_TEST_LOA.equals(a))
+        .findFirst()
+        .isPresent()) {
+        return true;
+      }
+      else {
+        return false;
+      }
+    }
+
     boolean notified = isNotifiedEidasUri(eidasUri);
     for (String u : requestedAuthnContextUris) {
       String e = this.loaMappings.toEidasURI(u, supportsNonNotifiedConcept);
@@ -252,7 +318,7 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
 
   /** {@inheritDoc} */
   @Override
-  public RequestedAuthnContext getSendRequestedAuthnContext(ProfileRequestContext<?, ?> context, List<String> assuranceURIs)
+  public RequestedAuthnContext getSendRequestedAuthnContext(final ProfileRequestContext<?, ?> context, final List<String> assuranceURIs)
       throws ExternalAutenticationErrorCodeException {
 
     final String logId = this.getLogString(context);
@@ -282,7 +348,8 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
 
   /** {@inheritDoc} */
   @Override
-  public String getReturnAuthnContextClassRef(ProfileRequestContext<?, ?> context, String authnContextUri, boolean displayedSignMessage)
+  public String getReturnAuthnContextClassRef(
+      final ProfileRequestContext<?, ?> context, final String authnContextUri, final boolean displayedSignMessage)
       throws ExternalAutenticationErrorCodeException {
 
     final String logId = this.getLogString(context);
@@ -292,11 +359,18 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
     // Make sure we received one of the requested AuthnContextClassRef URI:s.
     //
     if (!this.isIssuedAuthnContextClassRefAccepted(authnContextClassContext, authnContextUri)) {
-      final String msg = String.format(
-        "AuthnContextClassRef URI received in assertion from IdP (%s) does not match any of the URI:s (implicitly) sent in the AuthnRequest (%s)",
-        authnContextUri, authnContextClassContext.getProxiedAuthnContextClassRefs());
-      log.info("{} [{}]", msg, logId);
-      throw new ExternalAutenticationErrorCodeException(AuthnEventIds.AUTHN_EXCEPTION, msg);
+      log.info(
+        "AuthnContextClassRef URI received in assertion from IdP ({}) does not match any of the URI:s (implicitly) sent in the AuthnRequest ({}) [{}]", 
+        authnContextUri, authnContextClassContext.getProxiedAuthnContextClassRefs(), logId);
+      
+      throw new IdpErrorStatusException(IdpErrorStatusException.getStatusBuilder(StatusCode.RESPONDER)
+        .subStatusCode(StatusCode.AUTHN_FAILED).statusMessage("Unexpected AuthnContext received from eIDAS proxy service").build());
+    }
+
+    // Special handling for test URI
+    //
+    if (EIDAS_TEST_LOA.equals(authnContextUri)) {
+      return authnContextUri;
     }
 
     // OK, that seems OK. Next, we have to find the strongest possible requested URI that is equal to or weaker
@@ -362,10 +436,10 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
     }
 
     if (authnContextUriToReturn == null) {
-      final String msg = String.format(
-        "AuthnContextClassRef received from IdP '%s' cannot be mapped against requested URI:s", authnContextUri);
-      log.info("{} [{}]", msg, logId);
-      throw new ExternalAutenticationErrorCodeException(AuthnEventIds.AUTHN_EXCEPTION, msg);
+      log.info("AuthnContextClassRef received from IdP '{}' cannot be mapped against requested URI:s [{}]", authnContextUri, logId);
+      
+      throw new IdpErrorStatusException(IdpErrorStatusException.getStatusBuilder(StatusCode.RESPONDER)
+        .subStatusCode(StatusCode.AUTHN_FAILED).statusMessage("Unexpected AuthnContext received from eIDAS proxy service").build());
     }
 
     return authnContextUriToReturn;
@@ -378,13 +452,17 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
    *          the context
    * @param authnContextUri
    *          the received AuthnContext URI
-   * @return {@code true} if the URI is accepted and {@code false} otherwise
+   * @return true if the URI is accepted and false otherwise
    */
-  private boolean isIssuedAuthnContextClassRefAccepted(AuthnContextClassContext authnContextClassContext, String authnContextUri) {
+  private boolean isIssuedAuthnContextClassRefAccepted(final AuthnContextClassContext authnContextClassContext,
+      final String authnContextUri) {
 
     List<String> requestedUris = authnContextClassContext.getProxiedAuthnContextClassRefs();
     if (requestedUris == null || requestedUris.isEmpty()) {
-      // If we did not request anything, we accept what we were given.
+      // If we did not request anything, we accept what we were given (except for the test LoA).
+      if (EIDAS_TEST_LOA.equals(authnContextUri)) {
+        return false;
+      }
       return true;
     }
 
@@ -410,7 +488,7 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
    * 
    * @param uri
    *          the URI to test
-   * @return {@code true} if the URI represents a non-notified scheme and {@code false} otherwise
+   * @return true if the URI represents a non-notified scheme and false otherwise
    */
   private static boolean isNonNotifiedEidasUri(String uri) {
     return EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.equals(uri)
@@ -426,9 +504,9 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
    * 
    * @param uri
    *          the URI to test
-   * @return {@code true} if the URI represents a notified scheme and {@code false} otherwise
+   * @return true if the URI represents a notified scheme and false otherwise
    */
-  private static boolean isNotifiedEidasUri(String uri) {
+  private static boolean isNotifiedEidasUri(final String uri) {
     return EidasConstants.EIDAS_LOA_SUBSTANTIAL.equals(uri)
         || EidasConstants.EIDAS_LOA_LOW.equals(uri)
         || EidasConstants.EIDAS_LOA_HIGH.equals(uri);
@@ -440,11 +518,11 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
    * 
    * @param uri
    *          the URI to test
-   * @return {@code true}/{@code false}
+   * @return true/false
    */
-  private static boolean doesSwedishUriRequireNotified(String uri) {
+  private static boolean doesSwedishUriRequireNotified(final String uri) {
     LoaEnum loaEnum = LoaEnum.parse(uri);
-    if (uri == null) {
+    if (loaEnum == null) {
       return false;
     }
     return loaEnum.isNotified();
@@ -457,7 +535,7 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
    *          the URI to convert
    * @return the base URI
    */
-  private static String toEidasBaseUri(String uri) {
+  private static String toEidasBaseUri(final String uri) {
     if (EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.equals(uri) || EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2.equals(uri)) {
       return EidasConstants.EIDAS_LOA_SUBSTANTIAL;
     }
@@ -472,14 +550,52 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
     }
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public boolean isTestRequest(final ProfileRequestContext<?, ?> context) {
+    try {
+      final AuthnContextClassContext authnContextContext = this.getAuthnContextClassContext(context);
+      return this.containsEidasTestLoa(authnContextContext);
+    }
+    catch (Exception e) {
+      return false;
+    }
+  }
+
+  /**
+   * Tells whether the context represents a requested eIDAS test LoA.
+   * 
+   * @param authnContextContext
+   *          the context
+   * @return true if test authentication is requested and false otherwise
+   */
+  private boolean containsEidasTestLoa(final AuthnContextClassContext authnContextContext) throws ExternalAutenticationErrorCodeException {
+    return authnContextContext.getAuthnContextClassRefs().stream().filter(a -> EIDAS_TEST_LOA.equals(a)).findAny().isPresent();
+  }
+
   /**
    * Assigns a mapper that helps us to go between eIDAS and national (Swedish) eID LoA URI definitions.
    * 
    * @param loaMappings
    *          the mapper
    */
-  public void setLoaMappings(LevelOfAssuranceMappings loaMappings) {
+  public void setLoaMappings(final LevelOfAssuranceMappings loaMappings) {
     this.loaMappings = loaMappings;
+  }
+
+  /**
+   * Assigns the whitelist of the SP:s that should be allowed to use the eIDAS LoA for test.
+   * 
+   * @param pingWhitelist
+   *          a comma separated string of entityID:s
+   */
+  public void setPingWhitelist(final String pingWhitelist) {
+    if (pingWhitelist != null) {
+      this.pingWhitelist = Arrays.stream(pingWhitelist.split(","))
+        .filter(s -> StringUtils.hasText(s))
+        .map(String::trim)
+        .collect(Collectors.toList());
+    }
   }
 
   /** {@inheritDoc} */
@@ -487,6 +603,9 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
   public void afterPropertiesSet() throws Exception {
     super.afterPropertiesSet();
     Assert.notNull(this.loaMappings, "Property 'loaMappings' must be assigned");
+    if (this.pingWhitelist == null) {
+      this.pingWhitelist = Collections.emptyList();
+    }
   }
 
 }

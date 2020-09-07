@@ -101,13 +101,15 @@ EIDAS_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/eidas-metadata-validation-ce
 # false
 EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION=true
 
+IDP_PING_WHITELIST=http://sandbox.swedenconnect.se/testmyeid,https://eid.litsec.se/sp/eidas,https://eid.litsec.se/sp/eidas-sigservice
+
 #
 # Logging
 #
 IDP_LOG_SETTINGS_FILE=${IDP_HOME}/conf/logback-devel.xml
 IDP_FTICKS_FEDERATION_ID=eIDAS
 
-: ${IDP_SYSLOG_PORT:=514}
+: ${IDP_SYSLOG_PORT:=514}s
 
 IDP_AUDIT_APPENDER=IDP_AUDIT
 IDP_FTICKS_APPENDER=IDP_PROCESS
@@ -167,6 +169,7 @@ export JAVA_OPTS="-Didp.devel.mode=false \
 -Didp.sp.metadata.signing.cert=$SP_CREDENTIALS/metadata-signing.crt \
 -Didp.sp.metadata.validity=10800 \
 -Didp.sp.metadata.cacheDuration=3600000 \
+-Didp.ping.whitelist=${IDP_PING_WHITELIST} \
 -Didp.home=$IDP_HOME \
 -Didp.envflag=dev \
 -Didp.errors.verbose=true \

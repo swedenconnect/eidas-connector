@@ -77,6 +77,10 @@ public class StatisticsEntry {
   @Getter
   private String loa;
 
+  /** Whether this is an eIDAS ping? */
+  @Getter
+  private boolean ping = false;
+
   /** Error information. */
   @Getter
   @Setter
@@ -184,6 +188,18 @@ public class StatisticsEntry {
    */
   public StatisticsEntry loa(final String loa) {
     this.loa = loa;
+    return this;
+  }
+
+  /**
+   * Tells whether this is a ping request.
+   * 
+   * @param flag
+   *          boolean
+   * @return this object
+   */
+  public StatisticsEntry ping(final boolean flag) {
+    this.ping = flag;
     return this;
   }
 

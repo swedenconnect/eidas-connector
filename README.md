@@ -45,6 +45,7 @@ All events have the following attributes:
 - `initTimestamp` - The timestamp for when the operation was initiated (i.e., when the user first came to the connector).
 - `requestId` - The SAML ID for the authentication request that was received from the Swedish Service Provider.
 - `requester` - The entityID of the requesting Service Provider.
+- `pingFlag` - A flag telling whether this request is a "eIDAS ping" request (`true`) or a normal authentication request (`false`).
 
 Below follows the attributes that may be present (depending on the type of event):
 

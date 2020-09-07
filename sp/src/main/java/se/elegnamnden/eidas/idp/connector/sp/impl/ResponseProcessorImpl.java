@@ -146,8 +146,8 @@ public class ResponseProcessorImpl implements ResponseProcessor, InitializingBea
       // Step 4. Check Status
       //
       if (!StatusCode.SUCCESS.equals(response.getStatus().getStatusCode().getValue())) {
-        log.info("Authentication failed with status '{}' [{}]", ResponseStatusErrorException.statusToString(response.getStatus()), logId(
-          response));
+        log.info("Authentication failed with status '{}' [{}]", 
+          ResponseStatusErrorException.statusToString(response.getStatus()), logId(response));
         throw new ResponseStatusErrorException(response.getStatus(), response.getID());
       }
 

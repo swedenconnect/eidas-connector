@@ -32,6 +32,7 @@ docker run -d --name eidas-connector-dev-idp --restart=always \
   -e IDP_PERSISTENT_ID_SALT=jkio98gbnmklop0Pr5WTvCgh \
   -e IDP_ERRORS_VERBOSE=true \
   -e IDP_DEVEL_MODE=true \
+  -e IDP_PING_WHITELIST=http://sandbox.swedenconnect.se/testmyeid,https://eid.litsec.se/sp/eidas,https://eid.litsec.se/sp/eidas-sigservice \
   -e IDP_SP_REQUEST_SKIP_SCOPING_FOR=DK \
   -e IDP_LOG_CONSOLE=false \
   -e IDP_LOG_PUBLISH_ENABLED=true \
