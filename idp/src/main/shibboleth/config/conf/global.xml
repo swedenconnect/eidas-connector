@@ -110,7 +110,8 @@
   <bean id="eidas.EidasAuthnContextService" class="se.elegnamnden.eidas.idp.connector.service.EidasAuthnContextServiceImpl" scope="singleton"
     p:flowName="authn/External"
     p:authnContextweightMap-ref="shibboleth.AuthenticationPrincipalWeightMap"
-    p:loaMappings-ref="eidas.LevelOfAssuranceMappings" />
+    p:loaMappings-ref="eidas.LevelOfAssuranceMappings"
+    p:pingWhitelist="%{idp.ping.whitelist:}" />
           
   <bean id="eidas.SignSupportService" class="se.litsec.shibboleth.idp.authn.service.impl.SignSupportServiceImpl" scope="singleton"
       p:authnContextService-ref="eidas.EidasAuthnContextService"

@@ -32,9 +32,9 @@
       </div>
     </div>
   </div>
-
+  
   <div class="container main">
-
+        
     <div class="row">
       <div class="col-sm-12">
         <c:choose>
@@ -52,6 +52,21 @@
         </c:choose>
       </div>
     </div>
+    
+    <c:choose>
+    <c:when test="${pingFlag}">
+    <div class="alert alert-warning" role="alert">  
+    <div class="row">
+      <div class="col-sm-12" style="padding-left: 23px; padding-right: 23px; padding-top: 23px; padding-bottom: 0px; font-size: 14px; margin-bottom: 0px;">
+        <span style="font-weight: bold;"><spring:message code="conector.ui.ping-msg-title" /></span>
+        <p style="padding-bottom: 0px; margin-bottom: 0px;">
+          <spring:message code="conector.ui.ping-msg-msg" />
+        </p>
+      </div>
+    </div>
+    </div>    
+    </c:when>
+    </c:choose>      
     
     <div class="row">
       <div class="col-sm-12 content-container">

@@ -204,9 +204,11 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       @RequestParam(name = "language", required = false) String language) throws ExternalAuthenticationException, IOException {
 
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
-
+    final boolean isPing = this.eidasAuthnContextService.isTestRequest(context);     
+    
     StatisticsEntry stats = this.statistics.event(context);
     stats.authnRequest(this.getAuthnRequest(context));
+    stats.ping(isPing);
 
     if (language != null) {
       this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
@@ -259,6 +261,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     modelAndView.addObject("countries", this.countrySelectionHandler.getSelectableCountries(availableCountries));
     modelAndView.addObject("spInfo", this.countrySelectionHandler.getSpInfo(this.getPeerMetadata(context)));
     modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
+    modelAndView.addObject("pingFlag", isPing);
 
     if (selectedCountry == null) {
       selectedCountry = this.countrySelectionHandler.getSelectedCountry(httpRequest, false);
@@ -657,7 +660,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
           this.statistics.commit(stats, StatisticsEventType.DISPLAY_SIGN_MESSAGE);
 
           ModelAndView modelAndView = new ModelAndView("sign-consent2");
-          modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
+          modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());          
 
           SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
 
@@ -709,6 +712,8 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
       stats.loa(loaToIssue);
       this.statistics.commit(stats, StatisticsEventType.AUTHN_SUCCESS);
+      
+      // TODO: For eIDAS ping. Instead of issuing an assertion, we should display a page ... 
       
       this.success(httpRequest, httpResponse, this.attributeProcessingService.getPrincipal(attributes), attributes, loaToIssue, result
         .getAuthnInstant(), null);
