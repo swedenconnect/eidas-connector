@@ -20,12 +20,13 @@
         <c:choose>
           <c:when test="${not empty spInfo.defaultLogoUrl}">
             <div class="top-logo">
-              <img class="top-logo-dim" src="<c:out value='${spInfo.defaultLogoUrl}' />" />
+              <c:set var="logoAltName" value="${not empty spInfo.displayName ? spInfo.displayName : ''}" />
+              <img class="top-logo-dim" src="<c:out value='${spInfo.defaultLogoUrl}' />" alt="${logoAltName}" />
             </div>
           </c:when>
           <c:otherwise>
             <div class="top-logo">
-              <img class="top-logo-dim" src="<c:url value='/img/sc-logo.svg' />" />
+              <img class="top-logo-dim" src="<c:url value='/img/sc-logo.svg' />" alt="Sweden Connect" />
             </div>
           </c:otherwise>
         </c:choose>
@@ -42,7 +43,7 @@
             <form action="<%=request.getContextPath()%>/extauth/start" method="POST">
               <c:forEach items="${uiLanguages}" var="uiLang">
                 <button class="lang float-right btn btn-link" type="submit" value="${uiLang.languageTag}"
-                  name="language" id="language_${uiLang.languageTag}">${uiLang.altText}</button>
+                  name="language" id="language_${uiLang.languageTag}" lang="${uiLang.languageTag}">${uiLang.altText}</button>
               </c:forEach>
             </form>
           </c:when>
@@ -116,9 +117,9 @@
 
                 <div class="col-sm">
                   <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlag_${country.code}">
-                    <img class="col-sm country-flag float-left" src="${flagSrc}" alt="${country.name}" />
-                    <div class="w-100"></div>
-                    <p class="col-sm country-name float-left">${country.name}</p>
+                    <img class="col-sm country-flag float-left" src="${flagSrc}" alt="" />
+                    <span class="w-100"></span>
+                    <span class="col-sm country-name float-left">${country.name}</span>
                   </button>
                 </div>
 
@@ -152,8 +153,8 @@
                 <div class="col-3">
                   <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlagSm_${country.code}">
                     <img class="col-sm country-flag float-left" src="${flagSrc}" alt="${country.name}" />
-                    <div class="w-100"></div>
-                    <p class="col-sm country-name float-left">${country.name}</p>
+                    <span class="w-100"></span>
+                    <span class="col-sm country-name float-left">${country.name}</span>
                   </button>
                 </div>
 

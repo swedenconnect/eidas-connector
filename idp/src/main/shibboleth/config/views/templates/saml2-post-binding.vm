@@ -16,13 +16,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="eIDAS connector">
-  <meta http-equiv='pragma' content='no-cache'/>
-  <meta http-equiv='cache-control' content='no-cache, no-store, must-revalidate'/>
-  <meta http-equiv="Expires" content="-1"/>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
       
   <link rel="stylesheet" type="text/css" href="/idp/bootstrap/css/bootstrap.min.css" >
-  <!--<link rel="stylesheet" type="text/css" href="/idp/css/open-sans-fonts.css" >-->
   <link rel="stylesheet" type="text/css" href="/idp/eidas-style/dist/css/main.css" >
   <link rel="stylesheet" type="text/css" href="/idp/eidas-style/dist/css/extra.css" >
 
@@ -42,7 +37,7 @@
         <div class="container">
           <div class="row no-gutter">        
             <div class="top-logo">
-              <img class="top-logo-dim" src="/idp/img/sc-logo.svg" />
+              <img class="top-logo-dim" src="/idp/img/sc-logo.svg" alt="Sweden Connect" />
             </div>                  
           </div>
         </div>

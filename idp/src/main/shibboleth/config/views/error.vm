@@ -10,7 +10,7 @@
 ## environment - Spring Environment object for property resolution
 ## custom - arbitrary object injected by deployer
 ##
-#set ($title = $springMacroRequestContext.getMessage("connector.ui.title", "The Swedish eIDAS Pilot"))
+#set ($title = $springMacroRequestContext.getMessage("connector.ui.title", "The Swedish eIDAS Connector"))
 #set ($defaultTitleSuffix = $springMacroRequestContext.getMessage("idp.title.suffix", "Error"))
 ##
 #if ($flowRequestContext)
@@ -41,17 +41,13 @@
 #end
 ##
 <!DOCTYPE html>
-<html>
+<html lang="#springMessageText('connector.ui.lang', 'sv')">
     <head>
     
       <meta charset="utf-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
       <meta name="description" content="eIDAS connector">
-      <meta http-equiv='pragma' content='no-cache'/>
-      <meta http-equiv='cache-control' content='no-cache, no-store, must-revalidate'/>
-      <meta http-equiv="Expires" content="-1"/>
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
       
       <link rel="stylesheet" type="text/css" href="$request.getContextPath()/bootstrap/css/bootstrap.min.css" >
       <link rel="stylesheet" type="text/css" href="$request.getContextPath()/css/open-sans-fonts.css" >
@@ -67,7 +63,7 @@
         <div class="container"> 
           <div class="row no-gutter">
             <div class="top-logo">
-              <img class="top-logo-dim" src="$request.getContextPath()/img/sc-logo.svg" />
+              <img class="top-logo-dim" src="$request.getContextPath()/img/sc-logo.svg" alt="Sweden Connect" />
             </div>
           </div>
         </div>
@@ -98,11 +94,11 @@
         </div>  <!-- /.row -->  
       </div> <!-- /.container .main -->
       
-      <script src="$request.getContextPath()/js/jquery-3.3.1.slim.min.js" type="text/javascript"></script>
-      <script src="$request.getContextPath()/js/popper-1.14.0.min.js" type="text/javascript"></script>
-      <script src="$request.getContextPath()/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+      <script src="$request.getContextPath()/js/jquery-3.3.1.slim.min.js"></script>
+      <script src="$request.getContextPath()/js/popper-1.14.0.min.js"></script>
+      <script src="$request.getContextPath()/bootstrap/js/bootstrap.min.js"></script>
       
-      <script src="$request.getContextPath()/eidas-style/js/main.js" type="text/javascript"></script>      
+      <script src="$request.getContextPath()/eidas-style/js/main.js"></script>      
       
     </body>
          
