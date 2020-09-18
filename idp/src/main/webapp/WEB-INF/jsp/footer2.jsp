@@ -23,17 +23,4 @@
         </c:if>  
       </div>
       
-      <!--
-      <c:if test="${not empty accessibilityUrl}">
-      <div class="container">
-        <div class="row">
-          <div class="col-12 mt-2">
-            <a class="btn btn-link float-right" id="accesability-report" href="${accessibilityUrl}">
-              <spring:message code="connector.ui.accessibility-link" />
-            </a>
-          </div>
-        </div>
-      </div>
-      </c:if>
-      -->
 
