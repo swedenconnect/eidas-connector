@@ -63,6 +63,7 @@
     p:signMessageUiHandler-ref="eidas.SignMessageUiHandler"
     p:uiLanguageHandler-ref="eidas.UiLanguageHandler" 
     p:verboseStatusMessage="%{idp.errors.verbose:false}"
+    p:accessibilityUrl="%{idp.accessibility.url:}"
     p:statistics-ref="eidas.stats" />
         
 </beans>

@@ -1,7 +1,6 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 
-
       <div class="col-sm-12 copyright">
         <div class="row">
           <div class="col-6">
@@ -11,4 +10,30 @@
             <p class="float-right"><spring:message code="connector.ui.copyright" /></p>
           </div>
         </div>
+        <c:if test="${not empty accessibilityUrl}">
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="d-flex justify-content-end">
+              <a id="accesability-report" href="${accessibilityUrl}">
+              <spring:message code="connector.ui.accessibility-link" />
+              </a>
+            </div>
+          </div>
+        </div>
+        </c:if>  
       </div>
+      
+      <!--
+      <c:if test="${not empty accessibilityUrl}">
+      <div class="container">
+        <div class="row">
+          <div class="col-12 mt-2">
+            <a class="btn btn-link float-right" id="accesability-report" href="${accessibilityUrl}">
+              <spring:message code="connector.ui.accessibility-link" />
+            </a>
+          </div>
+        </div>
+      </div>
+      </c:if>
+      -->
+

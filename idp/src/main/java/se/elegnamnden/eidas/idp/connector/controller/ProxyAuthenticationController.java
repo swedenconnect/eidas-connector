@@ -168,6 +168,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
   /** The statistics bean. */
   private StatisticsEngine statistics;
+  
+  /** The accessibility URL to include in our UI. */
+  private String accessibilityUrl;
 
   /**
    * The first step for the connector authentication is to prompt the user for the eID country.
@@ -259,6 +262,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     modelAndView.addObject("countries", this.countrySelectionHandler.getSelectableCountries(availableCountries));
     modelAndView.addObject("spInfo", this.countrySelectionHandler.getSpInfo(this.getPeerMetadata(context)));
     modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
+    modelAndView.addObject("accessibilityUrl", this.accessibilityUrl);
 
     if (selectedCountry == null) {
       selectedCountry = this.countrySelectionHandler.getSelectedCountry(httpRequest, false);
@@ -658,6 +662,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
           ModelAndView modelAndView = new ModelAndView("sign-consent2");
           modelAndView.addObject("uiLanguages", this.uiLanguageHandler.getUiLanguages());
+          modelAndView.addObject("accessibilityUrl", this.accessibilityUrl);
 
           SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
 
@@ -1071,6 +1076,16 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
    */
   public void setStatistics(final StatisticsEngine statistics) {
     this.statistics = statistics;
+  }
+  
+  /**
+   * Assigns the accessibility URL.
+   * @param accessibilityUrl URL
+   */
+  public void setAccessibilityUrl(final String accessibilityUrl) {
+    if (StringUtils.hasText(accessibilityUrl)) {
+      this.accessibilityUrl = accessibilityUrl;
+    }
   }
 
   /** {@inheritDoc} */
