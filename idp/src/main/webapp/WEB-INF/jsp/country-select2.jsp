@@ -74,12 +74,12 @@
 
         <div class="row">
           <div class="col-sm-12 content-heading">
-            <h2>
+            <h1>
               <spring:message code="connector.ui.choose-country" />
-            </h2>
+            </h1>
           </div>
           <div class="col-sm-12">
-            <p class="info"> <!-- content-heading-text -->
+            <p class="info content-heading-text">
               <spring:message code="connector.ui.select-country.info.default-sp-name" var="defaultName" />
               <c:set var="displayName" value="${not empty spInfo.displayName ? spInfo.displayName : defaultName}" />
               <spring:message code="connector.ui.select-country.info.1" arguments="${displayName}" />
@@ -163,31 +163,56 @@
           </div> <!-- /.tablet-down -->
 
         </form>
-
-
-        <div class="drop-down-container noscripthide">
-
-          <div class="col-sm-12 drop-down">
-            <p>
-              <spring:message code='connector.ui.help.1.title' />
-            </p>
-
-            <div class="drop-down-info">
-              <spring:message code='connector.ui.help.1.text' />
+        
+        <noscript>
+          <dl>
+            <dt><spring:message code='connector.ui.help.1.title' /></dt>
+            <dd><spring:message code='connector.ui.help.1.text' /></dd>
+            <dt><spring:message code='connector.ui.help.2.title' /></dt>
+            <dd><spring:message code='connector.ui.help.2.text' /></dd>
+          </dl>
+        </noscript>
+        
+        <div class="row">
+          <div class="col-12 noscripthide">
+            <div class="accordion drop-down" id="accordion">
+              <div class="card">  
+                <div class="card-header" id="helpHeading1">
+                  <h2 class="mb-0">
+                    <button class="btn btn-accordion btn-block text-left" type="button"
+                      data-toggle="collapse" data-target="#collapse1" aria-expanded="false"
+                      aria-controls="collapse1">
+                        <spring:message code='connector.ui.help.1.title' />
+                        <span class="btn-accordion-arrow"></span>
+                    </button>
+                  </h2>
+                </div> 
+                <div id="collapse1" class="collapse" aria-labelledby="helpHeading1" data-parent="#accordion">
+                  <div class="card-body">
+                    <spring:message code='connector.ui.help.1.text' />
+                  </div>
+                </div>
+              </div> <!-- card -->
+              <div class="card">  
+                <div class="card-header" id="helpHeading2">
+                  <h2 class="mb-0">
+                    <button class="btn btn-accordion btn-block text-left" type="button"
+                      data-toggle="collapse" data-target="#collapse2" aria-expanded="false"
+                      aria-controls="collapse2">
+                        <spring:message code='connector.ui.help.2.title' />
+                        <span class="btn-accordion-arrow"></span>
+                    </button>
+                  </h2>
+                </div> 
+                <div id="collapse2" class="collapse" aria-labelledby="helpHeading2" data-parent="#accordion">
+                  <div class="card-body">
+                    <spring:message code='connector.ui.help.2.text' />
+                  </div>
+                </div>
+              </div> <!-- card -->
             </div>
-          </div> <!-- /drop-down -->
-
-          <div class="col-sm-12 drop-down">
-            <p>
-              <spring:message code='connector.ui.help.2.title' />
-            </p>
-
-            <div class="drop-down-info">
-              <spring:message code='connector.ui.help.2.text' />
-            </div>
-          </div> <!-- /drop-down -->
-
-        </div> <!-- /.drop-down-container -->
+          </div>
+        </div>        
         
       </div> <!-- /.content-container -->
 

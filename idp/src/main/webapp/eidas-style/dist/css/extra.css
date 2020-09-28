@@ -1,10 +1,34 @@
+html a:focus,
+html button:focus,
+html img:focus,
+html input:focus,
+html input[type="radio"]:focus,
+html textarea:focus,
+html details:focus,
+html summary:focus,
+html select:focus {
+  outline: 3px dotted #2b2a29 !important;
+  outline-offset: 3px !important;
+  box-shadow: none !important;
+}
+
+dt {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+dd p:last-child {
+  margin-bottom: 2rem;
+}
+
 .sign-message {
   margin-bottom: 30px;
 }
 
 .sign-message div {
   margin: 0;
-  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 }
 
 @media (min-width: 576px) {
@@ -42,13 +66,13 @@
 }
 
 .large-btn-link-text {
-	font-size: 16px;
+  font-size: 16px;
   line-height: 14px;
 }
 
 .country-button {
-  background-color: transparent;  
-  border: none; 
+  background-color: transparent;
+  border: none;
   padding: 0;
   white-space: normal;
   text-align: left;
@@ -63,7 +87,6 @@
 }
 
 .dont-break-out {
-
   /* These are technically the same, but use both */
   overflow-wrap: break-word;
   word-wrap: break-word;
@@ -80,9 +103,53 @@
   -webkit-hyphens: auto;
   hyphens: auto;
 }
+.accordion {
+  margin-top: 55px;
+}
+.accordion .card {
+  margin-bottom: 9px;
+  border-radius: 0.25rem !important;
+  border-bottom: 1px solid #d8d8d8 !important;
+}
+.accordion .card-header {
+  padding: 0;
+  border-bottom: none;
+  background: #f7f7f7;
+  border-radius: 0.25em !important;
+}
+.accordion .card-header .btn-accordion {
+  padding: 15px 20px;
+}
 
+.btn-accordion {
+  white-space: normal;
+  display: flex;
+  align-items: center;
+  background-color: #f7f7f7;
+}
+.btn-accordion[aria-expanded="true"] .btn-accordion-arrow::after {
+  background-image: url(../../images/arrow_dropdown_up.svg);
+}
 
+.show .card-body {
+  border-top: 1px solid #d8d8d8;
+}
+.btn-accordion .btn-accordion-arrow {
+  position: relative;
+  width: 1em;
+  height: 1em;
+  margin-left: auto;
+}
+.btn-accordion-arrow::after {
+  content: "";
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background-image: url(../../images/arrow_dropdown.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+}
 
-
-
-
+* {
+  min-height: 0.01px;
+}

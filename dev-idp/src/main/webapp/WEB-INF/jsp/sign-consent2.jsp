@@ -68,9 +68,9 @@
 
         <div class="row">
           <div class="col-sm-12 content-heading">
-            <h2>
+            <h1>
               <spring:message code="connector.ui.sign.subtitle" />
-            </h2>
+            </h1>
           </div>
           <div class="col-sm-12">
             <spring:message code="connector.ui.sign.info.default-sp-name" var="defaultName" />
