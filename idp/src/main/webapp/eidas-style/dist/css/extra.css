@@ -12,6 +12,12 @@ select:focus {
   box-shadow: none !important;
 }
 
+.btn-accordion:focus {
+  outline: 3px dotted #2b2a29 !important;
+  outline-offset: -4px !important;
+  box-shadow: none !important;
+}
+
 dt {
   margin-top: 2rem;
   margin-bottom: 1rem;
