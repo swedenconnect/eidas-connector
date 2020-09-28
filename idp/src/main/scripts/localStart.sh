@@ -88,11 +88,11 @@ SECONDARY_FEDERATION_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/sveleg-metada
 
 # https://eid.svelegtest.se/nodeconfig/mdservicelist
 
-EIDAS_METADATA_SERVICE_LIST_URL=""
+EIDAS_METADATA_SERVICE_LIST_URL=
 #file://${EIDAS_LOCAL_ENV}/metadata/metadataList.xml
 #https://qa.md.eidas.swedenconnect.se/mdservicelist-aggregate.xml
 
-EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT=""
+EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT=
 #${IDP_HOME}/metadata/eidas-servicelist-validation-cert.crt
 # https://eid.svelegtest.se/nodeconfig/metadata
 

@@ -34,7 +34,9 @@
     </div>
   </div>
 
-  <div class="container main">  
+  <div class="container main">
+  
+    <jsp:include page="dev-alert.jsp" />
 
     <div class="row">
       <div class="col-sm-12">

@@ -1,12 +1,12 @@
-html a:focus,
-html button:focus,
-html img:focus,
-html input:focus,
-html input[type="radio"]:focus,
-html textarea:focus,
-html details:focus,
-html summary:focus,
-html select:focus {
+a:focus,
+button:focus,
+img:focus,
+input:focus,
+input[type="radio"]:focus,
+textarea:focus,
+details:focus,
+summary:focus,
+select:focus {
   outline: 3px dotted #2b2a29 !important;
   outline-offset: 3px !important;
   box-shadow: none !important;

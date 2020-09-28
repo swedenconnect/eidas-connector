@@ -35,17 +35,21 @@
 
   <div class="container main">
   
+    <jsp:include page="dev-alert.jsp" />
+  
+  <!-- 
     <div class="row">
       <div class="col-sm-12" style="padding-left: 23px; padding-right: 23px; padding-top: 23px; padding-bottom: 0px; font-size: 14px; margin-bottom: 0px;">
         <span style="font-weight: bold;"><spring:message code="connector.ui.development.title" /></span>
         <p style="padding-bottom: 0px; margin-bottom: 0px;">
           <spring:message code="connector.ui.development.text" /> <a href="https://swedenconnect.se">swedenconnect.se</a>.
         </p>
-		<p style="padding-bottom: 0px; margin-bottom: 0px;">
+		    <p style="padding-bottom: 0px; margin-bottom: 0px;">
           <spring:message code="connector.ui.development.logs" /> <a href="<%=request.getContextPath()%>/logs"><%=request.getContextPath()%>/logs</a>.
         </p>                
       </div>
-    </div>  
+    </div>
+    -->  
 
     <div class="row">
       <div class="col-sm-12">
@@ -112,7 +116,7 @@
 
                 <div class="col-sm">
                   <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlag_${country.code}">
-                    <img class="col-sm country-flag float-left" src="${flagSrc}" />
+                    <img class="col-sm country-flag float-left" src="${flagSrc}" alt="" />
                     <span class="w-100"></span>
                     <span class="col-sm country-name float-left">${country.name}</span>
                   </button>

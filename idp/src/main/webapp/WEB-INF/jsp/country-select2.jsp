@@ -35,6 +35,8 @@
   </div>
   
   <div class="container main">
+  
+    <jsp:include page="dev-alert.jsp" />
         
     <div class="row">
       <div class="col-sm-12">
@@ -174,8 +176,8 @@
         </noscript>
         
         <div class="row">
-          <div class="col-12 noscripthide">
-            <div class="accordion drop-down" id="accordion">
+          <div class="col-12">
+            <div class="accordion noscripthide drop-down" id="helpAccordion">
               <div class="card">  
                 <div class="card-header" id="helpHeading1">
                   <h2 class="mb-0">
@@ -187,7 +189,7 @@
                     </button>
                   </h2>
                 </div> 
-                <div id="collapse1" class="collapse" aria-labelledby="helpHeading1" data-parent="#accordion">
+                <div id="collapse1" class="collapse" aria-labelledby="helpHeading1" data-parent="#helpAccordion">
                   <div class="card-body">
                     <spring:message code='connector.ui.help.1.text' />
                   </div>
@@ -204,7 +206,7 @@
                     </button>
                   </h2>
                 </div> 
-                <div id="collapse2" class="collapse" aria-labelledby="helpHeading2" data-parent="#accordion">
+                <div id="collapse2" class="collapse" aria-labelledby="helpHeading2" data-parent="#helpAccordion">
                   <div class="card-body">
                     <spring:message code='connector.ui.help.2.text' />
                   </div>
