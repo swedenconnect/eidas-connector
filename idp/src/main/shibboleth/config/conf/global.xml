@@ -25,14 +25,7 @@
     p:cookiePath="%{idp.cookie.path:}"
     p:cookieMaxAge="%{idp.cookie.maxAge:31536000}"
     p:defaultLocale="sv" />       
-    
-  <task:scheduler id="eidas.Scheduler" pool-size="5" />
-  
-  <task:scheduled-tasks scheduler="eidas.Scheduler">
-    <!-- <task:scheduled ref="eidas.MetadataConfig" method="recache" fixed-delay="600000" initial-delay="3000" /> -->
-    <task:scheduled ref="eidas.euMetadata" method="refresh" fixed-delay="600000" initial-delay="3000" />
-  </task:scheduled-tasks>
-  
+      
   <!-- Credentials declarations -->
   <bean id="cred.base" class="se.elegnamnden.eidas.idp.connector.credential.CredentialsConfiguration" abstract="true"
     p:entityId="%{idp.entityID}" />
@@ -96,14 +89,11 @@
     p:pkcs11enabled="%{idp.pkcs11.enabled:false}" p:pkcs11Configuration-ref="pkcs11Configuration" />    
     
   <!-- EU metadata -->   
-  <bean id="eidas.euMetadata" class="se.elegnamnden.eidas.idp.metadata.MdslAggregatedEuMetadata" scope="singleton" depends-on="shibboleth.OpenSAMLConfig"
+  <bean id="eidas.euMetadata" class="se.elegnamnden.eidas.idp.metadata.AggregatedEuMetadataImpl" scope="singleton" depends-on="shibboleth.OpenSAMLConfig"
     p:cacheDirectory="%{idp.metadata.eidas.cache-directory}"
     p:euMetadataUrl="%{idp.metadata.eidas.federation.url}"
     p:euMetadataValidationCertificate="%{idp.metadata.eidas.federation.validation-certificate}"
-    p:mdslUrl="%{idp.metadata.eidas.service-list.url:#{null}}"
-    p:mdslValidationCertificate="%{idp.metadata.eidas.service-list.validation-certificate:#{null}}"
     p:ignoreSignatureValidation="%{idp.metadata.eidas.ignore-signature-validation:false}" />
-
       
   <!-- Connector services -->
       

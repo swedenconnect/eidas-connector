@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 Sweden Connect
+ * Copyright 2017-2020 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,10 @@ import org.junit.rules.TemporaryFolder;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
-import se.litsec.opensaml.config.OpenSAMLInitializer;
+import se.swedenconnect.opensaml.OpenSAMLInitializer;
+import se.swedenconnect.opensaml.OpenSAMLSecurityDefaultsConfig;
+import se.swedenconnect.opensaml.OpenSAMLSecurityExtensionConfig;
+import se.swedenconnect.opensaml.xmlsec.config.DefaultSecurityConfiguration;
 
 /**
  * Test cases for {@code AggregatedEuMetadata}.
@@ -42,7 +45,9 @@ public class AggregatedEuMetadataTest {
 
   @Before
   public void setup() throws Exception {
-    OpenSAMLInitializer.getInstance().initialize();
+    OpenSAMLInitializer.getInstance().initialize(
+      new OpenSAMLSecurityDefaultsConfig(new DefaultSecurityConfiguration()),
+      new OpenSAMLSecurityExtensionConfig());
   }
 
   @Test
@@ -67,24 +72,7 @@ public class AggregatedEuMetadataTest {
     Assert.assertTrue("Expected one country", _countries.size() == 1);
     Assert.assertTrue("Expected XA", _countries.contains("XA"));
   }
-  
-  @Test
-  public void testLocalMdslWrapper() throws Exception {
-    Resource mdFile = new ClassPathResource("aggregate-simple.xml");
     
-    MdslAggregatedEuMetadata euMetadata = new MdslAggregatedEuMetadata();
-    euMetadata.setCacheDirectory(tempDir.getRoot().getAbsolutePath());
-    euMetadata.setEuMetadataUrl("file://" + mdFile.getFile().getAbsolutePath());
-    euMetadata.setIgnoreSignatureValidation(true);
-    euMetadata.afterPropertiesSet();
-    euMetadata.setMdslUrl("");
-    
-    Countries countries = euMetadata.getCountries();
-    List<String> _countries = countries.getCountries(Collections.emptyList());
-    Assert.assertTrue("Expected one country", _countries.size() == 1);
-    Assert.assertTrue("Expected SE", _countries.contains("SE"));
-  }
-  
   @Test
   public void testLarge() throws Exception {
     Resource mdFile = new ClassPathResource("eu-metadata.xml");

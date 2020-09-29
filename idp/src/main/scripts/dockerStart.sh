@@ -230,12 +230,10 @@ export IDP_METADATA_RESOURCES_BEAN
 
 : ${FEDERATION_METADATA_URL:=https://qa.md.swedenconnect.se/entities}
 : ${FEDERATION_METADATA_VALIDATION_CERT:=$IDP_HOME/metadata/sc-qa-metadata-validation-cert.crt}
-: ${EIDAS_METADATA_SERVICE_LIST_URL:=""}
-: ${EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT:=${IDP_HOME}/metadata/eidas-servicelist-validation-cert.crt}
 : ${EIDAS_METADATA_URL:=https://eid.svelegtest.se/nodeconfig/metadata}
 : ${EIDAS_METADATA_VALIDATION_CERT:=$IDP_HOME/metadata/eidas-metadata-validation-cert.crt}
 : ${EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION:=false}
-export FEDERATION_METADATA_URL FEDERATION_METADATA_VALIDATION_CERT EIDAS_METADATA_SERVICE_LIST_URL EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT EIDAS_METADATA_URL EIDAS_METADATA_VALIDATION_CERT EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION
+export FEDERATION_METADATA_URL FEDERATION_METADATA_VALIDATION_CERT EIDAS_METADATA_URL EIDAS_METADATA_VALIDATION_CERT EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION
 
 #
 # Settings for interoperability and test
@@ -372,8 +370,6 @@ export JAVA_OPTS="\
           -Didp.persistentId.salt.value=${IDP_PERSISTENT_ID_SALT} \
           -Didp.metadata.federation.url=${FEDERATION_METADATA_URL} \
           -Didp.metadata.federation.validation-certificate=${FEDERATION_METADATA_VALIDATION_CERT} \
-          -Didp.metadata.eidas.service-list.url=${EIDAS_METADATA_SERVICE_LIST_URL} \
-          -Didp.metadata.eidas.service-list.validation-certificate=${EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT} \
           -Didp.metadata.eidas.federation.url=${EIDAS_METADATA_URL} \
           -Didp.metadata.eidas.federation.validation-certificate=${EIDAS_METADATA_VALIDATION_CERT} \
           -Didp.metadata.eidas.ignore-signature-validation=${EIDAS_METADATA_IGNORE_SIGNATURE_VALIDATION} \
