@@ -72,11 +72,6 @@
       <artifactId>shibboleth-redis-storage</artifactId>
       <version>${shibboleth.redis.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>se.elegnamnden.eidas.commons</groupId>
-      <artifactId>metadataconfig</artifactId>
-    </dependency>
     
     <dependency>
       <groupId>commons-io</groupId>
