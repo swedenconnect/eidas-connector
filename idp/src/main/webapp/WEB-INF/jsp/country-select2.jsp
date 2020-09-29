@@ -20,12 +20,13 @@
         <c:choose>
           <c:when test="${not empty spInfo.defaultLogoUrl}">
             <div class="top-logo">
-              <img class="top-logo-dim" src="<c:out value='${spInfo.defaultLogoUrl}' />" />
+              <c:set var="logoAltName" value="${not empty spInfo.displayName ? spInfo.displayName : ''}" />
+              <img class="top-logo-dim" src="<c:out value='${spInfo.defaultLogoUrl}' />" alt="${logoAltName}" />
             </div>
           </c:when>
           <c:otherwise>
             <div class="top-logo">
-              <img class="top-logo-dim" src="<c:url value='/img/sc-logo.svg' />" />
+              <img class="top-logo-dim" src="<c:url value='/img/sc-logo.svg' />" alt="Sweden Connect" />
             </div>
           </c:otherwise>
         </c:choose>
@@ -34,6 +35,8 @@
   </div>
   
   <div class="container main">
+  
+    <jsp:include page="dev-alert.jsp" />
         
     <div class="row">
       <div class="col-sm-12">
@@ -42,7 +45,7 @@
             <form action="<%=request.getContextPath()%>/extauth/start" method="POST">
               <c:forEach items="${uiLanguages}" var="uiLang">
                 <button class="lang float-right btn btn-link" type="submit" value="${uiLang.languageTag}"
-                  name="language" id="language_${uiLang.languageTag}">${uiLang.altText}</button>
+                  name="language" id="language_${uiLang.languageTag}" lang="${uiLang.languageTag}">${uiLang.altText}</button>
               </c:forEach>
             </form>
           </c:when>
@@ -73,12 +76,12 @@
 
         <div class="row">
           <div class="col-sm-12 content-heading">
-            <h2>
+            <h1>
               <spring:message code="connector.ui.choose-country" />
-            </h2>
+            </h1>
           </div>
           <div class="col-sm-12">
-            <p class="info"> <!-- content-heading-text -->
+            <p class="info content-heading-text">
               <spring:message code="connector.ui.select-country.info.default-sp-name" var="defaultName" />
               <c:set var="displayName" value="${not empty spInfo.displayName ? spInfo.displayName : defaultName}" />
               <spring:message code="connector.ui.select-country.info.1" arguments="${displayName}" />
@@ -116,9 +119,9 @@
 
                 <div class="col-sm">
                   <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlag_${country.code}">
-                    <img class="col-sm country-flag float-left" src="${flagSrc}" alt="${country.name}" />
-                    <div class="w-100"></div>
-                    <p class="col-sm country-name float-left">${country.name}</p>
+                    <img class="col-sm country-flag float-left" src="${flagSrc}" alt="" />
+                    <span class="w-100"></span>
+                    <span class="col-sm country-name float-left">${country.name}</span>
                   </button>
                 </div>
 
@@ -152,8 +155,8 @@
                 <div class="col-3">
                   <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlagSm_${country.code}">
                     <img class="col-sm country-flag float-left" src="${flagSrc}" alt="${country.name}" />
-                    <div class="w-100"></div>
-                    <p class="col-sm country-name float-left">${country.name}</p>
+                    <span class="w-100"></span>
+                    <span class="col-sm country-name float-left">${country.name}</span>
                   </button>
                 </div>
 
@@ -162,31 +165,56 @@
           </div> <!-- /.tablet-down -->
 
         </form>
-
-
-        <div class="drop-down-container noscripthide">
-
-          <div class="col-sm-12 drop-down">
-            <p>
-              <spring:message code='connector.ui.help.1.title' />
-            </p>
-
-            <div class="drop-down-info">
-              <spring:message code='connector.ui.help.1.text' />
+        
+        <noscript>
+          <dl>
+            <dt><spring:message code='connector.ui.help.1.title' /></dt>
+            <dd><spring:message code='connector.ui.help.1.text' /></dd>
+            <dt><spring:message code='connector.ui.help.2.title' /></dt>
+            <dd><spring:message code='connector.ui.help.2.text' /></dd>
+          </dl>
+        </noscript>
+        
+        <div class="row">
+          <div class="col-12">
+            <div class="accordion noscripthide" id="helpAccordion"> <!-- drop-down -->
+              <div class="card">  
+                <div class="card-header" id="helpHeading1">
+                  <h3 class="mb-0">
+                    <button class="btn btn-accordion btn-block text-left" type="button"
+                      data-toggle="collapse" data-target="#collapse1" aria-expanded="false"
+                      aria-controls="collapse1">
+                        <spring:message code='connector.ui.help.1.title' />
+                        <span class="btn-accordion-arrow"></span>
+                    </button>
+                  </h3>
+                </div> 
+                <div id="collapse1" class="collapse" aria-labelledby="helpHeading1" data-parent="#helpAccordion">
+                  <div class="card-body">
+                    <spring:message code='connector.ui.help.1.text' />
+                  </div>
+                </div>
+              </div> <!-- card -->
+              <div class="card">  
+                <div class="card-header" id="helpHeading2">
+                  <h3 class="mb-0">
+                    <button class="btn btn-accordion btn-block text-left" type="button"
+                      data-toggle="collapse" data-target="#collapse2" aria-expanded="false"
+                      aria-controls="collapse2">
+                        <spring:message code='connector.ui.help.2.title' />
+                        <span class="btn-accordion-arrow"></span>
+                    </button>
+                  </h3>
+                </div> 
+                <div id="collapse2" class="collapse" aria-labelledby="helpHeading2" data-parent="#helpAccordion">
+                  <div class="card-body">
+                    <spring:message code='connector.ui.help.2.text' />
+                  </div>
+                </div>
+              </div> <!-- card -->
             </div>
-          </div> <!-- /drop-down -->
-
-          <div class="col-sm-12 drop-down">
-            <p>
-              <spring:message code='connector.ui.help.2.title' />
-            </p>
-
-            <div class="drop-down-info">
-              <spring:message code='connector.ui.help.2.text' />
-            </div>
-          </div> <!-- /drop-down -->
-
-        </div> <!-- /.drop-down-container -->
+          </div>
+        </div>        
         
       </div> <!-- /.content-container -->
 

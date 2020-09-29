@@ -33,6 +33,8 @@ fi
 
 IDP_BASE_URL=${IDP_SERVER_SCHEME}://${IDP_SERVER_HOSTNAME}${IDP_SERVER_PORT_SUFFIX}/${IDP_SERVER_SERVLET_NAME}
 
+IDP_ACCESSIBILITY_URL=https://www.swedenconnect.se
+
 #
 # Tomcat settings
 #
@@ -86,16 +88,19 @@ SECONDARY_FEDERATION_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/sveleg-metada
 
 # https://eid.svelegtest.se/nodeconfig/mdservicelist
 
-EIDAS_METADATA_SERVICE_LIST_URL=""
+EIDAS_METADATA_SERVICE_LIST_URL=
 #file://${EIDAS_LOCAL_ENV}/metadata/metadataList.xml
 #https://qa.md.eidas.swedenconnect.se/mdservicelist-aggregate.xml
 
-EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT=""
+EIDAS_METADATA_SERVICE_LIST_VALIDATION_CERT=
 #${IDP_HOME}/metadata/eidas-servicelist-validation-cert.crt
 # https://eid.svelegtest.se/nodeconfig/metadata
 
+# TMP
 EIDAS_METADATA_URL=file://${LOCAL_ENV_PATH}/eidas/eu-metadata/metadata.xml
 #https://qa.md.eidas.swedenconnect.se/entities/
+#EIDAS_METADATA_URL=https://eid.svelegtest.se/nodeconfig/metadata
+
 EIDAS_METADATA_VALIDATION_CERT=${IDP_HOME}/metadata/eidas-metadata-validation-cert.crt
 
 # false
@@ -137,6 +142,7 @@ fi
 # Assign all values
 #
 export JAVA_OPTS="-Didp.devel.mode=false \
+-Didp.accessibility.url=$IDP_ACCESSIBILITY_URL \
 -Didp.entityID=$IDP_ENTITY_ID \
 -Didp.sealer.storeResource=$IDP_CREDENTIALS/sealer.jks \
 -Didp.sealer.versionResource=$IDP_CREDENTIALS/sealer.kver \

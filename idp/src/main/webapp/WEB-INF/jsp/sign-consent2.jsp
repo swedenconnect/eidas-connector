@@ -20,12 +20,13 @@
         <c:choose>
           <c:when test="${not empty signMessageConsent.spInfo.defaultLogoUrl}">
             <div class="top-logo">
-              <img class="top-logo-dim" src="<c:out value='${signMessageConsent.spInfo.defaultLogoUrl}' />" />
+              <c:set var="logoAltName" value="${not empty signMessageConsent.spInfo.displayName ? signMessageConsent.spInfo.displayName : ''}" />
+              <img class="top-logo-dim" src="<c:out value='${signMessageConsent.spInfo.defaultLogoUrl}' />" alt="${logoAltName}" />
             </div>
           </c:when>
           <c:otherwise>
             <div class="top-logo">
-              <img class="top-logo-dim" src="<c:url value='/img/sc-logo.svg' />" />
+              <img class="top-logo-dim" src="<c:url value='/img/sc-logo.svg' />" alt="Sweden Connect" />
             </div>
           </c:otherwise>
         </c:choose>
@@ -33,7 +34,9 @@
     </div>
   </div>
 
-  <div class="container main">  
+  <div class="container main">
+  
+    <jsp:include page="dev-alert.jsp" />
 
     <div class="row">
       <div class="col-sm-12">
@@ -42,7 +45,7 @@
             <form action="<%=request.getContextPath()%>/extauth/proxyauth/complete" method="POST" name="languageForm">
               <c:forEach items="${uiLanguages}" var="uiLang">
                 <button class="lang float-right btn btn-link" type="submit" value="${uiLang.languageTag}"
-                  name="language" id="language_${uiLang.languageTag}">${uiLang.altText}</button>
+                  name="language" id="language_${uiLang.languageTag}" lang="${uiLang.languageTag}">${uiLang.altText}</button>
               </c:forEach>
             </form>
           </c:when>
@@ -58,9 +61,9 @@
 
         <div class="row">
           <div class="col-sm-12 content-heading">
-            <h2>
+            <h1>
               <spring:message code="connector.ui.sign.subtitle" />
-            </h2>
+            </h1>
           </div>
           <div class="col-sm-12">
             <spring:message code="connector.ui.sign.info.default-sp-name" var="defaultName" />
@@ -115,7 +118,7 @@
                 <span class="info-line">Sweden</span>
                 -->
                 
-                <form class="form-horizontal" role="form" action="<%=request.getContextPath()%>/extauth/proxyauth/complete" method="post" name="okForm">                  
+                <form class="form-horizontal" action="<%=request.getContextPath()%>/extauth/proxyauth/complete" method="post" name="okForm">                  
                   <button type="submit" class="btn btn-primary" name="action" value="ok" id="okButton">
                     <spring:message code='connector.ui.sign.button.sign' />
                   </button>            
@@ -128,7 +131,7 @@
       </div> <!-- ./content-container -->
       
       <div class="col-sm-12 return">
-        <form class="form-horizontal" role="form" action="<%=request.getContextPath()%>/extauth/proxyauth/complete" method="post" name="cancelForm">
+        <form class="form-horizontal" action="<%=request.getContextPath()%>/extauth/proxyauth/complete" method="post" name="cancelForm">
           <button type="submit" class="btn btn-link" name="action" value="cancel" id="cancelLink">
             <spring:message code='connector.ui.button.cancel-return' />
           </button>            

@@ -37,6 +37,8 @@ fi
 : ${IDP_BASE_URL:=$IDP_SERVER_SCHEME://$IDP_SERVER_HOSTNAME$IDP_SERVER_PORT_SUFFIX/$IDP_SERVER_SERVLET_NAME}
 export IDP_BASE_URL
 
+: ${IDP_ACCESSIBILITY_URL:=""}
+
 #
 # Tomcat settings
 #
@@ -341,6 +343,7 @@ export JAVA_OPTS="\
           -Didp.home=$IDP_HOME \
           -Didp.domain=$IDP_SERVER_HOSTNAME \
           -Didp.baseurl=$IDP_BASE_URL \
+          -Didp.accessibility.url=$IDP_ACCESSIBILITY_URL \
           -Didp.devel.mode=$IDP_DEVEL_MODE \
           -Didp.errors.verbose=$IDP_ERRORS_VERBOSE \
           -Didp.entityID=$IDP_ENTITY_ID \

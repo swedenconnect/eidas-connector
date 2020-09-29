@@ -1,6 +1,6 @@
 html,
 body {
-  background-color: #F5F5F5;
+  background-color: #f5f5f5;
   font-family: "Open Sans", sans-serif;
 }
 
@@ -15,21 +15,25 @@ a {
   font-size: 14px;
   line-height: 16px;
 }
+p {
+  font-size: 14px;
+  line-height: 24px;
+}
 
 .top-logo {
   padding: 19px 0;
 }
 
 .lang {
-  padding-top: 29px;
-  padding-bottom: 24px;
+  margin-top: 29px;
+  margin-bottom: 24px;
   padding-left: 15px;
   padding-right: 15px;
   display: block;
 }
 
 .content-container {
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 29px;
   -webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.5);
   -moz-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.5);
@@ -40,7 +44,7 @@ a {
   padding-bottom: 27px;
 }
 
-.content-heading h2 {
+.content-heading h1 {
   margin: 0;
   font-size: 18px;
   font-weight: 700;
@@ -73,7 +77,7 @@ a {
 }
 
 .country-flag {
-  border: 1px solid #D0CACA;
+  border: 1px solid #d0caca;
   padding: 0;
   height: 40px;
   width: auto;
@@ -93,13 +97,13 @@ a {
   line-height: 19px;
   -webkit-hyphens: manual;
   -ms-hyphens: manual;
-  hyphens: manual;  
+  hyphens: manual;
 }
 
 .drop-down-container .drop-down {
   padding: 0;
-  background-color: #F7F7F7;
-  border: 1px solid #D8D8D8;
+  background-color: #f7f7f7;
+  border: 1px solid #d8d8d8;
   border-radius: 3px;
   margin-top: 9px;
 }
@@ -125,7 +129,7 @@ a {
 }
 .drop-down-container .drop-down-info {
   display: none;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
 }
 .drop-down-container .drop-down:first-of-type {
   margin-top: 55px;
@@ -144,12 +148,13 @@ a {
 .providers .provider {
   margin-top: 9px;
   padding: 20px;
-  background-color: #F7F7F7;
-  border: 1px solid #D8D8D8;
+  background-color: #f7f7f7;
+  border: 1px solid #d8d8d8;
   border-radius: 3px;
   cursor: pointer;
 }
-.providers .provider img, .providers .provider p {
+.providers .provider img,
+.providers .provider p {
   display: inline-block;
 }
 .providers .provider img {
@@ -213,8 +218,8 @@ a {
 .verification .box {
   margin-top: 9px;
   padding: 20px 32px;
-  background-color: #F7F7F7;
-  border: 1px solid #D8D8D8;
+  background-color: #f7f7f7;
+  border: 1px solid #d8d8d8;
   border-radius: 3px;
   cursor: pointer;
   margin-bottom: 33px;
@@ -254,10 +259,10 @@ a {
 
 .sign-message {
   margin-bottom: 50px;
-  background-color: #F7F7F7;
-  border-top: 1px solid #D0CACA;
-  border-bottom: 1px solid #D0CACA;
-  padding: 23px 28px;  
+  background-color: #f7f7f7;
+  border-top: 1px solid #d0caca;
+  border-bottom: 1px solid #d0caca;
+  padding: 23px 28px;
 }
 .sign-message pre {
   margin: 0;
@@ -290,7 +295,7 @@ a {
 /* Return */
 .return {
   padding: 23px;
-  border-bottom: 1px solid #D0CACA;
+  border-bottom: 1px solid #d0caca;
 }
 
 /* Helpers */
