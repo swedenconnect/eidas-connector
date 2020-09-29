@@ -154,7 +154,7 @@
 
                 <div class="col-3">
                   <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlagSm_${country.code}">
-                    <img class="col-sm country-flag float-left" src="${flagSrc}" alt="${country.name}" />
+                    <img class="col-sm country-flag float-left" src="${flagSrc}" alt="" />
                     <span class="w-100"></span>
                     <span class="col-sm country-name float-left">${country.name}</span>
                   </button>
@@ -180,14 +180,14 @@
             <div class="accordion noscripthide" id="helpAccordion"> <!-- drop-down -->
               <div class="card">  
                 <div class="card-header" id="helpHeading1">
-                  <h3 class="mb-0">
+                  <h2 class="mb-0">
                     <button class="btn btn-accordion btn-block text-left" type="button"
                       data-toggle="collapse" data-target="#collapse1" aria-expanded="false"
                       aria-controls="collapse1">
                         <spring:message code='connector.ui.help.1.title' />
                         <span class="btn-accordion-arrow"></span>
                     </button>
-                  </h3>
+                  </h2>
                 </div> 
                 <div id="collapse1" class="collapse" aria-labelledby="helpHeading1" data-parent="#helpAccordion">
                   <div class="card-body">
@@ -197,14 +197,14 @@
               </div> <!-- card -->
               <div class="card">  
                 <div class="card-header" id="helpHeading2">
-                  <h3 class="mb-0">
+                  <h2 class="mb-0">
                     <button class="btn btn-accordion btn-block text-left" type="button"
                       data-toggle="collapse" data-target="#collapse2" aria-expanded="false"
                       aria-controls="collapse2">
                         <spring:message code='connector.ui.help.2.title' />
                         <span class="btn-accordion-arrow"></span>
                     </button>
-                  </h3>
+                  </h2>
                 </div> 
                 <div id="collapse2" class="collapse" aria-labelledby="helpHeading2" data-parent="#helpAccordion">
                   <div class="card-body">
