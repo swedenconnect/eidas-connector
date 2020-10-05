@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import net.shibboleth.idp.authn.AuthnEventIds;
 import se.elegnamnden.eidas.mapping.loa.LevelOfAssuranceMappings;
 import se.litsec.eidas.opensaml.common.EidasConstants;
 import se.litsec.eidas.opensaml.common.EidasLoaEnum;
@@ -116,7 +115,7 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
   @Override
   public void processRequest(final ProfileRequestContext<?, ?> context) throws ExternalAutenticationErrorCodeException {
 
-    final AuthnContextClassContext authnContextContext = this.getAuthnContextClassContext(context);
+    AuthnContextClassContext authnContextContext = this.getAuthnContextClassContext(context);
 
     // Does this request hold a test AuthnContext URI?
     //
@@ -140,8 +139,17 @@ public class EidasAuthnContextServiceImpl extends AuthnContextServiceImpl implem
       log.info("Processing eIDAS ping request [{}]", this.getLogString(context));
     }
     else {
+      // We have a work-around needed for test LOA ...
+      boolean isEmpty = authnContextContext.isEmpty();
+      
       // The normal case ...
       super.processRequest(context);
+      
+      // Workaround: Remove the test LoA ...
+      if (isEmpty) {
+        authnContextContext = this.getAuthnContextClassContext(context);
+        authnContextContext.deleteAuthnContextClassRef(EIDAS_TEST_LOA);
+      }
     }
   }
 
