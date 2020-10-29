@@ -81,9 +81,10 @@
   <!--
     The container wrapping the metadata and is used for publishing. 
    -->
-  <bean id="eidas.SpMetadataContainer" class="se.litsec.opensaml.saml2.metadata.EntityDescriptorContainer" scope="singleton"
+  <bean id="eidas.SpMetadataContainer" class="se.elegnamnden.eidas.idp.connector.sp.metadata.ExtendedEntityDescriptorContainer" scope="singleton"
     c:descriptor-ref="eidas.SpMetadata"
     c:signatureCredentials-ref="eidas.SpMetadataSigningCredential" 
+    p:securityConfiguration-ref="eidas.SpSecurityConfiguration"
     p:validity-ref="eidas.idp.sp.metadata.Validity" />
 
     
