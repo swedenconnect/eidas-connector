@@ -208,8 +208,8 @@ public class CountrySelectionHandler implements InitializingBean {
       }
       else {
         // A fake country for test...
-        uiCountry = new UiCountry(code, displayName, false);
         displayName = this.messageSource.getMessage("connector.ui.country.TEST", new Object[] { code }, code + "Test Country", locale);
+        uiCountry = new UiCountry(code, displayName, false);        
       }
       // Find out if the country can authenticate the user based on the SP reqiurements ...
       if (!c.canAuthenticate(requestedAuthnContextClassUris)) {
