@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 Sweden Connect
+ * Copyright 2017-2020 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.util.Assert;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 /**
  * A representation of a country listing from the aggregated EU metadata.
  * 
@@ -32,7 +29,7 @@ import lombok.Data;
 public class Countries {
 
   /** The countries. */
-  private List<CountryEntry> countries;
+  private List<Country> countries;
 
   /**
    * Constructor.
@@ -40,7 +37,7 @@ public class Countries {
    * @param countries
    *          the countries read from the metadata
    */
-  public Countries(List<CountryEntry> countries) {
+  public Countries(List<Country> countries) {
     Assert.notNull(countries, "countries must not be null");
     this.countries = countries;
   }
@@ -52,11 +49,11 @@ public class Countries {
    *          the country code to check
    * @param hiddenOk
    *          is it OK if the country is "hidden from discovery"?
-   * @return {@code true} if the country is among to stored countries
+   * @return true if the country is among to stored countries
    */
   public boolean contains(final String country, final boolean hiddenOk) {
     return this.countries.stream()
-      .filter(c -> country.equalsIgnoreCase(c.getCode()))
+      .filter(c -> country.equalsIgnoreCase(c.getCountryCode()))
       .filter(c -> (hiddenOk || !c.isHideFromDiscovery()))
       .findFirst()
       .isPresent();
@@ -73,39 +70,24 @@ public class Countries {
    *          a (possibly empty) list of requested countries
    * @return a list of matching countries
    */
-  public List<String> getCountries(final List<String> requestedCountries) {
+  public List<Country> getCountries(final List<String> requestedCountries) {
     if (requestedCountries.isEmpty()) {
-      return this.countries.stream().filter(c -> !c.isHideFromDiscovery()).map(CountryEntry::getCode).collect(Collectors.toList());
+      return this.countries.stream().filter(c -> !c.isHideFromDiscovery()).collect(Collectors.toList());
     }
-    Predicate<CountryEntry> isRequested = c -> requestedCountries.stream()
-      .filter(r -> r.equalsIgnoreCase(c.getCode()))
+    Predicate<Country> isRequested = c -> requestedCountries.stream()
+      .filter(r -> r.equalsIgnoreCase(c.getCountryCode()))
       .findFirst()
       .isPresent();
-    return this.countries.stream().filter(isRequested).map(CountryEntry::getCode).collect(Collectors.toList());
+    return this.countries.stream().filter(isRequested).collect(Collectors.toList());
   }
 
   /**
    * Predicate that tells if there are no countries available.
    * 
-   * @return {@code true} if no countries are available and {@code false} otherwise
+   * @return true if no countries are available and false otherwise
    */
   public boolean isEmpty() {
     return this.countries.isEmpty();
-  }
-
-  /**
-   * Represents a country entry.
-   */
-  @Data
-  @AllArgsConstructor
-  public static class CountryEntry implements Comparable<CountryEntry> {
-    private String code;
-    private boolean hideFromDiscovery = false;
-
-    @Override
-    public int compareTo(CountryEntry o) {
-      return this.code.compareTo(o.getCode());
-    }
   }
 
 }

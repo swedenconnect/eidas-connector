@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 E-legitimationsnämnden
+ * Copyright 2017-2020 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,11 @@ import net.shibboleth.idp.authn.context.RequestedPrincipalContext;
 import net.shibboleth.idp.saml.authn.principal.AuthnContextClassRefPrincipal;
 import se.elegnamnden.eidas.idp.connector.TestHelper;
 import se.elegnamnden.eidas.mapping.loa.StaticLevelOfAssuranceMappings;
-import se.litsec.opensaml.config.OpenSAMLInitializer;
 import se.litsec.opensaml.saml2.core.build.AuthnRequestBuilder;
 import se.litsec.opensaml.saml2.core.build.RequestedAuthnContextBuilder;
 import se.litsec.opensaml.saml2.metadata.build.SpEntityDescriptorBuilder;
 import se.litsec.swedisheid.opensaml.saml2.metadata.entitycategory.EntityCategoryConstants;
+import se.swedenconnect.opensaml.OpenSAMLInitializer;
 
 /**
  * Base class for testing {@link EidasAuthnContextService}.

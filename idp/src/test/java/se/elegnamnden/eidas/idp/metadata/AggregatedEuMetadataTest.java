@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -63,14 +64,14 @@ public class AggregatedEuMetadataTest {
     euMetadata.afterPropertiesSet();
     
     Countries countries = euMetadata.getCountries();
-    List<String> _countries = countries.getCountries(Collections.emptyList());
+    List<Country> _countries = countries.getCountries(Collections.emptyList());
     Assert.assertTrue("Expected one country", _countries.size() == 1);
-    Assert.assertTrue("Expected SE", _countries.contains("SE"));
+    Assert.assertTrue("Expected SE", _countries.stream().map(Country::getCountryCode).collect(Collectors.toList()).contains("SE"));
     
     // If we explictly request XA, we should get it.
     _countries = countries.getCountries(Arrays.asList("XA"));
     Assert.assertTrue("Expected one country", _countries.size() == 1);
-    Assert.assertTrue("Expected XA", _countries.contains("XA"));
+    Assert.assertTrue("Expected XA", _countries.stream().map(Country::getCountryCode).collect(Collectors.toList()).contains("XA"));
   }
     
   @Test
@@ -84,7 +85,7 @@ public class AggregatedEuMetadataTest {
     euMetadata.afterPropertiesSet();
     
     Countries countries = euMetadata.getCountries();
-    Collection<String> _countries = countries.getCountries(Collections.emptyList());
+    Collection<Country> _countries = countries.getCountries(Collections.emptyList());
     Assert.assertTrue("Expected 6 countries", _countries.size() == 6);
   }  
   
