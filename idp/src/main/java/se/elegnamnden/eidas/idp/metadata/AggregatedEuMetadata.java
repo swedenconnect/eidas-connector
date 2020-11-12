@@ -15,8 +15,6 @@
  */
 package se.elegnamnden.eidas.idp.metadata;
 
-import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-
 /**
  * An interface for the aggregated EU metadata.
  * 
@@ -32,12 +30,12 @@ public interface AggregatedEuMetadata {
   Countries getCountries();
 
   /**
-   * Returns the entity descriptor for the Proxy Service IdP for the given country.
+   * Returns the country entry for the given country code.
    * 
    * @param country
    *          the country code
-   * @return the {@code EntityDescriptor}, or {@code null} if no descriptor is found
+   * @return the country entry, or null
    */
-  EntityDescriptor getProxyServiceIdp(String country);
+  Country getCountry(final String country);
 
 }

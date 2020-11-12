@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 Sweden Connect
+ * Copyright 2017-2020 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,31 +24,24 @@ import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.joda.time.DateTime;
-import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
 import org.opensaml.security.httpclient.HttpClientSecurityParameters;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.utilities.java.support.resolver.ResolverException;
-import se.litsec.eidas.opensaml.ext.NodeCountry;
-import se.litsec.opensaml.saml2.metadata.MetadataUtils;
 import se.litsec.opensaml.saml2.metadata.provider.AbstractMetadataProvider;
 import se.litsec.opensaml.saml2.metadata.provider.FilesystemMetadataProvider;
 import se.litsec.opensaml.saml2.metadata.provider.HTTPMetadataProvider;
 import se.litsec.opensaml.saml2.metadata.provider.MetadataProvider;
 import se.litsec.opensaml.utils.X509CertificateUtils;
-import se.litsec.swedisheid.opensaml.saml2.metadata.entitycategory.EntityCategoryMetadataHelper;
 
 /**
  * Implementation of aggregated EU metadata where the metadata contains {@code eidas:NodeCountry} elements for each IdP.
@@ -57,9 +50,6 @@ import se.litsec.swedisheid.opensaml.saml2.metadata.entitycategory.EntityCategor
  */
 @Slf4j
 public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, InitializingBean, DisposableBean {
-
-  /** Entity category value for "hide from discovery". */
-  public static final String HIDE_FROM_DISCOVERY_ENTITY_CATEGORY = "http://refeds.org/category/hide-from-discovery";
 
   /** File name for caching downloaded metadata. */
   protected static final String CACHE_FILE = "eu-metadata.xml";
@@ -84,52 +74,28 @@ public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, Initializ
   protected MetadataProvider metadataProvider;
 
   /** An index of country codes and their respective entity descriptors. */
-  private Map<String, MetadataEntry> countries = Collections.emptyMap();
+  private Map<String, Country> countries = Collections.emptyMap();
 
   /** The last time the country list was indexed. */
   private long countryIndexingTime = 0L;
-
-  /** Given an {@code EntityDescriptor} the method returns its node country. */
-  private static Function<EntityDescriptor, String> getNodeCountry = (e) -> {
-    IDPSSODescriptor sso = e.getIDPSSODescriptor(SAMLConstants.SAML20P_NS);
-    if (sso == null) {
-      return null;
-    }
-    return MetadataUtils.getMetadataExtension(sso.getExtensions(), NodeCountry.class).map(NodeCountry::getNodeCountry).orElse(null);
-  };
-
-  /**
-   * Function that returns {@code true} if the "hide from discovery" entity category is present in the supplied metadata
-   * and {@code false} otherwise.
-   */
-  private static Function<EntityDescriptor, Boolean> hideFromDiscovery = (e) -> {
-    return EntityCategoryMetadataHelper.getEntityCategories(e)
-      .stream()
-      .filter(a -> HIDE_FROM_DISCOVERY_ENTITY_CATEGORY.equals(a))
-      .findFirst()
-      .isPresent();
-  };
 
   /**
    * Performs a re-index of the country list every time new metadata has been downloaded.
    */
   @Override
   public synchronized Countries getCountries() {
-    return new Countries(this.getCountryMap().entrySet()
-      .stream()
-      .map(e -> new Countries.CountryEntry(e.getKey(), e.getValue().isHideFromDiscovery()))
-      .sorted()
-      .collect(Collectors.toList()));
+    return new Countries(this.getCountryMap().values().stream().collect(Collectors.toList()));
   }
-  
-  private synchronized Map<String, MetadataEntry> getCountryMap() {
+
+  private synchronized Map<String, Country> getCountryMap() {
     if (this.metadataProvider.getLastUpdate().orElse(new DateTime()).isAfter(this.countryIndexingTime)) {
       try {
-        Map<String, MetadataEntry> cm = new HashMap<>();
+        Map<String, Country> cm = new HashMap<>();
         for (EntityDescriptor ed : this.metadataProvider.getIdentityProviders()) {
-          String countryCode = getNodeCountry.apply(ed);
+          final Country c = new Country(ed);
+          final String countryCode = c.getCountryCode();
           if (countryCode != null) {
-            cm.put(countryCode.toUpperCase(), new MetadataEntry(ed));
+            cm.put(countryCode, c);
           }
           else {
             log.error("Found IdP '{}' in EU metadata that does not have NodeCountry extension", ed.getEntityID());
@@ -143,15 +109,11 @@ public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, Initializ
     }
     return this.countries;
   }
-
+  
   /** {@inheritDoc} */
   @Override
-  public EntityDescriptor getProxyServiceIdp(String country) {
-    if (!StringUtils.hasText(country)) {
-      return null;
-    }
-    MetadataEntry entry = this.getCountryMap().get(country.toUpperCase());
-    return entry != null ? entry.getEntityDescriptor() : null;
+  public Country getCountry(final String country) {
+    return StringUtils.hasText(country) ? this.getCountryMap().get(country.toUpperCase()) : null;
   }
 
   /** {@inheritDoc} */
@@ -224,17 +186,6 @@ public class AggregatedEuMetadataImpl implements AggregatedEuMetadata, Initializ
 
     this.metadataProvider = _metadataProvider;
     this.metadataProvider.initialize();
-  }
-
-  @Data
-  public static class MetadataEntry {
-    private EntityDescriptor entityDescriptor;
-    private boolean hideFromDiscovery;
-
-    public MetadataEntry(EntityDescriptor entityDescriptor) {
-      this.entityDescriptor = entityDescriptor;
-      this.hideFromDiscovery = AggregatedEuMetadataImpl.hideFromDiscovery.apply(entityDescriptor);
-    }
   }
 
 }

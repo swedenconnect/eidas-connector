@@ -40,6 +40,7 @@ import org.springframework.util.StringUtils;
 
 import se.elegnamnden.eidas.idp.connector.controller.model.SpInfo;
 import se.elegnamnden.eidas.idp.connector.controller.model.UiCountry;
+import se.elegnamnden.eidas.idp.metadata.Country;
 
 /**
  * Handler class for taking care of the select country view.
@@ -166,13 +167,15 @@ public class CountrySelectionHandler implements InitializingBean {
    * Returns a list of country objects for displaying in the list of possible countries in the UI. The list is sorted
    * according to the current locale.
    * 
-   * @param isoCodes
-   *          a list of language codes
+   * @param availCountries
+   *          a list of available countries
+   * @param requestedAuthnContextClassUris
+   *          a list of URIs (the requested authn context class URIs)
    * @return a sorted list of country objects
    */
-  public List<UiCountry> getSelectableCountries(Collection<String> isoCodes) {
+  public List<UiCountry> getSelectableCountries(final Collection<Country> availCountries, final List<String> requestedAuthnContextClassUris) {
 
-    if (isoCodes == null) {
+    if (availCountries == null) {
       return Collections.emptyList();
     }
 
@@ -182,30 +185,39 @@ public class CountrySelectionHandler implements InitializingBean {
     Locale locale = LocaleContextHolder.getLocale();
 
     List<UiCountry> countries = new ArrayList<>();
-    for (String code : isoCodes) {
+    for (Country c : availCountries) {
+      final String code = c.getCountryCode();
       String displayName = null;
       try {
-        displayName = this.messageSource.getMessage("connector.ui.country." + code.toUpperCase(), null, locale);
+        displayName = this.messageSource.getMessage("connector.ui.country." + code, null, locale);
       }
       catch (NoSuchMessageException e) {
         // Maybe, there is no mapping for the given locale. Try the default locale also.
         if (!locale.equals(DEFAULT_LOCALE)) {
           try {
-            displayName = this.messageSource.getMessage("connector.ui.country." + code.toUpperCase(), null, DEFAULT_LOCALE);
+            displayName = this.messageSource.getMessage("connector.ui.country." + code, null, DEFAULT_LOCALE);
           }
           catch (NoSuchMessageException e2) {
           }
         }
       }
 
+      UiCountry uiCountry = null;
       if (displayName != null) {
-        countries.add(new UiCountry(code, displayName));
+        uiCountry = new UiCountry(code, displayName);
       }
       else {
         // A fake country for test...
+        uiCountry = new UiCountry(code, displayName, false);
         displayName = this.messageSource.getMessage("connector.ui.country.TEST", new Object[] { code }, code + "Test Country", locale);
-        countries.add(new UiCountry(code, displayName, false));
       }
+      // Find out if the country can authenticate the user based on the SP reqiurements ...
+      if (!c.canAuthenticate(requestedAuthnContextClassUris)) {
+        log.debug("Country '{}' will be greyed out since it doesn't match requested AuthnContextClassRef(s) (%s)", 
+          code, requestedAuthnContextClassUris);
+        uiCountry.setInactive(true);        
+      }      
+      countries.add(uiCountry);
     }
 
     Collator collator = Collator.getInstance(locale);

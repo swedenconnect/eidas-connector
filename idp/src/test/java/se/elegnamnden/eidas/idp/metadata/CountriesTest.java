@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 Sweden Connect
+ * Copyright 2017-2020 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,20 @@ package se.elegnamnden.eidas.idp.metadata;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.opensaml.saml.saml2.metadata.Extensions;
 
-import se.elegnamnden.eidas.idp.metadata.Countries.CountryEntry;
+import se.litsec.eidas.opensaml.ext.NodeCountry;
+import se.litsec.opensaml.saml2.metadata.build.IdpEntityDescriptorBuilder;
+import se.litsec.opensaml.utils.ObjectUtils;
+import se.swedenconnect.opensaml.OpenSAMLInitializer;
 
 /**
  * Test cases for the {@code Countries} class.
@@ -29,6 +38,11 @@ import se.elegnamnden.eidas.idp.metadata.Countries.CountryEntry;
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  */
 public class CountriesTest {
+
+  @Before
+  public void setup() throws Exception {
+    OpenSAMLInitializer.getInstance().initialize();
+  }
 
   @Test
   public void testEmpty() {
@@ -40,40 +54,61 @@ public class CountriesTest {
   @Test
   public void testSimple() {
     Countries c = new Countries(Arrays.asList(
-      new CountryEntry("SE", false), new CountryEntry("NO", false), new CountryEntry("DK", false)));
-    
+      build("SE", false), build("NO", false), build("DK", false)));
+
     Assert.assertFalse(c.isEmpty());
-    Assert.assertEquals(Arrays.asList("SE", "NO", "DK"), c.getCountries(Collections.emptyList()));
+    List<Country> countries = c.getCountries(Collections.emptyList());
+    Assert.assertEquals(Arrays.asList("SE", "NO", "DK"), countries.stream().map(Country::getCountryCode).collect(Collectors.toList()));
   }
-  
+
   @Test
   public void testHide() {
     Countries c = new Countries(Arrays.asList(
-      new CountryEntry("SE", false), new CountryEntry("NO", true), new CountryEntry("DK", false)));
+      build("SE", false), build("NO", true), build("DK", false)));
     
     Assert.assertFalse(c.isEmpty());
-    Assert.assertEquals(Arrays.asList("SE", "DK"), c.getCountries(Collections.emptyList()));
+    Assert.assertEquals(Arrays.asList("SE", "DK"), c.getCountries(Collections.emptyList())
+      .stream()
+      .map(Country::getCountryCode)
+      .collect(Collectors.toList()));
   }
-  
+
   @Test
   public void testRequested() {
     Countries c = new Countries(Arrays.asList(
-      new CountryEntry("SE", false), new CountryEntry("NO", false), new CountryEntry("DK", false)));
-    
+      build("SE", false), build("NO", false), build("DK", false)));
+
     Assert.assertFalse(c.isEmpty());
-    Assert.assertEquals(Arrays.asList("NO"), c.getCountries(Arrays.asList("no", "de")));
-    
+    Assert.assertEquals(Arrays.asList("NO"), c.getCountries(Arrays.asList("no", "de")).stream().map(Country::getCountryCode).collect(Collectors.toList()));
+
     c = new Countries(Arrays.asList(
-      new CountryEntry("SE", false), new CountryEntry("NO", true), new CountryEntry("DK", false)));
-    
+      build("SE", false), build("NO", true), build("DK", false)));
+
     Assert.assertFalse(c.isEmpty());
-    Assert.assertEquals(Arrays.asList("NO"), c.getCountries(Arrays.asList("no", "de")));
-    
+    Assert.assertEquals(Arrays.asList("NO"), c.getCountries(Arrays.asList("no", "de")).stream().map(Country::getCountryCode).collect(Collectors.toList()));
+
     c = new Countries(Arrays.asList(
-      new CountryEntry("SE", false), new CountryEntry("NO", true), new CountryEntry("DK", false)));
-    
+      build("SE", false), build("NO", true), build("DK", false)));
+
     Assert.assertFalse(c.isEmpty());
-    Assert.assertEquals(Arrays.asList("NO", "DK"), c.getCountries(Arrays.asList("no", "dk", "de")));
+    Assert.assertEquals(Arrays.asList("NO", "DK"), c.getCountries(Arrays.asList("no", "dk", "de")).stream().map(Country::getCountryCode).collect(Collectors.toList()));
   }
-    
+
+  private static Country build(final String country, final boolean hide, String... assuranceLevels) {
+    Extensions exts = ObjectUtils.createSamlObject(Extensions.class);
+    NodeCountry nc = ObjectUtils.createSamlObject(NodeCountry.class);
+    nc.setNodeCountry(country);
+    exts.getUnknownXMLObjects().add(nc);
+
+    EntityDescriptor ed = IdpEntityDescriptorBuilder.builder()
+      .assuranceCertificationUris(assuranceLevels)
+      .entityCategories(hide ? MetadataFunctions.HIDE_FROM_DISCOVERY_ENTITY_CATEGORY : null)
+      .wantAuthnRequestsSigned(true)
+      .build();
+
+    ed.getIDPSSODescriptor(SAMLConstants.SAML20P_NS).setExtensions(exts);
+
+    return new Country(ed);
+  }
+
 }

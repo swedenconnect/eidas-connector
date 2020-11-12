@@ -90,6 +90,8 @@
         </div>
 
         <hr class="full-width">
+        
+        <c:set var="hasInactiveCountries" value="false" />
 
         <form action="<%=request.getContextPath()%>/extauth/proxyauth" method="POST" id="countrySelectForm">
         
@@ -116,9 +118,16 @@
               <c:forEach items="${countries}" var="country">
                 <c:set var="flag" value="${country.isRealCountry() ? country.code : 'eu'}" />
                 <c:url value="/eidas-style/images/flags/${fn:toLowerCase(flag)}.png" var="flagSrc" />
+                <c:set var="inactiveCountryTag" value="" />
+                <c:if test="${country.isInactive()}">
+                  <c:set var="inactiveCountryTag" value="disabled" />
+                  <c:set var="hasInactiveCountries" value="true" />
+                </c:if>
 
                 <div class="col-sm">
-                  <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlag_${country.code}">
+                  <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" 
+                    id="countryFlag_${country.code}" ${inactiveCountryTag}>
+                    
                     <img class="col-sm country-flag float-left" src="${flagSrc}" alt="" />
                     <span class="w-100"></span>
                     <span class="col-sm country-name float-left">${country.name}</span>
@@ -151,9 +160,16 @@
               <c:forEach items="${countries}" var="country">
                 <c:set var="flag" value="${country.isRealCountry() ? country.code : 'eu'}" />
                 <c:url value="/eidas-style/images/flags/${fn:toLowerCase(flag)}.png" var="flagSrc" />
+                <c:set var="inactiveCountryTag" value="" />
+                <c:if test="${country.isInactive()}">
+                  <c:set var="inactiveCountryTag" value="disabled" />
+                  <c:set var="hasInactiveCountries" value="true" />
+                </c:if>
 
                 <div class="col-3">
-                  <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" id="countryFlagSm_${country.code}">
+                  <button class="btn country-button" type="submit" name="selectedCountry" value="${country.code}" 
+                    id="countryFlag_${country.code}" ${inactiveCountryTag}>
+                    
                     <img class="col-sm country-flag float-left" src="${flagSrc}" alt="" />
                     <span class="w-100"></span>
                     <span class="col-sm country-name float-left">${country.name}</span>
@@ -172,6 +188,10 @@
             <dd><spring:message code='connector.ui.help.1.text' /></dd>
             <dt><spring:message code='connector.ui.help.2.title' /></dt>
             <dd><spring:message code='connector.ui.help.2.text' /></dd>
+            <c:if test="${hasInactiveCountries == 'true'}">
+            <dt><spring:message code='connector.ui.help.3.title' /></dt>
+            <dd><spring:message code='connector.ui.help.3.text' /></dd>
+            </c:if>
           </dl>
         </noscript>
         
@@ -212,6 +232,25 @@
                   </div>
                 </div>
               </div> <!-- card -->
+              <c:if test="${hasInactiveCountries == 'true'}">
+              <div class="card">  
+                <div class="card-header" id="helpHeading3">
+                  <h2 class="mb-0">
+                    <button class="btn btn-accordion btn-block text-left" type="button"
+                      data-toggle="collapse" data-target="#collapse3" aria-expanded="false"
+                      aria-controls="collapse3">
+                        <spring:message code='connector.ui.help.3.title' />
+                        <span class="btn-accordion-arrow"></span>
+                    </button>
+                  </h2>
+                </div> 
+                <div id="collapse3" class="collapse" aria-labelledby="helpHeading3" data-parent="#helpAccordion">
+                  <div class="card-body">
+                    <spring:message code='connector.ui.help.3.text' />
+                  </div>
+                </div>
+              </div> <!-- card -->
+              </c:if>
             </div>
           </div>
         </div>        
