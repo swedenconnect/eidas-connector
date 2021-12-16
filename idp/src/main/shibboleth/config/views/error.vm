@@ -94,7 +94,7 @@
         </div>  <!-- /.row -->  
       </div> <!-- /.container .main -->
       
-      <script src="$request.getContextPath()/js/jquery-3.3.1.slim.min.js"></script>
+      <script src="$request.getContextPath()/js/jquery-3.6.0.slim.min.js"></script>
       <script src="$request.getContextPath()/js/popper-1.14.0.min.js"></script>
       <script src="$request.getContextPath()/bootstrap/js/bootstrap.min.js"></script>
       
