@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 Sweden Connect
+ * Copyright 2017-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,44 +158,35 @@ public class Country implements Comparable<Country> {
   }
 
   private static List<String> SUPPORTED_FOR_EIDAS_LOA_LOW = Arrays.asList(
-    LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_LOW,
-    LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_LOW_NF,
-    LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_LOW_SIGMESSAGE,
-    LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_LOW_NF_SIGMESSAGE);
+    LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_LOW,
+    LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_LOW_NF);
 
   private static List<String> SUPPORTED_FOR_EIDAS_LOA_LOW_NON_NOTIFIED = Arrays.asList(
-    LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_LOW,
-    LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_LOW_SIGMESSAGE);
+    LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_LOW);
 
   private static List<String> SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL = Stream.concat(
     Arrays.asList(
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL,
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF,
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_SIGMESSAGE,
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE)
+      LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL,
+      LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF)
       .stream(), SUPPORTED_FOR_EIDAS_LOA_LOW.stream())
     .collect(Collectors.toList());
 
   private static List<String> SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED = Stream.concat(
     Arrays.asList(
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL,
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_SIGMESSAGE)
+      LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL)
       .stream(), SUPPORTED_FOR_EIDAS_LOA_LOW_NON_NOTIFIED.stream())
     .collect(Collectors.toList());
 
   private static List<String> SUPPORTED_FOR_EIDAS_LOA_HIGH = Stream.concat(
     Arrays.asList(
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_HIGH,
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_HIGH_NF,
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_HIGH_SIGMESSAGE,
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_HIGH_NF_SIGMESSAGE)
+      LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_HIGH,
+      LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF)
       .stream(), SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL.stream())
     .collect(Collectors.toList());
 
   private static List<String> SUPPORTED_FOR_EIDAS_LOA_HIGH_NON_NOTIFIED = Stream.concat(
     Arrays.asList(
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_HIGH,
-      LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_HIGH_SIGMESSAGE)
+      LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_HIGH)
       .stream(), SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.stream())
     .collect(Collectors.toList());
 

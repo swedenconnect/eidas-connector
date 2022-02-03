@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 Sweden Connect
+ * Copyright 2017-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,7 +199,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
     final ProfileRequestContext<?, ?> context = this.getProfileRequestContext(httpRequest);
     final boolean isPing = this.eidasAuthnContextService.isTestRequest(context);
 
-    StatisticsEntry stats = this.statistics.event(context);
+    final StatisticsEntry stats = this.statistics.event(context);
     stats.authnRequest(this.getAuthnRequest(context));
     stats.ping(isPing);
 
@@ -406,9 +406,9 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
 
     // SP type and National SP entityID
     //
-    EntityDescriptor spMetadata = this.getPeerMetadata(context);
+    final EntityDescriptor spMetadata = this.getPeerMetadata(context);
     if (spMetadata != null) {
-      List<String> entityCategories = EntityCategoryMetadataHelper.getEntityCategories(spMetadata);
+      final List<String> entityCategories = EntityCategoryMetadataHelper.getEntityCategories(spMetadata);
       if (entityCategories.contains(EntityCategoryConstants.SERVICE_TYPE_CATEGORY_PUBLIC_SECTOR_SP.getUri())) {
         spInput.setSpType(SPTypeEnumeration.PUBLIC);
       }
@@ -668,8 +668,7 @@ public class ProxyAuthenticationController extends AbstractExternalAuthenticatio
       final SignMessageContext signMessageContext = this.getSignSupportService().getSignMessageContext(context);
       boolean signMessageDisplayed = ACTION_OK.equals(action) && signMessageContext != null && signMessageContext.isDoDisplayMessage();
 
-      String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(
-        context, result.getAuthnContextClassUri(), signMessageDisplayed);
+      String loaToIssue = this.eidasAuthnContextService.getReturnAuthnContextClassRef(context, result.getAuthnContextClassUri());
 
       // If the sign message was displayed, issue the signMessageDigest attribute.
       //

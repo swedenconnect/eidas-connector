@@ -30,7 +30,7 @@
         <div class="container">
           <div class="row no-gutter">        
             <div class="top-logo">
-              <img class="top-logo-dim" src="<%=request.getContextPath()%>/img/sc-logo.svg" />
+              <img class="top-logo-dim" src="<%=request.getContextPath()%>/img/idp-logo.svg" />
             </div>                  
           </div>
         </div>
