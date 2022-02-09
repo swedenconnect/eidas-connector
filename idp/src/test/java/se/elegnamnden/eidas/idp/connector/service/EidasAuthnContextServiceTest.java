@@ -1,22 +1,17 @@
 /*
- * The eidas-connector project is the implementation of the Swedish eIDAS 
- * connector built on top of the Shibboleth IdP.
+ * Copyright 2017-2022 Sweden Connect
  *
- * More details on <https://github.com/elegnamnden/eidas-connector> 
- * Copyright (C) 2017 E-legitimationsnämnden
- * 
- * This program is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License 
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package se.elegnamnden.eidas.idp.connector.service;
 
@@ -57,124 +52,102 @@ public class EidasAuthnContextServiceTest extends AbstractEidasAuthnContextServi
         {
             // Basic case - Only substantial
                     
-            B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-              .signatureService(false)
+            B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
               .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-              .signMsgDisplayed(false)
               .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
               .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
+            AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
         },
         {
           // SP requests non-notified also
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-            .signatureService(false)
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-            .signMsgDisplayed(false)
             .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
             .build(),
-          AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
+          AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
         },
         {
           // SP requests only the "don't care" substantial URI - should get that one
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
-            .signatureService(false)
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-            .signMsgDisplayed(false)
             .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
             .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, null
+            AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL, null
         },
         {
           // SP requests low or substantial - should get the best match which is substantial.
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-            .signatureService(false)
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-            .signMsgDisplayed(false)
             .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
             .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
+            AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
         },
         {
           // SP requests low or substantial (both don't care and notified) - should get the best match which is substantial-nf.
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW, AUTH_CONTEXT_URI_EIDAS_LOW_NF, 
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-            .signatureService(false)
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW, AUTHN_CONTEXT_URI_EIDAS_LOW_NF, 
+            AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-            .signMsgDisplayed(false)
             .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
             .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
+            AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
         },
         {
           // SP requests low or substantial (both don't care) - should get the best match which is substantial.
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
-            .signatureService(false)
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-            .signMsgDisplayed(false)
             .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
             .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, null
+            AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL, null
         },
         {
           // SP requests low or substantial (nf), PS declare high (meaning all under but no non-notified).
           // Should result in substantial-nf
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-            .signatureService(false)
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-            .signMsgDisplayed(false)
             .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
             .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
+            AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
         },
         {
           // SP requests low or substantial (nf), PS declare high (meaning all under but no non-notified). PS delivers high.
           // Should result in substantial-nf
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-            .signatureService(false)
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-            .signMsgDisplayed(false)
             .deliveredUri(EidasConstants.EIDAS_LOA_HIGH)
             .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
+            AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
         },
         {
           // SP requests low or substantial (nf and don't care), PS declare high (meaning all under but no non-notified). PS delivers high.
           // Should result in substantial-nf
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF,
-            AUTH_CONTEXT_URI_EIDAS_LOW, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
-            .signatureService(false)
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF,
+            AUTHN_CONTEXT_URI_EIDAS_LOW, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-            .signMsgDisplayed(false)
             .deliveredUri(EidasConstants.EIDAS_LOA_HIGH)
             .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
+            AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
         },
         {
           // SP requests low or substantial (nf), PS declare high (meaning all under but no non-notified). PS delivers sub.
           // Should result in substantial-nf
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-            .signatureService(false)
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-            .signMsgDisplayed(false)
-              .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
+            .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
             .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
+            AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
         },
         {
           // SP requests low or substantial (nf), PS declare high (meaning all under but no non-notified). PS delivers low.
           // Should result in low-nf
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-            .signatureService(false)
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-            .signMsgDisplayed(false)
             .deliveredUri(EidasConstants.EIDAS_LOA_LOW)
             .build(),
-            AUTH_CONTEXT_URI_EIDAS_LOW_NF, null
+            AUTHN_CONTEXT_URI_EIDAS_LOW_NF, null
         },
         {
           // Unknown URI released by PS
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
             .deliveredUri("http://www.unknown.com")
             .build(),
@@ -182,67 +155,20 @@ public class EidasAuthnContextServiceTest extends AbstractEidasAuthnContextServi
         },
         {
           // Too low ranked URI released by PS
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
             .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
             .deliveredUri(EidasConstants.EIDAS_LOA_LOW)
             .build(),
             null, AuthnEventIds.AUTHN_EXCEPTION
         },
-        {
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE))
-            .signatureService(true)
-            .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-            .signMsgDisplayed(false)
-            .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
-            .build(),
-            null, AuthnEventIds.AUTHN_EXCEPTION
-        },
-        {
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-            .signatureService(true)
-            .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-            .signMsgDisplayed(false)
-            .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
-            .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, null
-        },
-        {
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-            .signatureService(true)
-            .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-            .signMsgDisplayed(true)
-            .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
-            .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE, null
-        },
-        {
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_SIGMESSAGE, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-            .signatureService(true)
-            .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-            .signMsgDisplayed(true)
-            .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
-            .build(),
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_SIGMESSAGE, null
-        },
-        {
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW_SIGMESSAGE, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-            .signatureService(true)
-            .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-            .signMsgDisplayed(true)
-            .deliveredUri(EidasConstants.EIDAS_LOA_SUBSTANTIAL)
-            .build(),
-            AUTH_CONTEXT_URI_EIDAS_LOW_SIGMESSAGE, null
-        },
         // To validate reported Iceland bug ...
         {
-          B().requestedUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW))
-          .signatureService(false)
+          B().requestedUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW))
           .proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .signMsgDisplayed(false)
           .deliveredUri(EidasConstants.EIDAS_LOA_LOW)
           .build(),
-          AUTH_CONTEXT_URI_EIDAS_LOW, null
-        }        
+          AUTHN_CONTEXT_URI_EIDAS_LOW, null
+        }
     });
   }
 
@@ -261,10 +187,8 @@ public class EidasAuthnContextServiceTest extends AbstractEidasAuthnContextServi
     try {
       String uri = this.runAuthn(
         this.testInput.getRequestedUris(),
-        this.testInput.isSignatureService(),
         this.testInput.getProxyServiceDeclaration(),
-        this.testInput.getDeliveredUri(),
-        this.testInput.isSignMsgDisplayed());
+        this.testInput.getDeliveredUri());
       
       if (this.expectedErrorCode != null) {
         Assert.fail(String.format("Expected ExternalAutenticationErrorCodeException with error code '%s'" +
@@ -285,17 +209,17 @@ public class EidasAuthnContextServiceTest extends AbstractEidasAuthnContextServi
     }
   }
 
-  private String runAuthn(List<String> requestedUris, boolean isSignatureService, List<String> proxyServiceDeclaration, String deliveredUri,
-      boolean displaySignMsg) throws ExternalAutenticationErrorCodeException {
+  private String runAuthn(List<String> requestedUris, List<String> proxyServiceDeclaration, String deliveredUri) 
+      throws ExternalAutenticationErrorCodeException {
 
-    this.simulateAuthnRequest(requestedUris, isSignatureService);
+    this.simulateAuthnRequest(requestedUris);
 
     this.service.initializeContext(context);
     this.service.processRequest(context);
 
     this.service.getSendRequestedAuthnContext(context, proxyServiceDeclaration);
 
-    return this.service.getReturnAuthnContextClassRef(context, deliveredUri, displaySignMsg);
+    return this.service.getReturnAuthnContextClassRef(context, deliveredUri);
   }
 
   private static TestParameters.TestParametersBuilder B() {
@@ -312,16 +236,10 @@ public class EidasAuthnContextServiceTest extends AbstractEidasAuthnContextServi
     /** The AuthnContext URI:s from the SP AuthnRequest. */
     private List<String> requestedUris;
 
-    /** Is this a signature service? */
-    private boolean signatureService;
-
     /**
      * The eIDAS authn context URI:s declared by the Proxy Service in its metadata as assurance certification attributes.
      */
     private List<String> proxyServiceDeclaration;
-
-    /** Was a signature message displayed. */
-    private boolean signMsgDisplayed;
 
     /** The AuthnContext URI delivered by the Proxy Service. */
     private String deliveredUri;

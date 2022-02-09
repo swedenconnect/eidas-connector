@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 E-legitimationsnämnden
+ * Copyright 2017-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,11 @@ package se.elegnamnden.eidas.idp.connector.service;
 
 import static org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration.EXACT;
 import static org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration.MINIMUM;
-import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_HIGH;
-import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_HIGH_NF_SIGMESSAGE;
-import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_LOW;
-import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_LOW_NF;
-import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL;
-import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF;
-import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE;
-import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_SIGMESSAGE;
+import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_HIGH;
+import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_LOW;
+import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_LOW_NF;
+import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL;
+import static se.litsec.swedisheid.opensaml.saml2.authentication.LevelofAssuranceAuthenticationContextURI.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,200 +65,138 @@ public class GetSendRequestedAuthnContextTest extends AbstractEidasAuthnContextS
     // 0
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build(),
         EB().comparison(MINIMUM)
           .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build()
     });
     
     // 1
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE))
-          .sigService(true)
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build(),
         EB().comparison(MINIMUM)
           .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build()
     });
-    
+        
     // 2
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE))
-          .sigService(true)
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build(),
         EB().comparison(MINIMUM)
           .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build()
     });
     
     // 3
-    tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE))
-          .sigService(false)
-          .build(),
-        EB().comparison(MINIMUM)
-          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
-          .build()
-    });
-    
-    // 4
-    tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE))
-          .sigService(false)
-          .build(),
-        EB().errorCode(AuthnEventIds.REQUEST_UNSUPPORTED).build()
-    });    
-
-    // 5
     // Tests that the lowest one is sent
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL,
-            AUTH_CONTEXT_URI_EIDAS_LOW))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL,
+            AUTHN_CONTEXT_URI_EIDAS_LOW))
           .build(),
         EB().comparison(MINIMUM)
           .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_LOW))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL,
-            AUTH_CONTEXT_URI_EIDAS_LOW))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL,
+            AUTHN_CONTEXT_URI_EIDAS_LOW))
+          .build()
+    });
+
+    // 4
+    // The most likely case (1)
+    tc.add(new Object[] {
+        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
+          .build(),
+        EB().comparison(MINIMUM)
+          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
+          .build()
+    });
+
+    // 5
+    // (2)
+    tc.add(new Object[] {
+        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
+          .build(),
+        EB().comparison(MINIMUM)
+          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
           .build()
     });
 
     // 6
-    // Tests that sig-message URIs are filtered away for non sigservices
+    // No match
     tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL,
-            AUTH_CONTEXT_URI_EIDAS_HIGH_NF_SIGMESSAGE))
+        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_LOW))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
           .build(),
-        EB().comparison(MINIMUM)
-          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
-          .build()
+        EB().errorCode(AuthnEventIds.REQUEST_UNSUPPORTED).build()
     });
 
     // 7
-    // The most likely case (1)
+    // Too high requested are filtered away
     tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
+        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_LOW))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL,
+            AUTHN_CONTEXT_URI_EIDAS_LOW_NF))
           .build(),
         EB().comparison(MINIMUM)
-          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
+          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_LOW))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW_NF))
           .build()
     });
 
     // 8
-    // (2)
+    // No match
     tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
+        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_HIGH))
           .build(),
-        EB().comparison(MINIMUM)
-          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
-          .build()
+        EB().errorCode(AuthnEventIds.REQUEST_UNSUPPORTED).build()
     });
 
     // 9
-    // The most likely case - signservices
+    // Proxy service supports only notified schemes - declares all supported
     tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_SIGMESSAGE,
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE))
-          .sigService(true)
+        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH, EidasConstants.EIDAS_LOA_SUBSTANTIAL))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW_NF))
           .build(),
         EB().comparison(MINIMUM)
-          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_SIGMESSAGE,
-            AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE))
+          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_LOW))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW_NF))
           .build()
     });
 
     // 10
-    // No match
-    tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_LOW))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
-          .build(),
-        EB().errorCode(AuthnEventIds.REQUEST_UNSUPPORTED).build()
-    });
-
-    // 11
-    // Too high requested are filtered away
-    tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_LOW))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL,
-            AUTH_CONTEXT_URI_EIDAS_LOW_NF))
-          .build(),
-        EB().comparison(MINIMUM)
-          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_LOW))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW_NF))
-          .build()
-    });
-
-    // 12
-    // No match - Only sigservice URI:s for non signature service
-    tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE))
-          .sigService(false)
-          .build(),
-        EB().errorCode(AuthnEventIds.REQUEST_UNSUPPORTED).build()
-    });
-
-    // 13
-    // No match
-    tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE, AUTH_CONTEXT_URI_EIDAS_HIGH))
-          .sigService(false)
-          .build(),
-        EB().errorCode(AuthnEventIds.REQUEST_UNSUPPORTED).build()
-    });
-
-    // 14
-    // Proxy service supports only notified schemes - declares all supported
-    tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH, EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW_NF))
-          .build(),
-        EB().comparison(MINIMUM)
-          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_LOW))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW_NF))
-          .build()
-    });
-
-    // 15
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH, EidasConstants.EIDAS_LOA_LOW))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build(),
         EB().comparison(MINIMUM)
           .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build()
     });
 
-    // 16
+    // 11
     // PS supports both notified and non-notified
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH, EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build(),
         EB().comparison(EXACT)
           .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH, EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED,
             EidasConstants.EIDAS_LOA_SUBSTANTIAL, EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
           .build()
     });
 
@@ -269,94 +204,72 @@ public class GetSendRequestedAuthnContextTest extends AbstractEidasAuthnContextS
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH, EidasConstants.EIDAS_LOA_LOW,
           EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build(),
         EB().comparison(EXACT)
           .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH, EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED,
             EidasConstants.EIDAS_LOA_SUBSTANTIAL, EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build()
     });
 
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH, EidasConstants.EIDAS_LOA_SUBSTANTIAL,
           EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW, AUTH_CONTEXT_URI_EIDAS_LOW_NF))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW, AUTHN_CONTEXT_URI_EIDAS_LOW_NF))
           .build(),
         EB().comparison(EXACT)
           .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH, EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED,
             EidasConstants.EIDAS_LOA_SUBSTANTIAL, EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED, EidasConstants.EIDAS_LOA_LOW,
             EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_LOW, AUTH_CONTEXT_URI_EIDAS_LOW_NF))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_LOW, AUTHN_CONTEXT_URI_EIDAS_LOW_NF))
           .build()
     });
 
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build(),
         EB().errorCode(AuthnEventIds.REQUEST_UNSUPPORTED).build()
     });
 
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build(),
         EB().errorCode(AuthnEventIds.REQUEST_UNSUPPORTED).build()
     });
 
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
           .build(),
         EB().comparison(EXACT)
           .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
           .build()
     });
     
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF))
           .build(),
         EB().comparison(EXACT)
           .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
           .build()
     });
     
     tc.add(new Object[] {
         TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_SIGMESSAGE))
+          .requestedAuthnContextUris(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
           .build(),
         EB().comparison(EXACT)
           .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
+          .remainingAuthnContextClassRefs(Arrays.asList(AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL))
           .build()
     });
     
-    tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_SIGMESSAGE))
-          .sigService(true)
-          .build(),
-        EB().comparison(EXACT)
-          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_SIGMESSAGE))
-          .build()
-    });
-    
-    tc.add(new Object[] {
-        TB().proxyServiceDeclaration(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .requestedAuthnContextUris(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL, AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF_SIGMESSAGE))
-          .sigService(true)
-          .build(),
-        EB().comparison(EXACT)
-          .authnContextUris(Arrays.asList(EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED))
-          .remainingAuthnContextClassRefs(Arrays.asList(AUTH_CONTEXT_URI_EIDAS_SUBSTANTIAL))
-          .build()
-    });    
-
     return tc;
   }
 
@@ -403,7 +316,7 @@ public class GetSendRequestedAuthnContextTest extends AbstractEidasAuthnContextS
   }
 
   private RequestedAuthnContext executeTest(TestInput input) throws Exception {
-    this.simulateAuthnRequest(input.getRequestedAuthnContextUris(), input.isSigService());
+    this.simulateAuthnRequest(input.getRequestedAuthnContextUris());
 
     this.service.initializeContext(this.context);
     this.service.processRequest(this.context);
@@ -433,7 +346,6 @@ public class GetSendRequestedAuthnContextTest extends AbstractEidasAuthnContextS
   public static class TestInput {
     private List<String> proxyServiceDeclaration;
     private List<String> requestedAuthnContextUris;
-    private boolean sigService;
   }
 
   private static TestInput.TestInputBuilder TB() {

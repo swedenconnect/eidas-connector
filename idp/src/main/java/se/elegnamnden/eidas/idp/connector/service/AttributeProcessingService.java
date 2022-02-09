@@ -1,22 +1,17 @@
 /*
- * The eidas-connector project is the implementation of the Swedish eIDAS 
- * connector built on top of the Shibboleth IdP.
+ * Copyright 2017-2022 Sweden Connect
  *
- * More details on <https://github.com/elegnamnden/eidas-connector> 
- * Copyright (C) 2017 E-legitimationsnämnden
- * 
- * This program is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License 
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package se.elegnamnden.eidas.idp.connector.service;
 
@@ -47,7 +42,7 @@ public interface AttributeProcessingService {
    * @throws AttributeProcessingException
    *           if no matching attribute is found
    */
-  String getPrincipal(List<Attribute> attributes) throws AttributeProcessingException;
+  String getPrincipal(final List<Attribute> attributes) throws AttributeProcessingException;
 
   /**
    * Returns the name of the attribute that is the attribute that represents the principal (subject).
@@ -66,7 +61,7 @@ public interface AttributeProcessingService {
    * @throws AttributeProcessingException
    *           if errors occur during the attribute release process
    */
-  List<Attribute> performAttributeRelease(ResponseProcessingResult responseResult) throws AttributeProcessingException;
+  List<Attribute> performAttributeRelease(final ResponseProcessingResult responseResult) throws AttributeProcessingException;
 
   /**
    * Given an attribute set implemented by the IdP, a list of eIDAS {@code RequestedAttribute} objects are returned.
@@ -75,7 +70,7 @@ public interface AttributeProcessingService {
    *          the implemented attribute set
    * @return a list of eIDAS requested attributes
    */
-  List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromAttributeSet(AttributeSet attributeSet);
+  List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromAttributeSet(final AttributeSet attributeSet);
 
   /**
    * Given the peer metadata entry the method checks if the metadata specifies any requsted attributes under its
@@ -90,6 +85,6 @@ public interface AttributeProcessingService {
    *          already present attributes
    * @return a list of eIDAS requested attributes
    */
-  List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromMetadata(EntityDescriptor peerMetadata,
-      AuthnRequest authnRequest, List<se.litsec.eidas.opensaml.ext.RequestedAttribute> alreadyRequested);
+  List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromMetadata(final EntityDescriptor peerMetadata,
+      final AuthnRequest authnRequest, final List<se.litsec.eidas.opensaml.ext.RequestedAttribute> alreadyRequested);
 }

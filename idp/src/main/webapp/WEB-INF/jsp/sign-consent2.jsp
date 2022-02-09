@@ -26,7 +26,7 @@
           </c:when>
           <c:otherwise>
             <div class="top-logo">
-              <img class="top-logo-dim" src="<c:url value='/img/sc-logo.svg' />" alt="Sweden Connect" />
+              <img class="top-logo-dim" src="<c:url value='/img/idp-logo.svg' />" alt="Sweden Connect" />
             </div>
           </c:otherwise>
         </c:choose>

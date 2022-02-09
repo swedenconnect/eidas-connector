@@ -1,22 +1,17 @@
 /*
- * The eidas-connector project is the implementation of the Swedish eIDAS 
- * connector built on top of the Shibboleth IdP.
+ * Copyright 2017-2022 Sweden Connect
  *
- * More details on <https://github.com/elegnamnden/eidas-connector> 
- * Copyright (C) 2017 E-legitimationsnämnden
- * 
- * This program is free software: you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation, either version 3 of the License, or 
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License 
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package se.elegnamnden.eidas.idp.connector.service;
 
@@ -24,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -50,7 +45,7 @@ import se.litsec.swedisheid.opensaml.saml2.attribute.AttributeSet;
 
 /**
  * Service that handles attribute processing and mappings.
- * 
+ *
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  * @author Stefan Santesson (stefan@aaa-sec.com)
  */
@@ -69,18 +64,18 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
   protected static BiFunction<String, List<Attribute>, Attribute> getAttribute = (name, list) -> {
     return list.stream().filter(a -> name.equals(a.getName())).findFirst().orElse(null);
   };
-  
+
   /** {@inheritDoc} */
   @Override
-  public String getPrincipal(List<Attribute> attributes) throws AttributeProcessingException {
-    Attribute principalAttribute = getAttribute.apply(AttributeConstants.ATTRIBUTE_NAME_PRID, attributes);
+  public String getPrincipal(final List<Attribute> attributes) throws AttributeProcessingException {
+    final Attribute principalAttribute = getAttribute.apply(AttributeConstants.ATTRIBUTE_NAME_PRID, attributes);
     if (principalAttribute == null) {
-      throw new AttributeProcessingException(String.format("Could not get principal ID since attribute '%s' (%s) was not present", 
-        AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PRID, AttributeConstants.ATTRIBUTE_NAME_PRID)); 
+      throw new AttributeProcessingException(String.format("Could not get principal ID since attribute '%s' (%s) was not present",
+        AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PRID, AttributeConstants.ATTRIBUTE_NAME_PRID));
     }
     return AttributeUtils.getAttributeStringValue(principalAttribute);
   }
-  
+
   /** {@inheritDoc} */
   @Override
   public String getPrincipalAttributeName() {
@@ -97,15 +92,15 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
    * </ol>
    */
   @Override
-  public List<Attribute> performAttributeRelease(ResponseProcessingResult responseResult) throws AttributeProcessingException {
+  public List<Attribute> performAttributeRelease(final ResponseProcessingResult responseResult) throws AttributeProcessingException {
 
     // Step 1. Transform attributes from eIDAS format to an attribute format according to the Swedish eID Framework.
     //
-    List<Attribute> attributesForRelease = new ArrayList<>();
-    for (Attribute eidasAttribute : responseResult.getAttributes()) {
-      Optional<Attribute> swedishAttribute = this.attributeMappings.toSwedishEidAttribute(eidasAttribute);
-      if (swedishAttribute.isPresent()) {
-        attributesForRelease.add(swedishAttribute.get());
+    final List<Attribute> attributesForRelease = new ArrayList<>();
+    for (final Attribute eidasAttribute : responseResult.getAttributes()) {
+      final Attribute swedishAttribute = this.attributeMappings.toSwedishEidAttribute(eidasAttribute);
+      if (swedishAttribute != null) {
+        attributesForRelease.add(swedishAttribute);
       }
       else {
         log.warn("No mapping exists for eIDAS attribute '{}'", eidasAttribute.getName());
@@ -117,7 +112,7 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
     attributesForRelease.add(AttributeConstants.ATTRIBUTE_TEMPLATE_TRANSACTION_IDENTIFIER.createBuilder()
       .value(responseResult.getAssertion().getID())
       .build());
-    
+
     // Step 3. Add the 'c' attribute holding the country code for the country.
     //
     attributesForRelease.add(AttributeConstants.ATTRIBUTE_TEMPLATE_C.createBuilder()
@@ -127,60 +122,62 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
     // Step 4. Get extra attributes from the AA service.
     //
     try {
-      List<Attribute> additionalAttributes = this.attributeAuthority.resolveAttributes(attributesForRelease, responseResult.getCountry());
+      final List<Attribute> additionalAttributes =
+          this.attributeAuthority.resolveAttributes(attributesForRelease, responseResult.getCountry());
 
-      // OK, we are a bit defensive, but better safe than sorry. Let's make sure that the AA did not give us any attributes
+      // OK, we are a bit defensive, but better safe than sorry. Let's make sure that the AA did not give us any
+      // attributes
       // that are already part of the attributes we got from the IdP.
       //
-      for (Attribute a : additionalAttributes) {
+      for (final Attribute a : additionalAttributes) {
         if (getAttribute.apply(a.getName(), attributesForRelease) != null) {
-          final String msg = String.format("Attribute '%s' was received from AA service, but this attribute was already released by the foreign IdP", a.getName());
+          final String msg = String
+            .format("Attribute '%s' was received from AA service, but this attribute was already released by the foreign IdP", a.getName());
           throw new AttributeProcessingException(msg);
         }
       }
-      
+
       attributesForRelease.addAll(additionalAttributes);
     }
-    catch (AttributeAuthorityException e) {
+    catch (final AttributeAuthorityException e) {
       throw new AttributeProcessingException("Failed to get attributes from Attribute Authority - " + e.getMessage(), e);
     }
-    
+
     return attributesForRelease;
   }
 
   /** {@inheritDoc} */
   @Override
-  public List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromAttributeSet(AttributeSet attributeSet) {
+  public List<se.litsec.eidas.opensaml.ext.RequestedAttribute>
+      getEidasRequestedAttributesFromAttributeSet(final AttributeSet attributeSet) {
     if (attributeSet == null || attributeSet.getRequiredAttributes() == null) {
       return Collections.emptyList();
     }
-    return Arrays.asList(attributeSet.getRequiredAttributes())
-      .stream()
+    return Arrays.asList(attributeSet.getRequiredAttributes()).stream()
       .map(t -> this.attributeMappings.toEidasRequestedAttribute(t))
-      .filter(Optional::isPresent)
-      .map(Optional::get)
+      .filter(a -> a != null)
       .collect(Collectors.toList());
   }
 
   /** {@inheritDoc} */
   @Override
-  public List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromMetadata(EntityDescriptor peerMetadata,
-      AuthnRequest authnRequest,
-      List<se.litsec.eidas.opensaml.ext.RequestedAttribute> alreadyRequested) {
+  public List<se.litsec.eidas.opensaml.ext.RequestedAttribute> getEidasRequestedAttributesFromMetadata(final EntityDescriptor peerMetadata,
+      final AuthnRequest authnRequest,
+      final List<se.litsec.eidas.opensaml.ext.RequestedAttribute> alreadyRequested) {
 
     if (peerMetadata == null) {
       return Collections.emptyList();
     }
-    SPSSODescriptor descriptor = peerMetadata.getSPSSODescriptor(SAMLConstants.SAML20P_NS);
+    final SPSSODescriptor descriptor = peerMetadata.getSPSSODescriptor(SAMLConstants.SAML20P_NS);
     if (descriptor == null || descriptor.getAttributeConsumingServices().isEmpty()) {
       return Collections.emptyList();
     }
-    
+
     // Find the correct AttributeConsumingService
     //
-    Integer attributeConsumingServiceIndex = authnRequest.getAttributeConsumingServiceIndex();
+    final Integer attributeConsumingServiceIndex = authnRequest.getAttributeConsumingServiceIndex();
     AttributeConsumingService service = null;
-    for (AttributeConsumingService s : descriptor.getAttributeConsumingServices()) {
+    for (final AttributeConsumingService s : descriptor.getAttributeConsumingServices()) {
       if (attributeConsumingServiceIndex != null && s.getIndex() == attributeConsumingServiceIndex.intValue()) {
         service = s;
         break;
@@ -198,41 +195,39 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
         }
       }
     }
-    
+
     if (service == null) {
       return Collections.emptyList();
     }
-    
-    Predicate<se.litsec.eidas.opensaml.ext.RequestedAttribute> noDuplicate = r -> alreadyRequested.stream().noneMatch(a -> a.getName()
-      .equals(r.getName()));
 
-    return service
-      .getRequestAttributes()
-      .stream()
+    final Predicate<se.litsec.eidas.opensaml.ext.RequestedAttribute> noDuplicate = r -> alreadyRequested.stream()
+        .filter(a -> a != null)
+        .noneMatch(a -> Objects.equals(a.getName(), r.getName()));
+
+    return service.getRequestAttributes().stream()
       .map(r -> this.attributeMappings.toEidasRequestedAttribute(r))
-      .filter(Optional::isPresent)
-      .map(Optional::get)
+      .filter(r -> r != null)
       .filter(noDuplicate)
       .collect(Collectors.toList());
   }
 
   /**
    * Assigns mappings between eIDAS and Swedish eID attributes.
-   * 
+   *
    * @param attributeMappings
    *          attribute mapper bean
    */
-  public void setAttributeMappings(AttributeMappings attributeMappings) {
+  public void setAttributeMappings(final AttributeMappings attributeMappings) {
     this.attributeMappings = attributeMappings;
   }
 
   /**
    * Assigns the AA service bean
-   * 
+   *
    * @param attributeAuthority
    *          the AA service
    */
-  public void setAttributeAuthority(AttributeAuthority attributeAuthority) {
+  public void setAttributeAuthority(final AttributeAuthority attributeAuthority) {
     this.attributeAuthority = attributeAuthority;
   }
 
