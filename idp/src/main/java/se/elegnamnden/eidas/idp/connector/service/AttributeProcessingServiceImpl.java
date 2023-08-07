@@ -15,6 +15,8 @@
  */
 package se.elegnamnden.eidas.idp.connector.service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,6 +26,8 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.opensaml.core.xml.io.MarshallingException;
+import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AuthnRequest;
@@ -34,7 +38,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
+import org.w3c.dom.Element;
 
+import net.shibboleth.utilities.java.support.codec.Base64Support;
+import net.shibboleth.utilities.java.support.xml.SerializeSupport;
 import se.elegnamnden.eidas.idp.connector.aaclient.AttributeAuthority;
 import se.elegnamnden.eidas.idp.connector.aaclient.AttributeAuthorityException;
 import se.elegnamnden.eidas.idp.connector.sp.ResponseProcessingResult;
@@ -112,6 +119,26 @@ public class AttributeProcessingServiceImpl implements AttributeProcessingServic
     attributesForRelease.add(AttributeConstants.ATTRIBUTE_TEMPLATE_TRANSACTION_IDENTIFIER.createBuilder()
       .value(responseResult.getAssertion().getID())
       .build());
+    
+    // Step 2b. Add the Base64-encoded assertion to the authServerSignature attribute (optional).
+    //
+    {
+      try {
+        final Element element = XMLObjectSupport.marshall(responseResult.getAssertion());
+        final byte[] encodedAssertion;
+        try (final ByteArrayOutputStream baout = new ByteArrayOutputStream()) {
+          SerializeSupport.writeNode(element, baout);
+          encodedAssertion = baout.toByteArray();
+        }        
+        final String authServerSignature = Base64Support.encode(encodedAssertion, Base64Support.UNCHUNKED);
+        attributesForRelease.add(AttributeConstants.ATTRIBUTE_TEMPLATE_AUTH_SERVER_SIGNATURE.createBuilder()
+            .value(authServerSignature)
+            .build());
+      }
+      catch (final MarshallingException | IOException e) {
+        log.warn("Failed to marshall assertion", e);
+      }
+    }
 
     // Step 3. Add the 'c' attribute holding the country code for the country.
     //

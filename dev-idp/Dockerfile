@@ -1,4 +1,4 @@
-FROM openjdk:8-jre
+FROM openjdk:11-jre
 
 RUN mkdir /opt/eidas-connector
 ADD target/tomcat /opt/eidas-connector/tomcat/
