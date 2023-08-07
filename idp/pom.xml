@@ -9,7 +9,7 @@
   <parent>
     <groupId>se.elegnamnden.eidas.idp</groupId>
     <artifactId>eidas-connector-base-parent</artifactId>
-    <version>1.7.0</version>
+    <version>1.7.1-SNAPSHOT</version>
   </parent>
 
   <name>eIDAS :: Swedish eIDAS connector</name>
@@ -49,7 +49,7 @@
     <docker.image.prefix>docker.eidastest.se:5000</docker.image.prefix>
 
     <custom-remoteip-valve.version>1.6.0</custom-remoteip-valve.version>
-    <eidas-connector-sp.version>${project.version}</eidas-connector-sp.version>
+    <eidas-connector-sp.version>1.7.0</eidas-connector-sp.version>
     <shibboleth.redis.version>1.1.1</shibboleth.redis.version>
 
     <mockito.version>1.9.5</mockito.version>
