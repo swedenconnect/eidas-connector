@@ -1,0 +1,196 @@
+#
+# Configuration for the Swedish eID Reference IdP.
+#
+
+server:
+  port: 8443
+  servlet:
+    context-path: /idp    
+  ssl:
+    enabled: true
+    key-store: classpath:ssl.jks
+    key-store-type: JKS
+    key-alias: local
+    key-store-password: secret
+    key-password: secret
+  error:
+    include-message: always
+    include-exception: true
+    include-stacktrace: always
+    
+spring:
+  messages:
+    basename: messages,idp-errors/idp-error-messages
+    
+ui:
+  languages:
+  - tag: sv
+    text: Svenska
+  - tag: en
+    text: English    
+    
+authn:
+  provider-name: "Simulated Authentication Provider"  
+  authn-path: /extauth
+  resume-path: /resume
+  supported-loas:
+  - http://id.elegnamnden.se/loa/1.0/loa2
+  - http://id.elegnamnden.se/loa/1.0/loa3
+  - http://id.swedenconnect.se/loa/1.0/uncertified-loa3
+  - http://id.elegnamnden.se/loa/1.0/eidas-nf-low
+  - http://id.elegnamnden.se/loa/1.0/eidas-nf-sub
+  - http://id.elegnamnden.se/loa/1.0/eidas-nf-high
+  entity-categories:
+  - http://id.elegnamnden.se/ec/1.0/loa2-pnr
+  - http://id.swedenconnect.se/ec/1.0/loa2-name
+  - http://id.elegnamnden.se/ec/1.0/loa3-pnr
+  - http://id.swedenconnect.se/ec/1.0/loa3-name
+  - http://id.elegnamnden.se/ec/1.0/eidas-pnr-delivery
+  - http://id.elegnamnden.se/sprop/1.0/scal2
+  - http://id.elegnamnden.se/sprop/1.0/mobile-auth
+    
+saml:
+  idp:
+    entity-id: https://connector.eidas.swedenconnect.se/eidas
+    base-url: https://connector.eidas.swedenconnect.se/idp    
+    credentials:
+      sign:
+        resource: classpath:idp-credentials.jks
+        alias: sign
+        password: secret
+        type: JKS
+      encrypt:
+        resource: classpath:idp-credentials.jks
+        alias: encrypt
+        password: secret
+        type: JKS
+      metadata-sign:
+        resource: classpath:idp-credentials.jks
+        alias: metadata
+        password: secret
+        type: JKS
+    endpoints:
+      metadata: /metadata/idp.xml
+      post-authn: /profile/SAML2/POST/SSO
+      redirect-authn: /profile/SAML2/Redirect/SSO
+    requires-signed-requests: true  
+    metadata-providers:
+    - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
+      backup-location: target/metadata-backup.xml
+      validation-certificate: classpath:sandbox-metadata.crt
+    metadata:
+      ui-info:
+        display-names:
+          en: "Foreign eID"
+          sv: "Utländskt eID"
+        descriptions:
+          en: "Identity Provider for foreign eID:s"
+          sv: "Legitimeringstjänst för utländsk legitimering"
+        logotypes:
+        - path: /images/idp-logo-notext.svg
+          height: 256
+          width: 256
+        - path: /images/idp-logo.svg
+          height: 56
+          width: 280   
+      organization:
+        names:
+          en: Sweden Connect
+          sv: Sweden Connect
+        display-names:
+          en: Sweden Connect
+          sv: Sweden Connect
+        urls:
+          en: https://www.swedenconnect.se/en
+          sv: https://www.swedenconnect.se
+      contact-persons:
+        technical:
+          company: Sweden Connect
+          email-addresses:
+          - operations@swedenconnect.se
+        support:
+          company: Sweden Connect
+          email-addresses:
+          - operations@swedenconnect.se        
+              
+
+logging:
+  level:
+    se:
+      swedenconnect:
+        eidas: DEBUG
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: production
+
+saml:
+  idp:
+    entity-id: https://connector.eidas.swedenconnect.se/eidas
+    base-url: https://connector.eidas.swedenconnect.se/idp
+    metadata-providers:
+    - location: https://md.swedenconnect.se/role/sp.xml
+      backup-location: target/metadata-backup.xml
+      validation-certificate: classpath:env/production/production-metadata.crt
+
+logging:
+  level:
+    se:
+      swedenconnect:
+        eidas: INFO      
+
+---
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: qa
+
+saml:
+  idp:
+    entity-id: https://connector.eidas.swedenconnect.se/eidas
+    base-url: https://connector.eidas.swedenconnect.se/idp    
+    endpoints:
+      metadata: /metadata/idp.xml    
+    metadata-providers:
+    - location: https://md.swedenconnect.se/role/sp.xml
+      backup-location: target/metadata-backup.xml
+      validation-certificate: classpath:env/production/production-metadata.crt
+
+logging:
+  level:
+    se:
+      swedenconnect:
+        eidas: INFO      
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: localhost
+  
+saml:
+  idp:
+    entity-id: https://local.swedenconnect.se/idp
+    metadata:
+      ui-info:
+        display-names:
+          en: Local Sweden Connect Reference IdP
+          sv: Local Sweden Connect Referens-IdP
+        descriptions:
+          en: Local Sweden Connect Reference Identity Provider
+          sv: Local Sweden Connect referens-legitimeringstjänst
+        logotypes:
+        - path: /images/logo-notext.svg
+          height: 256
+          width: 256
+        - path: /images/logo.svg
+          height: 56
+          width: 280
+      
