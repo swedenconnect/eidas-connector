@@ -25,8 +25,12 @@ import org.opensaml.saml.saml2.metadata.Extensions;
 import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
 import org.opensaml.saml.saml2.metadata.KeyDescriptor;
 import org.opensaml.security.credential.UsageType;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,6 +39,9 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
+import se.swedenconnect.eidas.connector.authn.metadata.DefaultEuMetadataProvider;
+import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
+import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.opensaml.sweid.saml2.authn.psc.RequestedPrincipalSelection;
 import se.swedenconnect.opensaml.sweid.saml2.authn.psc.build.MatchValueBuilder;
@@ -49,9 +56,39 @@ import se.swedenconnect.spring.saml.idp.response.ThymeleafResponsePage;
  * @author Martin Lindström
  */
 @Configuration
+@EnableConfigurationProperties({ ConnectorConfigurationProperties.class })
+@DependsOn("openSAML")
 public class ConnectorConfiguration {
 
-  // TODO: inject actuator path
+  private final ConnectorConfigurationProperties connectorProperties;
+
+  /**
+   * Connector.
+   *
+   * @param connectorProperties the configuration properties
+   */
+  public ConnectorConfiguration(final ConnectorConfigurationProperties connectorProperties) {
+    this.connectorProperties = connectorProperties;
+  }
+
+  /**
+   * Gets a {@link SecurityFilterChain} for the actuator endpoints.
+   *
+   * @param http the HttpSecurity object
+   * @return a SecurityFilterChain
+   * @throws Exception for config errors
+   */
+  @Bean
+  @Order(2)
+  SecurityFilterChain actuatorSecurityFilterChain(final HttpSecurity http) throws Exception {
+
+    // TODO: Should be configurable
+    http.authorizeHttpRequests((authorize) -> authorize
+        .requestMatchers(EndpointRequest.toAnyEndpoint())
+        .permitAll());
+
+    return http.build();
+  }
 
   /**
    * Gets a default {@link SecurityFilterChain} protecting other resources.
@@ -64,16 +101,16 @@ public class ConnectorConfiguration {
    * @throws Exception for config errors
    */
   @Bean
-  @Order(2)
+  @Order(3)
   SecurityFilterChain defaultSecurityFilterChain(final HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
         .cors(Customizer.withDefaults())
         .authorizeHttpRequests((authorize) -> authorize
             .antMatchers(EidasAuthenticationProvider.AUTHN_PATH + "/**",
-                EidasAuthenticationProvider.RESUME_PATH + "/**").permitAll()
+                EidasAuthenticationProvider.RESUME_PATH + "/**")
+            .permitAll()
             .antMatchers("/images/**", "/error", "/scripts/**", "/webjars/**", "/css/**").permitAll()
-            .antMatchers("/actuator/**").permitAll()
             .anyRequest().denyAll());
 
     return http.build();
@@ -153,6 +190,30 @@ public class ConnectorConfiguration {
   @Bean
   ThymeleafResponsePage responsePage(final SpringTemplateEngine templateEngine) {
     return new ThymeleafResponsePage(templateEngine, "post-response.html");
+  }
+
+  /**
+   * Creates a {@link MetadataProvider} bean that is to be used for {@link EuMetadataProvider}.
+   *
+   * @return a {@link MetadataProvider}
+   * @throws Exception for config errors
+   */
+  @Bean(initMethod = "initialize", destroyMethod = "destroy")
+  MetadataProvider metadataProvider() throws Exception {
+    return MetadataProviderUtils.createMetadataProvider(this.connectorProperties.getEuMetadata());
+  }
+
+  /**
+   * Creates the {@link EuMetadataProvider} bean.
+   *
+   * @param metadataProvider the EU metadata provider
+   * @param publisher the event publisher
+   * @return the {@link EuMetadataProvider}
+   */
+  @Bean
+  EuMetadataProvider euMetadataProvider(
+      final MetadataProvider metadataProvider, final ApplicationEventPublisher publisher) {
+    return new DefaultEuMetadataProvider(metadataProvider, publisher);
   }
 
 }

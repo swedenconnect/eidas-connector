@@ -1,5 +1,5 @@
 #
-# Configuration for the Swedish eID Reference IdP.
+# Configuration for the Swedish eIDAS Connector.
 #
 
 server:
@@ -17,7 +17,7 @@ server:
     include-message: always
     include-exception: true
     include-stacktrace: always
-    
+
 spring:
   messages:
     basename: messages,idp-errors/idp-error-messages
@@ -28,27 +28,25 @@ ui:
     text: Svenska
   - tag: en
     text: English    
-    
-authn:
-  provider-name: "Simulated Authentication Provider"  
-  authn-path: /extauth
-  resume-path: /resume
-  supported-loas:
-  - http://id.elegnamnden.se/loa/1.0/loa2
-  - http://id.elegnamnden.se/loa/1.0/loa3
-  - http://id.swedenconnect.se/loa/1.0/uncertified-loa3
-  - http://id.elegnamnden.se/loa/1.0/eidas-nf-low
-  - http://id.elegnamnden.se/loa/1.0/eidas-nf-sub
-  - http://id.elegnamnden.se/loa/1.0/eidas-nf-high
-  entity-categories:
-  - http://id.elegnamnden.se/ec/1.0/loa2-pnr
-  - http://id.swedenconnect.se/ec/1.0/loa2-name
-  - http://id.elegnamnden.se/ec/1.0/loa3-pnr
-  - http://id.swedenconnect.se/ec/1.0/loa3-name
-  - http://id.elegnamnden.se/ec/1.0/eidas-pnr-delivery
-  - http://id.elegnamnden.se/sprop/1.0/scal2
-  - http://id.elegnamnden.se/sprop/1.0/mobile-auth
-    
+       
+
+connector:
+  backup-directory: /target  
+  auth:
+    supported-loas:
+    - http://id.elegnamnden.se/loa/1.0/eidas-low
+    - http://id.elegnamnden.se/loa/1.0/eidas-nf-low
+    - http://id.elegnamnden.se/loa/1.0/eidas-sub
+    - http://id.elegnamnden.se/loa/1.0/eidas-nf-sub
+    - http://id.elegnamnden.se/loa/1.0/eidas-high
+    - http://id.elegnamnden.se/loa/1.0/eidas-nf-high
+    entity-categories:
+    - http://id.elegnamnden.se/ec/1.0/eidas-naturalperson
+    - http://id.elegnamnden.se/sprop/1.0/scal2
+    - http://id.elegnamnden.se/sprop/1.0/mobile-auth
+  eu-metadata:
+    backup-location: ${connector.backup-directory}/metadata/eu-cache.xml
+
 saml:
   idp:
     entity-id: https://connector.eidas.swedenconnect.se/eidas
@@ -76,7 +74,7 @@ saml:
     requires-signed-requests: true  
     metadata-providers:
     - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
-      backup-location: target/metadata-backup.xml
+      backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
       validation-certificate: classpath:sandbox-metadata.crt
     metadata:
       ui-info:
@@ -112,7 +110,6 @@ saml:
           company: Sweden Connect
           email-addresses:
           - operations@swedenconnect.se        
-              
 
 logging:
   level:
@@ -126,23 +123,26 @@ spring:
   config:
     activate:
       on-profile: production
-
+      
+connector:
+  eu-metadata:
+    location: https://md.eidas.swedenconnect.se/role/idp.xml
+    validation-certificate: classpath:env/production/eu-metadata-signing-prod.crt
+    
 saml:
   idp:
     entity-id: https://connector.eidas.swedenconnect.se/eidas
     base-url: https://connector.eidas.swedenconnect.se/idp
     metadata-providers:
     - location: https://md.swedenconnect.se/role/sp.xml
-      backup-location: target/metadata-backup.xml
-      validation-certificate: classpath:env/production/production-metadata.crt
+      backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
+      validation-certificate: classpath:env/production/sc-metadata-signing-prod.crt
 
 logging:
   level:
     se:
       swedenconnect:
         eidas: INFO      
-
----
 
 ---
 
@@ -151,22 +151,75 @@ spring:
     activate:
       on-profile: qa
 
+connector:
+  eu-metadata:
+    location: https://qa.md.eidas.swedenconnect.se/role/idp.xml
+    validation-certificate: classpath:env/qa/eu-metadata-signing-qa.crt
+
 saml:
   idp:
-    entity-id: https://connector.eidas.swedenconnect.se/eidas
-    base-url: https://connector.eidas.swedenconnect.se/idp    
-    endpoints:
-      metadata: /metadata/idp.xml    
+    entity-id: https://qa.connector.eidas.swedenconnect.se/eidas
+    base-url: https://qa.connector.eidas.swedenconnect.se/idp  
     metadata-providers:
-    - location: https://md.swedenconnect.se/role/sp.xml
-      backup-location: target/metadata-backup.xml
-      validation-certificate: classpath:env/production/production-metadata.crt
+    - location: https://qa.md.swedenconnect.se/role/sp.xml
+      backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
+      validation-certificate: classpath:env/qa/sc-metadata-signing-qa.crt
 
 logging:
   level:
     se:
       swedenconnect:
-        eidas: INFO      
+        eidas: INFO
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: sandbox
+      
+connector:
+  eu-metadata:
+    location: https://mdsl.sandbox.swedenconnect.se/nodeconfig/metadata
+    validation-certificate: classpath:env/sandbox/eu-metadata-signing-sandbox.crt
+
+saml:
+  idp:
+    entity-id: https://dev.connector.swedenconnect.se/eidas
+    base-url: https://con.sandbox.swedenconnect.se/idp  
+    metadata-providers:
+    - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
+      backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
+      validation-certificate: classpath:env/sandbox/sc-metadata-signing-sandbox.crt
+    credentials:
+      sign:
+        resource: classpath:env/sandbox/idp-keys.jks
+        alias: old-signing
+        password: secret
+        type: JKS
+      encrypt:
+        resource: classpath:env/sandbox/idp-keys.jks
+        alias: encrypt
+        password: secret
+        type: JKS
+      metadata-sign:
+        resource: classpath:env/sandbox/idp-keys.jks
+        alias: metadata
+        password: secret
+        type: JKS
+      future-sign: classpath:env/sandbox/idp-signing.crt
+      previous-encrypt:
+        resource: classpath:env/sandbox/idp-keys.jks
+        alias: old-encrypt
+        password: secret
+        type: JKS
+        
+
+logging:
+  level:
+    se:
+      swedenconnect:
+        eidas: INFO
 
 ---
 

@@ -24,6 +24,7 @@ import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 
+import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessingException;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessingInput;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessingResult;
@@ -55,20 +56,26 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   /** The URL where we receive SAML responses. */
   private final String samlResponseUrl;
 
+  /** The metadata provider. */
+  private final EuMetadataProvider metadataProvider;
+
   /**
    * Constructor.
    *
    * @param baseUrl the application base URL
    * @param contextPath the application context path
    * @param responseProcessor the processor handling the SAML responses received from the foreign eIDAS proxy services
+   * @param metadataProvider the EU metadata provider
    */
-  public EidasAuthenticationProvider(final String baseUrl, final String contextPath, final ResponseProcessor responseProcessor) {
+  public EidasAuthenticationProvider(final String baseUrl, final String contextPath,
+      final ResponseProcessor responseProcessor, final EuMetadataProvider metadataProvider) {
     super(AUTHN_PATH, RESUME_PATH);
     this.responseProcessor = Objects.requireNonNull(responseProcessor, "responseProcessor must not be null");
     this.samlResponseUrl = String.format("%s%s%s",
         Objects.requireNonNull(baseUrl, "baseUrl must not be null"),
         contextPath == null || "/".equals(contextPath) ? "" : contextPath,
         EidasAuthenticationController.ASSERTION_CONSUMER_PATH);
+    this.metadataProvider = Objects.requireNonNull(metadataProvider, "metadataProvider must not be null");
   }
 
   /** {@inheritDoc} */

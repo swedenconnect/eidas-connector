@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataProviderConfigurationProperties;
 
@@ -39,6 +40,20 @@ import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataProviderC
 public class ConnectorConfigurationProperties implements InitializingBean {
 
   /**
+   * Directory where caches and backup files are stored during execution.
+   */
+  @Getter
+  @Setter
+  private String backupDirectory;
+
+  /**
+   * Configuration for eIDAS authentication.
+   */
+  @NestedConfigurationProperty
+  @Getter
+  private EidasAuthenticationConfigurationProperties auth;
+
+  /**
    * The configuration for retrieval of aggregated EU metadata.
    */
   @NestedConfigurationProperty
@@ -49,6 +64,8 @@ public class ConnectorConfigurationProperties implements InitializingBean {
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
+    Assert.hasText(this.backupDirectory, "connector.backup-directory must be set");
+    this.auth.afterPropertiesSet();
     this.euMetadata.afterPropertiesSet();
   }
 

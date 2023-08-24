@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import lombok.Getter;
 
@@ -44,6 +45,7 @@ public class EidasAuthenticationConfigurationProperties implements InitializingB
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
+    Assert.notEmpty(this.supportedLoas, "connector.auth.supported-loas must not be empty");
   }
 
 }
