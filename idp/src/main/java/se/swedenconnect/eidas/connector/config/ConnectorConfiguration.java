@@ -38,6 +38,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 
+import se.swedenconnect.eidas.attributes.AttributeMappingService;
+import se.swedenconnect.eidas.attributes.DefaultAttributeMappingService;
+import se.swedenconnect.eidas.attributes.conversion.AttributeConverterConstants;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
 import se.swedenconnect.eidas.connector.authn.metadata.DefaultEuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
@@ -46,8 +49,10 @@ import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.opensaml.sweid.saml2.authn.psc.RequestedPrincipalSelection;
 import se.swedenconnect.opensaml.sweid.saml2.authn.psc.build.MatchValueBuilder;
 import se.swedenconnect.opensaml.sweid.saml2.authn.psc.build.RequestedPrincipalSelectionBuilder;
+import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryRegistry;
 import se.swedenconnect.spring.saml.idp.config.configurers.Saml2IdpConfigurerAdapter;
 import se.swedenconnect.spring.saml.idp.extensions.SignatureMessagePreprocessor;
+import se.swedenconnect.spring.saml.idp.metadata.EntityCategoryHelper;
 import se.swedenconnect.spring.saml.idp.response.ThymeleafResponsePage;
 
 /**
@@ -214,6 +219,26 @@ public class ConnectorConfiguration {
   EuMetadataProvider euMetadataProvider(
       final MetadataProvider metadataProvider, final ApplicationEventPublisher publisher) {
     return new DefaultEuMetadataProvider(metadataProvider, publisher);
+  }
+
+  /**
+   * Gets an {@link EntityCategoryRegistry} bean.
+   * 
+   * @return an {@link EntityCategoryRegistry}
+   */
+  @Bean
+  EntityCategoryRegistry entityCategoryRegistry() {
+    return EntityCategoryHelper.getDefaultEntityCategoryRegistry();
+  }
+
+  /**
+   * Creates a {@link AttributeMappingService} that helps us map between Swedish eID attributes and eIDAS attributes.
+   * 
+   * @return a {@link AttributeMappingService}
+   */
+  @Bean
+  AttributeMappingService attributeMappingService() {
+    return new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
   }
 
 }

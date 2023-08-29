@@ -61,8 +61,14 @@
     <dependency>
       <groupId>se.swedenconnect.spring.saml.idp</groupId>
       <artifactId>saml-idp-spring-boot-starter</artifactId>
-      <version>1.1.0</version>
-    </dependency>    
+      <version>${saml.idp.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>se.swedenconnect.eidas</groupId>
+      <artifactId>eidas-attribute-handling</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     
     <dependency>
       <groupId>org.springframework.boot</groupId>

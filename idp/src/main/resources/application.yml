@@ -27,19 +27,21 @@ ui:
   - tag: sv
     text: Svenska
   - tag: en
-    text: English    
+    text: English
+  selected-country-cookie:
+    path: ${server.servlet.context-path}
+  selected-country-session-cookie:
+    path: ${server.servlet.context-path}
+  accessibility-url: https://www.swedenconnect.se/om/om-webbplatsen/tillganglighet/svenska-eidas-noden
+  idm:
+    active: true
+    # TODO: change
+    service-url: https://sandbox.swedenconnect.se/idm
        
 
 connector:
   backup-directory: /target  
-  auth:
-    supported-loas:
-    - http://id.elegnamnden.se/loa/1.0/eidas-low
-    - http://id.elegnamnden.se/loa/1.0/eidas-nf-low
-    - http://id.elegnamnden.se/loa/1.0/eidas-sub
-    - http://id.elegnamnden.se/loa/1.0/eidas-nf-sub
-    - http://id.elegnamnden.se/loa/1.0/eidas-high
-    - http://id.elegnamnden.se/loa/1.0/eidas-nf-high
+  idp:
     entity-categories:
     - http://id.elegnamnden.se/ec/1.0/eidas-naturalperson
     - http://id.elegnamnden.se/sprop/1.0/scal2

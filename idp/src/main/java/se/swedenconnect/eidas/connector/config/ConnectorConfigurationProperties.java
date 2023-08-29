@@ -44,28 +44,36 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    */
   @Getter
   @Setter
-  private String backupDirectory;
+  private File backupDirectory;
 
+  /**
+   * Configuration for the IdP part of the eIDAS Connector.
+   */
+  @NestedConfigurationProperty
+  @Getter
+  private ConnectorIdpProperties idp = new ConnectorIdpProperties();
+  
   /**
    * Configuration for eIDAS authentication.
    */
   @NestedConfigurationProperty
   @Getter
-  private EidasAuthenticationConfigurationProperties auth;
+  private EidasAuthenticationProperties eidas = new EidasAuthenticationProperties();
 
   /**
    * The configuration for retrieval of aggregated EU metadata.
    */
   @NestedConfigurationProperty
   @Getter
-  private EuMetadataConfiguration euMetadata = new EuMetadataConfiguration();
+  private EuMetadataProperties euMetadata = new EuMetadataProperties();
 
 
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
-    Assert.hasText(this.backupDirectory, "connector.backup-directory must be set");
-    this.auth.afterPropertiesSet();
+    Assert.notNull(this.backupDirectory, "connector.backup-directory must be set");
+    this.idp.afterPropertiesSet();
+    this.eidas.afterPropertiesSet();
     this.euMetadata.afterPropertiesSet();
   }
 
@@ -73,7 +81,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    * Configuration properties for configuring EU metadata retrieval.
    */
   @Data
-  public static class EuMetadataConfiguration implements InitializingBean {
+  public static class EuMetadataProperties implements InitializingBean {
 
     /**
      * The location of the metadata. Can be an URL, a file, or even a classpath resource.

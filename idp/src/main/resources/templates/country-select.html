@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"> 
+<head th:include="fragments/base :: headerFragment">
+  <title id="pageTitle" th:inline="text">[[#{idp.msg.title}]]</title>
+</head>
+<body>
+  
+  <div th:replace="fragments/header :: splogotype(url = ${ui.getSpUiInfo().getLogoUrl()})"></div>
+  
+  <div class="container main" id="main">  
+    
+    <div th:replace="fragments/header :: language(languages = ${languages}, path='/extauth')"></div>
+    
+    <div class="row" id="mainRow">
+    
+      <div class="col-sm-12 content-container">
+      
+        <div class="row" id="chooseEidCountry">
+          <div class="col-sm-12 content-heading">
+            <h1 th:text="#{connector.ui.choose-country}">Choose your eID country</h1>
+          </div>
+          <div class="col-sm-12">
+            <p class="info content-heading-text">
+              <span th:text="${ui.getSpUiInfo().getDisplayName()} ?: #{connector.ui.sp-generic-a}">
+                Example organization
+              </span>
+              <span th:text="#{connector.ui.select-country.info}">
+                has requested authentication of your identity using an eID from another country outside of Sweden.
+              </span>
+            </p>
+          </div>
+          <div class="col-sm-12" th:if="${ui.getIdm().isActive()}">
+            <p class="info content-heading-text">
+              
+              <span th:text="#{connector.ui.select-country.info.idm(${ui.getSpUiInfo().getDisplayName()} ?: #{connector.ui.sp-generic-the})}">
+                Example organization requires a Swedish personal identity number to grant access to the service. See
+              </span>              
+              <a href="${ui.getIdm().getServiceUrl()}" id="idm-link"><span th:text="#{connector.ui.idm-link}"></span></a>.
+            </p>              
+          </div>
+        </div> <!-- chooseEidCountry -->
+                      
+        <hr class="full-width">
+        
+        <form method="POST" action="#" th:action="@{/extauth/complete}" th:object="${result}" id="countrySelectForm">
+        
+          <div class="row" th:if="${ui.getCountries().isEmpty()}">
+            <div class="col-sm error">
+              <p class="error-text">
+                <span th:text="#{connector.ui.no-countries}">Currently, there are no available countries that you can use to authenticate.</span>                  
+              </p>
+              <p class="error-text">                
+                <button type="submit" class="btn btn-primary" name="selectedCountry" value="cancel">
+                  <span th:text="#{connector.ui.button.return}">Return to the service</span>
+                </button>
+              </p>
+            </div>            
+          </div>
+  
+          <div class="row flags">
+            
+            <div th:each="country : ${ui.getCountries()}", th:with="countryOrder=${country.getOrder()}">
+            
+              <div class="col-sm">
+                <button class="btn country-button" type="submit" name="selectedCountry" 
+                        th:value="${country.getCode()}"
+                        th:disabled="${country.isDisabled()}">
+                        
+                  <img class="col-sm country-flag float-left" th:src="@{/images/flags/${country.getFlag()}.png}" alt="" />                    
+                  <span class="w-100"></span>
+                  <span class="col-sm country-name float-left" th:text="${country.getName()}">Country name</span>
+                </button>
+              </div>
+            
+            </div>
+            
+          </div> <!-- ./row flags -->
+        
+        </form>
+        
+        <noscript>
+          <dl>
+            <dt><span th:utext="${connector.ui.help.1.title}"></span></dt>
+            <dd><span th:utext="${connector.ui.help.1.text}"></span></dd>
+            <dt><span th:utext="${connector.ui.help.2.title}"></span></dt>
+            <dd><span th:utext="${connector.ui.help.2.text}"></span></dd>
+            <dt th:if="ui.hasInactiveCountry()">
+              <span th:utext="${connector.ui.help.3.title}"></span>
+            </dt>
+            <dd th:if="ui.hasInactiveCountry()">
+              <span th:utext="${connector.ui.help.3.text}"></span>
+            </dd>
+            </c:if>
+          </dl>
+        </noscript>
+        
+        <div class="row">
+          <div class="col-12">
+            <div class="accordion noscripthide" id="helpAccordion"> <!-- drop-down -->
+              <div class="card">  
+                <div class="card-header" id="helpHeading1">
+                  <h2 class="mb-0">
+                    <button class="btn btn-accordion btn-block text-left" type="button"
+                      data-toggle="collapse" data-target="#collapse1" aria-expanded="false"
+                      aria-controls="collapse1">
+                        <span th:text="${connector.ui.help.1.title}">I can not find my eID country</span>
+                        <span class="btn-accordion-arrow"></span>
+                    </button>
+                  </h2>
+                </div> 
+                <div id="collapse1" class="collapse" aria-labelledby="helpHeading1" data-parent="#helpAccordion">
+                  <div class="card-body">
+                    <div th:utext="${connector.ui.help.1.text}"></div>
+                  </div>
+                </div>
+              </div> <!-- card -->
+              <div class="card">  
+                <div class="card-header" id="helpHeading2">
+                  <h2 class="mb-0">
+                    <button class="btn btn-accordion btn-block text-left" type="button"
+                      data-toggle="collapse" data-target="#collapse2" aria-expanded="false"
+                      aria-controls="collapse2">
+                        <span th:text="${connector.ui.help.2.title}">
+                          I am a Swedish citizen living abroad, which country should I choose?
+                        </span>
+                        <span class="btn-accordion-arrow"></span>
+                    </button>
+                  </h2>
+                </div> 
+                <div id="collapse2" class="collapse" aria-labelledby="helpHeading2" data-parent="#helpAccordion">
+                  <div class="card-body">
+                    <div th:utext="${connector.ui.help.2.text}"></div>
+                  </div>
+                </div>
+              </div> <!-- card -->
+              <div class="card" th:if="ui.hasInactiveCountry()">  
+                <div class="card-header" id="helpHeading3">
+                  <h2 class="mb-0">
+                    <button class="btn btn-accordion btn-block text-left" type="button"
+                      data-toggle="collapse" data-target="#collapse3" aria-expanded="false"
+                      aria-controls="collapse3">
+                        <span th:text="${connector.ui.help.3.title}">Why is my country not possible to select?</span>
+                        <span class="btn-accordion-arrow"></span>
+                    </button>
+                  </h2>
+                </div> 
+                <div id="collapse3" class="collapse" aria-labelledby="helpHeading3" data-parent="#helpAccordion">
+                  <div class="card-body">
+                    <div th:utext="${connector.ui.help.3.text}"></div>
+                  </div>
+                </div>
+              </div> <!-- card -->
+            </div>
+          </div>
+        </div>
+                         
+      </div> <!-- ./col-sm-12 content-container -->
+      
+      <div class="col-sm-12 return" th:unless="${ui.getCountries().isEmpty()}">
+        <form method="POST" action="#" th:action="@{/extauth/complete}" th:object="${result}" id="countrySelectForm2">
+          <button class="btn btn-link" type="submit" name="selectedCountry" value="cancel">
+            <span th:text="#{connector.ui.button.cancel-return}">Cancel and return to the service</span>
+          </button>
+        </form>
+      </div>
+    
+      <div th:replace="fragments/footer :: copyright"></div>
+
+    </div> <!-- mainRow -->                    
+    
+  </div> <!-- main -->  
+  
+  <th:block th:include="fragments/base :: scriptFragment"></th:block>
+  <th:block th:include="fragments/base :: scriptFragment2"></th:block>
+
+</body>
+</html>

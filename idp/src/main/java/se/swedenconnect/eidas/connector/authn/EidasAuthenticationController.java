@@ -15,16 +15,31 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
-import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.util.CookieGenerator;
+import org.springframework.web.util.WebUtils;
 
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import se.swedenconnect.eidas.connector.authn.ui.EidasUiModelFactory;
+import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
+import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractAuthenticationController;
+import se.swedenconnect.spring.saml.idp.authnrequest.Saml2AuthnRequestAuthenticationToken;
+import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
 
 /**
  * The authentication controller.
@@ -32,23 +47,54 @@ import se.swedenconnect.spring.saml.idp.authentication.provider.external.Abstrac
  * @author Martin Lindström
  */
 @Controller
+@Slf4j
 public class EidasAuthenticationController extends AbstractAuthenticationController<EidasAuthenticationProvider> {
 
+  /** The path for publishing the SP metadata. */
   public static final String METADATA_PATH = "/metadata/sp";
 
+  /** The path for receiving eIDAS assertions. */
   public static final String ASSERTION_CONSUMER_PATH = "/extauth/saml2/post";
 
   /** The authentication provider. */
-  private final EidasAuthenticationProvider provider;
+  @Autowired
+  @Setter
+  private EidasAuthenticationProvider provider;
+
+  /** The UI language handler. */
+  @Autowired
+  @Setter
+  private UiLanguageHandler uiLanguageHandler;
+  
+  /** Factory for UI model. */
+  @Autowired
+  @Setter
+  private EidasUiModelFactory eidasUiModelFactory;
+
+  /** Cookie generator for saving selected country. */
+  @Autowired
+  @Qualifier("selectedCountryCookieGenerator")
+  @Setter
+  private CookieGenerator selectedCountryCookieGenerator;
+
+  /** Session cookie generator for saving selected country. */
+  @Autowired
+  @Qualifier("selectedCountrySessionCookieGenerator")
+  @Setter
+  private CookieGenerator selectedCountrySessionCookieGenerator;
+
+  /** For assisting us in selecting possible countries (to display). */
+  @Autowired
+  @Setter
+  private CountryHandler countryHandler;
 
   /**
-   * Constructor.
-   *
-   * @param provider the eIDAS authentication provider
+   * Tells whether the request is made from a signature service.
    */
-  public EidasAuthenticationController(final EidasAuthenticationProvider provider) {
-    this.provider = Objects.requireNonNull(provider, "provider must not be null");
-  }
+  private static Predicate<Saml2UserAuthenticationInputToken> isSignatureService =
+      t -> Optional.ofNullable(t.getAuthnRequestToken())
+          .map(Saml2AuthnRequestAuthenticationToken::isSignatureServicePeer)
+          .orElse(false);
 
   /** {@inheritDoc} */
   @Override
@@ -61,10 +107,82 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    *
    * @param request the HTTP servlet request
    * @param response the HTTP servlet response
+   * @param language optional parameter holding the selected language
    * @return a {@link ModelAndView}
    */
   @GetMapping(EidasAuthenticationProvider.AUTHN_PATH)
-  public ModelAndView authenticate(final HttpServletRequest request, final HttpServletResponse response) {
+  public ModelAndView authenticate(final HttpServletRequest request, final HttpServletResponse response,
+      @RequestParam(name = "language", required = false) String language) {
+
+    try {
+      final Saml2UserAuthenticationInputToken token = this.getInputToken(request).getAuthnInputToken();
+
+      if (language != null) {
+        this.uiLanguageHandler.setUiLanguage(request, response, language);
+      }
+
+      // Selected country from this session.
+      //
+      final String selectedCountry = Optional.ofNullable(WebUtils.getCookie(
+          request, this.selectedCountrySessionCookieGenerator.getCookieName()))
+          .map(Cookie::getValue)
+          .orElse(null);
+      log.debug("Selected country from this session: {}", Optional.ofNullable(selectedCountry).orElseGet(() -> "none"));
+
+      // The first step is to prompt the user for which country to direct to.
+      // If the request is made by a signature service and the selected country is known, we skip
+      // the "select country" view.
+      //
+      if (isSignatureService.test(token) && selectedCountry != null) {
+        log.info("Request is from a signature service. Will default to previously selected country: '{}'",
+            selectedCountry);
+        return this.initiateAuthentication(request, response, selectedCountry);
+      }
+
+      // Get a listing of all countries to display ...
+      //
+      final CountryHandler.SelectableCountries selectableCountries = this.countryHandler.getSelectableCountries(token);
+      
+      if (!selectableCountries.displaySelection()) {
+        // If request contained only one country, we skip the country selection ...
+        return this.initiateAuthentication(request, response, selectableCountries.countries().get(0).country());
+      }
+      
+      final ModelAndView modelAndView = new ModelAndView("country-select");
+      modelAndView.addObject("pingFlag", this.provider.isPingRequest(token));
+      modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
+      modelAndView.addObject("ui", this.eidasUiModelFactory.createUiModel(token, selectableCountries.countries()));
+      
+      return modelAndView;
+    }
+    catch (final Saml2ErrorStatusException e) {
+      return this.complete(request, e);
+    }
+  }
+  
+  /**
+   * Controller method that initiates the authentication against the foreign Proxy Service ending with an authentication
+   * being sent.
+   *
+   * @param httpRequest the request
+   * @param httpResponse the response
+   * @param selectedCountry the country code for the selected country
+   * @return a model and view for POST or redirect of the request
+   */
+  @PostMapping(value = "/proxyauth")
+  public ModelAndView initiateAuthentication(
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse,
+      @RequestParam(name = "selectedCountry") String selectedCountry) {
+
+    return null;
+  }
+  
+  public ModelAndView processAuthentication(
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse,
+      @RequestParam(name = "selectedCountry") String selectedCountry) {
+
     return null;
   }
 

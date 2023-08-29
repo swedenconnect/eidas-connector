@@ -15,15 +15,21 @@
  */
 package se.swedenconnect.eidas.connector.authn.metadata;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.ext.saml2mdattr.EntityAttributes;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.Extensions;
 import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
 
 import se.litsec.eidas.opensaml.ext.NodeCountry;
+import se.swedenconnect.opensaml.saml2.attribute.AttributeConstants;
+import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.saml2.metadata.EntityDescriptorUtils;
 
 /**
@@ -78,7 +84,28 @@ public class MetadataFunctions {
    * @return a list of assurance levels
    */
   public static List<String> getAssuranceLevels(final EntityDescriptor ed) {
-    return EntityDescriptorUtils.getAssuranceCertificationUris(ed);
+    // Very defensive implementation. We can handle several EntityAttributes extensions
+    // and that several matching attributes ...
+    //
+    final Extensions extensions = ed.getExtensions();
+    if (extensions == null) {
+      return Collections.emptyList();
+    }
+    final List<String> uris = new ArrayList<>();
+    for (final XMLObject xml : extensions.getUnknownXMLObjects()) {
+      if (xml instanceof EntityAttributes ea) {
+        ea.getAttributes().stream()
+        .filter(a -> AttributeConstants.ASSURANCE_CERTIFICATION_ATTRIBUTE_NAME.equals(a.getName()))
+        .map(a -> AttributeUtils.getAttributeStringValues(a))
+        .flatMap(List::stream)
+        .forEach(a -> {
+          if (uris.contains(a)) {
+            uris.add(a);
+          }
+        });        
+      }
+    }
+    return uris;
   }
 
   private MetadataFunctions() {

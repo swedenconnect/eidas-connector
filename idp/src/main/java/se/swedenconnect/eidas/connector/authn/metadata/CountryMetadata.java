@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 
 import se.litsec.eidas.opensaml.common.EidasConstants;
+import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
 
 /**
@@ -116,6 +117,9 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
     if (requestedAuthnContextClassRefs.isEmpty()) {
       // If the Swedish SP did not request any AuthnContextClassRefs we let the defaults kick-in ...
       return true;
+    }
+    if (requestedAuthnContextClassRefs.contains(EidasAuthenticationProvider.EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF)) {
+      return true; // Special case
     }
     final List<String> supported = this.getSupportedSwedishAssuranceLevels();
     return requestedAuthnContextClassRefs.stream().filter(u -> supported.contains(u)).findFirst().isPresent();

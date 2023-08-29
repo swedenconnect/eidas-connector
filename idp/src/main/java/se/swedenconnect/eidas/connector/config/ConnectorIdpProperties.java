@@ -19,16 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
 
 /**
- * Configuration properties for our SP (authentication provider).
- *
+ * Configuration properties for the IdP part of the eIDAS Connector.
+ * 
  * @author Martin Lindström
  */
-public class EidasAuthenticationConfigurationProperties implements InitializingBean {
+@Slf4j
+public class ConnectorIdpProperties implements InitializingBean {
 
   /**
    * The supported LoA:s.
@@ -42,10 +44,26 @@ public class EidasAuthenticationConfigurationProperties implements InitializingB
   @Getter
   private List<String> entityCategories = new ArrayList<>();
 
+  /**
+   * A list of SAML entityID:s for the SP:s that are allowed to send special "eIDAS ping" authentication requests to the
+   * connector. If the list is empty, no ping requests will be served.
+   */
+  @Getter
+  private List<String> pingWhitelist = new ArrayList<>();
+
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
-    Assert.notEmpty(this.supportedLoas, "connector.auth.supported-loas must not be empty");
+    if (this.supportedLoas.isEmpty()) {
+      this.supportedLoas = List.of(
+          LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW,
+          LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW_NF,
+          LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL,
+          LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF,
+          LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH,
+          LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF);
+      log.debug("connector.idp.supported-loas not assigned, defaulting to {}", this.supportedLoas);
+    }
   }
 
 }

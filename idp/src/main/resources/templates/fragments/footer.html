@@ -5,8 +5,23 @@
 <body>
 
   <div class="col-sm-12 copyright" th:fragment="copyright">
-    <img class="float-right" height="16" th:src="@{/images/logo-notext.svg}" src="/images/sc-logo-notext.svg" alt="Logo" />
-    <p class="float-right" th:text="#{idp.msg.copyright}">Copyright &copy; Service provided by Sweden Connect</p>
+    <div class="row">
+      <div class="col-6">
+        <img class="float-left" th:src="@{/images/logo-notext.svg}" src="/images/sc-logo-notext.svg" height="40" alt="Sweden Connect" /> 
+      </div>
+      <div class="col-6">
+        <p class="float-right" th:text="#{connector.ui.copyright}">Copyright &copy; Service provided by Sweden Connect</p>
+      </div>
+    </div>
+    <div class="row mt-4" th:if="${ui.getAccessibilityUrl() != null}">
+      <div class="col-12">
+        <div class="d-flex justify-content-end">
+          <a href="${ui.getAccessibilityUrl()}" id="accesability-report">
+            <span th:text="#{connector.ui.accessibility-link}">Accessibility report</span>
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 
 </body>

@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.utilities.java.support.httpclient.HttpClientBuilder;
 import net.shibboleth.utilities.java.support.httpclient.HttpClientSupport;
 import net.shibboleth.utilities.java.support.httpclient.TLSSocketFactoryBuilder;
-import se.swedenconnect.eidas.connector.config.ConnectorConfigurationProperties.EuMetadataConfiguration;
+import se.swedenconnect.eidas.connector.config.ConnectorConfigurationProperties.EuMetadataProperties;
 import se.swedenconnect.opensaml.saml2.metadata.provider.AbstractMetadataProvider;
 import se.swedenconnect.opensaml.saml2.metadata.provider.FilesystemMetadataProvider;
 import se.swedenconnect.opensaml.saml2.metadata.provider.HTTPMetadataProvider;
@@ -54,13 +54,13 @@ import se.swedenconnect.opensaml.saml2.metadata.provider.StaticMetadataProvider;
 public class MetadataProviderUtils {
 
   /**
-   * Based on an {@link EuMetadataConfiguration} a
+   * Based on an {@link EuMetadataProperties} a
    *
    * @param config configuration
    * @return a {@link MetadataResolver}
    * @throws Exception for setup errors
    */
-  public static MetadataProvider createMetadataProvider(final EuMetadataConfiguration config) throws Exception {
+  public static MetadataProvider createMetadataProvider(final EuMetadataProperties config) throws Exception {
 
     AbstractMetadataProvider provider;
     if (UrlResource.class.isInstance(config.getLocation())) {
@@ -98,7 +98,7 @@ public class MetadataProviderUtils {
    * @param config the configuration
    * @return a HttpClient
    */
-  private static HttpClient createHttpClient(final EuMetadataConfiguration config) {
+  private static HttpClient createHttpClient(final EuMetadataProperties config) {
     try {
       final List<TrustManager> managers = Arrays.asList(HttpClientSupport.buildNoTrustX509TrustManager());
       final HostnameVerifier hnv = new DefaultHostnameVerifier();

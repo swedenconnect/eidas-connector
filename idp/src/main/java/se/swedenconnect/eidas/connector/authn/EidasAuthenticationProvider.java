@@ -17,8 +17,10 @@ package se.swedenconnect.eidas.connector.authn;
 
 import java.security.cert.X509Certificate;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -31,6 +33,7 @@ import se.swedenconnect.opensaml.saml2.response.ResponseProcessingResult;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessor;
 import se.swedenconnect.opensaml.saml2.response.ResponseStatusErrorException;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthentication;
+import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractUserRedirectAuthenticationProvider;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.ResumedAuthenticationToken;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
@@ -50,6 +53,9 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   /** The path where we redirect the user to leave the control back to the SAML engine. */
   public static final String RESUME_PATH = "/resume";
 
+  /** Special purpose AuthnContext Class Ref for eIDAS test. */
+  public static final String EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF = "http://eidas.europa.eu/LoA/test";
+
   /** The processor handling the SAML responses received from the foreign eIDAS proxy services. */
   private ResponseProcessor responseProcessor;
 
@@ -59,6 +65,15 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   /** The metadata provider. */
   private final EuMetadataProvider metadataProvider;
 
+  /** Supported LoA URI:s. */
+  private final List<String> supportedLoas;
+
+  /** The entity categories. */
+  private final List<String> entityCategories;
+
+  /** Whitelisted SP:s that are allowed to send "ping" requests. */
+  private final List<String> pingWhitelist;
+
   /**
    * Constructor.
    *
@@ -66,16 +81,30 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param contextPath the application context path
    * @param responseProcessor the processor handling the SAML responses received from the foreign eIDAS proxy services
    * @param metadataProvider the EU metadata provider
+   * @param supportedLoas supported LoA URI:s
+   * @param entityCategories the entity categories
+   * @param pingWhitelist the whitelisted SP:s that are allowed to send ping requests
    */
   public EidasAuthenticationProvider(final String baseUrl, final String contextPath,
-      final ResponseProcessor responseProcessor, final EuMetadataProvider metadataProvider) {
+      final ResponseProcessor responseProcessor, final EuMetadataProvider metadataProvider,
+      final List<String> supportedLoas, final List<String> entityCategories,
+      final List<String> pingWhitelist) {
     super(AUTHN_PATH, RESUME_PATH);
+
     this.responseProcessor = Objects.requireNonNull(responseProcessor, "responseProcessor must not be null");
     this.samlResponseUrl = String.format("%s%s%s",
         Objects.requireNonNull(baseUrl, "baseUrl must not be null"),
         contextPath == null || "/".equals(contextPath) ? "" : contextPath,
         EidasAuthenticationController.ASSERTION_CONSUMER_PATH);
     this.metadataProvider = Objects.requireNonNull(metadataProvider, "metadataProvider must not be null");
+    this.supportedLoas = Collections.unmodifiableList(
+        Objects.requireNonNull(supportedLoas, "supportedLoas must not be null"));
+    this.entityCategories = Collections.unmodifiableList(
+        Objects.requireNonNull(entityCategories, "entityCategories must not be null"));
+    this.pingWhitelist = Optional.ofNullable(pingWhitelist).orElseGet(() -> Collections.emptyList());
+
+    // "http://eidas.europa.eu/LoA/test"
+
   }
 
   /** {@inheritDoc} */
@@ -115,13 +144,40 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   /** {@inheritDoc} */
   @Override
   public List<String> getSupportedAuthnContextUris() {
-    return null;
+    return this.supportedLoas;
+  }
+
+  /**
+   * Special handling since we also may support the special URI "http://eidas.europa.eu/LoA/test".
+   */
+  @Override
+  protected List<String> filterRequestedAuthnContextUris(final Saml2UserAuthenticationInputToken token) {
+    final List<String> filtered = super.filterRequestedAuthnContextUris(token);
+    if (this.pingWhitelist.isEmpty() || !this.pingWhitelist.contains(token.getAuthnRequestToken().getEntityId())) {
+      return filtered;
+    }
+    if (token.getAuthnRequirements().getAuthnContextRequirements().contains(EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF)) {
+      return List.of(EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF);
+    }
+    else {
+      return filtered;
+    }
+  }
+
+  /**
+   * Tells wheter this is a eIDAS ping request.
+   * 
+   * @param token the input token
+   * @return {@code true} if it is a ping request and {@code false} otherwise
+   */
+  public boolean isPingRequest(final Saml2UserAuthenticationInputToken token) {
+    return token.getAuthnRequirements().getAuthnContextRequirements().contains(EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF);
   }
 
   /** {@inheritDoc} */
   @Override
   public List<String> getEntityCategories() {
-    return null;
+    return this.entityCategories;
   }
 
   /**
