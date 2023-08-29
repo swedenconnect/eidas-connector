@@ -76,6 +76,35 @@ By default the eIDAS Connector IdP will support the following authentication con
 | `validation-certificate` | The certificate used to validate the metadata. | [Resource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html) pointing at the certificate resource. | - |
 | `http-proxy.*` | If the `location` setting is an URL and a HTTP proxy is required this setting configures this proxy. | [MetadataProviderConfigurationProperties.HttpProxy](https://github.com/swedenconnect/saml-identity-provider/blob/main/autoconfigure/src/main/java/se/swedenconnect/spring/saml/idp/autoconfigure/settings/MetadataProviderConfigurationProperties.java) | - |
 
+## eIDAS Connector UI Configuration
+
+**Description:** Configuration specific for the UI of the eIDAS Connector.
+
+**Java class:** [UiConfigurationProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java)
+
+| Property | Description | Type | Default value |
+| :--- | :--- | :--- | :--- | 
+| `ui.languages[].*` | A list of the supported languages where the fields are `tag` containing the two-letter ISO-language code and `text` contains the text to display in the UI for changing to this language. | List of language | - |
+| `ui.selected-`<br />`country-cookie.*` | Cookie settings for the cookie that is used to remember a user's selection of a country (in between sessions). See [Cookie Configuration](#cookie-configuration) below. | [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java) | Default settings for the cookie with the name set to `selectedCountry` |
+| `ui.selected-country-`<br />`session-cookie.*` | Cookie settings for the cookie that is used to remember a user's selection of a country within a session. Used for signing services. See [Cookie Configuration](#cookie-configuration) below. | [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java) | Default settings for the cookie with the name set to `selectedCountrySession` |
+| `ui.accessibility-url` | URL to the eIDAS Connector web accessibility report. | String | - |
+| `ui.idm.*` | Configuration for the Identity Matching feature. If this feature should be active, the `ui.idm.active` flag is set to `true` and the `service-url` is set to point to the eIDAS Identity Matching service. | IdM setting. | - |
+
+<a name="cookie-configuration"></a>
+### Cookie Configuration
+
+**Description:** Configuration for a Connector cookie.
+
+**Java class:** [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java)
+
+**Java class:** [UiConfigurationProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java)
+
+| Property | Description | Type | Default value |
+| :--- | :--- | :--- | :--- | 
+| `name` | The cookie name. | String | - |
+| `domain` | The cookie domain. | String | - |
+| `path` | The cookie path. | String | `"/"` |
+
 ---
 
 Copyright &copy; 2017-2023, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
