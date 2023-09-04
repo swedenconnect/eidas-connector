@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"> 
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}"> 
 <head th:include="fragments/base :: headerFragment">
-  <title id="pageTitle" th:inline="text">[[#{idp.msg.title}]]</title>
+  <title id="pageTitle" th:inline="text">[[#{connector.ui.title}]]</title>
 </head>
 <body>
   
@@ -20,7 +20,7 @@
 
           <div class="row">
             <div class="col-sm-12 content-heading">
-              <h2 th:text="#{idp.msg.error-heading}">Error</h2>
+              <h2 th:text="#{connector.ui.error-heading}">Error</h2>
             </div>
             <div class="col-sm-12">
               <p th:text="${message}">Error message</p>
@@ -30,7 +30,7 @@
 
       </div> <!-- /.col-sm-12 content-container -->
       
-      <div th:replace="fragments/footer :: copyright"></div>      
+      <div th:replace="fragments/footer :: only-copyright"></div>      
       
     </div> <!-- /#mainDiv -->
 

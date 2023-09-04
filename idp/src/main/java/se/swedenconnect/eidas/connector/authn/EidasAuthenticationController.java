@@ -22,6 +22,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -36,6 +38,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.authn.ui.EidasUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
+import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractAuthenticationController;
 import se.swedenconnect.spring.saml.idp.authnrequest.Saml2AuthnRequestAuthenticationToken;
@@ -55,6 +58,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
   /** The path for receiving eIDAS assertions. */
   public static final String ASSERTION_CONSUMER_PATH = "/extauth/saml2/post";
+  
+  /** Symbolic name for the action parameter value of "cancel". */
+  public static final String ACTION_CANCEL = "cancel";
 
   /** The authentication provider. */
   @Autowired
@@ -86,7 +92,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   /** For assisting us in selecting possible countries (to display). */
   @Autowired
   @Setter
-  private CountryHandler countryHandler;
+  private EidasCountryHandler countryHandler;
 
   /**
    * Tells whether the request is made from a signature service.
@@ -141,7 +147,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
       // Get a listing of all countries to display ...
       //
-      final CountryHandler.SelectableCountries selectableCountries = this.countryHandler.getSelectableCountries(token);
+      final EidasCountryHandler.SelectableCountries selectableCountries = this.countryHandler.getSelectableCountries(token);
       
       if (!selectableCountries.displaySelection()) {
         // If request contained only one country, we skip the country selection ...
@@ -169,21 +175,45 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @param selectedCountry the country code for the selected country
    * @return a model and view for POST or redirect of the request
    */
-  @PostMapping(value = "/proxyauth")
+  @PostMapping(value = EidasAuthenticationProvider.AUTHN_PATH + "/proxyauth")
   public ModelAndView initiateAuthentication(
-      HttpServletRequest httpRequest,
-      HttpServletResponse httpResponse,
-      @RequestParam(name = "selectedCountry") String selectedCountry) {
-
-    return null;
+      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
+      @RequestParam(name = "selectedCountry") final String selectedCountry) {
+    
+    if (ACTION_CANCEL.equals(selectedCountry)) {
+      log.info("User cancelled country selection - aborting authentication");
+      return this.cancel(httpRequest);
+    }
+    
+    try {
+      log.debug("User selected country '{}'", selectedCountry);
+      
+      // Generate AuthnRequest
+      //
+      RequestHttpObject<AuthnRequest> authnRequest = this.getProvider().generateAuthnRequest(
+          selectedCountry, this.getInputToken(httpRequest).getAuthnInputToken());
+      
+      // Save the country as "selected" ...
+      //
+      this.selectedCountryCookieGenerator.addCookie(httpResponse, selectedCountry);
+      this.selectedCountrySessionCookieGenerator.addCookie(httpResponse, selectedCountry);
+      
+      // POST or redirect ...
+      //
+      if (SAMLConstants.POST_METHOD.equals(authnRequest.getMethod())) {
+        ModelAndView modelAndView = new ModelAndView("post-request");
+        modelAndView.addObject("action", authnRequest.getSendUrl());
+        modelAndView.addAllObjects(authnRequest.getRequestParameters());
+        return modelAndView;
+      }
+      else {
+        return new ModelAndView("redirect:" + authnRequest.getSendUrl());
+      }
+    }
+    catch (final Saml2ErrorStatusException e) {
+      return this.complete(httpRequest, e);
+    }
   }
   
-  public ModelAndView processAuthentication(
-      HttpServletRequest httpRequest,
-      HttpServletResponse httpResponse,
-      @RequestParam(name = "selectedCountry") String selectedCountry) {
-
-    return null;
-  }
 
 }

@@ -22,6 +22,8 @@ See the [Configuration](https://docs.swedenconnect.se/saml-identity-provider/con
 
 | Property | Description | Type | Default value |
 | :--- | :--- | :--- | :--- | 
+| `connector.domain` | The domain for the eIDAS connector. | String | - |
+| `connector.base-url` | The base URL of the Connector, including protocol, domain and context path. | String | `https://${connector.domain}/`<br />`${server.servlet.context-path}`
 | `connector.backup-directory` | Directory where caches and backup files are stored during execution. | [File](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html) | - |
 | `connector.idp.*` | Configuration for the IdP part of the eIDAS Connector. See [Connector IdP Configuration](#connector-idp-configuration) below. | [ConnectorIdpProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/ConnectorIdpProperties.java) | - |
 | `connector.eidas.*` | The configuration for the eIDAS authentication. See [eIDAS Authentication Configuration](#eidas-authentication-configuration) below. | [EidasAuthenticationProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/EidasAuthenticationProperties.java) | - |
@@ -61,6 +63,7 @@ By default the eIDAS Connector IdP will support the following authentication con
 | Property | Description | Type | Default value |
 | :--- | :--- | :--- | :--- |
 | `credentials.*` | The credentials for the SP part of the eIDAS Connector. If not assigned, the keys configured for the SAML IdP will be used also for the SP. See [Credentials Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#credentials-configuration) for how to configure the different credentials. | [CredentialConfigurationProperties](https://github.com/swedenconnect/saml-identity-provider/blob/main/autoconfigure/src/main/java/se/swedenconnect/spring/saml/idp/autoconfigure/settings/CredentialConfigurationProperties.java) | - |
+| `provider-name` | The "provider name" that we should include in `AuthnRequest` messages being sent to the foreign country. | String | "Swedish eIDAS Connector" |
 
 <a name="eu-metadata-configuration"></a>
 ### EU Metadata Configuration

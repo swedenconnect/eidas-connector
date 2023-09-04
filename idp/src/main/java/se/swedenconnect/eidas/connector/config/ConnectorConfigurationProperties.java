@@ -19,10 +19,12 @@ import java.io.File;
 import java.security.cert.X509Certificate;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import lombok.Data;
 import lombok.Getter;
@@ -38,6 +40,23 @@ import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataProviderC
 @ConfigurationProperties("connector")
 @Slf4j
 public class ConnectorConfigurationProperties implements InitializingBean {
+  
+  @Value("${server.servlet.context-path:/}")
+  private String contextPath;
+  
+  /**
+   * The domain for the eIDAS Connector.
+   */
+  @Getter
+  @Setter
+  private String domain;
+  
+  /**
+   * The base URL of the Connector, including protocol, domain and context path.
+   */
+  @Getter
+  @Setter
+  private String baseUrl;
 
   /**
    * Directory where caches and backup files are stored during execution.
@@ -71,6 +90,12 @@ public class ConnectorConfigurationProperties implements InitializingBean {
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
+    Assert.notNull(this.domain, "connector.domain must be set");
+    if (!StringUtils.hasText(this.baseUrl)) {
+      this.baseUrl = String.format("https://%s%s", this.domain, 
+          "/".equals(this.contextPath) ? "" : this.contextPath);
+      log.info("Defaulting connector.base-url to {}", this.baseUrl);
+    }
     Assert.notNull(this.backupDirectory, "connector.backup-directory must be set");
     this.idp.afterPropertiesSet();
     this.eidas.afterPropertiesSet();

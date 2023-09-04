@@ -33,39 +33,51 @@ public class EidasUiModel {
    * The SP UI info.
    */
   private SpInfo spInfo;
-  
+
   /**
    * Identity Matching info.
    */
   private IdmInfo idm;
-  
+
   /**
    * The countries to display.
    */
   private List<UiCountry> countries;
-  
+
   /**
    * The accessibility report URL.
    */
   private String accessibilityUrl;
-  
+
+  /**
+   * Predicate that tells whether we have any "disabled" countries.
+   * 
+   * @return if at least one country is "disabled", i.e., can't be used for authentication, {@code true} is returned
+   */
+  public boolean hasDisabledCountry() {
+    if (this.countries == null) {
+      return false;
+    }
+    return this.countries.stream().anyMatch(c -> c.isDisabled());
+  }
+
   /**
    * SP UI Info.
    */
   @Data
   public static class SpInfo {
-    
+
     /**
      * The SP display name.
      */
     private String displayName;
-    
+
     /**
      * The SP logotype URL.
      */
     private String logoUrl;
   }
-  
+
   /**
    * UI info for Identity Matching.
    */
@@ -78,12 +90,12 @@ public class EidasUiModel {
      * Is the IDM-feature active?
      */
     private boolean active;
-    
+
     /**
      * The URL to the IdM service.
      */
     private String serviceUrl;
-    
+
   }
-  
+
 }

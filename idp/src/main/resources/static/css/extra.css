@@ -1,0 +1,153 @@
+a:focus,
+button:focus,
+img:focus,
+input:focus,
+input[type="radio"]:focus,
+textarea:focus,
+details:focus,
+summary:focus,
+select:focus {
+  outline: 3px dotted #2b2a29 !important;
+  outline-offset: 3px !important;
+  box-shadow: none !important;
+}
+
+.btn-accordion:focus {
+  outline: 3px dotted #2b2a29 !important;
+  outline-offset: -4px !important;
+  box-shadow: none !important;
+}
+
+dt {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+dd p:last-child {
+  margin-bottom: 2rem;
+}
+
+.sign-message {
+  margin-bottom: 30px;
+}
+
+.sign-message div {
+  margin: 0;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+}
+
+@media (min-width: 576px) {
+  .top-logo-dim {
+    height: 60px;
+    width: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .top-logo-dim {
+    height: 40px;
+    width: auto;
+  }
+}
+
+.copyright {
+  margin-top: 23px;
+  margin-bottom: 23px;
+}
+
+.content-heading-text {
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.btn-link {
+  font-weight: inherit;
+  background-color: transparent;
+
+  color: #000000 !important;
+  text-decoration: underline;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.large-btn-link-text {
+  font-size: 16px;
+  line-height: 14px;
+}
+
+.noscripthide {
+  display: none;
+}
+
+.error .error-text {
+  margin-top: 16px;
+}
+
+.dont-break-out {
+  /* These are technically the same, but use both */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  -ms-word-break: break-all;
+  /* This is the dangerous one in WebKit, as it breaks things wherever */
+  word-break: break-all;
+  /* Instead use this non-standard one: */
+  word-break: break-word;
+
+  /* Adds a hyphen where the word breaks, if supported (No Blink) */
+  -ms-hyphens: auto;
+  -moz-hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+.accordion {
+  margin-top: 55px;
+}
+.accordion .card {
+  margin-bottom: 9px;
+  border-radius: 0.25rem !important;
+  border-bottom: 1px solid #d8d8d8 !important;
+}
+.accordion .card-header {
+  padding: 0;
+  border-bottom: none;
+  background: #f7f7f7;
+  border-radius: 0.25em !important;
+}
+.accordion .card-header .btn-accordion {
+  padding: 15px 20px;
+}
+
+.btn-accordion {
+  white-space: normal;
+  display: flex;
+  align-items: center;
+  background-color: #f7f7f7;
+}
+.btn-accordion[aria-expanded="true"] .btn-accordion-arrow::after {
+  background-image: url(../images/arrow_dropdown_up.svg);
+}
+
+.show .card-body {
+  border-top: 1px solid #d8d8d8;
+}
+.btn-accordion .btn-accordion-arrow {
+  position: relative;
+  width: 1em;
+  height: 1em;
+  margin-left: auto;
+}
+.btn-accordion-arrow::after {
+  content: "";
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background-image: url(../images/arrow_dropdown.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+* {
+  min-height: 0.01px;
+}

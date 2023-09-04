@@ -30,9 +30,8 @@ import org.opensaml.saml.saml2.metadata.OrganizationName;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.stereotype.Component;
 
-import se.swedenconnect.eidas.connector.authn.CountryHandler.SelectableCountry;
+import se.swedenconnect.eidas.connector.authn.EidasCountryHandler.SelectableCountry;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2ServiceProviderUiInfo;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
@@ -42,7 +41,6 @@ import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationIn
  *
  * @author Martin Lindström
  */
-@Component
 public class EidasUiModelFactory {
 
   private final UiLanguageHandler languageHandler;
@@ -166,7 +164,7 @@ public class EidasUiModelFactory {
     }
 
     final List<UiCountry> uiCountries = new ArrayList<>();
-    for (final SelectableCountry c : countries) {
+    for (final SelectableCountry c : countries) {      
       String displayName = null;
       try {
         displayName = this.messageSource.getMessage("connector.ui.country." + c.country(), null, locale);
@@ -196,8 +194,7 @@ public class EidasUiModelFactory {
             c.country() + "Test Country", locale);
         uiCountry = new UiCountry(c.country(), displayName, false);
       }
-      uiCountry.setInactive(!c.canAuthenticate());
-
+      uiCountry.setDisabled(!c.canAuthenticate());
       uiCountries.add(uiCountry);
     }
 

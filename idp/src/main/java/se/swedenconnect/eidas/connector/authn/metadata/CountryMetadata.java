@@ -114,11 +114,8 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
    * @return {@code true} if authentication is possible and {@code false} otherwise
    */
   public boolean canAuthenticate(final List<String> requestedAuthnContextClassRefs) {
-    if (requestedAuthnContextClassRefs.isEmpty()) {
-      // If the Swedish SP did not request any AuthnContextClassRefs we let the defaults kick-in ...
-      return true;
-    }
-    if (requestedAuthnContextClassRefs.contains(EidasAuthenticationProvider.EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF)) {
+    if (requestedAuthnContextClassRefs.isEmpty()
+        || requestedAuthnContextClassRefs.contains(EidasAuthenticationProvider.EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF)) {
       return true; // Special case
     }
     final List<String> supported = this.getSupportedSwedishAssuranceLevels();
@@ -134,7 +131,7 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
     if (this.supportedSwedishAssuranceLevels == null) {
       final Set<String> supported = new HashSet<>();
       final List<String> idpLevels = this.getAssuranceLevels();
-      for (String uri : idpLevels) {
+      for (final String uri : idpLevels) {
         if (EidasConstants.EIDAS_LOA_LOW.equals(uri)) {
           supported.addAll(SUPPORTED_FOR_EIDAS_LOA_LOW);
         }
@@ -154,7 +151,7 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
           supported.addAll(SUPPORTED_FOR_EIDAS_LOA_HIGH_NON_NOTIFIED);
         }
       }
-      this.supportedSwedishAssuranceLevels = supported.stream().collect(Collectors.toList());
+      this.supportedSwedishAssuranceLevels = supported.stream().toList();
 
       if (this.supportedSwedishAssuranceLevels.isEmpty()) {
         // If there is no URI:s here it must mean that the foreign IdP did not declare any URI:s.

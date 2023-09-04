@@ -87,7 +87,7 @@ public class UiConfigurationProperties implements InitializingBean {
       this.selectedCountryCookie.setName(DEFAULT_SELECTED_COUNTRY_COOKIE_NAME);
     }
     if (!StringUtils.hasText(this.selectedCountrySessionCookie.getName())) {
-      this.selectedCountryCookie.setName(DEFAULT_SELECTED_COUNTRY_SESSION_COOKIE_NAME);
+      this.selectedCountrySessionCookie.setName(DEFAULT_SELECTED_COUNTRY_SESSION_COOKIE_NAME);
     }
     this.idm.afterPropertiesSet();
   }

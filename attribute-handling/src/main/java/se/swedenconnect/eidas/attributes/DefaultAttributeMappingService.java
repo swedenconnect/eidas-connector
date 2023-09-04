@@ -16,6 +16,7 @@
 package se.swedenconnect.eidas.attributes;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -85,7 +86,7 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
   /** {@inheritDoc} */
   @Override
   public List<se.litsec.eidas.opensaml.ext.RequestedAttribute> toEidasRequestedAttributes(
-      final List<RequestedAttribute> requestedBySwedishSp, final boolean includeMinimumDataSet) {
+      final Collection<RequestedAttribute> requestedBySwedishSp, final boolean includeMinimumDataSet) {
 
     final List<se.litsec.eidas.opensaml.ext.RequestedAttribute> requestedAttributes = new ArrayList<>();
     requestedBySwedishSp.stream()

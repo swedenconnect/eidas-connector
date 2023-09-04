@@ -54,6 +54,7 @@ import se.swedenconnect.spring.saml.idp.config.configurers.Saml2IdpConfigurerAda
 import se.swedenconnect.spring.saml.idp.extensions.SignatureMessagePreprocessor;
 import se.swedenconnect.spring.saml.idp.metadata.EntityCategoryHelper;
 import se.swedenconnect.spring.saml.idp.response.ThymeleafResponsePage;
+import se.swedenconnect.spring.saml.idp.settings.IdentityProviderSettings;
 
 /**
  * Configuration class for the IdP part of the Sweden Connect eIDAS Connector.
@@ -66,14 +67,18 @@ import se.swedenconnect.spring.saml.idp.response.ThymeleafResponsePage;
 public class ConnectorConfiguration {
 
   private final ConnectorConfigurationProperties connectorProperties;
+  
+  private final IdentityProviderSettings idpSettings;
 
   /**
    * Connector.
    *
    * @param connectorProperties the configuration properties
    */
-  public ConnectorConfiguration(final ConnectorConfigurationProperties connectorProperties) {
+  public ConnectorConfiguration(final ConnectorConfigurationProperties connectorProperties,
+      IdentityProviderSettings idpSettings) {
     this.connectorProperties = connectorProperties;
+    this.idpSettings = idpSettings;
   }
 
   /**
@@ -87,7 +92,6 @@ public class ConnectorConfiguration {
   @Order(2)
   SecurityFilterChain actuatorSecurityFilterChain(final HttpSecurity http) throws Exception {
 
-    // TODO: Should be configurable
     http.authorizeHttpRequests((authorize) -> authorize
         .requestMatchers(EndpointRequest.toAnyEndpoint())
         .permitAll());
@@ -115,7 +119,7 @@ public class ConnectorConfiguration {
             .antMatchers(EidasAuthenticationProvider.AUTHN_PATH + "/**",
                 EidasAuthenticationProvider.RESUME_PATH + "/**")
             .permitAll()
-            .antMatchers("/images/**", "/error", "/scripts/**", "/webjars/**", "/css/**").permitAll()
+            .antMatchers("/images/**", "/error", "/js/**", "/scripts/**", "/webjars/**", "/css/**").permitAll()
             .anyRequest().denyAll());
 
     return http.build();
@@ -240,5 +244,16 @@ public class ConnectorConfiguration {
   AttributeMappingService attributeMappingService() {
     return new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
   }
-
+  
+  @Bean
+  EidasAuthenticationProvider eidasAuthenticationProvider(final EuMetadataProvider euMetadataProvider) {
+    return new EidasAuthenticationProvider(this.idpSettings.getBaseUrl(),
+        null, /* response processor */
+        euMetadataProvider,
+        this.connectorProperties.getIdp().getSupportedLoas(),
+        this.connectorProperties.getIdp().getEntityCategories(),
+        this.connectorProperties.getIdp().getPingWhitelist());
+        
+  }
+  
 }

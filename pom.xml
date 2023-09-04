@@ -44,10 +44,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>17</java.version>
 
-    <spring.boot.version>2.7.14</spring.boot.version>
+    <spring.boot.version>2.7.15</spring.boot.version>
     <spring.version>5.3.29</spring.version>
     <bc.version>1.76</bc.version>
-    <saml.idp.version>1.1.1</saml.idp.version>
+    <saml.idp.version>1.1.2</saml.idp.version>
   </properties>
 
   <repositories>
@@ -100,23 +100,18 @@
       </dependency>      
       
       <dependency>
-        <groupId>io.micrometer</groupId>
-        <artifactId>micrometer-observation</artifactId>
-        <version>1.10.1</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
         <type>pom</type>
         <version>5.9.1</version>
         <scope>import</scope>
       </dependency>
-
+      
       <dependency>
-        <groupId>se.swedenconnect.security</groupId>
-        <artifactId>credentials-support</artifactId>
-        <version>1.2.6</version>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>1.18.24</version>
+        <scope>provided</scope>
       </dependency>
       
       <dependency>
@@ -136,7 +131,7 @@
         <groupId>com.fasterxml.woodstox</groupId>
         <artifactId>woodstox-core</artifactId>
         <version>6.5.1</version>
-      </dependency>
+      </dependency>      
       
       <!-- Bouncy Castle -->
       <dependency>
@@ -168,37 +163,6 @@
           </exclusion>
         </exclusions>
       </dependency>
-      
-      <dependency>
-        <groupId>se.swedenconnect.opensaml</groupId>
-        <artifactId>opensaml-addons</artifactId>
-        <version>1.2.7</version>
-      </dependency>
-      
-      <dependency>
-        <groupId>se.swedenconnect.opensaml</groupId>
-        <artifactId>opensaml-swedish-eid</artifactId>
-        <version>1.2.6</version>
-        <exclusions>
-          <exclusion>
-            <groupId>se.swedenconnect.opensaml</groupId>
-            <artifactId>opensaml-addons</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      
-      <dependency>
-        <groupId>se.litsec.eidas</groupId>
-        <artifactId>eidas-opensaml4</artifactId>
-        <version>2.1.2</version>
-      </dependency>      
-
-      <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>1.18.24</version>
-        <scope>provided</scope>
-      </dependency>
 
     </dependencies>
 
@@ -226,6 +190,12 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
       <scope>test</scope>
     </dependency>
 

@@ -23,15 +23,16 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.StatusCode;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 
+import lombok.extern.slf4j.Slf4j;
+import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
-import se.swedenconnect.opensaml.saml2.response.ResponseProcessingException;
+import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessingInput;
-import se.swedenconnect.opensaml.saml2.response.ResponseProcessingResult;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessor;
-import se.swedenconnect.opensaml.saml2.response.ResponseStatusErrorException;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthentication;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractUserRedirectAuthenticationProvider;
@@ -45,6 +46,7 @@ import se.swedenconnect.spring.saml.idp.error.UnrecoverableSaml2IdpException;
  *
  * @author Martin Lindström
  */
+@Slf4j
 public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticationProvider {
 
   /** The authentication path, i.e., where the SAML engine should direct the user for authentication. */
@@ -57,13 +59,16 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   public static final String EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF = "http://eidas.europa.eu/LoA/test";
 
   /** The processor handling the SAML responses received from the foreign eIDAS proxy services. */
-  private ResponseProcessor responseProcessor;
+//  private final ResponseProcessor responseProcessor;
 
   /** The URL where we receive SAML responses. */
   private final String samlResponseUrl;
 
   /** The metadata provider. */
   private final EuMetadataProvider metadataProvider;
+  
+  /** For generating AuthnRequests. */
+//  private final EidasAuthnRequestGeneratorContextFactory authnRequestFactory;
 
   /** Supported LoA URI:s. */
   private final List<String> supportedLoas;
@@ -78,23 +83,22 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * Constructor.
    *
    * @param baseUrl the application base URL
-   * @param contextPath the application context path
    * @param responseProcessor the processor handling the SAML responses received from the foreign eIDAS proxy services
    * @param metadataProvider the EU metadata provider
    * @param supportedLoas supported LoA URI:s
    * @param entityCategories the entity categories
    * @param pingWhitelist the whitelisted SP:s that are allowed to send ping requests
    */
-  public EidasAuthenticationProvider(final String baseUrl, final String contextPath,
+  public EidasAuthenticationProvider(final String baseUrl, 
       final ResponseProcessor responseProcessor, final EuMetadataProvider metadataProvider,
+//      final EidasAuthnRequestGeneratorContextFactory authnRequestFactory,
       final List<String> supportedLoas, final List<String> entityCategories,
       final List<String> pingWhitelist) {
     super(AUTHN_PATH, RESUME_PATH);
 
-    this.responseProcessor = Objects.requireNonNull(responseProcessor, "responseProcessor must not be null");
-    this.samlResponseUrl = String.format("%s%s%s",
+//    this.responseProcessor = Objects.requireNonNull(responseProcessor, "responseProcessor must not be null");
+    this.samlResponseUrl = String.format("%s%s",
         Objects.requireNonNull(baseUrl, "baseUrl must not be null"),
-        contextPath == null || "/".equals(contextPath) ? "" : contextPath,
         EidasAuthenticationController.ASSERTION_CONSUMER_PATH);
     this.metadataProvider = Objects.requireNonNull(metadataProvider, "metadataProvider must not be null");
     this.supportedLoas = Collections.unmodifiableList(
@@ -114,19 +118,32 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
     final EidasAuthenticationToken proxyResponse = EidasAuthenticationToken.class.cast(token.getAuthnToken());
 
-    try {
-      final ResponseProcessingResult result =
-          this.responseProcessor.processSamlResponse(proxyResponse.getResponse(), proxyResponse.getRelayState(),
-              this.buildResponseProcessingInput(token), null);
-    }
-    catch (final ResponseStatusErrorException e) {
-    }
-    catch (ResponseProcessingException e) {
-    }
+//    try {
+//      final ResponseProcessingResult result =
+//          this.responseProcessor.processSamlResponse(proxyResponse.getResponse(), proxyResponse.getRelayState(),
+//              this.buildResponseProcessingInput(token), null);
+//    }
+//    catch (final ResponseStatusErrorException e) {
+//    }
+//    catch (ResponseProcessingException e) {
+//    }
 
     return null;
   }
-
+  
+  public RequestHttpObject<AuthnRequest> generateAuthnRequest(
+      final String country, final Saml2UserAuthenticationInputToken token) throws Saml2ErrorStatusException {
+    
+    final CountryMetadata countryMetadata = this.metadataProvider.getCountry(country);
+    if (countryMetadata == null) {
+      final String msg = "No services available for selected country";
+      log.error("No metadata found for country '{}'", country);
+      throw new Saml2ErrorStatusException(StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP, null, msg, msg);
+    }
+    
+    return null;
+  }
+  
   /**
    * Supports {@link EidasAuthenticationToken}.
    */

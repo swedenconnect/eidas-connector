@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.attributes;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.opensaml.saml.saml2.core.Attribute;
@@ -70,7 +71,7 @@ public interface AttributeMappingService {
    * @return a list of eIDAS {@link se.litsec.eidas.opensaml.ext.RequestedAttribute RequestedAttribute} objects
    */
   List<se.litsec.eidas.opensaml.ext.RequestedAttribute> toEidasRequestedAttributes(
-      final List<RequestedAttribute> requestedBySwedishSp, final boolean includeMinimumDataSet);
+      final Collection<RequestedAttribute> requestedBySwedishSp, final boolean includeMinimumDataSet);
 
   /**
    * Maps an attribute released by an eIDAS IdP into its corresponding Swedish eID attribute.

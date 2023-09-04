@@ -16,6 +16,7 @@
 package se.swedenconnect.eidas.connector.config;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.StringUtils;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +28,11 @@ import se.swedenconnect.spring.saml.idp.autoconfigure.settings.CredentialConfigu
  * @author Martin Lindström
  */
 public class EidasAuthenticationProperties implements InitializingBean {
+  
+  /**
+   * The default name to use for the SAML attribute {@code ProviderName}. 
+   */
+  public static final String DEFAULT_PROVIDER_NAME = "Swedish eIDAS Connector";
 
   /**
    * The credentials for the SP part of the eIDAS Connector. If not assigned, the keys configured for the SAML IdP will
@@ -35,10 +41,20 @@ public class EidasAuthenticationProperties implements InitializingBean {
   @Getter
   @Setter
   private CredentialConfigurationProperties credentials;
+  
+  /**
+   * The "provider name" to use in our AuthnRequest:s sent.
+   */
+  @Getter
+  @Setter
+  private String providerName;
 
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
+    if (!StringUtils.hasText(providerName)) {
+      this.providerName = DEFAULT_PROVIDER_NAME;
+    }
   }
 
 }

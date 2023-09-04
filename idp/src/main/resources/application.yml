@@ -30,8 +30,10 @@ ui:
     text: English
   selected-country-cookie:
     path: ${server.servlet.context-path}
+    domain: ${connector.domain}
   selected-country-session-cookie:
     path: ${server.servlet.context-path}
+    domain: ${connector.domain}
   accessibility-url: https://www.swedenconnect.se/om/om-webbplatsen/tillganglighet/svenska-eidas-noden
   idm:
     active: true
@@ -40,7 +42,7 @@ ui:
        
 
 connector:
-  backup-directory: /target  
+  backup-directory: target  
   idp:
     entity-categories:
     - http://id.elegnamnden.se/ec/1.0/eidas-naturalperson
@@ -74,10 +76,6 @@ saml:
       post-authn: /profile/SAML2/POST/SSO
       redirect-authn: /profile/SAML2/Redirect/SSO
     requires-signed-requests: true  
-    metadata-providers:
-    - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
-      backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
-      validation-certificate: classpath:sandbox-metadata.crt
     metadata:
       ui-info:
         display-names:
@@ -127,6 +125,7 @@ spring:
       on-profile: production
       
 connector:
+  domain: connector.eidas.swedenconnect.se
   eu-metadata:
     location: https://md.eidas.swedenconnect.se/role/idp.xml
     validation-certificate: classpath:env/production/eu-metadata-signing-prod.crt
@@ -154,9 +153,13 @@ spring:
       on-profile: qa
 
 connector:
+  domain: qa.connector.eidas.swedenconnect.se
   eu-metadata:
     location: https://qa.md.eidas.swedenconnect.se/role/idp.xml
     validation-certificate: classpath:env/qa/eu-metadata-signing-qa.crt
+  idp:
+    ping-whitelist:
+    - https://qa.test.swedenconnect.se/sp
 
 saml:
   idp:
@@ -181,9 +184,13 @@ spring:
       on-profile: sandbox
       
 connector:
+  domain: con.sandbox.swedenconnect.se
   eu-metadata:
     location: https://mdsl.sandbox.swedenconnect.se/nodeconfig/metadata
     validation-certificate: classpath:env/sandbox/eu-metadata-signing-sandbox.crt
+  idp:
+    ping-whitelist:
+    - http://sandbox.swedenconnect.se/testmyeid
 
 saml:
   idp:
@@ -229,10 +236,46 @@ spring:
   config:
     activate:
       on-profile: localhost
+      
+server:
+  port: 9200      
+      
+connector:
+  domain: localhost
+  base-url: https://${connector.domain}:${server.port}/${server.servlet.context-path}
+  eu-metadata:
+    location: https://qa.md.eidas.swedenconnect.se/role/idp.xml
+    validation-certificate: classpath:env/qa/eu-metadata-signing-qa.crt  
+#  eu-metadata:
+#    location: https://mdsl.sandbox.swedenconnect.se/nodeconfig/metadata
+#    validation-certificate: classpath:env/sandbox/eu-metadata-signing-sandbox.crt
+  idp:
+    ping-whitelist:
+    - http://sandbox.swedenconnect.se/testmyeid
   
 saml:
   idp:
-    entity-id: https://local.swedenconnect.se/idp
+    entity-id: https://eunode.eidastest.se/idp2
+    metadata-providers:
+    - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
+      backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
+      validation-certificate: classpath:env/sandbox/sc-metadata-signing-sandbox.crt
+    credentials:
+      sign:
+        resource: classpath:env/localhost/idp-keys.jks
+        alias: sign
+        password: secret
+        type: JKS
+      encrypt:
+        resource: classpath:env/localhost/idp-keys.jks
+        alias: encrypt
+        password: secret
+        type: JKS
+      metadata-sign:
+        resource: classpath:env/localhost/idp-keys.jks
+        alias: metadata
+        password: secret
+        type: JKS        
     metadata:
       ui-info:
         display-names:
@@ -248,4 +291,9 @@ saml:
         - path: /images/logo.svg
           height: 56
           width: 280
+          
+logging:
+  level:
+    se:
+      swedenconnect: DEBUG          
       

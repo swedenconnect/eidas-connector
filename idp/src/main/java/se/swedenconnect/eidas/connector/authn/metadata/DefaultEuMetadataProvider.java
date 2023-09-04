@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,7 @@ import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
  * @author Martin Lindström
  */
 @Slf4j
-public class DefaultEuMetadataProvider implements EuMetadataProvider {
+public class DefaultEuMetadataProvider implements EuMetadataProvider, InitializingBean {
 
   /** The underlying metadata provider. */
   private final MetadataProvider provider;
@@ -115,7 +116,8 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider {
             cm.put(countryCode, c);
           }
           else {
-            final String info = "Found IdP '%s' in EU metadata that does not have NodeCountry extension".formatted(ed.getEntityID());
+            final String info =
+                "Found IdP '%s' in EU metadata that does not have NodeCountry extension".formatted(ed.getEntityID());
             log.error("{}", info);
             eventInfo.add(info);
           }
@@ -133,7 +135,9 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider {
             .toList();
 
         if (!removedCountries.isEmpty() || !addedCountries.isEmpty()) {
-          log.info("EU metadata was updated - added: {} removed: {}", addedCountries, removedCountries);
+          if (!this.countries.isEmpty()) {
+            log.info("EU metadata was updated - added: {} removed: {}", addedCountries, removedCountries);
+          }
         }
         else {
           log.debug("EU metadata was updated - no changed countries");
@@ -154,6 +158,13 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider {
       }
     }
     return this.countries;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    log.info("Initial contents of EU metadata: {}",
+        this.getCountries().stream().map(CountryMetadata::getCountryCode).toList());
   }
 
 }

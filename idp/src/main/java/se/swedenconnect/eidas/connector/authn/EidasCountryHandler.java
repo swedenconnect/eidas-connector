@@ -42,7 +42,7 @@ import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
  */
 @Service
 @Slf4j
-public class CountryHandler {
+public class EidasCountryHandler {
 
   /** Prefix URI for country representation. */
   public static final String COUNTRY_URI_PREFIX = "http://id.swedenconnect.se/eidas/1.0/proxy-service/";

@@ -36,7 +36,7 @@ public class UiCountry implements Comparable<UiCountry> {
 
   @Getter
   @Setter
-  private boolean inactive = false;
+  private boolean disabled = false;
 
   public UiCountry(final String code, final String name) {
     this(code, name, true);
@@ -46,6 +46,15 @@ public class UiCountry implements Comparable<UiCountry> {
     this.code = code;
     this.name = name;
     this.realCountry = realCountry;
+  }
+  
+  public String getFlag() {
+    if (this.realCountry) {
+      return this.code.toLowerCase();
+    }
+    else {
+      return "eu";
+    }
   }
 
   @Override

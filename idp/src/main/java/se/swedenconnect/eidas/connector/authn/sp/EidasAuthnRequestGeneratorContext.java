@@ -28,6 +28,7 @@ import org.opensaml.xmlsec.SignatureSigningConfiguration;
 import se.litsec.eidas.opensaml.common.EidasConstants;
 import se.litsec.eidas.opensaml.ext.RequestedAttribute;
 import se.litsec.eidas.opensaml.ext.SPTypeEnumeration;
+import se.swedenconnect.eidas.connector.config.EidasAuthenticationProperties;
 import se.swedenconnect.opensaml.saml2.core.build.NameIDPolicyBuilder;
 import se.swedenconnect.opensaml.saml2.request.AuthnRequestGeneratorContext;
 
@@ -38,10 +39,6 @@ import se.swedenconnect.opensaml.saml2.request.AuthnRequestGeneratorContext;
  */
 class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext {
 
-  /**
-   * The default name to use for the SAML attribute {@code ProviderName}. */
-  public static final String DEFAULT_PROVIDER_NAME = "Swedish eIDAS Connector";
-  
   /** The country code. */
   private final String country;
 
@@ -54,6 +51,9 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
   /** The requested attributes. */
   private final List<RequestedAttribute> requestedAttributes;
 
+  /** The requested authentication context class ref URI:s (Swedish). */
+  private final List<String> requestedAuthnContextClassRefs;
+
   /** The name to add to the SAML attribute {@code ProviderName}. */
   private final String providerName;
 
@@ -64,16 +64,20 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    * @param nationalSpEntityId the entityID of the national SP that requested authentication
    * @param spType the SP type (if {@code null} it defaults to public)
    * @param requestedAttributes the requested SAML attributes
+   * @param requestedAuthnContextClassRefs the requested authentication context class ref URI:s (Swedish)
    * @param providerName the name to add to the field {@code providerName}.
    */
   public EidasAuthnRequestGeneratorContext(final String country, final String nationalSpEntityId,
       final SPTypeEnumeration spType, final List<RequestedAttribute> requestedAttributes,
-      final String providerName) {
+      final List<String> requestedAuthnContextClassRefs, final String providerName) {
     this.country = Objects.requireNonNull(country, "country must not be null");
     this.nationalSpEntityId = Objects.requireNonNull(nationalSpEntityId, "nationalSpEntityId must not be null");
     this.spType = Optional.ofNullable(spType).orElseGet(() -> SPTypeEnumeration.PUBLIC);
     this.requestedAttributes = Optional.ofNullable(requestedAttributes).orElseGet(() -> Collections.emptyList());
-    this.providerName = Optional.ofNullable(providerName).orElseGet(() -> DEFAULT_PROVIDER_NAME); 
+    this.requestedAuthnContextClassRefs = Objects.requireNonNull(requestedAuthnContextClassRefs,
+        "requestedAuthnContextClassRefs must not be null");
+    this.providerName =
+        Optional.ofNullable(providerName).orElseGet(() -> EidasAuthenticationProperties.DEFAULT_PROVIDER_NAME);
   }
 
   /**
@@ -113,6 +117,15 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
   }
 
   /**
+   * Gets the requested authentication context class ref URI:s (as stated by the Swedish SP).
+   * 
+   * @return a list of URI:s
+   */
+  public List<String> getRequestedAuthnContextClassRefs() {
+    return this.requestedAuthnContextClassRefs;
+  }
+
+  /**
    * Always set {@code isPassive} to {@code false}.
    */
   @Override
@@ -120,12 +133,19 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
     return Boolean.FALSE;
   }
 
+  /**
+   * Calculates which URI:s to request based on the SP request and the IdP capabilities. 
+   */
   @Override
   public RequestedAuthnContextBuilderFunction getRequestedAuthnContextBuilderFunction() {
-    // TODO Auto-generated method stub
-    return AuthnRequestGeneratorContext.super.getRequestedAuthnContextBuilderFunction();
-  }
 
+    return (supported, hok) -> {      
+      return AuthnContextClassRefMapper.calculateRequestedAuthnContext(
+          supported, this.requestedAuthnContextClassRefs);
+    };
+
+  }
+  
   @Override
   public SignatureSigningConfiguration getSignatureSigningConfiguration() {
     // TODO Auto-generated method stub

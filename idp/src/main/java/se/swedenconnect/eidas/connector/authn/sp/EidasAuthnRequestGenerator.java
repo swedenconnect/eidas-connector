@@ -20,20 +20,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.opensaml.core.criterion.EntityIdCriterion;
 import org.opensaml.core.xml.util.XMLObjectSupport;
-import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Scoping;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
 
 import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
-import net.shibboleth.utilities.java.support.resolver.ResolverException;
 import se.litsec.eidas.opensaml.ext.RequestedAttribute;
 import se.litsec.eidas.opensaml.ext.RequestedAttributes;
 import se.litsec.eidas.opensaml.ext.SPType;
+import se.litsec.eidas.opensaml.ext.SPTypeEnumeration;
+import se.swedenconnect.eidas.attributes.AttributeMappingService;
+import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
+import se.swedenconnect.eidas.connector.authn.metadata.MetadataFunctions;
+import se.swedenconnect.eidas.connector.config.EidasAuthenticationProperties;
 import se.swedenconnect.opensaml.saml2.core.build.AuthnRequestBuilder;
 import se.swedenconnect.opensaml.saml2.core.build.ExtensionsBuilder;
 import se.swedenconnect.opensaml.saml2.core.build.ScopingBuilder;
@@ -41,8 +41,11 @@ import se.swedenconnect.opensaml.saml2.request.AbstractAuthnRequestGenerator;
 import se.swedenconnect.opensaml.saml2.request.AuthnRequestGenerator;
 import se.swedenconnect.opensaml.saml2.request.AuthnRequestGeneratorContext;
 import se.swedenconnect.opensaml.saml2.request.RequestGenerationException;
+import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
+import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryConstants;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.opensaml.OpenSamlCredential;
+import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
 /**
  * An {@link AuthnRequestGenerator} for generating {@link AuthnRequest}s for eIDAS.
@@ -55,8 +58,11 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
   /** The SP metadata. */
   private final EntityDescriptor spMetadata;
 
-  /** The metadata resolver. */
-  private final MetadataResolver metadataResolver;
+  /** Attribute mappings. */
+  private final AttributeMappingService attributeMappings;
+
+  /** The name to add to the field {@code providerName}. */
+  private final String providerName;
 
   /** Some countries can not handle the Scoping element. */
   private List<String> skipScopingElementFor = Collections.emptyList();
@@ -66,14 +72,51 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    * 
    * @param spMetadata the SP metadata
    * @param signatureCredential the signature credential
-   * @param metadataResolver
+   * @param attributeMappings attribute mapping service
+   * @param providerName the provider name to use in generated requests
    */
   public EidasAuthnRequestGenerator(final EntityDescriptor spMetadata, final PkiCredential signatureCredential,
-      final MetadataResolver metadataResolver) {
+      final AttributeMappingService attributeMappings, final String providerName) {
     super(Objects.requireNonNull(spMetadata, "spMetadata must not be null").getEntityID(),
         new OpenSamlCredential(Objects.requireNonNull(signatureCredential, "signatureCredential must not be null")));
     this.spMetadata = spMetadata;
-    this.metadataResolver = Objects.requireNonNull(metadataResolver, "metadataResolver must not be null");
+    this.attributeMappings = Objects.requireNonNull(attributeMappings, "attributeMappings must not be null");
+    this.providerName = Objects.requireNonNullElse(providerName, EidasAuthenticationProperties.DEFAULT_PROVIDER_NAME);
+  }
+
+  /**
+   * Generates an {@link AuthnRequest} to be sent to the foreign IdP.
+   * 
+   * @param country the country metadata
+   * @param token the input SAML token
+   * @return a {@link RequestHttpObject}
+   * @throws RequestGenerationException for errors generating the {@code AuthnRequest}
+   */
+  public RequestHttpObject<AuthnRequest> generateAuthnRequest(final CountryMetadata country,
+      final Saml2UserAuthenticationInputToken token) throws RequestGenerationException {
+
+    // Is this a public or private SP?
+    //
+    final SPTypeEnumeration spType = token.getAuthnRequirements().getEntityCategories()
+        .contains(EntityCategoryConstants.SERVICE_TYPE_CATEGORY_PRIVATE_SECTOR_SP.getUri())
+            ? SPTypeEnumeration.PRIVATE
+            : SPTypeEnumeration.PUBLIC;
+
+    // Map requested attributes from Swedish eID format to eIDAS format ...
+    //
+    final List<se.litsec.eidas.opensaml.ext.RequestedAttribute> requestedAttributes =
+        this.attributeMappings.toEidasRequestedAttributes(token.getAuthnRequirements().getRequestedAttributes(), true);
+
+    // Set up a context ...
+    //
+    final EidasAuthnRequestGeneratorContext context = new EidasAuthnRequestGeneratorContext(
+        country.getCountryCode(), token.getAuthnRequestToken().getEntityId(), spType, requestedAttributes,
+        token.getAuthnRequirements().getAuthnContextRequirements(), this.providerName);
+
+    // Generate AuthnRequest ...
+    //
+    return this.generateAuthnRequest(
+        country.getEntityDescriptor(), token.getAuthnRequestToken().getRelayState(), context);
   }
 
   /**
@@ -82,8 +125,8 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
   @Override
   protected void addScoping(final AuthnRequestBuilder builder, final AuthnRequestGeneratorContext context,
       final EntityDescriptor idpMetadata) throws RequestGenerationException {
-    
-    final EidasAuthnRequestGeneratorContext eidasContext = EidasAuthnRequestGeneratorContext.class.cast(context);    
+
+    final EidasAuthnRequestGeneratorContext eidasContext = EidasAuthnRequestGeneratorContext.class.cast(context);
     final String country = eidasContext.getCountryCode();
     if (this.skipScopingElementFor.contains(country)) {
       log.debug("AuthnRequest generator will not add Scoping element for {} - configured to skip", country);
@@ -92,60 +135,44 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
     final Scoping scoping = ScopingBuilder.builder().requesterIDs(eidasContext.getNationalSpEntityId()).build();
     builder.scoping(scoping);
   }
-  
+
   /**
    * Adds the {@code SPType} extension and the requested attributes.
    */
   @Override
   protected void addExtensions(final AuthnRequestBuilder builder, final AuthnRequestGeneratorContext context,
       final EntityDescriptor idpMetadata) throws RequestGenerationException {
-    
+
     final EidasAuthnRequestGeneratorContext eidasContext = EidasAuthnRequestGeneratorContext.class.cast(context);
-    
+
     final ExtensionsBuilder extensionsBuilder = ExtensionsBuilder.builder();
-    
+
     final SPType spType = (SPType) XMLObjectSupport.buildXMLObject(SPType.DEFAULT_ELEMENT_NAME);
     spType.setType(eidasContext.getSpType());
     extensionsBuilder.extension(spType);
-    
+
     final List<RequestedAttribute> requestedAttributesList = eidasContext.getRequestedAttributes();
     if (!requestedAttributesList.isEmpty()) {
-      final RequestedAttributes requestedAttributes = 
+      final RequestedAttributes requestedAttributes =
           (RequestedAttributes) XMLObjectSupport.buildXMLObject(RequestedAttributes.DEFAULT_ELEMENT_NAME);
       requestedAttributes.getRequestedAttributes().addAll(requestedAttributesList);
       extensionsBuilder.extension(requestedAttributes);
-    }    
-    
+    }
+
     builder.extensions(extensionsBuilder.build());
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected List<String> getAssuranceCertificationUris(final EntityDescriptor idpMetadata,
+      final AuthnRequestGeneratorContext context) throws RequestGenerationException {    
+    return MetadataFunctions.getAssuranceLevels(idpMetadata);
   }
 
   /** {@inheritDoc} */
   @Override
   protected EntityDescriptor getSpMetadata() {
     return this.spMetadata;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  protected EntityDescriptor getIdpMetadata(final String idpEntityID) {
-    try {
-      final CriteriaSet criteria = new CriteriaSet();
-      criteria.add(new EntityIdCriterion(idpEntityID));
-      final EntityDescriptor ed = this.metadataResolver.resolveSingle(criteria);
-      if (ed == null) {
-        log.warn("Metadata for {} was not found", idpEntityID);
-        return null;
-      }
-      if (ed.getRoleDescriptors(IDPSSODescriptor.DEFAULT_ELEMENT_NAME).isEmpty()) {
-        log.warn("Metadata for {} was found, but is not valid metadata for an IdP", idpEntityID);
-        return null;
-      }
-      return ed;
-    }
-    catch (final ResolverException e) {
-      log.warn("Metadata for {} could not be resolved", idpEntityID, e);
-      return null;
-    }
   }
 
   /**
