@@ -15,7 +15,11 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import java.util.List;
+
+import org.opensaml.saml.saml2.core.NameID;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import lombok.Getter;
@@ -28,11 +32,18 @@ import se.swedenconnect.spring.saml.idp.autoconfigure.settings.CredentialConfigu
  * @author Martin Lindström
  */
 public class EidasAuthenticationProperties implements InitializingBean {
-  
+
   /**
-   * The default name to use for the SAML attribute {@code ProviderName}. 
+   * The default name to use for the SAML attribute {@code ProviderName}.
    */
   public static final String DEFAULT_PROVIDER_NAME = "Swedish eIDAS Connector";
+
+  /**
+   * The entityID for the eIDAS SP.
+   */
+  @Getter
+  @Setter
+  private String entityId;
 
   /**
    * The credentials for the SP part of the eIDAS Connector. If not assigned, the keys configured for the SAML IdP will
@@ -41,7 +52,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
   @Getter
   @Setter
   private CredentialConfigurationProperties credentials;
-  
+
   /**
    * The "provider name" to use in our AuthnRequest:s sent.
    */
@@ -49,12 +60,43 @@ public class EidasAuthenticationProperties implements InitializingBean {
   @Setter
   private String providerName;
 
+  /**
+   * Whether we require signed eIDAS assertions.
+   */
+  @Getter
+  @Setter
+  private Boolean requiresSignedAssertions;
+
+  /**
+   * An ordered list of supported NameID formats.
+   */
+  @Getter
+  @Setter
+  private List<String> supportedNameIds;
+
+  /**
+   * Metadata configuration for the eIDAS SP.
+   */
+  @Getter
+  @Setter
+  private EidasSpMetadataProperties metadata;
+
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
+    Assert.hasText(this.entityId, "connector.eidas.entity-id must be set");
     if (!StringUtils.hasText(providerName)) {
       this.providerName = DEFAULT_PROVIDER_NAME;
     }
+    if (this.requiresSignedAssertions == null) {
+      this.requiresSignedAssertions = Boolean.FALSE;
+    }
+    if (this.supportedNameIds == null || this.supportedNameIds.isEmpty()) {
+      this.supportedNameIds = List.of(NameID.PERSISTENT, NameID.TRANSIENT, NameID.UNSPECIFIED);
+    }
+
+    Assert.notNull(this.metadata, "connector.eidas.metadata.* must be set");
+    this.metadata.afterPropertiesSet();
   }
 
 }

@@ -38,8 +38,7 @@ ui:
   idm:
     active: true
     # TODO: change
-    service-url: https://sandbox.swedenconnect.se/idm
-       
+    service-url: https://sandbox.swedenconnect.se/idm       
 
 connector:
   backup-directory: target  
@@ -50,6 +49,62 @@ connector:
     - http://id.elegnamnden.se/sprop/1.0/mobile-auth
   eu-metadata:
     backup-location: ${connector.backup-directory}/metadata/eu-cache.xml
+  eidas:
+    entity-id: ${saml.idp.base-url}/metadata/sp
+    requires-signed-assertions: true
+    metadata:
+      application-identifier-prefix: "SE:connector:"
+      node-country: SE
+      protocol-versions:
+      - 1.0
+      - 1.1
+      - 1.2
+      organization:
+        names: 
+          en: Sweden Connect
+        display-names:
+          en: "Swedish eIDAS node"
+        urls:
+          en: https://www.swedenconnect.se/en
+      contact-persons:
+        technical:
+          company: "Sweden Connect"
+          given-name: "Technical support"
+          email-addresses:
+          - operations@swedenconnect.se
+        support:
+          company: "Sweden Connect"
+          given-name: "Customer support"
+          email-addresses:
+          - operations@swedenconnect.se
+      digest-methods:
+      - http://www.w3.org/2001/04/xmlenc#sha256
+      - http://www.w3.org/2001/04/xmldsig-more#sha384
+      - http://www.w3.org/2001/04/xmlenc#sha512
+      include-digest-methods-under-role: true
+      signing-methods:
+      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1
+        min-key-size: 3072
+      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1
+        min-key-size: 3072
+      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1
+        min-key-size: 3072
+      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256
+        min-key-size: 256
+      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384
+        min-key-size: 256
+      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512
+        min-key-size: 256
+      include-signing-methods-under-role: true
+      encryption-methods:
+      - algorithm: http://www.w3.org/2009/xmlenc11#aes256-gcm
+      - algorithm: http://www.w3.org/2009/xmlenc11#aes192-gcm
+      - algorithm: http://www.w3.org/2009/xmlenc11#aes128-gcm
+      - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
+      - algorithm: http://www.w3.org/2009/xmlenc11#rsa-oaep
+      
+      
+          
 
 saml:
   idp:
@@ -77,6 +132,41 @@ saml:
       redirect-authn: /profile/SAML2/Redirect/SSO
     requires-signed-requests: true  
     metadata:
+      digest-methods:
+      - http://www.w3.org/2001/04/xmlenc#sha256
+      - http://www.w3.org/2001/04/xmldsig-more#sha384
+      - http://www.w3.org/2001/04/xmlenc#sha512
+      include-digest-methods-under-role: true
+      signing-methods:
+      - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha256
+        min-key-size: 2048
+      - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha384
+        min-key-size: 2048
+      - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha512
+        min-key-size: 2048      
+      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1
+        min-key-size: 2048
+      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1
+        min-key-size: 2048
+      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1
+        min-key-size: 2048
+      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256
+        min-key-size: 256
+      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384
+        min-key-size: 256
+      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512
+        min-key-size: 256
+      include-signing-methods-under-role: true
+      encryption-methods:
+      - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
+      - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
+        digest-method: http://www.w3.org/2001/04/xmlenc#sha256
+      - algorithm: http://www.w3.org/2009/xmlenc11#aes256-gcm
+      - algorithm: http://www.w3.org/2009/xmlenc11#aes192-gcm
+      - algorithm: http://www.w3.org/2009/xmlenc11#aes128-gcm
+      - algorithm: http://www.w3.org/2001/04/xmlenc#aes256-cbc
+      - algorithm: http://www.w3.org/2001/04/xmlenc#aes192-cbc
+      - algorithm: http://www.w3.org/2001/04/xmlenc#aes128-cbc
       ui-info:
         display-names:
           en: "Foreign eID"
@@ -109,7 +199,7 @@ saml:
         support:
           company: Sweden Connect
           email-addresses:
-          - operations@swedenconnect.se        
+          - operations@swedenconnect.se
 
 logging:
   level:

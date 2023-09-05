@@ -19,16 +19,25 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opensaml.saml.ext.saml2alg.DigestMethod;
+import org.opensaml.saml.saml2.metadata.EncryptionMethod;
+import org.opensaml.saml.saml2.metadata.KeyDescriptor;
+import org.opensaml.security.credential.UsageType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import lombok.Setter;
+import se.swedenconnect.opensaml.saml2.metadata.build.DigestMethodBuilder;
+import se.swedenconnect.opensaml.saml2.metadata.build.EncryptionMethodBuilder;
+import se.swedenconnect.opensaml.saml2.metadata.build.KeyDescriptorBuilder;
 import se.swedenconnect.security.credential.PkiCredential;
+import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataConfigurationProperties;
 
 /**
  * A helper bean that gives us the connector credentials.
- * 
+ *
  * @author Martin Lindström
  */
 @Component
@@ -96,7 +105,7 @@ public class ConnectorCredentials {
 
   /**
    * Gets the SP signing credential to use.
-   * 
+   *
    * @return the {@link PkiCredential}
    * @throws IllegalArgumentException if no credential is found
    */
@@ -110,7 +119,7 @@ public class ConnectorCredentials {
 
   /**
    * Gets the SP encrypt credential(s) to use.
-   * 
+   *
    * @return a list of {@link PkiCredential}s
    * @throws IllegalArgumentException if no credential is found
    */
@@ -153,23 +162,156 @@ public class ConnectorCredentials {
   }
 
   /**
+   * Gets a list of {@link KeyDescriptor} elements that should be included in the SP metadata.
+   *
+   * @param encryptionMethods the {@code md:EncryptionMethod} elements to use for encryption.
+   * @return a list of {@link KeyDescriptor} elements
+   */
+  public List<KeyDescriptor> getSpKeyDescriptors(
+      final List<MetadataConfigurationProperties.EncryptionMethod> encryptionMethods) {
+
+    final List<KeyDescriptor> keyDescriptors = new ArrayList<>();
+    KeyDescriptorBuilder unspecifiedBuilder = null;
+    boolean unspecifiedSign = false;
+    boolean unspecifiedEncrypt = false;
+
+    if (this.spSignCredential != null) {
+      keyDescriptors.add(KeyDescriptorBuilder.builder()
+          .use(UsageType.SIGNING)
+          .certificate(this.spSignCredential.getCertificate())
+          .build());
+      if (this.spFutureSignCertificate != null) {
+        keyDescriptors.add(KeyDescriptorBuilder.builder()
+            .use(UsageType.SIGNING)
+            .certificate(this.spFutureSignCertificate)
+            .build());
+      }
+    }
+    else if (this.spDefaultCredential != null) {
+      unspecifiedSign = true;
+      unspecifiedBuilder = KeyDescriptorBuilder.builder()
+          .certificate(this.spDefaultCredential.getCertificate());
+    }
+    else if (this.signCredential != null) {
+      keyDescriptors.add(KeyDescriptorBuilder.builder()
+          .use(UsageType.SIGNING)
+          .certificate(this.signCredential.getCertificate())
+          .build());
+      if (this.futureSignCertificate != null) {
+        keyDescriptors.add(KeyDescriptorBuilder.builder()
+            .use(UsageType.SIGNING)
+            .certificate(this.futureSignCertificate)
+            .build());
+      }
+    }
+    else if (this.defaultCredential != null) {
+      unspecifiedSign = true;
+      unspecifiedBuilder = KeyDescriptorBuilder.builder()
+          .certificate(this.defaultCredential.getCertificate());
+    }
+
+    if (this.spEncryptCredential != null) {
+      keyDescriptors.add(KeyDescriptorBuilder.builder()
+          .use(UsageType.ENCRYPTION)
+          .certificate(this.spEncryptCredential.getCertificate())
+          .encryptionMethodsExt(this.createEncryptionMethods(encryptionMethods))
+          .build());
+    }
+    else if (this.spDefaultCredential != null) {
+      unspecifiedEncrypt = true;
+      if (unspecifiedBuilder == null) {
+        KeyDescriptorBuilder.builder()
+            .certificate(this.spDefaultCredential.getCertificate());
+
+      }
+      unspecifiedBuilder
+          .encryptionMethodsExt(this.createEncryptionMethods(encryptionMethods));
+    }
+    else if (this.encryptCredential != null) {
+      keyDescriptors.add(KeyDescriptorBuilder.builder()
+          .use(UsageType.ENCRYPTION)
+          .certificate(this.encryptCredential.getCertificate())
+          .encryptionMethodsExt(this.createEncryptionMethods(encryptionMethods))
+          .build());
+    }
+    else if (this.defaultCredential != null) {
+      unspecifiedEncrypt = true;
+      if (unspecifiedBuilder == null) {
+        KeyDescriptorBuilder.builder()
+            .certificate(this.defaultCredential.getCertificate());
+
+      }
+      unspecifiedBuilder
+          .encryptionMethodsExt(this.createEncryptionMethods(encryptionMethods));
+    }
+
+    if (unspecifiedBuilder != null) {
+      if (unspecifiedSign && !unspecifiedEncrypt) {
+        unspecifiedBuilder.use(UsageType.SIGNING);
+      }
+      else if (!unspecifiedSign && unspecifiedEncrypt) {
+        unspecifiedBuilder.use(UsageType.ENCRYPTION);
+      }
+      else {
+        unspecifiedBuilder.use(UsageType.UNSPECIFIED);
+      }
+      keyDescriptors.add(unspecifiedBuilder.build());
+    }
+
+    return keyDescriptors;
+  }
+
+  private List<EncryptionMethod> createEncryptionMethods(
+      final List<MetadataConfigurationProperties.EncryptionMethod> encryptionMethods) {
+
+    if (encryptionMethods != null && !encryptionMethods.isEmpty()) {
+      return encryptionMethods.stream()
+          .filter(e -> StringUtils.hasText(e.getAlgorithm()))
+          .map(e -> {
+            final EncryptionMethodBuilder builder = EncryptionMethodBuilder.builder()
+                .algorithm(e.getAlgorithm());
+
+            if (e.getKeySize() != null) {
+              builder.keySize(e.getKeySize());
+            }
+            if (e.getOaepParams() != null) {
+              builder.oAEPparams(e.getOaepParams());
+            }
+            final EncryptionMethod em = builder.build();
+
+            if (StringUtils.hasText(e.getDigestMethod())) {
+              final DigestMethod dm = DigestMethodBuilder.digestMethod(e.getDigestMethod());
+              em.getUnknownXMLObjects().add(dm);
+            }
+            return em;
+          })
+          .toList();
+    }
+    else {
+      return null;
+    }
+  }
+
+  /**
    * Gets the metadata signing credential.
-   * 
+   *
    * @return the {@link PkiCredential}
    * @throws IllegalArgumentException if no credential is found
    */
   public PkiCredential getSpMetadataSigningCredential() {
-    return List.of(this.spMetadataSignCredential, this.spDefaultCredential,
-        this.metadataSignCredential, this.defaultCredential, this.spSignCredential, this.signCredential)
-        .stream()
-        .filter(c -> c != null)
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("No metadata signing credential is available"));
+    final PkiCredential[] order = { this.spMetadataSignCredential, this.spDefaultCredential,
+        this.metadataSignCredential, this.defaultCredential, this.spSignCredential, this.signCredential };
+    for (final PkiCredential c : order) {
+      if (c != null) {
+        return c;
+      }
+    }
+    throw new IllegalArgumentException("No metadata signing credential is available");
   }
 
   /**
    * Gets the future SP signing certificate.
-   * 
+   *
    * @return the certificate or {@code null}
    */
   public X509Certificate getSpFutureSigningCertificate() {

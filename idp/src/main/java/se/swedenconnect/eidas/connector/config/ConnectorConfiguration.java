@@ -15,16 +15,11 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.util.Objects;
-
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.common.xml.SAMLConstants;
-import org.opensaml.saml.saml2.metadata.EncryptionMethod;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.Extensions;
 import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
-import org.opensaml.saml.saml2.metadata.KeyDescriptor;
-import org.opensaml.security.credential.UsageType;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
@@ -67,7 +62,7 @@ import se.swedenconnect.spring.saml.idp.settings.IdentityProviderSettings;
 public class ConnectorConfiguration {
 
   private final ConnectorConfigurationProperties connectorProperties;
-  
+
   private final IdentityProviderSettings idpSettings;
 
   /**
@@ -162,31 +157,6 @@ public class ConnectorConfiguration {
         ssoDescriptor.setExtensions(extensions);
       }
       extensions.getUnknownXMLObjects().add(rps);
-
-      KeyDescriptor encryption = null;
-      for (final KeyDescriptor kd : ssoDescriptor.getKeyDescriptors()) {
-        if (Objects.equals(UsageType.ENCRYPTION, kd.getUse())) {
-          encryption = kd;
-          break;
-        }
-        if (kd.getUse() == null || Objects.equals(UsageType.UNSPECIFIED, kd.getUse())) {
-          encryption = kd;
-        }
-      }
-      if (encryption != null) {
-        final String[] algs = { "http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p",
-            "http://www.w3.org/2009/xmlenc11#aes256-gcm",
-            "http://www.w3.org/2009/xmlenc11#aes192-gcm",
-            "http://www.w3.org/2009/xmlenc11#aes128-gcm"
-        };
-        for (final String alg : algs) {
-          final EncryptionMethod method =
-              (EncryptionMethod) XMLObjectSupport.buildXMLObject(EncryptionMethod.DEFAULT_ELEMENT_NAME);
-          method.setAlgorithm(alg);
-          encryption.getEncryptionMethods().add(method);
-        }
-      }
-
     };
   }
 
@@ -227,7 +197,7 @@ public class ConnectorConfiguration {
 
   /**
    * Gets an {@link EntityCategoryRegistry} bean.
-   * 
+   *
    * @return an {@link EntityCategoryRegistry}
    */
   @Bean
@@ -237,14 +207,14 @@ public class ConnectorConfiguration {
 
   /**
    * Creates a {@link AttributeMappingService} that helps us map between Swedish eID attributes and eIDAS attributes.
-   * 
+   *
    * @return a {@link AttributeMappingService}
    */
   @Bean
   AttributeMappingService attributeMappingService() {
     return new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
   }
-  
+
   @Bean
   EidasAuthenticationProvider eidasAuthenticationProvider(final EuMetadataProvider euMetadataProvider) {
     return new EidasAuthenticationProvider(this.idpSettings.getBaseUrl(),
@@ -253,7 +223,7 @@ public class ConnectorConfiguration {
         this.connectorProperties.getIdp().getSupportedLoas(),
         this.connectorProperties.getIdp().getEntityCategories(),
         this.connectorProperties.getIdp().getPingWhitelist());
-        
+
   }
-  
+
 }

@@ -53,12 +53,9 @@ import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
 @Slf4j
 public class EidasAuthenticationController extends AbstractAuthenticationController<EidasAuthenticationProvider> {
 
-  /** The path for publishing the SP metadata. */
-  public static final String METADATA_PATH = "/metadata/sp";
-
   /** The path for receiving eIDAS assertions. */
   public static final String ASSERTION_CONSUMER_PATH = "/extauth/saml2/post";
-  
+
   /** Symbolic name for the action parameter value of "cancel". */
   public static final String ACTION_CANCEL = "cancel";
 
@@ -71,7 +68,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   @Autowired
   @Setter
   private UiLanguageHandler uiLanguageHandler;
-  
+
   /** Factory for UI model. */
   @Autowired
   @Setter
@@ -148,24 +145,24 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       // Get a listing of all countries to display ...
       //
       final EidasCountryHandler.SelectableCountries selectableCountries = this.countryHandler.getSelectableCountries(token);
-      
+
       if (!selectableCountries.displaySelection()) {
         // If request contained only one country, we skip the country selection ...
         return this.initiateAuthentication(request, response, selectableCountries.countries().get(0).country());
       }
-      
+
       final ModelAndView modelAndView = new ModelAndView("country-select");
       modelAndView.addObject("pingFlag", this.provider.isPingRequest(token));
       modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
       modelAndView.addObject("ui", this.eidasUiModelFactory.createUiModel(token, selectableCountries.countries()));
-      
+
       return modelAndView;
     }
     catch (final Saml2ErrorStatusException e) {
       return this.complete(request, e);
     }
   }
-  
+
   /**
    * Controller method that initiates the authentication against the foreign Proxy Service ending with an authentication
    * being sent.
@@ -179,25 +176,25 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   public ModelAndView initiateAuthentication(
       final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
       @RequestParam(name = "selectedCountry") final String selectedCountry) {
-    
+
     if (ACTION_CANCEL.equals(selectedCountry)) {
       log.info("User cancelled country selection - aborting authentication");
       return this.cancel(httpRequest);
     }
-    
+
     try {
       log.debug("User selected country '{}'", selectedCountry);
-      
+
       // Generate AuthnRequest
       //
       RequestHttpObject<AuthnRequest> authnRequest = this.getProvider().generateAuthnRequest(
           selectedCountry, this.getInputToken(httpRequest).getAuthnInputToken());
-      
+
       // Save the country as "selected" ...
       //
       this.selectedCountryCookieGenerator.addCookie(httpResponse, selectedCountry);
       this.selectedCountrySessionCookieGenerator.addCookie(httpResponse, selectedCountry);
-      
+
       // POST or redirect ...
       //
       if (SAMLConstants.POST_METHOD.equals(authnRequest.getMethod())) {
@@ -214,6 +211,6 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       return this.complete(httpRequest, e);
     }
   }
-  
+
 
 }
