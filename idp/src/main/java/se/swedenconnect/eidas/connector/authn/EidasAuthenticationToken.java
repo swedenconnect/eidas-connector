@@ -15,86 +15,208 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
 
-import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.Assertion;
+import org.opensaml.saml.saml2.core.AuthnContext;
+import org.opensaml.saml.saml2.core.AuthnContextClassRef;
+import org.opensaml.saml.saml2.core.AuthnStatement;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
+import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
-import se.swedenconnect.spring.saml.idp.utils.SerializableOpenSamlObject;
+import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequest;
+import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
+import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
+import se.swedenconnect.opensaml.saml2.response.ResponseProcessingResult;
+import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
+import se.swedenconnect.spring.saml.idp.attributes.eidas.EidasAttributeValue;
 
 /**
- * An {@link Authentication} object representing the response from the foreign country.
+ * An {@link Authentication} object representing a validated response from the foreign country.
  *
  * @author Martin Lindström
  */
+@Slf4j
 public class EidasAuthenticationToken extends AbstractAuthenticationToken {
 
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
-  /** The Base64 encoded response message. */
-  private final String response;
+  /** The ID for the response. */
+  private final String responseId;
 
-  /** The relay state. */
-  private final String relayState;
+  /** The InResponseTo attribute of the response. */
+  private final String inResponseTo;
 
-  /** The AuthnRequest corresponding to this response. */
-  private final SerializableOpenSamlObject<AuthnRequest> authnRequest;
+  /** The issue instant of the response. */
+  private final Instant responseIssueInstant;
+
+  /** The SAML assertion. */
+  private final SerializableOpenSamlObject<Assertion> assertion;
+
+  /** Attributes from the assertion. */
+  private final List<UserAttribute> attributes;
+
+  /** The corresponding request. */
+  private final EidasAuthnRequest authnRequest;
 
   /**
    * Constructor.
    *
-   * @param response the Base64 encoded response message
-   * @param relayState the relay state (may be {@code null})
-   * @param authnRequest the {@link AuthnRequest} corresponding to this response
+   * @param result result of response processing
    */
-  public EidasAuthenticationToken(final String response, final String relayState, final AuthnRequest authnRequest) {
+  public EidasAuthenticationToken(final ResponseProcessingResult result, final EidasAuthnRequest authnRequest) {
     super(Collections.emptyList());
-    this.response = Objects.requireNonNull(response, "response must not be null");
-    this.relayState = relayState;
-    this.authnRequest = new SerializableOpenSamlObject<AuthnRequest>(
-        Objects.requireNonNull(authnRequest, "authnRequest must not be null"));
+    Objects.requireNonNull(result, "result must not be null");
+    this.responseId = result.getResponseId();
+    this.inResponseTo = result.getInResponseTo();
+    this.responseIssueInstant = result.getIssueInstant();
+    this.assertion = new SerializableOpenSamlObject<>(result.getAssertion());
+    this.authnRequest = Objects.requireNonNull(authnRequest, "authnRequest must not be null");
+
+    this.attributes = new ArrayList<>();
+    result.getAttributes().stream().forEach(a -> {
+      try {
+        this.attributes.add(new UserAttribute(a));
+      }
+      catch (final Exception e) {
+        log.warn("Received {} attribute that could not be processed", a.getName(), e);
+      }
+    });
+
   }
 
   /**
-   * Gets the Base64 encoded response message
+   * Gets the ID for the response.
    *
-   * @return the response message
+   * @return the ID for the response
    */
-  public String getResponse() {
-    return this.response;
+  public String getResponseId() {
+    return this.responseId;
   }
 
   /**
-   * Gets the relay state.
+   * Gets the InResponseTo attribute of the response.
    *
-   * @return the relay state, or {@code null} if not available
+   * @return the InResponseTo attribute
    */
-  public String getRelayState() {
-    return this.relayState;
+  public String getInResponseTo() {
+    return this.inResponseTo;
   }
 
   /**
-   * Gets the {@link AuthnRequest} corresponding to this response.
+   * Gets the issue instant of the response message.
    *
-   * @return an {@link AuthnRequest}
+   * @return the issue instant
    */
-  public AuthnRequest getAuthnRequest() {
-    return this.authnRequest.get();
+  public Instant getResponseIssueInstant() {
+    return this.responseIssueInstant;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public Object getCredentials() {
-    return this.getResponse();
+  /**
+   * Gets the SAML {@link Assertion}.
+   *
+   * @return an {@link Assertion}
+   */
+  public Assertion getAssertion() {
+    return this.assertion.get();
+  }
+
+  /**
+   * Returns a read-only list of the attributes received.
+   *
+   * @return attribute list
+   */
+  public List<UserAttribute> getAttributes() {
+    return Collections.unmodifiableList(this.attributes);
+  }
+
+  /**
+   * Adds an attribute.
+   *
+   * @param attribute the attribute to add
+   */
+  public void addAttribute(final UserAttribute attribute) {
+    if (attribute != null) {
+      this.attributes.add(attribute);
+    }
+  }
+
+  /**
+   * Gets the attribute matching the given attribute name.
+   *
+   * @param attributeName the attribute name
+   * @return the {@link UserAttribute} or {@code null} if not available
+   */
+  public UserAttribute getAttribute(final String attributeName) {
+    return this.attributes.stream()
+        .filter(a -> Objects.equals(attributeName, a.getId()))
+        .findFirst()
+        .orElse(null);
+  }
+
+  /**
+   * Gets the authentication instant from the assertion.
+   *
+   * @return authentication instant
+   */
+  public Instant getAuthnInstant() {
+    return Optional.ofNullable(this.assertion.get())
+        .map(Assertion::getAuthnStatements)
+        .filter(Predicate.not(List::isEmpty))
+        .map(as -> as.get(0))
+        .map(AuthnStatement::getAuthnInstant)
+        .orElseGet(() -> this.assertion.get().getIssueInstant());
+  }
+
+  /**
+   * Gets the authentication contect class reference URI from the assertion.
+   *
+   * @return the authn context class ref URI or {@code null} if it is not present in the assertion
+   */
+  public String getAuthnContextClassRef() {
+    return Optional.ofNullable(this.assertion.get())
+        .map(Assertion::getAuthnStatements)
+        .filter(Predicate.not(List::isEmpty))
+        .map(as -> as.get(0))
+        .map(AuthnStatement::getAuthnContext)
+        .map(AuthnContext::getAuthnContextClassRef)
+        .map(AuthnContextClassRef::getURI)
+        .orElse(null);
+  }
+
+  /**
+   * Gets the authentication request object that corresponds to this token.
+   *
+   * @return an {@link EidasAuthnRequest}
+   */
+  public EidasAuthnRequest getAuthnRequest() {
+    return this.authnRequest;
   }
 
   /** {@inheritDoc} */
   @Override
   public Object getPrincipal() {
-    return "saml-response";
+    return Optional.ofNullable(this.getAttribute(AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME))
+        .map(UserAttribute::getValues)
+        .filter(Predicate.not(List::isEmpty))
+        .map(v -> v.get(0))
+        .map(EidasAttributeValue.class::cast)
+        .map(EidasAttributeValue::getValueAsString)
+        .orElseGet(() -> "unknown");
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Object getCredentials() {
+    return this.getAssertion();
   }
 
 }

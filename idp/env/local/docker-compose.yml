@@ -1,0 +1,30 @@
+version: '3.9'
+name: connector-env-local
+networks:
+  idp:
+    name: eidas
+
+services:
+  redis-stack:
+    image: redis/redis-stack:latest
+    ports:
+      - 6379:6379
+      - 8001:8001
+    networks:
+      - eidas
+    volumes:
+      - ./redis-certificates:/tls
+    environment:
+      - REDIS_ARGS=--requirepass supersecret --tls-port 6379 --port 0 --tls-cert-file /tls/server.crt --tls-key-file /tls/server.key --tls-ca-cert-file /tls/ca.crt
+      
+  proxy-service:
+    image: se-proxy-service
+    ports:
+      - 8449:8443
+    networks:
+      - eidas
+    volumes:
+    - ./proxy-service-conf:/opt/config
+    environment:
+      JAVA_OPTS: "-Dspring.config.additional-location=/opt/config/ -Dspring.profiles.active=mock"
+      

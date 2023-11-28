@@ -15,11 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import org.opensaml.core.xml.util.XMLObjectSupport;
-import org.opensaml.saml.common.xml.SAMLConstants;
+import java.util.List;
+
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import org.opensaml.saml.saml2.metadata.Extensions;
-import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,23 +25,26 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import se.swedenconnect.eidas.attributes.AttributeMappingService;
-import se.swedenconnect.eidas.attributes.DefaultAttributeMappingService;
-import se.swedenconnect.eidas.attributes.conversion.AttributeConverterConstants;
+import se.swedenconnect.eidas.connector.authn.EidasAuthenticationController;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
 import se.swedenconnect.eidas.connector.authn.metadata.DefaultEuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
+import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequestGenerator;
+import se.swedenconnect.eidas.connector.authn.sp.EidasResponseProcessor;
+import se.swedenconnect.eidas.connector.authn.sp.EidasSpMetadataController;
+import se.swedenconnect.eidas.connector.prid.generator.PridGenBase64Eidas;
+import se.swedenconnect.eidas.connector.prid.generator.PridGenColResistEidas;
+import se.swedenconnect.eidas.connector.prid.generator.PridGenDefaultEidas;
+import se.swedenconnect.eidas.connector.prid.generator.PridGenTestEidas;
+import se.swedenconnect.eidas.connector.prid.service.PridService;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
-import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
-import se.swedenconnect.opensaml.sweid.saml2.authn.psc.RequestedPrincipalSelection;
-import se.swedenconnect.opensaml.sweid.saml2.authn.psc.build.MatchValueBuilder;
-import se.swedenconnect.opensaml.sweid.saml2.authn.psc.build.RequestedPrincipalSelectionBuilder;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryRegistry;
 import se.swedenconnect.spring.saml.idp.config.configurers.Saml2IdpConfigurerAdapter;
 import se.swedenconnect.spring.saml.idp.extensions.SignatureMessagePreprocessor;
@@ -77,24 +78,6 @@ public class ConnectorConfiguration {
   }
 
   /**
-   * Gets a {@link SecurityFilterChain} for the actuator endpoints.
-   *
-   * @param http the HttpSecurity object
-   * @return a SecurityFilterChain
-   * @throws Exception for config errors
-   */
-  @Bean
-  @Order(2)
-  SecurityFilterChain actuatorSecurityFilterChain(final HttpSecurity http) throws Exception {
-
-    http.authorizeHttpRequests((authorize) -> authorize
-        .requestMatchers(EndpointRequest.toAnyEndpoint())
-        .permitAll());
-
-    return http.build();
-  }
-
-  /**
    * Gets a default {@link SecurityFilterChain} protecting other resources.
    * <p>
    * The chain with order 1 is the Spring Security chain for the SAML IdP ...
@@ -105,16 +88,26 @@ public class ConnectorConfiguration {
    * @throws Exception for config errors
    */
   @Bean
-  @Order(3)
+  @Order(2)
   SecurityFilterChain defaultSecurityFilterChain(final HttpSecurity http) throws Exception {
     http
-        .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-        .cors(Customizer.withDefaults())
+        .securityContext(sc -> sc.requireExplicitSave(false))
+//        .csrf(csrf -> {
+//          csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+//          final CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+//          requestHandler.setCsrfRequestAttributeName(null);
+//          csrf.csrfTokenRequestHandler(requestHandler);
+//        })
+        .csrf(c -> c.ignoringRequestMatchers(EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**"))
         .authorizeHttpRequests((authorize) -> authorize
-            .antMatchers(EidasAuthenticationProvider.AUTHN_PATH + "/**",
+            .requestMatchers(HttpMethod.POST, EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**").permitAll()
+            .requestMatchers(EidasAuthenticationProvider.AUTHN_PATH + "/**",
                 EidasAuthenticationProvider.RESUME_PATH + "/**")
             .permitAll()
-            .antMatchers("/images/**", "/error", "/js/**", "/scripts/**", "/webjars/**", "/css/**").permitAll()
+            .requestMatchers(HttpMethod.GET, EidasSpMetadataController.METADATA_PATH + "/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/images/**", "/error", "/js/**", "/scripts/**", "/webjars/**", "/css/**")
+            .permitAll()
+            .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
             .anyRequest().denyAll());
 
     return http.build();
@@ -129,12 +122,12 @@ public class ConnectorConfiguration {
   @Bean
   Saml2IdpConfigurerAdapter samlIdpSettingsAdapter(/* final SignatureMessagePreprocessor signMessageProcessor */) {
     return (http, configurer) -> {
-      configurer
+//      configurer
 //          .authnRequestProcessor(c -> c.authenticationProvider(
 //              pc -> pc.signatureMessagePreprocessor(signMessageProcessor)))
-          .idpMetadataEndpoint(mdCustomizer -> {
-            mdCustomizer.entityDescriptorCustomizer(this.metadataCustomizer());
-          });
+//          .idpMetadataEndpoint(mdCustomizer -> {
+//            mdCustomizer.entityDescriptorCustomizer(this.metadataCustomizer());
+//          });
     };
   }
 
@@ -142,21 +135,21 @@ public class ConnectorConfiguration {
   //
   private Customizer<EntityDescriptor> metadataCustomizer() {
     return e -> {
-      final RequestedPrincipalSelection rps = RequestedPrincipalSelectionBuilder.builder()
-          .matchValues(MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_PRID).build(),
-              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER).build(),
-              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER).build(),
-              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER)
-                  .build())
-          .build();
-
-      final IDPSSODescriptor ssoDescriptor = e.getIDPSSODescriptor(SAMLConstants.SAML20P_NS);
-      Extensions extensions = ssoDescriptor.getExtensions();
-      if (extensions == null) {
-        extensions = (Extensions) XMLObjectSupport.buildXMLObject(Extensions.DEFAULT_ELEMENT_NAME);
-        ssoDescriptor.setExtensions(extensions);
-      }
-      extensions.getUnknownXMLObjects().add(rps);
+//      final RequestedPrincipalSelection rps = RequestedPrincipalSelectionBuilder.builder()
+//          .matchValues(MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_PRID).build(),
+//              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER).build(),
+//              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER).build(),
+//              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER)
+//                  .build())
+//          .build();
+//
+//      final IDPSSODescriptor ssoDescriptor = e.getIDPSSODescriptor(SAMLConstants.SAML20P_NS);
+//      Extensions extensions = ssoDescriptor.getExtensions();
+//      if (extensions == null) {
+//        extensions = (Extensions) XMLObjectSupport.buildXMLObject(Extensions.DEFAULT_ELEMENT_NAME);
+//        ssoDescriptor.setExtensions(extensions);
+//      }
+//      extensions.getUnknownXMLObjects().add(rps);
     };
   }
 
@@ -205,25 +198,33 @@ public class ConnectorConfiguration {
     return EntityCategoryHelper.getDefaultEntityCategoryRegistry();
   }
 
-  /**
-   * Creates a {@link AttributeMappingService} that helps us map between Swedish eID attributes and eIDAS attributes.
-   *
-   * @return a {@link AttributeMappingService}
-   */
   @Bean
-  AttributeMappingService attributeMappingService() {
-    return new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
-  }
-
-  @Bean
-  EidasAuthenticationProvider eidasAuthenticationProvider(final EuMetadataProvider euMetadataProvider) {
+  EidasAuthenticationProvider eidasAuthenticationProvider(
+      final EidasAuthnRequestGenerator authnRequestGenerator,
+      final EidasResponseProcessor eidasResponseProcessor,
+      final EuMetadataProvider euMetadataProvider,
+      final AttributeMappingService attributeMappingService,
+      final PridService pridService) {
     return new EidasAuthenticationProvider(this.idpSettings.getBaseUrl(),
-        null, /* response processor */
+        authnRequestGenerator,
+        eidasResponseProcessor,
         euMetadataProvider,
+        attributeMappingService,
+        pridService,
         this.connectorProperties.getIdp().getSupportedLoas(),
         this.connectorProperties.getIdp().getEntityCategories(),
         this.connectorProperties.getIdp().getPingWhitelist());
+  }
 
+  @Bean
+  PridService pridService() {
+    return new PridService(
+        this.connectorProperties.getPrid().getPolicyResource(),
+        List.of(
+            new PridGenDefaultEidas(this.connectorProperties.getCountry()),
+            new PridGenColResistEidas(this.connectorProperties.getCountry()),
+            new PridGenBase64Eidas(this.connectorProperties.getCountry()),
+            new PridGenTestEidas(this.connectorProperties.getCountry())));
   }
 
 }

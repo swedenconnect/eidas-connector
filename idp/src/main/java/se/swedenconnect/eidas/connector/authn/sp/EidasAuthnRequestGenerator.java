@@ -26,14 +26,14 @@ import org.opensaml.saml.saml2.core.Scoping;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 
 import lombok.extern.slf4j.Slf4j;
-import se.litsec.eidas.opensaml.ext.RequestedAttribute;
-import se.litsec.eidas.opensaml.ext.RequestedAttributes;
-import se.litsec.eidas.opensaml.ext.SPType;
-import se.litsec.eidas.opensaml.ext.SPTypeEnumeration;
 import se.swedenconnect.eidas.attributes.AttributeMappingService;
 import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
 import se.swedenconnect.eidas.connector.authn.metadata.MetadataFunctions;
 import se.swedenconnect.eidas.connector.config.EidasAuthenticationProperties;
+import se.swedenconnect.opensaml.eidas.ext.RequestedAttribute;
+import se.swedenconnect.opensaml.eidas.ext.RequestedAttributes;
+import se.swedenconnect.opensaml.eidas.ext.SPType;
+import se.swedenconnect.opensaml.eidas.ext.SPTypeEnumeration;
 import se.swedenconnect.opensaml.saml2.core.build.AuthnRequestBuilder;
 import se.swedenconnect.opensaml.saml2.core.build.ExtensionsBuilder;
 import se.swedenconnect.opensaml.saml2.core.build.ScopingBuilder;
@@ -49,7 +49,7 @@ import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationIn
 
 /**
  * An {@link AuthnRequestGenerator} for generating {@link AuthnRequest}s for eIDAS.
- * 
+ *
  * @author Martin Lindström
  */
 @Slf4j
@@ -69,7 +69,7 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
 
   /**
    * Constructor.
-   * 
+   *
    * @param spMetadata the SP metadata
    * @param signatureCredential the signature credential
    * @param attributeMappings attribute mapping service
@@ -86,14 +86,15 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
 
   /**
    * Generates an {@link AuthnRequest} to be sent to the foreign IdP.
-   * 
+   *
    * @param country the country metadata
    * @param token the input SAML token
+   * @param relayState the RelayState to use
    * @return a {@link RequestHttpObject}
    * @throws RequestGenerationException for errors generating the {@code AuthnRequest}
    */
   public RequestHttpObject<AuthnRequest> generateAuthnRequest(final CountryMetadata country,
-      final Saml2UserAuthenticationInputToken token) throws RequestGenerationException {
+      final Saml2UserAuthenticationInputToken token, final String relayState) throws RequestGenerationException {
 
     // Is this a public or private SP?
     //
@@ -104,7 +105,7 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
 
     // Map requested attributes from Swedish eID format to eIDAS format ...
     //
-    final List<se.litsec.eidas.opensaml.ext.RequestedAttribute> requestedAttributes =
+    final List<se.swedenconnect.opensaml.eidas.ext.RequestedAttribute> requestedAttributes =
         this.attributeMappings.toEidasRequestedAttributes(token.getAuthnRequirements().getRequestedAttributes(), true);
 
     // Set up a context ...
@@ -115,8 +116,7 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
 
     // Generate AuthnRequest ...
     //
-    return this.generateAuthnRequest(
-        country.getEntityDescriptor(), token.getAuthnRequestToken().getRelayState(), context);
+    return this.generateAuthnRequest(country.getEntityDescriptor(), relayState, context);
   }
 
   /**
@@ -165,7 +165,7 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
   /** {@inheritDoc} */
   @Override
   protected List<String> getAssuranceCertificationUris(final EntityDescriptor idpMetadata,
-      final AuthnRequestGeneratorContext context) throws RequestGenerationException {    
+      final AuthnRequestGeneratorContext context) throws RequestGenerationException {
     return MetadataFunctions.getAssuranceLevels(idpMetadata);
   }
 
@@ -178,7 +178,7 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
   /**
    * Some countries can not handle the Scoping element. This method adds the list of countries for which we should skip
    * Scoping.
-   * 
+   *
    * @param skipScopingElementFor list of countries
    */
   public void setSkipScopingElementFor(final List<String> skipScopingElementFor) {

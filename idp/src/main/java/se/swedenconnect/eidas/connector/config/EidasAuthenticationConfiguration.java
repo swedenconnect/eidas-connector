@@ -15,7 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -25,20 +27,29 @@ import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.ext.saml2alg.DigestMethod;
 import org.opensaml.saml.ext.saml2alg.SigningMethod;
 import org.opensaml.saml.ext.saml2mdattr.EntityAttributes;
+import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.metadata.ContactPersonTypeEnumeration;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.Extensions;
 import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
+import org.opensaml.security.credential.Credential;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
-import se.litsec.eidas.opensaml.ext.NodeCountry;
+import net.shibboleth.shared.component.ComponentInitializationException;
+import se.swedenconnect.eidas.attributes.AttributeMappingService;
+import se.swedenconnect.eidas.attributes.DefaultAttributeMappingService;
+import se.swedenconnect.eidas.attributes.conversion.AttributeConverterConstants;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationController;
+import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
+import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequestGenerator;
+import se.swedenconnect.eidas.connector.authn.sp.EidasResponseProcessor;
 import se.swedenconnect.opensaml.common.utils.LocalizedString;
+import se.swedenconnect.opensaml.eidas.ext.NodeCountry;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.EntityDescriptorContainer;
 import se.swedenconnect.opensaml.saml2.metadata.EntityDescriptorUtils;
@@ -50,6 +61,9 @@ import se.swedenconnect.opensaml.saml2.metadata.build.EntityDescriptorBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.OrganizationBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.SPSSODescriptorBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.SigningMethodBuilder;
+import se.swedenconnect.opensaml.saml2.response.replay.MessageReplayChecker;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.SAMLObjectDecrypter;
+import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.opensaml.OpenSamlCredential;
 
 /**
@@ -84,6 +98,79 @@ public class EidasAuthenticationConfiguration {
       final ConnectorCredentials credentials, final BuildProperties buildProperties) {
     this.properties = Objects.requireNonNull(properties, "properties must not be null");
     this.credentials = Objects.requireNonNull(credentials, "credentials must not be null");
+  }
+
+  /**
+   * Gets the {@link EidasAuthnRequestGenerator} that we use to generate {@link AuthnRequest} messages with.
+   *
+   * @param metadata the SP metadata
+   * @param attributeMappingService attribute mappings
+   * @return {@link EidasAuthnRequestGenerator}
+   */
+  @Bean
+  EidasAuthnRequestGenerator eidasAuthnRequestGenerator(
+      @Qualifier("connector.sp.metadata") final EntityDescriptor metadata,
+      final AttributeMappingService attributeMappingService) {
+
+    final EidasAuthnRequestGenerator generator = new EidasAuthnRequestGenerator(
+        metadata, this.credentials.getSpSigningCredential(), attributeMappingService,
+        this.properties.getEidas().getProviderName());
+    generator.setSkipScopingElementFor(this.properties.getEidas().getSkipScopingFor());
+
+    return generator;
+  }
+
+  /**
+   * Creates a {@link AttributeMappingService} that helps us map between Swedish eID attributes and eIDAS attributes.
+   *
+   * @return a {@link AttributeMappingService}
+   */
+  @Bean
+  AttributeMappingService attributeMappingService() {
+    return new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
+  }
+
+  /**
+   * Sets up a {@link SAMLObjectDecrypter} for use when decrypting assertions.
+   *
+   * @return a {@link SAMLObjectDecrypter}
+   */
+  @Bean
+  SAMLObjectDecrypter samlObjectDecrypter() {
+    final List<PkiCredential> credentials = this.credentials.getSpEncryptCredentials();
+    final boolean pkcs11Mode = credentials.get(0).isHardwareCredential();
+    final List<Credential> creds = new ArrayList<>();
+    credentials.stream().forEach(c -> {
+      if (c instanceof OpenSamlCredential) {
+        creds.add((OpenSamlCredential) c);
+      }
+      else {
+        creds.add(new OpenSamlCredential(c));
+      }
+    });
+    final SAMLObjectDecrypter decrypter = new SAMLObjectDecrypter(creds);
+    decrypter.setPkcs11Workaround(pkcs11Mode);
+
+    return decrypter;
+  }
+
+  /**
+   * Creates a {@link EidasResponseProcessor}.
+   *
+   * @param euMetadataProvider the EU metadata
+   * @param decrypter object decrypter
+   * @param messageReplayChecker the message replay checker
+   * @return a {@link EidasResponseProcessor}.
+   * @throws ComponentInitializationException for init errors
+   */
+  @Bean
+  EidasResponseProcessor eidasResponseProcessor(final EuMetadataProvider euMetadataProvider,
+      final SAMLObjectDecrypter decrypter, final MessageReplayChecker messageReplayChecker)
+      throws ComponentInitializationException {
+    final EidasResponseProcessor processor = new EidasResponseProcessor(
+        euMetadataProvider.getProvider().getMetadataResolver(), decrypter, messageReplayChecker);
+    processor.initialize();
+    return processor;
   }
 
   /**
@@ -152,7 +239,7 @@ public class EidasAuthenticationConfiguration {
         .build());
 
     // Protocol version
-    if (mprop.getProtocolVersions() != null && !mprop.getProtocolVersions().isEmpty()) {
+    if (!mprop.getProtocolVersions().isEmpty()) {
       entityAttributesBuilder.object().getAttributes().removeIf(a -> PROTOCOL_VERSION_NAME.equals(a.getName()));
       entityAttributesBuilder.attribute(AttributeBuilder.builder(PROTOCOL_VERSION_NAME)
           .value(mprop.getProtocolVersions())
@@ -193,7 +280,7 @@ public class EidasAuthenticationConfiguration {
 
     // Node country
     final NodeCountry nodeCountry = (NodeCountry) XMLObjectSupport.buildXMLObject(NodeCountry.DEFAULT_ELEMENT_NAME);
-    nodeCountry.setNodeCountry(mprop.getNodeCountry());
+    nodeCountry.setNodeCountry(this.properties.getCountry());
     roleExtensions.getUnknownXMLObjects().removeIf(o -> NodeCountry.class.isAssignableFrom(o.getClass()));
     roleExtensions.getUnknownXMLObjects().add(nodeCountry);
 

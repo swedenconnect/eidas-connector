@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.attributes.conversion;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,12 +26,15 @@ import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.saml.saml2.core.Attribute;
 
 import lombok.extern.slf4j.Slf4j;
-import se.litsec.eidas.opensaml.ext.attributes.EidasAttributeValueType;
-import se.litsec.eidas.opensaml.ext.attributes.TransliterationStringType;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplate;
+import se.swedenconnect.opensaml.eidas.ext.attributes.EidasAttributeValueType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.TransliterationStringType;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeBuilder;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeTemplate;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
+import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
+import se.swedenconnect.spring.saml.idp.attributes.eidas.EidasAttributeValue;
+import se.swedenconnect.spring.saml.idp.attributes.eidas.TransliterationString;
 
 /**
  * Default implementation for the {@link AttributeConverter} interface.
@@ -145,7 +149,7 @@ public class DefaultAttributeConverter implements AttributeConverter {
   @Override
   public Attribute toSwedishEidAttribute(final Attribute eidasAttribute) {
 
-    final AttributeTemplate template = this.getSwedishEidAttributeTemplate(eidasAttribute);
+    final AttributeTemplate template = this.getSwedishEidAttributeTemplate(eidasAttribute.getName());
 
     if (eidasAttribute.getAttributeValues().isEmpty()) {
       log.info("No attribute value present for eIDAS attribute '{}' - no conversion will be made",
@@ -164,19 +168,36 @@ public class DefaultAttributeConverter implements AttributeConverter {
     }
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public UserAttribute toSwedishEidAttribute(final UserAttribute eidasAttribute) {
+
+    final AttributeTemplate template = this.getSwedishEidAttributeTemplate(eidasAttribute.getId());
+
+    if (eidasAttribute.getValues().isEmpty()) {
+      log.info("No attribute value present for eIDAS attribute '{}' - no conversion will be made",
+          eidasAttribute.getId());
+      return null;
+    }
+    final String stringValue = this.toSwedishEidAttributeValue(eidasAttribute);
+    log.trace("Transformed eIDAS attribute '{}' into Swedish eID attribute '{}' ({})", eidasAttribute.getId(),
+        template.getName(), template.getFriendlyName());
+    return new UserAttribute(template.getName(), template.getFriendlyName(), stringValue);
+  }
+
   /**
    * Gets the {@link AttributeTemplate} that can be used for transforming the supplied eIDAS attribute into a Swedish
    * eID attribute.
    *
-   * @param eidasAttribute the eIDAS attribute
+   * @param eidasAttributeName the eIDAS attribute
    * @return an {@link AttributeTemplate}
    * @throws IllegalArgumentException if no match is found
    */
-  protected AttributeTemplate getSwedishEidAttributeTemplate(final Attribute eidasAttribute) {
-    return Optional.ofNullable(this.getSwedishAttributeTemplate(eidasAttribute.getName()))
+  protected AttributeTemplate getSwedishEidAttributeTemplate(final String eidasAttributeName) {
+    return Optional.ofNullable(this.getSwedishAttributeTemplate(eidasAttributeName))
         .orElseThrow(() -> new IllegalArgumentException("Unsupported attribute conversion"));
   }
-  
+
   /** {@inheritDoc} */
   @Override
   public AttributeTemplate getSwedishAttributeTemplate(final String eidasAttribute) {
@@ -226,6 +247,30 @@ public class DefaultAttributeConverter implements AttributeConverter {
     else {
       log.info("Unsupported eIDAS attribute value type: {}", eidasValue.getElementQName());
       return null;
+    }
+  }
+
+  /**
+   * Extracts a string value from the given eIDAS {@link UserAttribute}.
+   *
+   * @param eidasAttribute the eIDAS attribute
+   * @return the string value
+   */
+  protected String toSwedishEidAttributeValue(final UserAttribute eidasAttribute) {
+    final List<? extends Serializable> values = eidasAttribute.getValues();
+    if (values.get(0) instanceof TransliterationString) {
+      final XMLObject attributeValue = this.toSwedishEidAttributeValue(values.stream()
+          .map(TransliterationString.class::cast)
+          .map(TransliterationString::createXmlObject)
+          .map(XMLObject.class::cast)
+          .toList());
+      return XSString.class.cast(attributeValue).getValue();
+    }
+    else if (values.get(0) instanceof EidasAttributeValue) {
+      return EidasAttributeValue.class.cast(values.get(0)).getValueAsString();
+    }
+    else {
+      return values.get(0).toString();
     }
   }
 

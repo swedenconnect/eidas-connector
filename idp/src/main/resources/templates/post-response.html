@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}">
-<head th:include="fragments/base :: headerFragment">
-  <title id="pageTitle" th:inline="text">[[#{connector.ui.title}]]</title>
+<head th:insert="~{fragments/base :: headerFragment}">
 </head>
 <body onload="document.forms[0].submit()">
   <form method="POST" action="#" th:action="${action}">
@@ -10,7 +9,7 @@
     
     <noscript>
     
-      <div th:replace="fragments/header :: logotype"></div>
+      <div th:replace="~{fragments/header :: logotype}"></div>
   
       <div class="container main">
     
@@ -36,7 +35,7 @@
             
           </div>
           
-          <div th:replace="fragments/footer :: only-copyright"></div>
+          <div th:replace="~{fragments/footer :: only-copyright}"></div>
           
         </div>
       </div>

@@ -23,16 +23,19 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.utilities.java.support.resolver.ResolverException;
+import net.shibboleth.shared.resolver.ResolverException;
 import se.swedenconnect.eidas.connector.OpenSamlTestBase;
 import se.swedenconnect.opensaml.saml2.metadata.provider.FilesystemMetadataProvider;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
+import se.swedenconnect.opensaml.sweid.saml2.authn.psc.RequestedPrincipalSelection;
+import se.swedenconnect.opensaml.sweid.saml2.signservice.dss.EncryptedMessage;
 
 /**
  * Test cases for DefaultEuMetadataProvider.
@@ -47,6 +50,13 @@ public class DefaultEuMetadataProviderTest extends OpenSamlTestBase {
   @BeforeEach
   public void init() {
     publisher.clear();
+  }
+
+  @Test
+  public void test() throws Exception {
+
+    RequestedPrincipalSelection s = (RequestedPrincipalSelection) XMLObjectSupport.buildXMLObject(RequestedPrincipalSelection.DEFAULT_ELEMENT_NAME);
+    Assertions.assertNotNull(s);
   }
 
   @Test

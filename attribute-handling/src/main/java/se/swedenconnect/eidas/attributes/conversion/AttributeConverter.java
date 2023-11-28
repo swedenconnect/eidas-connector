@@ -19,10 +19,11 @@ import org.opensaml.saml.saml2.core.Attribute;
 
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplate;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeTemplate;
+import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 
 /**
  * Interface for attribute conversion between eIDAS and Swedish eID attribute values.
- * 
+ *
  * @author Martin Lindström
  */
 public interface AttributeConverter {
@@ -30,7 +31,7 @@ public interface AttributeConverter {
   /**
    * Predicate that tells whether the converter supports converting the supplied Swedish attribute into a corresponding
    * eIDAS attribute.
-   * 
+   *
    * @param swedishEidAttribute the name of the Swedish attribute
    * @return {@code true} if conversion is possible and {@code false} otherwise
    */
@@ -38,7 +39,7 @@ public interface AttributeConverter {
 
   /**
    * Converts the supplied Swedish eID attribute to an eIDAS attribute, including attribute value conversion.
-   * 
+   *
    * @param swedishEidAttribute the Swedish eID attribute
    * @return an eIDAS attribute
    * @throws IllegalArgumentException if the converter does not support conversion for the given attribute
@@ -47,7 +48,7 @@ public interface AttributeConverter {
 
   /**
    * Gets the {@link EidasAttributeTemplate} that can be used to transform the supplied Swedish eID attribute.
-   * 
+   *
    * @param swedishEidAttribute attribute name
    * @return an {@link EidasAttributeTemplate}
    */
@@ -55,7 +56,7 @@ public interface AttributeConverter {
 
   /**
    * Predicate that tells if this converter supports conversion of the given eIDAS attribute to a Swedish eID attribute.
-   * 
+   *
    * @param eidasAttribute the name of the eIDAS attribute
    * @return {@code true} if conversion can be done, and {@code false} otherwise
    */
@@ -63,7 +64,7 @@ public interface AttributeConverter {
 
   /**
    * Converts the supplied eIDAS attribute to a Swedish eID attribute, including attribute value conversion.
-   * 
+   *
    * @param eidasAttribute the eIDAS attribute
    * @return a Swedish eID attribute
    * @throws IllegalArgumentException if the converter does not support conversion for the given attribute
@@ -71,8 +72,17 @@ public interface AttributeConverter {
   Attribute toSwedishEidAttribute(final Attribute eidasAttribute);
 
   /**
+   * See {@link #toSwedishEidAttribute(Attribute)}.
+   *
+   * @param eidasAttribute the eIDAS attribute
+   * @return a Swedish eID attribute
+   * @throws IllegalArgumentException if the converter does not support conversion for the given attribute
+   */
+  UserAttribute toSwedishEidAttribute(final UserAttribute eidasAttribute);
+
+  /**
    * Gets the {@link AttributeTemplate} that can be used to transform the supplied eIDAS attribute.
-   * 
+   *
    * @param eidasAttribute attribute name
    * @return an {@link AttributeTemplate}
    */

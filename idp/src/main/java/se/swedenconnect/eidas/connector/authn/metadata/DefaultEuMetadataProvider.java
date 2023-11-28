@@ -30,7 +30,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 
 import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.utilities.java.support.resolver.ResolverException;
+import net.shibboleth.shared.resolver.ResolverException;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
 
 /**

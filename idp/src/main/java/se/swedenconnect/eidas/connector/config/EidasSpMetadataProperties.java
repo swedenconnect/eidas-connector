@@ -16,14 +16,14 @@
 package se.swedenconnect.eidas.connector.config;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataConfigurationProperties;
 
 /**
@@ -31,8 +31,6 @@ import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataConfigura
  *
  * @author Martin Lindström
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
 public class EidasSpMetadataProperties extends MetadataConfigurationProperties implements InitializingBean {
 
   /**
@@ -40,26 +38,21 @@ public class EidasSpMetadataProperties extends MetadataConfigurationProperties i
    * {@code http://eidas.europa.eu/entity-attributes/application-identifier}. The current version of the
    * connector will always be appended to this value.
    */
+  @Getter
+  @Setter
   private String applicationIdentifierPrefix;
 
   /**
    * The values to use for the eIDAS entity category {@code http://eidas.europa.eu/entity-attributes/protocol-version}.
    */
-  private List<String> protocolVersions;
-
-  /**
-   * The node country extension to include. Defaults to SE.
-   */
-  private String nodeCountry;
+  @Getter
+  private List<String> protocolVersions = new ArrayList<>();
 
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
     if (!StringUtils.hasText(this.applicationIdentifierPrefix)) {
       this.applicationIdentifierPrefix = "SE:connector:";
-    }
-    if (!StringUtils.hasText(this.nodeCountry)) {
-      this.nodeCountry = "SE";
     }
     if (this.getCacheDuration() == null) {
       this.setCacheDuration(Duration.ofDays(1));

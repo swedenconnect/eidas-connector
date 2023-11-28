@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -29,7 +30,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-import org.springframework.web.util.CookieGenerator;
 
 import se.swedenconnect.eidas.connector.authn.ui.EidasUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
@@ -37,15 +37,12 @@ import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Languag
 
 /**
  * Web MVC configuration.
- * 
+ *
  * @author Martin Lindström
  */
 @Configuration
 @EnableConfigurationProperties(UiConfigurationProperties.class)
 public class WebMvcConfiguration implements WebMvcConfigurer {
-
-  /** Set cookie permanently (one year). */
-  private static final int FOREVER = 60 * 60 * 24 * 365;
 
   /** UI settings. */
   private final UiConfigurationProperties ui;
@@ -55,7 +52,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
   /**
    * Constructor.
-   * 
+   *
    * @param ui the UI configuration
    * @param messageSource the Spring {@link MessageSource}
    */
@@ -66,7 +63,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
   /**
    * Gets the {@link UiLanguageHandler}
-   * 
+   *
    * @return the {@link UiLanguageHandler}
    */
   @Bean
@@ -76,7 +73,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
   /**
    * Creates a bean holding the UI languages.
-   * 
+   *
    * @return the UI languages
    */
   @Bean
@@ -86,7 +83,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
   /**
    * Creates a {@link LocaleResolver} for resolving which language to use in the UI.
-   * 
+   *
    * @param contextPath the servlet context path
    * @return a {@link LocaleResolver}
    */
@@ -95,13 +92,13 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     CookieLocaleResolver resolver = new CookieLocaleResolver();
     resolver.setDefaultLocale(new Locale("en"));
     resolver.setCookiePath(contextPath);
-    resolver.setCookieMaxAge(31536000);
+    resolver.setCookieMaxAge(Duration.ofDays(365));
     return resolver;
   }
 
   /**
    * Creates a {@link LocaleChangeInterceptor} for changing the locale based on a request parameter name.
-   * 
+   *
    * @return a {@link LocaleChangeInterceptor}
    */
   @Bean
@@ -113,51 +110,34 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
   /**
    * Gets a {@link CookieGenerator} for the selected country.
-   * 
+   *
    * @return {@link CookieGenerator}
    */
   @Bean("selectedCountryCookieGenerator")
   CookieGenerator selectedCountryCookieGenerator() {
-    final CookieGenerator cookieGenerator = new CookieGenerator();
-    cookieGenerator.setCookieName(this.ui.getSelectedCountryCookie().getName());
-    if (this.ui.getSelectedCountryCookie().getDomain() != null) {
-      cookieGenerator.setCookieDomain(this.ui.getSelectedCountryCookie().getDomain());
-    }
-    if (this.ui.getSelectedCountryCookie().getPath() != null) {
-      cookieGenerator.setCookiePath(this.ui.getSelectedCountryCookie().getPath());
-    }
-    cookieGenerator.setCookieHttpOnly(true);
-    cookieGenerator.setCookieSecure(true);
-    cookieGenerator.setCookieMaxAge(FOREVER);
-
-    return cookieGenerator;
+    return new CookieGenerator(
+        this.ui.getSelectedCountryCookie().getName(),
+        this.ui.getSelectedCountryCookie().getDomain(),
+        this.ui.getSelectedCountryCookie().getPath(),
+        Duration.ofDays(365));
   }
 
   /**
    * Gets a {@link CookieGenerator} for the selected country during session.
-   * 
+   *
    * @return {@link CookieGenerator}
    */
   @Bean("selectedCountrySessionCookieGenerator")
   CookieGenerator selectedCountrySessionCookieGenerator() {
-    final CookieGenerator cookieGenerator = new CookieGenerator();
-    cookieGenerator.setCookieName(this.ui.getSelectedCountrySessionCookie().getName());
-    if (this.ui.getSelectedCountrySessionCookie().getDomain() != null) {
-      cookieGenerator.setCookieDomain(this.ui.getSelectedCountrySessionCookie().getDomain());
-    }
-    if (this.ui.getSelectedCountrySessionCookie().getPath() != null) {
-      cookieGenerator.setCookiePath(this.ui.getSelectedCountrySessionCookie().getPath());
-    }
-    cookieGenerator.setCookieHttpOnly(true);
-    cookieGenerator.setCookieSecure(true);
-    cookieGenerator.setCookieMaxAge(-1);
-
-    return cookieGenerator;
+    return new CookieGenerator(
+        this.ui.getSelectedCountrySessionCookie().getName(),
+        this.ui.getSelectedCountrySessionCookie().getDomain(),
+        this.ui.getSelectedCountrySessionCookie().getPath());
   }
 
   /**
    * Gets the {@link EidasUiModelFactory} bean
-   * 
+   *
    * @param uiLanguageHandler the language handler
    * @return a {@link EidasUiModelFactory}
    */

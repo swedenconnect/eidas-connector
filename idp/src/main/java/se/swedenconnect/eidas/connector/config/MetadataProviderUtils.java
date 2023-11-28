@@ -25,8 +25,8 @@ import java.util.List;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.TrustManager;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.springframework.core.io.FileSystemResource;
@@ -35,9 +35,9 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 
 import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.utilities.java.support.httpclient.HttpClientBuilder;
-import net.shibboleth.utilities.java.support.httpclient.HttpClientSupport;
-import net.shibboleth.utilities.java.support.httpclient.TLSSocketFactoryBuilder;
+import net.shibboleth.shared.httpclient.HttpClientBuilder;
+import net.shibboleth.shared.httpclient.HttpClientSupport;
+import net.shibboleth.shared.httpclient.TLSSocketFactoryBuilder;
 import se.swedenconnect.eidas.connector.config.ConnectorConfigurationProperties.EuMetadataProperties;
 import se.swedenconnect.opensaml.saml2.metadata.provider.AbstractMetadataProvider;
 import se.swedenconnect.opensaml.saml2.metadata.provider.FilesystemMetadataProvider;
@@ -63,7 +63,7 @@ public class MetadataProviderUtils {
   public static MetadataProvider createMetadataProvider(final EuMetadataProperties config) throws Exception {
 
     AbstractMetadataProvider provider;
-    if (UrlResource.class.isInstance(config.getLocation())) {
+    if (config.getLocation() instanceof UrlResource urlResource && !urlResource.isFile()) {
       if (config.getBackupLocation() == null) {
         log.warn("No backup-location for metadata source {} - Using a backup file is strongly recommended",
             config.getLocation());

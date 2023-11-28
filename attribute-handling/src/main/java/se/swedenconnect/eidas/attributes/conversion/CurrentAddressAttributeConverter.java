@@ -23,9 +23,9 @@ import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.saml.saml2.core.Attribute;
 
 import lombok.extern.slf4j.Slf4j;
-import se.litsec.eidas.opensaml.ext.attributes.CurrentAddressType;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplate;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplateConstants;
+import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentAddressType;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeBuilder;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
@@ -43,14 +43,14 @@ public class CurrentAddressAttributeConverter extends DefaultAttributeConverter 
    * Default constructor.
    */
   public CurrentAddressAttributeConverter() {
-    super(EidasAttributeTemplateConstants.CURRENT_ADDRESS_TEMPLATE, 
+    super(EidasAttributeTemplateConstants.CURRENT_ADDRESS_TEMPLATE,
         AttributeConstants.ATTRIBUTE_TEMPLATE_EIDAS_NATURAL_PERSON_ADDRESS);
   }
 
   /** {@inheritDoc} */
   @Override
   public Attribute toEidasAttribute(final Attribute swedishEidAttribute) {
-    
+
     final EidasAttributeTemplate template = this.getEidasAttributeTemplate(swedishEidAttribute);
     final String value = AttributeUtils.getAttributeStringValue(swedishEidAttribute);
     if (value == null) {

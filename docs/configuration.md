@@ -28,6 +28,7 @@ See the [Configuration](https://docs.swedenconnect.se/saml-identity-provider/con
 | `connector.idp.*` | Configuration for the IdP part of the eIDAS Connector. See [Connector IdP Configuration](#connector-idp-configuration) below. | [ConnectorIdpProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/ConnectorIdpProperties.java) | - |
 | `connector.eidas.*` | The configuration for the eIDAS authentication. See [eIDAS Authentication Configuration](#eidas-authentication-configuration) below. | [EidasAuthenticationProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/EidasAuthenticationProperties.java) | - |
 | `connector.eu-metadata.*` | Configuration for retrieval of aggregated EU metadata. See [EU Metadata Configuration](#eu-metadata-configuration) below. | [EuMetadataProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/ConnectorConfigurationProperties.java) | - |
+| `connector.prid.*` | Configuration for the [PRID Service](#prid-configuration). | [PridServiceProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/ConnectorConfigurationProperties.java) | - |
 
 <a name="connector-idp-configuration"></a>
 ### Connector IdP Configuration
@@ -62,8 +63,32 @@ By default the eIDAS Connector IdP will support the following authentication con
 
 | Property | Description | Type | Default value |
 | :--- | :--- | :--- | :--- |
+| `entity-id` | The SAML entityID for the eIDAS SP.<br /><br />**Note:** Care should be taken if changing this value from its defaults since many eIDAS countries expect the entityID to be the same as the metadata location (which is fixed). | String | `${saml.idp.base-url}`<br />`/metadata/sp` |
 | `credentials.*` | The credentials for the SP part of the eIDAS Connector. If not assigned, the keys configured for the SAML IdP will be used also for the SP. See [Credentials Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#credentials-configuration) for how to configure the different credentials. | [CredentialConfigurationProperties](https://github.com/swedenconnect/saml-identity-provider/blob/main/autoconfigure/src/main/java/se/swedenconnect/spring/saml/idp/autoconfigure/settings/CredentialConfigurationProperties.java) | - |
 | `provider-name` | The "provider name" that we should include in `AuthnRequest` messages being sent to the foreign country. | String | "Swedish eIDAS Connector" |
+| `requires-signed`<br />`-assertions` | Whether we require signed eIDAS assertions. | Boolean | `false` |
+| `supported-name-ids` | An ordered list of supported NameID formats. | List of strings | persistent, transient, unspecified<sup>*</sup> |
+| `skip-scoping-for` | Some eIDAS countries can not handle the `Scoping` element in `AuthnRequest` messages. This setting contains the country codes for those countries that we should not include this element for. | List of strings | - |
+| `metadata.*` | Configuration for eIDAS SP SAML metadata. See [eIDAS SP Metadata Configuration](#eidas-sp-metadata-configuration) below. | [EidasSpMetadataProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/EidasSpMetadataProperties.java) | - |
+
+> **\[*\]**: `urn:oasis:names:tc:SAML:2.0:nameid-format:persistent`, `urn:oasis:names:tc:SAML:2.0:nameid-format:transient`, `urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified`.
+
+<a name="eidas-sp-metadata-configuration"></a>
+### eIDAS SP Metadata Configuration
+
+**Description:** Configuration for the eIDAS SP SAML metadata.
+
+**Java class:** [EidasSpMetadataProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/EidasSpMetadataProperties.java)
+
+The metadata configuration inherits from the https://github.com/swedenconnect/saml-identity-provider
+project and most of the configuration is documented for in the [Metadata Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#metadata-configuration) section. 
+Below follows the settings that extend the above configuration.
+
+| Property | Description | Type | Default value |
+| :--- | :--- | :--- | :--- |
+| `application-identifier-prefix` | The value to insert for the eIDAS entity category `http://eidas.europa.eu/`<br />`entity-attributes/application-identifier`. The current version of the connector will always be appended to this value. | String | `SE:connector:` |
+| `protocol-versions` | The values to use for the eIDAS entity category `http://eidas.europa.eu/`<br />`entity-attributes/protocol-version`. | A list of version strings. | - |
+| `node-country` | The node country extension to include. | String | `SE` |
 
 <a name="eu-metadata-configuration"></a>
 ### EU Metadata Configuration
@@ -77,7 +102,19 @@ By default the eIDAS Connector IdP will support the following authentication con
 | `location` | The location of the metadata. Can be an URL, a file, or even a classpath resource. | [Resource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html) | - |
 | `backup-location` | If the `location` setting is an URL, a "backup location" may be assigned to store downloaded metadata. | [File](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html) | - |
 | `validation-certificate` | The certificate used to validate the metadata. | [Resource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html) pointing at the certificate resource. | - |
-| `http-proxy.*` | If the `location` setting is an URL and a HTTP proxy is required this setting configures this proxy. | [MetadataProviderConfigurationProperties.HttpProxy](https://github.com/swedenconnect/saml-identity-provider/blob/main/autoconfigure/src/main/java/se/swedenconnect/spring/saml/idp/autoconfigure/settings/MetadataProviderConfigurationProperties.java) | - |
+| `http-proxy.*` | If the `location` setting is an URL and a HTTP proxy is required this setting configures this proxy. | [MetadataProviderConfigurationProperties.HttpProxy](https://github.com/swedenconnect/saml-identity-provider/blob/main/autoconfigure/src/main/java/se/swedenconnect/spring/saml/idp/autoconfigure/settings/MetadataProviderConfigurationProperties.java) | - | 
+
+<a name="prid-configuration"></a>
+### PRID Configuration
+
+**Description:** Configuration for the PRID (Provisional Identifier) service.
+
+**Java class:** [PridServiceProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/ConnectorConfigurationProperties.java)
+
+| Property | Description | Type | Default value |
+| :--- | :--- | :--- | :--- |
+| `policy-resource` | A [Resource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html) pointing at the file containing the PRID configuration, see [The PRID Service](prid.html). | [Resource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html) | - |
+| `update-interval` | Indicates how often the policy should be re-loaded (value is given in seconds). | Integer | `600` (10 minutes) |
 
 ## eIDAS Connector UI Configuration
 

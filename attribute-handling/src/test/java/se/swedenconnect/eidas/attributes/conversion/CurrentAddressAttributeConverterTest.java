@@ -19,9 +19,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.opensaml.saml.saml2.core.Attribute;
 
-import se.litsec.eidas.opensaml.ext.attributes.CurrentAddressType;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplateConstants;
 import se.swedenconnect.eidas.attributes.OpenSamlTestBase;
+import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentAddressType;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeBuilder;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;

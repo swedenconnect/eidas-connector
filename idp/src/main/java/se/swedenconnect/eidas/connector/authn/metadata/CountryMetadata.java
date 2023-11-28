@@ -26,8 +26,8 @@ import java.util.stream.Stream;
 
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 
-import se.litsec.eidas.opensaml.common.EidasConstants;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
+import se.swedenconnect.opensaml.eidas.common.EidasConstants;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
 
 /**

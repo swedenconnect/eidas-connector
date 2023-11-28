@@ -18,8 +18,6 @@ package se.swedenconnect.eidas.connector.authn.sp;
 import java.io.ByteArrayOutputStream;
 import java.util.Objects;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.springframework.http.HttpEntity;
@@ -33,8 +31,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.w3c.dom.Element;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.utilities.java.support.xml.SerializeSupport;
+import net.shibboleth.shared.xml.SerializeSupport;
 import se.swedenconnect.opensaml.saml2.metadata.EntityDescriptorContainer;
 
 /**

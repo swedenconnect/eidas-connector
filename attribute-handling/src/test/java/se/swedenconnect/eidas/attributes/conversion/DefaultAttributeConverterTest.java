@@ -22,13 +22,13 @@ import org.junit.jupiter.api.Test;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.saml2.core.Attribute;
 
-import se.litsec.eidas.opensaml.ext.attributes.BirthNameType;
-import se.litsec.eidas.opensaml.ext.attributes.CurrentFamilyNameType;
-import se.litsec.eidas.opensaml.ext.attributes.CurrentGivenNameType;
-import se.litsec.eidas.opensaml.ext.attributes.DateOfBirthType;
-import se.litsec.eidas.opensaml.ext.attributes.EidasAttributeValueType;
-import se.litsec.eidas.opensaml.ext.attributes.PersonIdentifierType;
-import se.litsec.eidas.opensaml.ext.attributes.PlaceOfBirthType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.BirthNameType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentFamilyNameType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentGivenNameType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.DateOfBirthType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.EidasAttributeValueType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.PersonIdentifierType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.PlaceOfBirthType;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplateConstants;
 import se.swedenconnect.eidas.attributes.OpenSamlTestBase;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
@@ -245,10 +245,10 @@ public class DefaultAttributeConverterTest extends OpenSamlTestBase {
     Attribute swAttr = converter.toSwedishEidAttribute(eidasAttr);
     Assertions.assertEquals(1, swAttr.getAttributeValues().size());
     Assertions.assertEquals("Smith", AttributeUtils.getAttributeStringValue(swAttr));
-    
+
     Attribute sAttribute = EidasAttributeTemplateConstants.CURRENT_FAMILY_NAME_TEMPLATE.createBuilder()
         .value("Smith", "Jones").build();
-    
+
     swAttr = converter.toSwedishEidAttribute(sAttribute);
     Assertions.assertEquals(1, swAttr.getAttributeValues().size());
     Assertions.assertEquals("Smith", AttributeUtils.getAttributeStringValue(swAttr));

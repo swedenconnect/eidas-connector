@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>eidas-connector-authn</artifactId>
+  <packaging>jar</packaging>
+  
+  <parent>
+    <groupId>se.swedenconnect.eidas</groupId>
+    <artifactId>eidas-connector-parent</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+  </parent>  
+
+  <name>Sweden Connect :: eIDAS :: Connector :: Authentication Module</name>
+  <description>Sweden Connect eIDAS Authentication Module</description>
+  <url>https://docs.swedenconnect.se/eidas-connector</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:https://github.com/swedenconnect/eidas-connector.git</connection>
+    <developerConnection>scm:git:https://github.com/swedenconnect/eidas-connector.git</developerConnection>
+    <url>https://github.com/swedenconnect/eidas-connector/tree/master</url>
+  </scm>
+
+  <organization>
+    <name>Sweden Connect</name>
+    <url>https://www.swedenconnect.se</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <name>Martin Lindström</name>
+      <email>martin@idsec.se</email>
+      <organization>IDsec Solutions AB</organization>
+      <organizationUrl>https://www.idsec.se</organizationUrl>
+    </developer>    
+  </developers>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.version>17</java.version>
+  </properties>
+      
+  <dependencies>
+    
+    <dependency>
+      <groupId>se.swedenconnect.spring.saml.idp</groupId>
+      <artifactId>spring-saml-idp</artifactId>
+      <version>${saml.idp.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>se.swedenconnect.opensaml</groupId>
+      <artifactId>opensaml-eidas</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>se.swedenconnect.eidas</groupId>
+      <artifactId>eidas-attribute-handling</artifactId>
+      <version>${project.version}</version>
+    </dependency>    
+      
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>test</scope>
+    </dependency>
+                
+  </dependencies>
+
+  <build>
+    
+    <plugins>      
+      
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <!-- Ignore coverage for exception classes -->
+            <exclude>**/*Exception.class</exclude>
+          </excludes>
+        </configuration>
+      </plugin>      
+
+    </plugins>
+        
+  </build>
+
+</project>

@@ -110,11 +110,13 @@ public class ConnectorCredentials {
    * @throws IllegalArgumentException if no credential is found
    */
   public PkiCredential getSpSigningCredential() {
-    return List.of(this.spSignCredential, this.spDefaultCredential, this.signCredential, this.defaultCredential)
-        .stream()
-        .filter(c -> c != null)
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("No signing credential is available"));
+    final PkiCredential[] creds = { this.spSignCredential, this.spDefaultCredential, this.signCredential, this.defaultCredential };
+    for (final PkiCredential c : creds) {
+      if (c != null) {
+        return c;
+      }
+    }
+    throw new IllegalArgumentException("No signing credential is available");
   }
 
   /**
@@ -299,9 +301,9 @@ public class ConnectorCredentials {
    * @throws IllegalArgumentException if no credential is found
    */
   public PkiCredential getSpMetadataSigningCredential() {
-    final PkiCredential[] order = { this.spMetadataSignCredential, this.spDefaultCredential,
+    final PkiCredential[] creds = { this.spMetadataSignCredential, this.spDefaultCredential,
         this.metadataSignCredential, this.defaultCredential, this.spSignCredential, this.signCredential };
-    for (final PkiCredential c : order) {
+    for (final PkiCredential c : creds) {
       if (c != null) {
         return c;
       }

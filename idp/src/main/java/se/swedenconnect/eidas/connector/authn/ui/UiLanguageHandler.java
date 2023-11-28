@@ -20,13 +20,12 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
 
@@ -51,7 +50,7 @@ public class UiLanguageHandler {
         .filter(l -> !l.isEmpty())
         .orElseThrow(() -> new IllegalArgumentException("languages must not be null or empty"));
   }
-  
+
   /**
    * Returns a list of languages to display as selectable in the UI. The method will not include the language for the
    * currently used language.

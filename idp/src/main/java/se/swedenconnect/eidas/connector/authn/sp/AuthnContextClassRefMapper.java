@@ -27,7 +27,7 @@ import org.opensaml.saml.saml2.core.RequestedAuthnContext;
 import org.opensaml.saml.saml2.core.StatusCode;
 
 import lombok.extern.slf4j.Slf4j;
-import se.litsec.eidas.opensaml.common.EidasConstants;
+import se.swedenconnect.opensaml.eidas.common.EidasConstants;
 import se.swedenconnect.opensaml.saml2.core.build.RequestedAuthnContextBuilder;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatus;
@@ -166,6 +166,12 @@ public class AuthnContextClassRefMapper {
    */
   public static void assertReturnedAuthnContextUri(final String eidasUri, final RequestedAuthnContext requestedContext)
       throws Saml2ErrorStatusException {
+
+    if (eidasUri == null) {
+      final String msg = "Invalid assertion received from foreign IdP - No AuthnContextClassRef present";
+      throw new Saml2ErrorStatusException(StatusCode.RESPONDER, StatusCode.NO_AUTHN_CONTEXT,
+          null, msg, msg);
+    }
 
     if (requestedContext.getComparison() == AuthnContextComparisonTypeEnumeration.MINIMUM) {
       final String requested = requestedContext.getAuthnContextClassRefs().get(0).getURI();

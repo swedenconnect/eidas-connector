@@ -37,7 +37,7 @@ import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
 
 /**
  * Bean assisting us in selecting countries.
- * 
+ *
  * @author Martin Lindström
  */
 @Service
@@ -69,7 +69,7 @@ public class EidasCountryHandler {
   /**
    * Given the authentication request the method calculates which countries that are possible to choose from during
    * authentication.
-   * 
+   *
    * @param token the input token
    * @return a {@link SelectableCountries}
    * @throws Saml2ErrorStatusException for SAML error responses
@@ -79,7 +79,7 @@ public class EidasCountryHandler {
 
     // First see if the authentication request pointed out specific country/countries.
     //
-    final List<String> requestedCountries = this.getRequestedCountries(token);
+    final List<String> requestedCountries = getRequestedCountries(token);
 
     // If countries were requested, check that they appear in the EU metadata.
     //
@@ -131,7 +131,7 @@ public class EidasCountryHandler {
    * @param token the input
    * @return a list of country codes (may be empty)
    */
-  private List<String> getRequestedCountries(final Saml2UserAuthenticationInputToken token) {
+  public static List<String> getRequestedCountries(final Saml2UserAuthenticationInputToken token) {
 
     // First check PrincipalSelection extension.
     //

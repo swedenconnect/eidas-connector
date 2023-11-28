@@ -65,10 +65,43 @@
     </dependency>
     
     <dependency>
+      <groupId>se.swedenconnect.opensaml</groupId>
+      <artifactId>opensaml-addons</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>se.swedenconnect.opensaml</groupId>
+      <artifactId>opensaml-swedish-eid</artifactId>
+    </dependency>      
+    
+    <dependency>
+      <groupId>se.swedenconnect.opensaml</groupId>
+      <artifactId>opensaml-eidas</artifactId>
+    </dependency>    
+    
+    <dependency>
       <groupId>se.swedenconnect.eidas</groupId>
       <artifactId>eidas-attribute-handling</artifactId>
       <version>${project.version}</version>
     </dependency>
+    
+    <dependency>
+      <groupId>se.swedenconnect.eidas</groupId>
+      <artifactId>eidas-prid</artifactId>
+      <version>${project.version}</version>
+    </dependency>    
+    
+    <dependency>
+      <groupId>se.swedenconnect.eidas</groupId>
+      <artifactId>eidas-connector-authn</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-text</artifactId>
+      <version>1.10.0</version>
+    </dependency>    
     
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -166,7 +199,7 @@
       <artifactId>jsonassert</artifactId>
       <scope>test</scope>
     </dependency>
-        
+
   </dependencies>
 
   <build>

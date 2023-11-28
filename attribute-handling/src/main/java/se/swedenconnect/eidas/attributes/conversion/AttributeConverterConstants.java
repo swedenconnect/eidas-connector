@@ -22,7 +22,7 @@ import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 
 /**
  * Constants for attribute conversion.
- * 
+ *
  * @author Martin Lindström
  */
 public class AttributeConverterConstants {

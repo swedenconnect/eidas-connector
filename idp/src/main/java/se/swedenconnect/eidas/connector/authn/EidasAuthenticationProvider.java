@@ -17,26 +17,53 @@ package se.swedenconnect.eidas.connector.authn;
 
 import java.security.cert.X509Certificate;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
+import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.Status;
 import org.opensaml.saml.saml2.core.StatusCode;
+import org.opensaml.saml.saml2.core.StatusMessage;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import se.swedenconnect.eidas.attributes.AttributeMappingService;
 import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
+import se.swedenconnect.eidas.connector.authn.sp.AuthnContextClassRefMapper;
+import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequest;
+import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequestGenerator;
+import se.swedenconnect.eidas.connector.authn.sp.EidasResponseValidationException;
+import se.swedenconnect.eidas.connector.prid.generator.PridGeneratorException;
+import se.swedenconnect.eidas.connector.prid.service.CountryPolicyNotFoundException;
+import se.swedenconnect.eidas.connector.prid.service.PridResult;
+import se.swedenconnect.eidas.connector.prid.service.PridService;
+import se.swedenconnect.opensaml.saml2.request.RequestGenerationException;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
+import se.swedenconnect.opensaml.saml2.response.ResponseProcessingException;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessingInput;
+import se.swedenconnect.opensaml.saml2.response.ResponseProcessingResult;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessor;
+import se.swedenconnect.opensaml.saml2.response.ResponseStatusErrorException;
+import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
+import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthentication;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.saml.idp.authentication.Saml2UserDetails;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractUserRedirectAuthenticationProvider;
+import se.swedenconnect.spring.saml.idp.authentication.provider.external.RedirectForAuthenticationToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.ResumedAuthenticationToken;
+import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatus;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
 import se.swedenconnect.spring.saml.idp.error.UnrecoverableSaml2IdpError;
 import se.swedenconnect.spring.saml.idp.error.UnrecoverableSaml2IdpException;
@@ -58,17 +85,29 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   /** Special purpose AuthnContext Class Ref for eIDAS test. */
   public static final String EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF = "http://eidas.europa.eu/LoA/test";
 
+  /** The session key where we store the eIDAS AuthnRequest. */
+  public static final String EIDAS_AUTHNREQUEST_SESSION_KEY = EidasAuthnRequest.class.getPackageName();
+
+  /** The base URL for the application. */
+  private final String baseUrl;
+
+  /** For generating AuthnRequests. */
+  private final EidasAuthnRequestGenerator authnRequestGenerator;
+
   /** The processor handling the SAML responses received from the foreign eIDAS proxy services. */
-//  private final ResponseProcessor responseProcessor;
+  private final ResponseProcessor responseProcessor;
+
+  /** Service for mapping eIDAS attributes to the corresponding Swedish eID attributes. */
+  private final AttributeMappingService attributeMappingService;
 
   /** The URL where we receive SAML responses. */
   private final String samlResponseUrl;
 
   /** The metadata provider. */
   private final EuMetadataProvider metadataProvider;
-  
-  /** For generating AuthnRequests. */
-//  private final EidasAuthnRequestGeneratorContextFactory authnRequestFactory;
+
+  /** The PRID service bean. */
+  private final PridService pridService;
 
   /** Supported LoA URI:s. */
   private final List<String> supportedLoas;
@@ -79,28 +118,49 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   /** Whitelisted SP:s that are allowed to send "ping" requests. */
   private final List<String> pingWhitelist;
 
+  /** Attribute names for the eIDAS minimum dataset. */
+  private static final String[] EIDAS_MINIMUM_DATASET = {
+      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME,
+      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_DATE_OF_BIRTH_ATTRIBUTE_NAME,
+      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_CURRENT_GIVEN_NAME_ATTRIBUTE_NAME,
+      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_CURRENT_FAMILY_NAME_ATTRIBUTE_NAME
+  };
+
   /**
    * Constructor.
    *
    * @param baseUrl the application base URL
+   * @param authnRequestGenerator for generating authentication requests
    * @param responseProcessor the processor handling the SAML responses received from the foreign eIDAS proxy services
    * @param metadataProvider the EU metadata provider
+   * @param attributeMappingService attribute service
+   * @param pridService the PRID service bean
    * @param supportedLoas supported LoA URI:s
    * @param entityCategories the entity categories
    * @param pingWhitelist the whitelisted SP:s that are allowed to send ping requests
    */
-  public EidasAuthenticationProvider(final String baseUrl, 
-      final ResponseProcessor responseProcessor, final EuMetadataProvider metadataProvider,
-//      final EidasAuthnRequestGeneratorContextFactory authnRequestFactory,
+  public EidasAuthenticationProvider(final String baseUrl,
+      final EidasAuthnRequestGenerator authnRequestGenerator,
+      final ResponseProcessor responseProcessor,
+      final EuMetadataProvider metadataProvider,
+      final AttributeMappingService attributeMappingService,
+      final PridService pridService,
       final List<String> supportedLoas, final List<String> entityCategories,
       final List<String> pingWhitelist) {
+
     super(AUTHN_PATH, RESUME_PATH);
 
-//    this.responseProcessor = Objects.requireNonNull(responseProcessor, "responseProcessor must not be null");
-    this.samlResponseUrl = String.format("%s%s",
-        Objects.requireNonNull(baseUrl, "baseUrl must not be null"),
-        EidasAuthenticationController.ASSERTION_CONSUMER_PATH);
+    this.ssoVoters().add(new EidasSsoVoter());
+
+    this.baseUrl = Objects.requireNonNull(baseUrl, "baseUrl must not be null");
+    this.authnRequestGenerator =
+        Objects.requireNonNull(authnRequestGenerator, "authnRequestGenerator must not be null");
+    this.responseProcessor = Objects.requireNonNull(responseProcessor, "responseProcessor must not be null");
+    this.samlResponseUrl = String.format("%s%s", this.baseUrl, EidasAuthenticationController.ASSERTION_CONSUMER_PATH);
     this.metadataProvider = Objects.requireNonNull(metadataProvider, "metadataProvider must not be null");
+    this.attributeMappingService =
+        Objects.requireNonNull(attributeMappingService, "attributeMappingService must not be null");
+    this.pridService = Objects.requireNonNull(pridService, "pridService must not be null");
     this.supportedLoas = Collections.unmodifiableList(
         Objects.requireNonNull(supportedLoas, "supportedLoas must not be null"));
     this.entityCategories = Collections.unmodifiableList(
@@ -111,39 +171,270 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
   }
 
-  /** {@inheritDoc} */
+  /**
+   * The {@link #resumeAuthentication(ResumedAuthenticationToken)} method will be called when we have received the SAML
+   * response from the foreign IdP.
+   */
   @Override
   public Saml2UserAuthentication resumeAuthentication(final ResumedAuthenticationToken token)
       throws Saml2ErrorStatusException {
 
-    final EidasAuthenticationToken proxyResponse = EidasAuthenticationToken.class.cast(token.getAuthnToken());
+    final EidasAuthenticationToken eidasToken = EidasAuthenticationToken.class.cast(token.getAuthnToken());
 
-//    try {
-//      final ResponseProcessingResult result =
-//          this.responseProcessor.processSamlResponse(proxyResponse.getResponse(), proxyResponse.getRelayState(),
-//              this.buildResponseProcessingInput(token), null);
-//    }
-//    catch (final ResponseStatusErrorException e) {
-//    }
-//    catch (ResponseProcessingException e) {
-//    }
+    // Assert that the authentication context URI is valid and map it to a Swedish URI ...
+    //
+    final String eidasAuthnContextUri = eidasToken.getAuthnContextClassRef();
+    AuthnContextClassRefMapper.assertReturnedAuthnContextUri(eidasAuthnContextUri,
+        eidasToken.getAuthnRequest().getAuthnRequest().getRequestedAuthnContext());
+    final String swedishAuthnContextUri = AuthnContextClassRefMapper.calculateReturnAuthnContextUri(
+        eidasAuthnContextUri, token.getAuthnInputToken().getAuthnRequirements().getAuthnContextRequirements());
 
-    return null;
+    // Map eIDAS attributes to Swedish eID attributes ...
+    //
+    final Collection<UserAttribute> attributes = new ArrayList<>(eidasToken.getAttributes());
+    eidasToken.getAttributes().stream()
+      .map(a -> this.attributeMappingService.toSwedishEidAttribute(a))
+      .filter(Objects::nonNull)
+      .forEach(a -> attributes.add(a));
+
+    // Add country attribute ...
+    //
+    attributes.add(new UserAttribute(
+        AttributeConstants.ATTRIBUTE_NAME_C,
+        AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_C,
+        eidasToken.getAuthnRequest().getCountry()));
+
+    // Add the ID of the assertion as a transactionIdentifier attribute ...
+    //
+    attributes.add(new UserAttribute(
+        AttributeConstants.ATTRIBUTE_NAME_TRANSACTION_IDENTIFIER,
+        AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_TRANSACTION_IDENTIFIER,
+        eidasToken.getAssertion().getID()));
+
+    // Invoke the PRID service to resolve the eIDAS person identifier to a Swedish
+    // PRID attribute ...
+    //
+    try {
+      final PridResult pridResult = this.pridService.generatePrid(
+          (String) eidasToken.getPrincipal(), eidasToken.getAuthnRequest().getCountry());
+
+      attributes.add(new UserAttribute(
+          AttributeConstants.ATTRIBUTE_NAME_PRID,
+          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PRID,
+          pridResult.prid()));
+
+      attributes.add(new UserAttribute(
+          AttributeConstants.ATTRIBUTE_NAME_PRID_PERSISTENCE,
+          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PRID_PERSISTENCE,
+          pridResult.pridPersistence()));
+    }
+    catch (IllegalArgumentException | PridGeneratorException | CountryPolicyNotFoundException e) {
+      log.error("Failed to generate PRID attribute from ID '{}' ({}) - {}",
+          eidasToken.getPrincipal(), eidasToken.getAuthnRequest().getCountry(),
+          e.getMessage(), e);
+
+      throw new Saml2ErrorStatusException(StatusCode.RESPONDER, StatusCode.AUTHN_FAILED,
+          null, "Failed to create PRID attribute", e.getMessage(), e);
+    }
+
+    // Build the user details for the authentication ...
+    //
+    final Saml2UserDetails userDetails = new Saml2UserDetails(attributes,
+        AttributeConstants.ATTRIBUTE_NAME_PRID,
+        swedishAuthnContextUri, eidasToken.getAuthnInstant(),
+        token.getServletRequest().getRemoteAddr());
+    userDetails.setSignMessageDisplayed(false);  // TODO
+
+    final Saml2UserAuthentication userAuth = new Saml2UserAuthentication(userDetails);
+    userAuth.setReuseAuthentication(true); // TODO
+
+    return userAuth;
   }
-  
-  public RequestHttpObject<AuthnRequest> generateAuthnRequest(
+
+  /**
+   * Processes a SAML response received from the foreign IdP.
+   *
+   * @param httpRequest the HTTP servlet request
+   * @param samlResponse the SAML response
+   * @param relayState the RelayState variable
+   * @return an {@link EidasAuthenticationToken}
+   * @throws Saml2ErrorStatusException for errors
+   */
+  public EidasAuthenticationToken processSamlResponse(final HttpServletRequest httpRequest,
+      final String samlResponse, final String relayState) throws Saml2ErrorStatusException {
+
+    try {
+      // First get hold of the corresponding authentication request ...
+      //
+      final EidasAuthnRequest eidasAuthnRequest = this.getEidasAuthnRequest(httpRequest);
+
+      // Process the SAML response ...
+      //
+      final ValidationContext validationContext = null;  // TODO
+      final ResponseProcessingResult result = this.responseProcessor.processSamlResponse(
+          samlResponse, relayState,
+          this.buildResponseProcessingInput(httpRequest, eidasAuthnRequest), validationContext);
+
+      log.debug("Successfully processed SAML response");
+
+      return new EidasAuthenticationToken(result, eidasAuthnRequest);
+    }
+    catch (final ResponseStatusErrorException e) {
+      log.info("Received non successful status: {}", e.getMessage());
+
+      // TODO: Logging
+
+      // Let's update the status message - It may be in any language, so we add
+      // a text telling that the failure was received from the foreign service.
+      //
+      final Status status = e.getStatus();
+      throw new Saml2ErrorStatusException(
+          Optional.ofNullable(status.getStatusCode()).map(StatusCode::getValue).orElseGet(() -> StatusCode.RESPONDER),
+          Optional.ofNullable(status.getStatusCode()).map(StatusCode::getStatusCode).map(StatusCode::getValue)
+              .orElseGet(() -> StatusCode.AUTHN_FAILED),
+          null,
+          Optional.ofNullable(status.getStatusMessage())
+              .map(StatusMessage::getValue)
+              .map(v -> "Failure received from foreign service: %s".formatted(v))
+              .orElseGet(() -> "Failure received from foreign service"),
+          e);
+    }
+    catch (final ResponseProcessingException e) {
+      log.info("Error while processing eIDAS response - {}", e.getMessage(), e);
+
+      final String msg = "Validation failure of response from foreign service";
+      if (e instanceof EidasResponseValidationException eidasError) {
+        throw eidasError.getError();
+      }
+      else {
+        throw new Saml2ErrorStatusException(StatusCode.REQUESTER, StatusCode.REQUEST_DENIED, null, msg, e);
+      }
+    }
+  }
+
+  /**
+   * Gets the authentication request that we saved in the session before we sent the authentication request.
+   *
+   * @param httpRequest the HTTP servlet request
+   * @return an {@link EidasAuthnRequest}
+   * @throws UnrecoverableSaml2IdpException for session errors
+   */
+  private EidasAuthnRequest getEidasAuthnRequest(final HttpServletRequest httpRequest)
+      throws UnrecoverableSaml2IdpException {
+
+    final HttpSession session = httpRequest.getSession();
+    final EidasAuthnRequest authnRequest = (EidasAuthnRequest) session.getAttribute(EIDAS_AUTHNREQUEST_SESSION_KEY);
+    if (authnRequest == null) {
+      final Authentication currentAuth =
+          Optional.ofNullable(this.getTokenRepository().getExternalAuthenticationToken(httpRequest))
+              .map(RedirectForAuthenticationToken::getAuthnInputToken)
+              .orElse(null);
+
+      final String msg = "Received SAML response, but no authentication requests exists in session";
+      throw new UnrecoverableSaml2IdpException(UnrecoverableSaml2IdpError.INVALID_SESSION, msg, currentAuth);
+    }
+
+    // Remove the authn request from the session ...
+    session.removeAttribute(EIDAS_AUTHNREQUEST_SESSION_KEY);
+
+    return authnRequest;
+  }
+
+  /**
+   * Builds a {@link ResponseProcessingInput} for use when processing a SAML response.
+   *
+   * @param httpServletRequest the HTTP servlet request
+   * @param eidasAuthnRequest the request
+   * @return a {@link ResponseProcessingInput}
+   */
+  private ResponseProcessingInput buildResponseProcessingInput(
+      final HttpServletRequest httpServletRequest, final EidasAuthnRequest eidasAuthnRequest) {
+
+    return new ResponseProcessingInput() {
+
+      @Override
+      public AuthnRequest getAuthnRequest(final String id) {
+        return Optional.ofNullable(eidasAuthnRequest)
+            .map(EidasAuthnRequest::getAuthnRequest)
+            .filter(a -> Objects.equals(id, a.getID()))
+            .orElse(null);
+      }
+
+      @Override
+      public String getRequestRelayState(final String id) {
+        return Optional.ofNullable(eidasAuthnRequest)
+            .map(EidasAuthnRequest::getRelayState)
+            .orElse(null);
+      }
+
+      @Override
+      public String getReceiveURL() {
+        return samlResponseUrl;
+      }
+
+      @Override
+      public Instant getReceiveInstant() {
+        return Instant.now();
+      }
+
+      @Override
+      public String getClientIpAddress() {
+        return httpServletRequest.getRemoteAddr();
+      }
+
+      @Override
+      public X509Certificate getClientCertificate() {
+        return null;
+      }
+
+    };
+
+  }
+
+  /**
+   * Generates an authentication request for the given country.
+   *
+   * @param httpServletRequest the HTTP servlet request
+   * @param country the recipient country
+   * @param token the input token
+   * @return an {@code AuthnRequest}
+   * @throws Saml2ErrorStatusException for errors generating the request
+   */
+  public RequestHttpObject<AuthnRequest> generateAuthnRequest(final HttpServletRequest httpServletRequest,
       final String country, final Saml2UserAuthenticationInputToken token) throws Saml2ErrorStatusException {
-    
+
     final CountryMetadata countryMetadata = this.metadataProvider.getCountry(country);
     if (countryMetadata == null) {
       final String msg = "No services available for selected country";
       log.error("No metadata found for country '{}'", country);
       throw new Saml2ErrorStatusException(StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP, null, msg, msg);
     }
-    
-    return null;
+
+    try {
+      final String relayState = Optional.ofNullable(token.getAuthnRequestToken().getRelayState())
+          .filter(r -> StringUtils.hasText(r))
+          .orElseGet(() -> UUID.randomUUID().toString());
+
+      final RequestHttpObject<AuthnRequest> authnRequest =
+          this.authnRequestGenerator.generateAuthnRequest(countryMetadata, token, relayState);
+
+      // TODO: logging
+
+      // Save request in session ...
+      //
+      httpServletRequest.getSession().setAttribute(EIDAS_AUTHNREQUEST_SESSION_KEY,
+          new EidasAuthnRequest(authnRequest.getRequest(), relayState,
+              token.getAuthnRequestToken().getAuthnRequest().getID(), countryMetadata.getCountryCode()));
+
+      return authnRequest;
+    }
+    catch (final RequestGenerationException e) {
+      // TODO: logging
+      // TODO: change
+      throw new Saml2ErrorStatusException(Saml2ErrorStatus.AUTHN_FAILED, "Failed to generate AuthnRequest", e);
+    }
   }
-  
+
   /**
    * Supports {@link EidasAuthenticationToken}.
    */
@@ -183,7 +474,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
   /**
    * Tells wheter this is a eIDAS ping request.
-   * 
+   *
    * @param token the input token
    * @return {@code true} if it is a ping request and {@code false} otherwise
    */
@@ -203,50 +494,5 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param token the current {@link Authentication} token
    * @return a {@link ResponseProcessingInput}
    */
-  private ResponseProcessingInput buildResponseProcessingInput(final ResumedAuthenticationToken token) {
-    return new ResponseProcessingInput() {
-
-      /** {@inheritDoc} */
-      @Override
-      public AuthnRequest getAuthnRequest(final String id) {
-        final AuthnRequest authnRequest = EidasAuthenticationToken.class.cast(token.getAuthnToken()).getAuthnRequest();
-        if (id != null && !Objects.equals(id, authnRequest.getID())) {
-          throw new UnrecoverableSaml2IdpException(UnrecoverableSaml2IdpError.INVALID_SESSION, token);
-        }
-        return authnRequest;
-      }
-
-      /** {@inheritDoc} */
-      @Override
-      public String getRequestRelayState(final String id) {
-        return token.getAuthnInputToken().getAuthnRequestToken().getRelayState();
-      }
-
-      /** {@inheritDoc} */
-      @Override
-      public String getReceiveURL() {
-        return samlResponseUrl;
-      }
-
-      /** {@inheritDoc} */
-      @Override
-      public Instant getReceiveInstant() {
-        return Instant.now();
-      }
-
-      /** {@inheritDoc} */
-      @Override
-      public String getClientIpAddress() {
-        return token.getServletRequest().getRemoteAddr();
-      }
-
-      /** {@inheritDoc} */
-      @Override
-      public X509Certificate getClientCertificate() {
-        return null;
-      }
-
-    };
-  }
 
 }

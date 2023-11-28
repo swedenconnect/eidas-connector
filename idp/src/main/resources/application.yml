@@ -5,7 +5,15 @@
 server:
   port: 8443
   servlet:
-    context-path: /idp    
+    context-path: /idp
+    session:
+      cookie:
+        name: EIDASSESSION
+        domain: ${connector.domain}
+        max-age: 60m
+        same-site: NONE
+        http-only: true
+        secure: true
   ssl:
     enabled: true
     key-store: classpath:ssl.jks
@@ -41,7 +49,9 @@ ui:
     service-url: https://sandbox.swedenconnect.se/idm       
 
 connector:
-  backup-directory: target  
+  backup-directory: target
+  base-url: https://${connector.domain}:${server.port}/${server.servlet.context-path}
+  country: SE
   idp:
     entity-categories:
     - http://id.elegnamnden.se/ec/1.0/eidas-naturalperson
@@ -52,9 +62,10 @@ connector:
   eidas:
     entity-id: ${saml.idp.base-url}/metadata/sp
     requires-signed-assertions: true
+    skip-scoping-for:
+    - DK
     metadata:
       application-identifier-prefix: "SE:connector:"
-      node-country: SE
       protocol-versions:
       - 1.0
       - 1.1
@@ -103,13 +114,10 @@ connector:
       - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
       - algorithm: http://www.w3.org/2009/xmlenc11#rsa-oaep
       
-      
-          
-
 saml:
   idp:
     entity-id: https://connector.eidas.swedenconnect.se/eidas
-    base-url: https://connector.eidas.swedenconnect.se/idp    
+    base-url: ${connector.base-url}    
     credentials:
       sign:
         resource: classpath:idp-credentials.jks
@@ -167,6 +175,17 @@ saml:
       - algorithm: http://www.w3.org/2001/04/xmlenc#aes256-cbc
       - algorithm: http://www.w3.org/2001/04/xmlenc#aes192-cbc
       - algorithm: http://www.w3.org/2001/04/xmlenc#aes128-cbc
+      requested-principal-selection:
+      # prid
+      - "urn:oid:1.2.752.201.3.4"
+      # eidasPersonIdentifier
+      - "urn:oid:1.2.752.201.3.7"
+      # personalIdentityNumber
+      - "urn:oid:1.2.752.29.4.13"
+      # mappedPersonalIdentityNumber
+      - "urn:oid:1.2.752.201.3.16"
+      # c
+      - "urn:oid:2.5.4.6"
       ui-info:
         display-names:
           en: "Foreign eID"
@@ -180,7 +199,7 @@ saml:
           width: 256
         - path: /images/idp-logo.svg
           height: 56
-          width: 280   
+          width: 280      
       organization:
         names:
           en: Sweden Connect
@@ -334,14 +353,27 @@ connector:
   domain: localhost
   base-url: https://${connector.domain}:${server.port}/${server.servlet.context-path}
   eu-metadata:
-    location: https://qa.md.eidas.swedenconnect.se/role/idp.xml
-    validation-certificate: classpath:env/qa/eu-metadata-signing-qa.crt  
+    location: file:${LOCAL_ENV_PATH}/eidas/eu-metadata/metadata.xml
+    #validation-certificate: classpath:env/qa/eu-metadata-signing-qa.crt  
 #  eu-metadata:
 #    location: https://mdsl.sandbox.swedenconnect.se/nodeconfig/metadata
 #    validation-certificate: classpath:env/sandbox/eu-metadata-signing-sandbox.crt
   idp:
     ping-whitelist:
     - http://sandbox.swedenconnect.se/testmyeid
+  eidas:
+    entity-id: https://localhost:9200/idp/metadata/sp    
+    credentials:
+      sign:
+        resource: classpath:env/localhost/sp-keys.jks
+        alias: sign
+        password: secret
+        type: JKS
+      encrypt:
+        resource: classpath:env/localhost/sp-keys.jks
+        alias: encrypt
+        password: secret
+        type: JKS
   
 saml:
   idp:
@@ -385,5 +417,9 @@ saml:
 logging:
   level:
     se:
-      swedenconnect: DEBUG          
+      swedenconnect: DEBUG
+    org:
+      opensaml:
+        core:
+          config: DEBUG      
       

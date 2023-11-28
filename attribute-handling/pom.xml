@@ -56,6 +56,11 @@
       <artifactId>spring-saml-idp</artifactId>
       <version>${saml.idp.version}</version>
     </dependency>
+    
+    <dependency>
+      <groupId>se.swedenconnect.opensaml</groupId>
+      <artifactId>opensaml-eidas</artifactId>
+    </dependency>
       
     <dependency>
       <groupId>org.projectlombok</groupId>

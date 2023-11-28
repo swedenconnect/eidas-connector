@@ -23,13 +23,15 @@ import org.opensaml.saml.saml2.core.Attribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.litsec.eidas.opensaml.ext.attributes.GenderType;
-import se.litsec.eidas.opensaml.ext.attributes.GenderTypeEnumeration;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplate;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplateConstants;
+import se.swedenconnect.opensaml.eidas.ext.attributes.GenderType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.GenderTypeEnumeration;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeBuilder;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
+import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
+import se.swedenconnect.spring.saml.idp.attributes.eidas.Gender;
 
 /**
  * Specialized converter for the Gender attribute, since its value representation differs between eIDAS and the Swedish
@@ -107,6 +109,24 @@ public class GenderAttributeConverter extends DefaultAttributeConverter {
     final XSString stringValue = AttributeBuilder.createValueObject(XSString.TYPE_NAME, XSString.class);
     stringValue.setValue(value);
     return stringValue;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected String toSwedishEidAttributeValue(final UserAttribute eidasAttribute) {
+    if (eidasAttribute.getValues().isEmpty()) {
+      return null;
+    }
+    final String gender = Gender.class.cast(eidasAttribute.getValues().get(0)).getValueAsString();
+    if (GenderTypeEnumeration.MALE.getValue().equalsIgnoreCase(gender)) {
+      return "M";
+    }
+    else if (GenderTypeEnumeration.FEMALE.getValue().equalsIgnoreCase(gender)) {
+      return "F";
+    }
+    else {
+      return "U";
+    }
   }
 
 }

@@ -18,7 +18,7 @@ package se.swedenconnect.eidas.connector.idp;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.stereotype.Component;
 
 import se.swedenconnect.opensaml.sweid.saml2.signservice.dss.SignMessageMimeTypeEnum;
@@ -28,7 +28,7 @@ import se.swedenconnect.spring.saml.idp.extensions.SignatureMessagePreprocessor;
 
 /**
  * A {@link SignatureMessagePreprocessor} for signature messages.
- * 
+ *
  * @author Martin Lindström
  */
 @Component
@@ -46,7 +46,7 @@ public class ConnectorSignatureMessagePreprocessor implements SignatureMessagePr
           "eIDAS Connector does not support display of HTML or Markdown SignMessages");
     }
     final String message = new String(Base64.getDecoder().decode(encodedMessage), StandardCharsets.UTF_8);
-    String filteredMessage = StringEscapeUtils.escapeHtml(message);
+    String filteredMessage = StringEscapeUtils.escapeHtml4(message);
 
     // Replace NL with <br />
     filteredMessage = filteredMessage.replaceAll("(\r\n|\n\r|\r|\n)", "<br />");

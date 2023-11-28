@@ -44,10 +44,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>17</java.version>
 
-    <spring.boot.version>2.7.15</spring.boot.version>
-    <spring.version>5.3.29</spring.version>
+    <spring.boot.version>3.1.5</spring.boot.version>
+    <spring.version>6.0.13</spring.version>
     <bc.version>1.76</bc.version>
-    <saml.idp.version>1.1.3-SNAPSHOT</saml.idp.version>
+    <saml.idp.version>2.0.2-SNAPSHOT</saml.idp.version>
   </properties>
 
   <repositories>
@@ -76,6 +76,8 @@
 
   <modules>
     <module>attribute-handling</module>
+    <module>prid</module>
+    <module>sp</module>
     <module>idp</module>
   </modules>
 
@@ -103,36 +105,16 @@
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
         <type>pom</type>
-        <version>5.9.1</version>
+        <version>5.10.0</version>
         <scope>import</scope>
       </dependency>
-      
-      <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>1.18.24</version>
-        <scope>provided</scope>
-      </dependency>
-      
+            
       <dependency>
         <groupId>org.apache.santuario</groupId>
         <artifactId>xmlsec</artifactId>
-        <version>2.3.3</version>
-        <exclusions>
-          <!-- Version included has reported vulnerabilities -->
-          <exclusion>
-            <groupId>com.fasterxml.woodstox</groupId>
-            <artifactId>woodstox-core</artifactId>
-          </exclusion>
-        </exclusions>
+        <version>3.0.3</version>
       </dependency>
-      
-      <dependency>
-        <groupId>com.fasterxml.woodstox</groupId>
-        <artifactId>woodstox-core</artifactId>
-        <version>6.5.1</version>
-      </dependency>      
-      
+            
       <!-- Bouncy Castle -->
       <dependency>
         <groupId>org.bouncycastle</groupId>
@@ -150,18 +132,24 @@
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcpkix-jdk18on</artifactId>
         <version>${bc.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>se.swedenconnect.opensaml</groupId>
+        <artifactId>opensaml-addons</artifactId>
+        <version>2.0.2</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>se.swedenconnect.opensaml</groupId>
+        <artifactId>opensaml-swedish-eid</artifactId>
+        <version>2.0.0</version>
       </dependency>      
       
       <dependency>
-        <groupId>org.cryptacular</groupId>
-        <artifactId>cryptacular</artifactId>
-        <version>1.2.5</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk18on</artifactId>
-          </exclusion>
-        </exclusions>
+        <groupId>se.swedenconnect.opensaml</groupId>
+        <artifactId>opensaml-eidas</artifactId>
+        <version>3.0.0</version>
       </dependency>
 
     </dependencies>
@@ -169,17 +157,22 @@
   </dependencyManagement>
 
   <dependencies>
-
+    
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
     </dependency>
     
     <dependency>
-      <groupId>javax.annotation</groupId>
-      <artifactId>javax.annotation-api</artifactId>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
     </dependency>
     
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+    </dependency>
+        
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -228,47 +221,70 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.10.1</version>
+          <version>3.11.0</version>
           <configuration>
-            <source>${java.version}</source>
-            <target>${java.version}</target>
+            <release>${java.version}</release>
           </configuration>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.2.2</version>
+          <version>3.3.0</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>3.3.1</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.1.1</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>3.4.1</version>
+          <version>3.4.5</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.4.1</version>
+          <version>3.6.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.projectlombok</groupId>
+          <artifactId>lombok-maven-plugin</artifactId>
+          <version>1.18.20.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>4.0.0-M11</version>
         </plugin>
         
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.1.2</version>
+        </plugin>        
+
+        <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.8</version>
+          <version>0.8.10</version>
           <configuration>
             <excludes>
               <!-- Ignore coverage for exception classes -->
@@ -289,36 +305,12 @@
               </goals>
             </execution>
           </executions>
-        </plugin>        
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-source-plugin</artifactId>
-          <version>3.2.1</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.projectlombok</groupId>
-          <artifactId>lombok-maven-plugin</artifactId>
-          <version>1.18.20.0</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>3.12.1</version>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.0.0-M7</version>
         </plugin>
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>3.1.0</version>
+          <version>3.4.1</version>
           <executions>
             <execution>
               <id>enforce</id>
@@ -507,7 +499,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>3.0.1</version>
+            <version>3.1.0</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -517,14 +509,6 @@
                 </goals>
               </execution>
             </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-deploy-plugin</artifactId>
-            <configuration>
-              <skip>false</skip>
-            </configuration>
           </plugin>
 
         </plugins>

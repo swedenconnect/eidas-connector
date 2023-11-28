@@ -21,10 +21,11 @@ import java.util.List;
 import org.opensaml.saml.saml2.core.Attribute;
 
 import se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute;
+import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 
 /**
  * Handles mappings between Swedish eID attributes and eIDAS attributes.
- * 
+ *
  * @author Martin Lindström
  */
 public interface AttributeMappingService {
@@ -33,14 +34,14 @@ public interface AttributeMappingService {
    * The eIDAS minimum data set for natural persons.
    */
   static List<String> NATURAL_PERSON_MINIMUM_DATASET = List.of(
-      se.litsec.eidas.opensaml.ext.attributes.AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME,
-      se.litsec.eidas.opensaml.ext.attributes.AttributeConstants.EIDAS_CURRENT_GIVEN_NAME_ATTRIBUTE_NAME,
-      se.litsec.eidas.opensaml.ext.attributes.AttributeConstants.EIDAS_CURRENT_FAMILY_NAME_ATTRIBUTE_NAME,
-      se.litsec.eidas.opensaml.ext.attributes.AttributeConstants.EIDAS_DATE_OF_BIRTH_ATTRIBUTE_NAME);
+      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME,
+      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_CURRENT_GIVEN_NAME_ATTRIBUTE_NAME,
+      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_CURRENT_FAMILY_NAME_ATTRIBUTE_NAME,
+      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_DATE_OF_BIRTH_ATTRIBUTE_NAME);
 
   /**
    * Maps an attribute released by a Swedish eID IdP into its corresponding eIDAS attribute.
-   * 
+   *
    * @param swedishAttribute the Swedish eID attribute
    * @return an eIDAS attribute or {@code null} if no mapping exists
    */
@@ -55,30 +56,38 @@ public interface AttributeMappingService {
    * in the supplied metadata requested attribute. For interoperability reasons only attributes part of the eIDAS
    * minimum data set should be assigned the {@code isRequired} attribute.
    * </p>
-   * 
+   *
    * @param requestedBySwedishSp the requested attribute from the Swedish SP
    * @return an eIDAS {@code RequestedAttribute} object or {@code null}
    */
-  se.litsec.eidas.opensaml.ext.RequestedAttribute toEidasRequestedAttribute(
+  se.swedenconnect.opensaml.eidas.ext.RequestedAttribute toEidasRequestedAttribute(
       final RequestedAttribute requestedBySwedishSp);
 
   /**
    * Gets a list of eIDAS {@link se.litsec.eidas.opensaml.ext.RequestedAttribute}s based on the requested attributes set
    * by the Swedish SP. If the {@code includeMinimumDataSet} is set, the minimum data set is always returned.
-   * 
+   *
    * @param requestedBySwedishSp the requested attributes from the Swedish SP
    * @param includeMinimumDataSet whether the minimum data set should be included (independently of what is passed)
    * @return a list of eIDAS {@link se.litsec.eidas.opensaml.ext.RequestedAttribute RequestedAttribute} objects
    */
-  List<se.litsec.eidas.opensaml.ext.RequestedAttribute> toEidasRequestedAttributes(
+  List<se.swedenconnect.opensaml.eidas.ext.RequestedAttribute> toEidasRequestedAttributes(
       final Collection<RequestedAttribute> requestedBySwedishSp, final boolean includeMinimumDataSet);
 
   /**
    * Maps an attribute released by an eIDAS IdP into its corresponding Swedish eID attribute.
-   * 
+   *
    * @param eidasAttribute an eIDAS attribute
    * @return a Swedish eID attribute or {@code null}
    */
   Attribute toSwedishEidAttribute(final Attribute eidasAttribute);
+
+  /**
+   * See {@link #toSwedishEidAttribute(Attribute)}.
+   *
+   * @param eidasAttribute an eIDAS attribute
+   * @return a Swedish eID attribute or {@code null}
+   */
+  UserAttribute toSwedishEidAttribute(final UserAttribute eidasAttribute);
 
 }

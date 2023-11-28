@@ -26,8 +26,8 @@ import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
 
-import se.litsec.eidas.opensaml.common.EidasConstants;
 import se.swedenconnect.eidas.connector.OpenSamlTestBase;
+import se.swedenconnect.opensaml.eidas.common.EidasConstants;
 import se.swedenconnect.opensaml.saml2.core.build.RequestedAuthnContextBuilder;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;

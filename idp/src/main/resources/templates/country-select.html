@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}"> 
-<head th:include="fragments/base :: headerFragment">
-  <title id="pageTitle" th:inline="text">[[#{connector.ui.title}]]</title>
+<head th:insert="~{fragments/base :: headerFragment}">
 </head>
 <body>
   
-  <div th:replace="fragments/header :: splogotype(url = ${ui.getSpInfo().getLogoUrl()})"></div>
+  <div th:replace="~{fragments/header :: splogotype(url = ${ui.getSpInfo().getLogoUrl()})}"></div>
   
   <div class="container main" id="main">  
     
-    <div th:replace="fragments/header :: language(languages = ${languages}, path='/extauth')"></div>
+    <div th:replace="~{fragments/header :: language(languages = ${languages}, path='/extauth')}"></div>
     
     <th:block th:if="${pingFlag}">
       <div class="alert alert-warning" role="alert">
@@ -192,14 +191,14 @@
         </form>
       </div>
     
-      <div th:replace="fragments/footer :: copyright(accessibilityUrl = ${ui.getAccessibilityUrl()})"></div>
+      <div th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${ui.getAccessibilityUrl()})}"></div>
 
     </div> <!-- mainRow -->                    
     
   </div> <!-- main -->  
   
-  <th:block th:include="fragments/base :: scriptFragment"></th:block>
-  <th:block th:include="fragments/base :: scriptFragment2"></th:block>
+  <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
+  <th:block th:insert="~{fragments/base :: scriptFragment2}"></th:block>
 
 </body>
 </html>

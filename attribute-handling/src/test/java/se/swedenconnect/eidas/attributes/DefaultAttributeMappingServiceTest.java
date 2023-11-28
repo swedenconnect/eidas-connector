@@ -22,20 +22,20 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.opensaml.saml.saml2.core.Attribute;
 
-import se.litsec.eidas.opensaml.ext.attributes.BirthNameType;
-import se.litsec.eidas.opensaml.ext.attributes.CurrentFamilyNameType;
-import se.litsec.eidas.opensaml.ext.attributes.CurrentGivenNameType;
-import se.litsec.eidas.opensaml.ext.attributes.DateOfBirthType;
-import se.litsec.eidas.opensaml.ext.attributes.PersonIdentifierType;
-import se.litsec.eidas.opensaml.ext.attributes.PlaceOfBirthType;
 import se.swedenconnect.eidas.attributes.conversion.AttributeConverterConstants;
+import se.swedenconnect.opensaml.eidas.ext.attributes.BirthNameType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentFamilyNameType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentGivenNameType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.DateOfBirthType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.PersonIdentifierType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.PlaceOfBirthType;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute;
 
 /**
  * Test cases for DefaultAttributeMappingService.
- * 
+ *
  * @author Martin Lindström
  */
 public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
@@ -159,7 +159,7 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
         AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PLACE_OF_BIRTH,
         true);
 
-    se.litsec.eidas.opensaml.ext.RequestedAttribute eidasR = service.toEidasRequestedAttribute(ra);
+    se.swedenconnect.opensaml.eidas.ext.RequestedAttribute eidasR = service.toEidasRequestedAttribute(ra);
     Assertions.assertEquals(EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE.getName(), eidasR.getName());
     Assertions.assertEquals(EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE.getFriendlyName(),
         eidasR.getFriendlyName());
@@ -214,32 +214,32 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
             AttributeConstants.ATTRIBUTE_NAME_C,
             AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_C,
             true));
-    
-    List<se.litsec.eidas.opensaml.ext.RequestedAttribute> eidas = service.toEidasRequestedAttributes(ras, true);
+
+    List<se.swedenconnect.opensaml.eidas.ext.RequestedAttribute> eidas = service.toEidasRequestedAttributes(ras, true);
     Assertions.assertEquals(5, eidas.size());
-    
-    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(), 
+
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.DATE_OF_BIRTH_TEMPLATE.getName())));
-    
-    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(), 
+
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.CURRENT_FAMILY_NAME_TEMPLATE.getName())));
-    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(), 
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.CURRENT_GIVEN_NAME_TEMPLATE.getName())));
-    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(), 
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.PERSON_IDENTIFIER_TEMPLATE.getName())));
-    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(), 
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE.getName())));
-    
+
     eidas = service.toEidasRequestedAttributes(ras, false);
     Assertions.assertEquals(4, eidas.size());
-        
-    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(), 
+
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.CURRENT_FAMILY_NAME_TEMPLATE.getName())));
-    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(), 
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.CURRENT_GIVEN_NAME_TEMPLATE.getName())));
-    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(), 
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.PERSON_IDENTIFIER_TEMPLATE.getName())));
-    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(), 
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE.getName())));
   }
 

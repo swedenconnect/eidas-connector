@@ -25,10 +25,11 @@ import org.opensaml.saml.saml2.core.Attribute;
 
 import se.swedenconnect.eidas.attributes.conversion.AttributeConverter;
 import se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute;
+import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 
 /**
  * Default implementation of the {@link AttributeMappingService} interface.
- * 
+ *
  * @author Martin Lindström
  */
 public class DefaultAttributeMappingService implements AttributeMappingService {
@@ -38,7 +39,7 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
 
   /**
    * Constructor.
-   * 
+   *
    * @param converters the converters used by the service
    */
   public DefaultAttributeMappingService(final List<AttributeConverter> converters) {
@@ -57,7 +58,7 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
 
   /** {@inheritDoc} */
   @Override
-  public se.litsec.eidas.opensaml.ext.RequestedAttribute toEidasRequestedAttribute(
+  public se.swedenconnect.opensaml.eidas.ext.RequestedAttribute toEidasRequestedAttribute(
       final RequestedAttribute requestedBySwedishSp) {
 
     final EidasAttributeTemplate template = this.converters.stream()
@@ -69,9 +70,9 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
     if (template == null) {
       return null;
     }
-    final se.litsec.eidas.opensaml.ext.RequestedAttribute requestedAttribute =
-        (se.litsec.eidas.opensaml.ext.RequestedAttribute) XMLObjectSupport.buildXMLObject(
-            se.litsec.eidas.opensaml.ext.RequestedAttribute.DEFAULT_ELEMENT_NAME);
+    final se.swedenconnect.opensaml.eidas.ext.RequestedAttribute requestedAttribute =
+        (se.swedenconnect.opensaml.eidas.ext.RequestedAttribute) XMLObjectSupport.buildXMLObject(
+            se.swedenconnect.opensaml.eidas.ext.RequestedAttribute.DEFAULT_ELEMENT_NAME);
     requestedAttribute.setName(template.getName());
     requestedAttribute.setFriendlyName(template.getFriendlyName());
     requestedAttribute.setNameFormat(template.getNameFormat());
@@ -85,10 +86,10 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
 
   /** {@inheritDoc} */
   @Override
-  public List<se.litsec.eidas.opensaml.ext.RequestedAttribute> toEidasRequestedAttributes(
+  public List<se.swedenconnect.opensaml.eidas.ext.RequestedAttribute> toEidasRequestedAttributes(
       final Collection<RequestedAttribute> requestedBySwedishSp, final boolean includeMinimumDataSet) {
 
-    final List<se.litsec.eidas.opensaml.ext.RequestedAttribute> requestedAttributes = new ArrayList<>();
+    final List<se.swedenconnect.opensaml.eidas.ext.RequestedAttribute> requestedAttributes = new ArrayList<>();
     requestedBySwedishSp.stream()
         .map(ra -> this.toEidasRequestedAttribute(ra))
         .filter(r -> r != null)
@@ -102,9 +103,9 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
               .findFirst()
               .orElseThrow(() -> new IllegalArgumentException("eIDAS minimum data set config error"));
 
-          final se.litsec.eidas.opensaml.ext.RequestedAttribute requestedAttribute =
-              (se.litsec.eidas.opensaml.ext.RequestedAttribute) XMLObjectSupport.buildXMLObject(
-                  se.litsec.eidas.opensaml.ext.RequestedAttribute.DEFAULT_ELEMENT_NAME);
+          final se.swedenconnect.opensaml.eidas.ext.RequestedAttribute requestedAttribute =
+              (se.swedenconnect.opensaml.eidas.ext.RequestedAttribute) XMLObjectSupport.buildXMLObject(
+                  se.swedenconnect.opensaml.eidas.ext.RequestedAttribute.DEFAULT_ELEMENT_NAME);
           requestedAttribute.setName(template.getName());
           requestedAttribute.setFriendlyName(template.getFriendlyName());
           requestedAttribute.setNameFormat(template.getNameFormat());
@@ -123,6 +124,16 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
   public Attribute toSwedishEidAttribute(final Attribute eidasAttribute) {
     return this.converters.stream()
         .filter(c -> c.supportsConversionToSwedishAttribute(eidasAttribute.getName()))
+        .findFirst()
+        .map(c -> c.toSwedishEidAttribute(eidasAttribute))
+        .orElse(null);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public UserAttribute toSwedishEidAttribute(UserAttribute eidasAttribute) {
+    return this.converters.stream()
+        .filter(c -> c.supportsConversionToSwedishAttribute(eidasAttribute.getId()))
         .findFirst()
         .map(c -> c.toSwedishEidAttribute(eidasAttribute))
         .orElse(null);

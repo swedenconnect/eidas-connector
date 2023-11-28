@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}"> 
-<head th:include="fragments/base :: headerFragment">
-  <title id="pageTitle" th:inline="text">[[#{connector.ui.title}]]</title>
+<head th:insert="~{fragments/base :: headerFragment}">
 </head>
 <body>
   
-  <div th:replace="fragments/header :: logotype"></div>
+  <div th:replace="~{fragments/header :: logotype}"></div>
   
   <div class="container main">
   
-    <div>
+    <div class="row" id="languageDiv">
       <span class="lang float-right">&nbsp;</span>
     </div>  
     
@@ -30,14 +29,14 @@
 
       </div> <!-- /.col-sm-12 content-container -->
       
-      <div th:replace="fragments/footer :: only-copyright"></div>      
+      <div th:replace="~{fragments/footer :: only-copyright}"></div>      
       
     </div> <!-- /#mainDiv -->
 
   </div> <!-- /.container main -->
 
 
-  <th:block th:include="fragments/base :: scriptFragment"></th:block>
+  <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
   
 </body>
 </html>

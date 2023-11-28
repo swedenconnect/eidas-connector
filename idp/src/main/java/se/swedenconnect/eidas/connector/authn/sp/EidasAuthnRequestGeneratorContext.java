@@ -25,16 +25,16 @@ import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.StatusResponseType;
 import org.opensaml.xmlsec.SignatureSigningConfiguration;
 
-import se.litsec.eidas.opensaml.common.EidasConstants;
-import se.litsec.eidas.opensaml.ext.RequestedAttribute;
-import se.litsec.eidas.opensaml.ext.SPTypeEnumeration;
 import se.swedenconnect.eidas.connector.config.EidasAuthenticationProperties;
+import se.swedenconnect.opensaml.eidas.common.EidasConstants;
+import se.swedenconnect.opensaml.eidas.ext.RequestedAttribute;
+import se.swedenconnect.opensaml.eidas.ext.SPTypeEnumeration;
 import se.swedenconnect.opensaml.saml2.core.build.NameIDPolicyBuilder;
 import se.swedenconnect.opensaml.saml2.request.AuthnRequestGeneratorContext;
 
 /**
  * {@link AuthnRequestGeneratorContext} for eIDAS.
- * 
+ *
  * @author Martin Lindström
  */
 class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext {
@@ -59,7 +59,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
 
   /**
    * Constructor.
-   * 
+   *
    * @param country the country code for the current IdP
    * @param nationalSpEntityId the entityID of the national SP that requested authentication
    * @param spType the SP type (if {@code null} it defaults to public)
@@ -82,7 +82,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
 
   /**
    * Gets the country code for the current IdP.
-   * 
+   *
    * @return the country code
    */
   public String getCountryCode() {
@@ -91,7 +91,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
 
   /**
    * Gets the entityID of the national SP that requested authentication.
-   * 
+   *
    * @return SAML entityID
    */
   public String getNationalSpEntityId() {
@@ -100,7 +100,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
 
   /**
    * Gets the SP type.
-   * 
+   *
    * @return the SP type
    */
   public SPTypeEnumeration getSpType() {
@@ -109,7 +109,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
 
   /**
    * Gets the requested SAML attributes.
-   * 
+   *
    * @return the requested SAML attributes
    */
   public List<RequestedAttribute> getRequestedAttributes() {
@@ -118,7 +118,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
 
   /**
    * Gets the requested authentication context class ref URI:s (as stated by the Swedish SP).
-   * 
+   *
    * @return a list of URI:s
    */
   public List<String> getRequestedAuthnContextClassRefs() {
@@ -134,18 +134,18 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
   }
 
   /**
-   * Calculates which URI:s to request based on the SP request and the IdP capabilities. 
+   * Calculates which URI:s to request based on the SP request and the IdP capabilities.
    */
   @Override
   public RequestedAuthnContextBuilderFunction getRequestedAuthnContextBuilderFunction() {
 
-    return (supported, hok) -> {      
+    return (supported, hok) -> {
       return AuthnContextClassRefMapper.calculateRequestedAuthnContext(
           supported, this.requestedAuthnContextClassRefs);
     };
 
   }
-  
+
   @Override
   public SignatureSigningConfiguration getSignatureSigningConfiguration() {
     // TODO Auto-generated method stub

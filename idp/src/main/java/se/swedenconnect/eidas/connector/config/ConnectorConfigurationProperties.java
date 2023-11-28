@@ -30,6 +30,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import se.swedenconnect.eidas.connector.authn.sp.EidasSpMetadataController;
 import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataProviderConfigurationProperties;
 
 /**
@@ -40,17 +41,17 @@ import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataProviderC
 @ConfigurationProperties("connector")
 @Slf4j
 public class ConnectorConfigurationProperties implements InitializingBean {
-  
+
   @Value("${server.servlet.context-path:/}")
   private String contextPath;
-  
+
   /**
    * The domain for the eIDAS Connector.
    */
   @Getter
   @Setter
   private String domain;
-  
+
   /**
    * The base URL of the Connector, including protocol, domain and context path.
    */
@@ -66,12 +67,19 @@ public class ConnectorConfigurationProperties implements InitializingBean {
   private File backupDirectory;
 
   /**
+   * The country code for the eIDAS Connector. Defaults to "SE".
+   */
+  @Getter
+  @Setter
+  private String country;
+
+  /**
    * Configuration for the IdP part of the eIDAS Connector.
    */
   @NestedConfigurationProperty
   @Getter
   private ConnectorIdpProperties idp = new ConnectorIdpProperties();
-  
+
   /**
    * Configuration for eIDAS authentication.
    */
@@ -86,20 +94,34 @@ public class ConnectorConfigurationProperties implements InitializingBean {
   @Getter
   private EuMetadataProperties euMetadata = new EuMetadataProperties();
 
+  /**
+   * The PRID service configuration.
+   */
+  @NestedConfigurationProperty
+  @Getter
+  private PridServiceProperties prid = new PridServiceProperties();
 
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
     Assert.notNull(this.domain, "connector.domain must be set");
     if (!StringUtils.hasText(this.baseUrl)) {
-      this.baseUrl = String.format("https://%s%s", this.domain, 
+      this.baseUrl = String.format("https://%s%s", this.domain,
           "/".equals(this.contextPath) ? "" : this.contextPath);
       log.info("Defaulting connector.base-url to {}", this.baseUrl);
     }
     Assert.notNull(this.backupDirectory, "connector.backup-directory must be set");
+    if (!StringUtils.hasText(this.country)) {
+      this.country = "SE";
+    }
     this.idp.afterPropertiesSet();
+
+    if (!StringUtils.hasText(this.eidas.getEntityId())) {
+      this.eidas.setEntityId(this.baseUrl + EidasSpMetadataController.METADATA_PATH);
+    }
     this.eidas.afterPropertiesSet();
     this.euMetadata.afterPropertiesSet();
+    this.prid.afterPropertiesSet();
   }
 
   /**
@@ -134,6 +156,35 @@ public class ConnectorConfigurationProperties implements InitializingBean {
       Assert.notNull(this.location, "connector.eu-metadata.location must be set");
       if (this.validationCertificate == null) {
         log.warn("connector.eu-metadata.validation-certificate has not been set - Metadata can not be trusted");
+      }
+    }
+
+  }
+
+  /**
+   * Configuration properties for the PRID service.
+   */
+  @Data
+  public static class PridServiceProperties implements InitializingBean {
+
+    public static final int DEFAULT_UPDATE_INTERVAL = 600;
+
+    /**
+     * A Resource pointing at the file containing the PRID configuration.
+     */
+    private Resource policyResource;
+
+    /**
+     * Indicates how often the policy should be re-loaded (value is given in seconds).
+     */
+    private Integer updateInterval;
+
+    /** {@inheritDoc} */
+    @Override
+    public void afterPropertiesSet() throws Exception {
+      Assert.notNull(this.policyResource, "connector.prid.policy-resource must be set");
+      if (this.updateInterval == null) {
+        this.updateInterval = DEFAULT_UPDATE_INTERVAL;
       }
     }
 

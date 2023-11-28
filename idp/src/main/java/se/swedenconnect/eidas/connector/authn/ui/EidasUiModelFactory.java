@@ -20,13 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import org.opensaml.saml.saml2.metadata.Organization;
-import org.opensaml.saml.saml2.metadata.OrganizationName;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -48,7 +44,7 @@ public class EidasUiModelFactory {
   private final MessageSource messageSource;
 
   private final String idmServiceUrl;
-  
+
   private final String accessibilityUrl;
 
   public EidasUiModelFactory(final UiLanguageHandler languageHandler,
@@ -74,9 +70,9 @@ public class EidasUiModelFactory {
     else {
       uiModel.setIdm(new EidasUiModel.IdmInfo(false, null));
     }
-    
+
     uiModel.setCountries(this.getUiCountries(selectableCountries, locale));
-    
+
     uiModel.setAccessibilityUrl(this.accessibilityUrl);
 
     return uiModel;
@@ -91,30 +87,6 @@ public class EidasUiModelFactory {
     if (spDisplayName == null) {
       for (final Language lang : this.languageHandler.getOtherLanguages()) {
         spDisplayName = spUiInfo.getDisplayNames().get(lang.getTag());
-        if (spDisplayName != null) {
-          break;
-        }
-      }
-    }
-    if (spDisplayName == null) {
-      // OK, it seems like the SP did not specify a UIInfo. Pick the name from the organization element instead.
-      final List<OrganizationName> organizationNames =
-          Optional.ofNullable(token.getAuthnRequestToken().getPeerMetadata())
-              .map(EntityDescriptor::getOrganization)
-              .map(Organization::getOrganizationNames)
-              .orElse(Collections.emptyList());
-
-      spDisplayName = organizationNames.stream()
-          .filter(o -> Objects.equals(locale.getLanguage(), o.getXMLLang()) || o.getXMLLang() == null)
-          .map(OrganizationName::getValue)
-          .findFirst()
-          .orElse(null);
-      for (final Language lang : this.languageHandler.getOtherLanguages()) {
-        spDisplayName = organizationNames.stream()
-            .filter(o -> Objects.equals(lang.getTag(), o.getXMLLang()))
-            .map(OrganizationName::getValue)
-            .findFirst()
-            .orElse(null);
         if (spDisplayName != null) {
           break;
         }
@@ -164,7 +136,7 @@ public class EidasUiModelFactory {
     }
 
     final List<UiCountry> uiCountries = new ArrayList<>();
-    for (final SelectableCountry c : countries) {      
+    for (final SelectableCountry c : countries) {
       String displayName = null;
       try {
         displayName = this.messageSource.getMessage("connector.ui.country." + c.country(), null, locale);

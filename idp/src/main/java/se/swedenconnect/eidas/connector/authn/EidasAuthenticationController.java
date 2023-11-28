@@ -18,10 +18,6 @@ package se.swedenconnect.eidas.connector.authn;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +27,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.util.CookieGenerator;
 import org.springframework.web.util.WebUtils;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequest;
 import se.swedenconnect.eidas.connector.authn.ui.EidasUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
+import se.swedenconnect.eidas.connector.config.CookieGenerator;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractAuthenticationController;
@@ -127,7 +127,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       // Selected country from this session.
       //
       final String selectedCountry = Optional.ofNullable(WebUtils.getCookie(
-          request, this.selectedCountrySessionCookieGenerator.getCookieName()))
+          request, this.selectedCountrySessionCookieGenerator.getName()))
           .map(Cookie::getValue)
           .orElse(null);
       log.debug("Selected country from this session: {}", Optional.ofNullable(selectedCountry).orElseGet(() -> "none"));
@@ -188,12 +188,12 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       // Generate AuthnRequest
       //
       RequestHttpObject<AuthnRequest> authnRequest = this.getProvider().generateAuthnRequest(
-          selectedCountry, this.getInputToken(httpRequest).getAuthnInputToken());
+          httpRequest, selectedCountry, this.getInputToken(httpRequest).getAuthnInputToken());
 
       // Save the country as "selected" ...
       //
-      this.selectedCountryCookieGenerator.addCookie(httpResponse, selectedCountry);
-      this.selectedCountrySessionCookieGenerator.addCookie(httpResponse, selectedCountry);
+      this.selectedCountryCookieGenerator.addCookie(selectedCountry, httpResponse);
+      this.selectedCountrySessionCookieGenerator.addCookie(selectedCountry, httpResponse);
 
       // POST or redirect ...
       //
@@ -210,6 +210,40 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     catch (final Saml2ErrorStatusException e) {
       return this.complete(httpRequest, e);
     }
+  }
+
+  /**
+   * Receives the SAML response from the foreign IdP.
+   *
+   * <p>
+   * The {@code SAMLResponse} parameter is required, but we set it as optional so that Spring
+   * does not report an error. We want to set the error ourselves.
+   * </p>
+   *
+   * @param httpRequest the servlet request
+   * @param httpResponse the servlet response
+   * @param samlResponse the SAML response
+   * @param relayState optional relay state
+   * @return a {@link ModelAndView}
+   */
+  @PostMapping(value = ASSERTION_CONSUMER_PATH)
+  public ModelAndView foreignResponse(
+      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
+      @RequestParam(name = "SAMLResponse", required = false) final String samlResponse,
+      @RequestParam(name = "RelayState", required = false) final String relayState) {
+
+    log.debug("Received SAML response [client-ip-address='{}']", httpRequest.getRemoteAddr());
+
+    // Process the response ...
+    //
+    final EidasAuthenticationToken token = this.getProvider().processSamlResponse(httpRequest, samlResponse, relayState);
+
+
+    return this.complete(httpRequest, token);
+
+
+    // THIS IS WRONG. We need to be able to direct the user to a sign page (and also the AS) before exiting.
+    // Re-make: EidasAuthenticationToken
   }
 
 

@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.opensaml.saml.saml2.core.NameID;
@@ -71,8 +72,14 @@ public class EidasAuthenticationProperties implements InitializingBean {
    * An ordered list of supported NameID formats.
    */
   @Getter
-  @Setter
-  private List<String> supportedNameIds;
+  private List<String> supportedNameIds = new ArrayList<>();
+
+  /**
+   * Some eIDAS countries can not handle the {@code Scoping} element in {@code AuthnRequest} messages. This setting
+   * contains the country codes for those countries that we should not include this element for.
+   */
+  @Getter
+  private List<String> skipScopingFor = new ArrayList<>();
 
   /**
    * Metadata configuration for the eIDAS SP.
@@ -91,10 +98,9 @@ public class EidasAuthenticationProperties implements InitializingBean {
     if (this.requiresSignedAssertions == null) {
       this.requiresSignedAssertions = Boolean.FALSE;
     }
-    if (this.supportedNameIds == null || this.supportedNameIds.isEmpty()) {
-      this.supportedNameIds = List.of(NameID.PERSISTENT, NameID.TRANSIENT, NameID.UNSPECIFIED);
+    if (this.supportedNameIds.isEmpty()) {
+      this.supportedNameIds.addAll(List.of(NameID.PERSISTENT, NameID.TRANSIENT, NameID.UNSPECIFIED));
     }
-
     Assert.notNull(this.metadata, "connector.eidas.metadata.* must be set");
     this.metadata.afterPropertiesSet();
   }
