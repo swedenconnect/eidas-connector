@@ -244,7 +244,7 @@ p {
   cursor: pointer;
   margin-bottom: 33px;
 }
-.verification .box span {
+.verification .box div {
   display: block;
   margin-top: 5px;
 }

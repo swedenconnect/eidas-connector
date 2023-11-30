@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
@@ -29,7 +27,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 
 import se.swedenconnect.eidas.connector.authn.EidasCountryHandler.SelectableCountry;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2ServiceProviderUiInfo;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
 /**
@@ -37,32 +34,43 @@ import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationIn
  *
  * @author Martin Lindström
  */
-public class EidasUiModelFactory {
+public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
 
-  private final UiLanguageHandler languageHandler;
-
+  /** The message source. */
   private final MessageSource messageSource;
 
+  /** The IdM Service URL. */
   private final String idmServiceUrl;
 
-  private final String accessibilityUrl;
-
-  public EidasUiModelFactory(final UiLanguageHandler languageHandler,
-      final MessageSource messageSource, final String idmServiceUrl,
-      final String accessibilityUrl) {
-    this.languageHandler = languageHandler;
+  /**
+   * Constructor.
+   *
+   * @param languageHandler the UI language handler
+   * @param accessibilityUrl the accessibility URL
+   * @param messageSource the message source
+   * @param idmServiceUrl the IdM service URL
+   */
+  public EidasUiModelFactory(final UiLanguageHandler languageHandler, final String accessibilityUrl,
+      final MessageSource messageSource, final String idmServiceUrl) {
+    super(languageHandler, accessibilityUrl);
     this.messageSource = messageSource;
     this.idmServiceUrl = idmServiceUrl;
-    this.accessibilityUrl = accessibilityUrl;
   }
 
+  /**
+   * Creates an {@link EidasUiModel}.
+   *
+   * @param token the SAML input token
+   * @param selectableCountries available countries
+   * @return an {@link EidasUiModel}
+   */
   public EidasUiModel createUiModel(final Saml2UserAuthenticationInputToken token,
       final List<SelectableCountry> selectableCountries) {
 
-    final Locale locale = LocaleContextHolder.getLocale();
-
     final EidasUiModel uiModel = new EidasUiModel();
-    uiModel.setSpInfo(this.createSpInfo(token, locale));
+    this.initModel(uiModel, token);
+
+    final Locale locale = LocaleContextHolder.getLocale();
 
     if (this.idmServiceUrl != null) {
       uiModel.setIdm(new EidasUiModel.IdmInfo(true, this.idmServiceUrl));
@@ -70,63 +78,9 @@ public class EidasUiModelFactory {
     else {
       uiModel.setIdm(new EidasUiModel.IdmInfo(false, null));
     }
-
     uiModel.setCountries(this.getUiCountries(selectableCountries, locale));
 
-    uiModel.setAccessibilityUrl(this.accessibilityUrl);
-
     return uiModel;
-  }
-
-  private EidasUiModel.SpInfo createSpInfo(final Saml2UserAuthenticationInputToken token, final Locale locale) {
-    final Saml2ServiceProviderUiInfo spUiInfo = token.getUiInfo();
-    final EidasUiModel.SpInfo model = new EidasUiModel.SpInfo();
-
-    // First the display name ...
-    String spDisplayName = spUiInfo.getDisplayName(locale.getLanguage());
-    if (spDisplayName == null) {
-      for (final Language lang : this.languageHandler.getOtherLanguages()) {
-        spDisplayName = spUiInfo.getDisplayNames().get(lang.getTag());
-        if (spDisplayName != null) {
-          break;
-        }
-      }
-    }
-    model.setDisplayName(spDisplayName);
-
-    // Now, get the logotype ...
-    // Try to find something larger than 80px and less than 120px first
-    //
-    model.setLogoUrl(Optional.ofNullable(spUiInfo.getLogotype(findBestSize(locale.getLanguage())))
-        .map(Saml2ServiceProviderUiInfo.Logotype::getUrl)
-        .orElseGet(() -> Optional.ofNullable(spUiInfo.getLogotype(findBestSize()))
-            .map(Saml2ServiceProviderUiInfo.Logotype::getUrl)
-            .orElseGet(() -> Optional.ofNullable(spUiInfo.getLogotype((l) -> true))
-                .map(Saml2ServiceProviderUiInfo.Logotype::getUrl)
-                .orElse(null))));
-
-    return model;
-  }
-
-  private static Predicate<Saml2ServiceProviderUiInfo.Logotype> findBestSize(final String languageTag) {
-    return (logo) -> {
-      if (logo.getLanguage() == null) {
-        return false;
-      }
-      return findBestSize().test(logo);
-    };
-  }
-
-  private static Predicate<Saml2ServiceProviderUiInfo.Logotype> findBestSize() {
-    return (logo) -> {
-      if (logo.getHeight() == null) {
-        return false;
-      }
-      if (logo.getHeight() > 80 && logo.getHeight() < 120) {
-        return true;
-      }
-      return false;
-    };
   }
 
   private List<UiCountry> getUiCountries(final List<SelectableCountry> countries, final Locale locale) {
@@ -143,7 +97,7 @@ public class EidasUiModelFactory {
       }
       catch (final NoSuchMessageException e) {
         // Maybe, there is no mapping for the given locale. Try the other languages ...
-        for (final Language lang : this.languageHandler.getOtherLanguages()) {
+        for (final Language lang : this.getUiLanguageHandler().getOtherLanguages()) {
           try {
             displayName =
                 this.messageSource.getMessage("connector.ui.country." + c.country(), null, new Locale(lang.getTag()));

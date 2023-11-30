@@ -41,7 +41,7 @@ public class ConnectorSignatureMessagePreprocessor implements SignatureMessagePr
   public String processSignMessage(final String encodedMessage, final SignMessageMimeTypeEnum messageType)
       throws Saml2ErrorStatusException {
 
-    if (messageType != null && messageType != SignMessageMimeTypeEnum.TEXT_HTML) {
+    if (messageType != null && messageType != SignMessageMimeTypeEnum.TEXT) {
       throw new Saml2ErrorStatusException(Saml2ErrorStatus.SIGN_MESSAGE,
           "eIDAS Connector does not support display of HTML or Markdown SignMessages");
     }

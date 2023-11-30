@@ -34,14 +34,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequest;
 import se.swedenconnect.eidas.connector.authn.ui.EidasUiModelFactory;
+import se.swedenconnect.eidas.connector.authn.ui.SignUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
 import se.swedenconnect.eidas.connector.config.CookieGenerator;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractAuthenticationController;
 import se.swedenconnect.spring.saml.idp.authnrequest.Saml2AuthnRequestAuthenticationToken;
+import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatus;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
 
 /**
@@ -73,6 +74,11 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   @Autowired
   @Setter
   private EidasUiModelFactory eidasUiModelFactory;
+
+  /** Factory for sign consent UI model. */
+  @Autowired
+  @Setter
+  private SignUiModelFactory signUiModelFactory;
 
   /** Cookie generator for saving selected country. */
   @Autowired
@@ -115,7 +121,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    */
   @GetMapping(EidasAuthenticationProvider.AUTHN_PATH)
   public ModelAndView authenticate(final HttpServletRequest request, final HttpServletResponse response,
-      @RequestParam(name = "language", required = false) String language) {
+      @RequestParam(name = "lang", required = false) String language) {
 
     try {
       final Saml2UserAuthenticationInputToken token = this.getInputToken(request).getAuthnInputToken();
@@ -144,7 +150,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
       // Get a listing of all countries to display ...
       //
-      final EidasCountryHandler.SelectableCountries selectableCountries = this.countryHandler.getSelectableCountries(token);
+      final EidasCountryHandler.SelectableCountries selectableCountries =
+          this.countryHandler.getSelectableCountries(token);
 
       if (!selectableCountries.displaySelection()) {
         // If request contained only one country, we skip the country selection ...
@@ -216,8 +223,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * Receives the SAML response from the foreign IdP.
    *
    * <p>
-   * The {@code SAMLResponse} parameter is required, but we set it as optional so that Spring
-   * does not report an error. We want to set the error ourselves.
+   * The {@code SAMLResponse} parameter is required, but we set it as optional so that Spring does not report an error.
+   * We want to set the error ourselves.
    * </p>
    *
    * @param httpRequest the servlet request
@@ -234,17 +241,72 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
     log.debug("Received SAML response [client-ip-address='{}']", httpRequest.getRemoteAddr());
 
-    // Process the response ...
-    //
-    final EidasAuthenticationToken token = this.getProvider().processSamlResponse(httpRequest, samlResponse, relayState);
+    try {
+      // Process the response ...
+      //
+      final EidasAuthenticationToken token =
+          this.getProvider().processSamlResponse(httpRequest, samlResponse, relayState);
 
+      // TODO: IDM
 
-    return this.complete(httpRequest, token);
-
-
-    // THIS IS WRONG. We need to be able to direct the user to a sign page (and also the AS) before exiting.
-    // Re-make: EidasAuthenticationToken
+      // Is this a sign request? If so, display the sign consent page ...
+      //
+      final Saml2UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
+      if (inputToken.getAuthnRequestToken().isSignatureServicePeer()) {
+        this.getProvider().saveEidasAuthenticationToken(httpRequest, token);
+        return this.signConsentPage(httpRequest, httpResponse, null);
+      }
+      else {
+        return this.complete(httpRequest, token);
+      }
+    }
+    catch (final Saml2ErrorStatusException e) {
+      return this.complete(httpRequest, e);
+    }
   }
 
+  @GetMapping(EidasAuthenticationProvider.AUTHN_PATH + "/consent")
+  public ModelAndView signConsentPage(
+      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
+      @RequestParam(name = "lang", required = false) String language) {
+
+    if (language != null) {
+      this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
+    }
+
+    final ModelAndView modelAndView = new ModelAndView("sign-consent");
+    modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
+    modelAndView.addObject("signMessageConsent", this.signUiModelFactory.createUiModel(
+        this.getInputToken(httpRequest).getAuthnInputToken(),
+        this.getProvider().getEidasAuthenticationToken(httpRequest, false)));
+
+    return modelAndView;
+  }
+
+  @PostMapping(EidasAuthenticationProvider.AUTHN_PATH + "/signed")
+  public ModelAndView signConsentResult(
+      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
+      @RequestParam(name = "action") String action) {
+
+    if ("ok".equals(action)) {
+      final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest, true);
+      token.setSignatureConsented(true);
+      return this.complete(httpRequest, token);
+    }
+    else if ("cancel".equals(action)) {
+      return this.complete(httpRequest, new Saml2ErrorStatusException(Saml2ErrorStatus.CANCEL, "User did not consent to signature"));
+    }
+    else {
+      log.warn("Unknown action parameter {}", action);
+      return this.signConsentPage(httpRequest, httpResponse, null);
+    }
+  }
+
+  @PostMapping(value = EidasAuthenticationProvider.AUTHN_PATH + "/complete")
+  public ModelAndView completeAuthentication(
+      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse) {
+
+    return null;
+  }
 
 }

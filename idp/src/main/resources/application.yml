@@ -27,7 +27,7 @@ server:
     include-stacktrace: always
 
 spring:
-  messages:
+  messages:    
     basename: messages,idp-errors/idp-error-messages
     
 ui:

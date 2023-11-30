@@ -32,6 +32,7 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 import se.swedenconnect.eidas.connector.authn.ui.EidasUiModelFactory;
+import se.swedenconnect.eidas.connector.authn.ui.SignUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
 
@@ -87,12 +88,14 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @param contextPath the servlet context path
    * @return a {@link LocaleResolver}
    */
-  @Bean
+  @Bean("localeResolver")
   LocaleResolver localeResolver(@Value("${server.servlet.context-path}") String contextPath) {
     CookieLocaleResolver resolver = new CookieLocaleResolver();
     resolver.setDefaultLocale(new Locale("en"));
     resolver.setCookiePath(contextPath);
     resolver.setCookieMaxAge(Duration.ofDays(365));
+    resolver.setCookieHttpOnly(true);
+    resolver.setCookieSecure(true);
     return resolver;
   }
 
@@ -143,9 +146,19 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    */
   @Bean
   EidasUiModelFactory eidasUiModelFactory(final UiLanguageHandler uiLanguageHandler) {
-    return new EidasUiModelFactory(uiLanguageHandler, this.messageSource,
-        this.ui.getIdm().isActive() ? this.ui.getIdm().getServiceUrl() : null,
-        this.ui.getAccessibilityUrl());
+    return new EidasUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl(), this.messageSource,
+        this.ui.getIdm().isActive() ? this.ui.getIdm().getServiceUrl() : null);
+  }
+
+  /**
+   * Gets the {@link SignUiModelFactory} bean.
+   *
+   * @param uiLanguageHandler the language handler
+   * @return a {@link SignUiModelFactory}
+   */
+  @Bean
+  SignUiModelFactory signUiModelFactory(final UiLanguageHandler uiLanguageHandler) {
+    return new SignUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl());
   }
 
   /**

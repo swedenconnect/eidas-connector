@@ -67,6 +67,12 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   /** The corresponding request. */
   private final EidasAuthnRequest authnRequest;
 
+  /** Was the signature consented by the user? */
+  private boolean signatureConsented = false;
+
+  /** The Swedish eID authentication context class reference. */
+  private String swedishEidAuthnContextClassRef;
+
   /**
    * Constructor.
    *
@@ -193,12 +199,48 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   }
 
   /**
+   * Assigns the Swedish eID authentication context class reference URI.
+   *
+   * @param swedishEidAuthnContextClassRef URI
+   */
+  public void setSwedishEidAuthnContextClassRef(final String swedishEidAuthnContextClassRef) {
+    this.swedishEidAuthnContextClassRef = swedishEidAuthnContextClassRef;
+  }
+
+  /**
+   * Gets the Swedish eID authentication context class reference URI
+   *
+   * @return URI
+   */
+  public String getSwedishEidAuthnContextClassRef() {
+    return this.swedishEidAuthnContextClassRef;
+  }
+
+  /**
    * Gets the authentication request object that corresponds to this token.
    *
    * @return an {@link EidasAuthnRequest}
    */
   public EidasAuthnRequest getAuthnRequest() {
     return this.authnRequest;
+  }
+
+  /**
+   * Was a signature operation consented by the user?
+   *
+   * @return whether a signature operation was consented by the user
+   */
+  public boolean isSignatureConsented() {
+    return this.signatureConsented;
+  }
+
+  /**
+   * Sets whether a signature operation was consented by the user.
+   *
+   * @param signatureConsented consent flag
+   */
+  public void setSignatureConsented(final boolean signatureConsented) {
+    this.signatureConsented = signatureConsented;
   }
 
   /** {@inheritDoc} */

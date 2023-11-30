@@ -19,39 +19,34 @@ import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Model object for the eiDAS Connector "choose country" UI view.
- * 
+ *
  * @author Martin Lindström
  */
-@Data
-public class EidasUiModel {
-
-  /**
-   * The SP UI info.
-   */
-  private SpInfo spInfo;
+public class EidasUiModel extends BaseUiModel {
 
   /**
    * Identity Matching info.
    */
+  @Getter
+  @Setter
   private IdmInfo idm;
 
   /**
    * The countries to display.
    */
+  @Getter
+  @Setter
   private List<UiCountry> countries;
 
   /**
-   * The accessibility report URL.
-   */
-  private String accessibilityUrl;
-
-  /**
    * Predicate that tells whether we have any "disabled" countries.
-   * 
+   *
    * @return if at least one country is "disabled", i.e., can't be used for authentication, {@code true} is returned
    */
   public boolean hasDisabledCountry() {
@@ -59,23 +54,6 @@ public class EidasUiModel {
       return false;
     }
     return this.countries.stream().anyMatch(c -> c.isDisabled());
-  }
-
-  /**
-   * SP UI Info.
-   */
-  @Data
-  public static class SpInfo {
-
-    /**
-     * The SP display name.
-     */
-    private String displayName;
-
-    /**
-     * The SP logotype URL.
-     */
-    private String logoUrl;
   }
 
   /**

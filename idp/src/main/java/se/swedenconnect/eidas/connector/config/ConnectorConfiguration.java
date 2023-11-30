@@ -120,11 +120,11 @@ public class ConnectorConfiguration {
    * @return a {@link Saml2IdpConfigurerAdapter}
    */
   @Bean
-  Saml2IdpConfigurerAdapter samlIdpSettingsAdapter(/* final SignatureMessagePreprocessor signMessageProcessor */) {
+  Saml2IdpConfigurerAdapter samlIdpSettingsAdapter(final SignatureMessagePreprocessor signMessageProcessor) {
     return (http, configurer) -> {
-//      configurer
-//          .authnRequestProcessor(c -> c.authenticationProvider(
-//              pc -> pc.signatureMessagePreprocessor(signMessageProcessor)))
+      configurer
+          .authnRequestProcessor(c -> c.authenticationProvider(
+              pc -> pc.signatureMessagePreprocessor(signMessageProcessor)));
 //          .idpMetadataEndpoint(mdCustomizer -> {
 //            mdCustomizer.entityDescriptorCustomizer(this.metadataCustomizer());
 //          });
