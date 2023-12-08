@@ -67,6 +67,14 @@ public class ConnectorConfigurationProperties implements InitializingBean {
   private File backupDirectory;
 
   /**
+   * Tells whether we are running the connector in "development mode". This can mean that we allow any TLS server
+   * certificates or that other settings are setup with less security.
+   */
+  @Getter
+  @Setter
+  private Boolean developmentMode;
+
+  /**
    * The country code for the eIDAS Connector. Defaults to "SE".
    */
   @Getter
@@ -101,6 +109,13 @@ public class ConnectorConfigurationProperties implements InitializingBean {
   @Getter
   private PridServiceProperties prid = new PridServiceProperties();
 
+  /**
+   * Identity Matching configuration.
+   */
+  @Getter
+  @Setter
+  private IdmProperties idm = new IdmProperties();
+
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
@@ -111,6 +126,11 @@ public class ConnectorConfigurationProperties implements InitializingBean {
       log.info("Defaulting connector.base-url to {}", this.baseUrl);
     }
     Assert.notNull(this.backupDirectory, "connector.backup-directory must be set");
+
+    if (this.developmentMode != null) {
+      DevelopmentMode.init(this.developmentMode);
+    }
+
     if (!StringUtils.hasText(this.country)) {
       this.country = "SE";
     }
@@ -122,6 +142,11 @@ public class ConnectorConfigurationProperties implements InitializingBean {
     this.eidas.afterPropertiesSet();
     this.euMetadata.afterPropertiesSet();
     this.prid.afterPropertiesSet();
+
+    if (this.idm != null) {
+      this.idm.afterPropertiesSet();
+    }
+
   }
 
   /**

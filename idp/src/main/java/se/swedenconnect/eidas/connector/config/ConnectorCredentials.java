@@ -103,6 +103,11 @@ public class ConnectorCredentials {
   @Qualifier("connector.sp.credentials.MetadataSign")
   private PkiCredential spMetadataSignCredential;
 
+  @Setter
+  @Autowired(required = false)
+  @Qualifier("connector.idm.oauth2.Credential")
+  private PkiCredential oauth2Credential;
+
   /**
    * Gets the SP signing credential to use.
    *
@@ -326,6 +331,22 @@ public class ConnectorCredentials {
     else {
       return null;
     }
+  }
+
+  /**
+   * Gets the OAuth2 credential to use.
+   *
+   * @return the {@link PkiCredential}
+   * @throws IllegalArgumentException if no credential is found
+   */
+  public PkiCredential getOAuth2Credential() {
+    final PkiCredential[] creds = { this.oauth2Credential, this.defaultCredential, this.spDefaultCredential, this.signCredential, this.spSignCredential };
+    for (final PkiCredential c : creds) {
+      if (c != null) {
+        return c;
+      }
+    }
+    throw new IllegalArgumentException("No OAuth2 credential is available");
   }
 
 }

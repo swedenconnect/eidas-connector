@@ -16,8 +16,10 @@
 package se.swedenconnect.eidas.connector.config;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
@@ -31,9 +33,16 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.attributes.AttributeMappingService;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationController;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
+import se.swedenconnect.eidas.connector.authn.idm.DefaultIdmClient;
+import se.swedenconnect.eidas.connector.authn.idm.IdmClient;
+import se.swedenconnect.eidas.connector.authn.idm.NoopIdmClient;
+import se.swedenconnect.eidas.connector.authn.idm.OAuth2Client;
+import se.swedenconnect.eidas.connector.authn.idm.OAuth2Handler;
+import se.swedenconnect.eidas.connector.authn.idm.OAuth2Server;
 import se.swedenconnect.eidas.connector.authn.metadata.DefaultEuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequestGenerator;
@@ -60,6 +69,7 @@ import se.swedenconnect.spring.saml.idp.settings.IdentityProviderSettings;
 @Configuration
 @EnableConfigurationProperties({ ConnectorConfigurationProperties.class })
 @DependsOn("openSAML")
+@Slf4j
 public class ConnectorConfiguration {
 
   private final ConnectorConfigurationProperties connectorProperties;
@@ -101,10 +111,10 @@ public class ConnectorConfiguration {
         .csrf(c -> c.ignoringRequestMatchers(EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**"))
         .authorizeHttpRequests((authorize) -> authorize
             .requestMatchers(HttpMethod.POST, EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**").permitAll()
-            .requestMatchers(EidasAuthenticationProvider.AUTHN_PATH + "/**",
-                EidasAuthenticationProvider.RESUME_PATH + "/**")
+            .requestMatchers(EidasAuthenticationProvider.AUTHN_PATH + "/**", EidasAuthenticationProvider.RESUME_PATH + "/**")
             .permitAll()
             .requestMatchers(HttpMethod.GET, EidasSpMetadataController.METADATA_PATH + "/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/v1/mrecord/**").permitAll() // mocked IdM
             .requestMatchers(HttpMethod.GET, "/images/**", "/error", "/js/**", "/scripts/**", "/webjars/**", "/css/**")
             .permitAll()
             .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
@@ -199,18 +209,67 @@ public class ConnectorConfiguration {
   }
 
   @Bean
+  OAuth2Handler oauth2Handler(final ConnectorCredentials connectorCredentials) throws Exception {
+    if (this.connectorProperties.getIdm() == null) {
+      // IdM-feature is not active
+      return null;
+    }
+    if (this.connectorProperties.getIdm().getOauth2().getClient() != null) {
+      final OAuth2Client client = new OAuth2Client(
+          this.connectorProperties.getIdm().getOauth2().getClient().getTokenEndpoint(),
+          this.connectorProperties.getIdm().getOauth2().getClientId(),
+          this.connectorProperties.getIdm().getOauth2().getScopes(),
+          connectorCredentials.getOAuth2Credential());
+
+      Optional.ofNullable(this.connectorProperties.getIdm().getOauth2().getClient().getAsIssuerId())
+        .ifPresent(i -> client.setAsIssuerId(i));
+
+      return client;
+    }
+    else {
+      final OAuth2Server server = new OAuth2Server(
+          this.connectorProperties.getIdm().getOauth2().getClientId(),
+          this.connectorProperties.getIdm().getOauth2().getScopes(),
+          this.connectorProperties.getIdm().getOauth2().getServer().getIssuer(),
+          this.connectorProperties.getIdm().getOauth2().getServer().getAudience(),
+          connectorCredentials.getOAuth2Credential());
+
+      Optional.ofNullable(this.connectorProperties.getIdm().getOauth2().getServer().getLifetime())
+        .ifPresent(d -> server.setLifeTime(d));
+
+      return server;
+    }
+  }
+
+  @Bean
+  IdmClient idmClient(@Autowired(required = false) final OAuth2Handler oauth2) {
+    if (this.connectorProperties.getIdm() != null) {
+      if (oauth2 == null) {
+        throw new IllegalArgumentException("Missing OAuth2 handler");
+      }
+      return new DefaultIdmClient(this.connectorProperties.getIdm().getApiBaseUrl(), oauth2);
+    }
+    else {
+      log.warn("eIDAS Identity Matching feature is turned off");
+      return new NoopIdmClient();
+    }
+  }
+
+  @Bean
   EidasAuthenticationProvider eidasAuthenticationProvider(
       final EidasAuthnRequestGenerator authnRequestGenerator,
       final EidasResponseProcessor eidasResponseProcessor,
       final EuMetadataProvider euMetadataProvider,
       final AttributeMappingService attributeMappingService,
-      final PridService pridService) {
+      final PridService pridService,
+      final IdmClient idmClient) {
     return new EidasAuthenticationProvider(this.idpSettings.getBaseUrl(),
         authnRequestGenerator,
         eidasResponseProcessor,
         euMetadataProvider,
         attributeMappingService,
         pridService,
+        idmClient,
         this.connectorProperties.getIdp().getSupportedLoas(),
         this.connectorProperties.getIdp().getEntityCategories(),
         this.connectorProperties.getIdp().getPingWhitelist());

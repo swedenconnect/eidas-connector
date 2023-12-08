@@ -44,8 +44,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>17</java.version>
 
-    <spring.boot.version>3.1.5</spring.boot.version>
-    <spring.version>6.0.13</spring.version>
+    <spring.boot.version>3.2.0</spring.boot.version>
+    <spring.version>6.1.1</spring.version>
     <bc.version>1.76</bc.version>
     <saml.idp.version>2.0.2-SNAPSHOT</saml.idp.version>
   </properties>
@@ -151,6 +151,18 @@
         <artifactId>opensaml-eidas</artifactId>
         <version>3.0.0</version>
       </dependency>
+      
+      <dependency>
+        <groupId>com.nimbusds</groupId>
+        <artifactId>nimbus-jose-jwt</artifactId>
+        <version>9.37.2</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>com.nimbusds</groupId>
+        <artifactId>oauth2-oidc-sdk</artifactId>
+        <version>11.7</version>
+      </dependency>      
 
     </dependencies>
 

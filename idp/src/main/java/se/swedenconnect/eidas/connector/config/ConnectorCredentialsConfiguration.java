@@ -29,7 +29,7 @@ import se.swedenconnect.spring.saml.idp.autoconfigure.settings.CredentialConfigu
 
 /**
  * Configuration for connector credentials (i.e., the SP credentials).
- * 
+ *
  * @author Martin Lindström
  */
 @Configuration
@@ -39,45 +39,56 @@ public class ConnectorCredentialsConfiguration {
   /** The credential properties - may be {@code null}. */
   private final CredentialConfigurationProperties properties;
 
+  /** OAuth2 client properties. */
+  private final IdmProperties.OAuth2Properties oauth2Properties;
+
   /**
    * Constructor.
-   * 
+   *
    * @param connectorProperties the connector properties
    */
   public ConnectorCredentialsConfiguration(final ConnectorConfigurationProperties connectorProperties) {
     this.properties = Optional.ofNullable(connectorProperties.getEidas().getCredentials())
         .orElseGet(() -> new CredentialConfigurationProperties());
+    this.oauth2Properties = Optional.ofNullable(connectorProperties.getIdm())
+        .map(IdmProperties::getOauth2)
+        .orElseThrow(() -> new IllegalArgumentException("Missing connector.idm.oauth2"));
   }
-  
+
   @Bean("connector.sp.credentials.Default")
   PkiCredential defaultCredential() throws Exception {
     return this.loadCredential(this.properties.getDefaultCredential());
   }
-  
+
   @Bean("connector.sp.credentials.Sign")
   PkiCredential signCredential() throws Exception {
     return this.loadCredential(this.properties.getSign());
   }
-  
+
   @Bean("connector.sp.credentials.FutureSign")
   X509Certificate futureSignCertificate() throws Exception {
     return this.properties.getFutureSign();
   }
-  
+
   @Bean("connector.sp.credentials.Encrypt")
   PkiCredential encryptCredential() throws Exception {
     return this.loadCredential(this.properties.getEncrypt());
   }
-  
+
   @Bean("connector.sp.credentials.PreviousEncrypt")
   PkiCredential previousEncryptCredential() throws Exception {
     return this.loadCredential(this.properties.getPreviousEncrypt());
   }
-  
+
   @Bean("connector.sp.credentials.MetadataSign")
   PkiCredential metadataSignCredential() throws Exception {
     return this.loadCredential(this.properties.getMetadataSign());
-  }  
+  }
+
+  @Bean("connector.idm.oauth2.Credential")
+  PkiCredential oauth2Credential() throws Exception {
+    return this.loadCredential(this.oauth2Properties.getCredential());
+  }
 
   private PkiCredential loadCredential(final PkiCredentialConfigurationProperties props) throws Exception {
     if (props == null) {

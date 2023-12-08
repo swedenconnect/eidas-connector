@@ -29,7 +29,7 @@ server:
 spring:
   messages:    
     basename: messages,idp-errors/idp-error-messages
-    
+        
 ui:
   languages:
   - tag: sv
@@ -51,7 +51,7 @@ ui:
 connector:
   backup-directory: target
   base-url: https://${connector.domain}:${server.port}/${server.servlet.context-path}
-  country: SE
+  country: SE  
   idp:
     entity-categories:
     - http://id.elegnamnden.se/ec/1.0/eidas-naturalperson

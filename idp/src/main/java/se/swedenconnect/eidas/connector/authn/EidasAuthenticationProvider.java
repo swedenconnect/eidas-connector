@@ -39,6 +39,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.attributes.AttributeMappingService;
+import se.swedenconnect.eidas.connector.authn.idm.IdmClient;
+import se.swedenconnect.eidas.connector.authn.idm.IdmException;
 import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.sp.AuthnContextClassRefMapper;
@@ -113,6 +115,9 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   /** The PRID service bean. */
   private final PridService pridService;
 
+  /** The Identity Matching client. */
+  private final IdmClient idmClient;
+
   /** Supported LoA URI:s. */
   private final List<String> supportedLoas;
 
@@ -131,6 +136,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param metadataProvider the EU metadata provider
    * @param attributeMappingService attribute service
    * @param pridService the PRID service bean
+   * @param idmClient the Identity Matching client
    * @param supportedLoas supported LoA URI:s
    * @param entityCategories the entity categories
    * @param pingWhitelist the whitelisted SP:s that are allowed to send ping requests
@@ -141,6 +147,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       final EuMetadataProvider metadataProvider,
       final AttributeMappingService attributeMappingService,
       final PridService pridService,
+      final IdmClient idmClient,
       final List<String> supportedLoas, final List<String> entityCategories,
       final List<String> pingWhitelist) {
 
@@ -157,6 +164,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     this.attributeMappingService =
         Objects.requireNonNull(attributeMappingService, "attributeMappingService must not be null");
     this.pridService = Objects.requireNonNull(pridService, "pridService must not be null");
+    this.idmClient = Objects.requireNonNull(idmClient, "idmClient must not be null");
     this.supportedLoas = Collections.unmodifiableList(
         Objects.requireNonNull(supportedLoas, "supportedLoas must not be null"));
     this.entityCategories = Collections.unmodifiableList(
@@ -282,7 +290,18 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
             null, "Failed to create PRID attribute", e.getMessage(), e);
       }
 
-      // TODO: Wrong. We should have talked with IDM before ...
+      // Query the Identity Matching API to check if there is a mapped Swedish ID available ...
+      //
+      try {
+        this.idmClient.getRecord(eidasToken);
+        // TODO: log
+      }
+      catch (final IdmException e) {
+        // TODO
+      }
+
+      // If this is a signature service, assert any potential requirements on the signing user ...
+      //
       if (inputToken.getAuthnRequestToken().isSignatureServicePeer()) {
         this.assertPrincipalSelection(inputToken, eidasToken.getAttributes());
       }
@@ -456,7 +475,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
           .formatted(psName, psValue, values);
       throw new Saml2ErrorStatusException(StatusCode.RESPONDER, StatusCode.UNKNOWN_PRINCIPAL, null,
           "%s attribute from authentication does not match %s attribute from request"
-              .formatted(friendlyName, friendlyName), msg);
+              .formatted(friendlyName, friendlyName),
+          msg);
     }
   }
 
