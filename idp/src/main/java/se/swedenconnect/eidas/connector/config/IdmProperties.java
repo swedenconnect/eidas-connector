@@ -33,6 +33,13 @@ import se.swedenconnect.security.credential.factory.PkiCredentialConfigurationPr
 public class IdmProperties implements InitializingBean {
 
   /**
+   * The URL to the Identity Matching service (for inclusion in views).
+   */
+  @Getter
+  @Setter
+  private String serviceUrl;
+
+  /**
    * The base URL for the eIDAS Identity Matching API.
    */
   @Getter
@@ -49,7 +56,13 @@ public class IdmProperties implements InitializingBean {
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
-    Assert.hasText(this.apiBaseUrl, "connector.idm.api-base-url must be assigned");
+    Assert.hasText(this.serviceUrl, "connector.idm.serviceUrl must be assigned");
+    if (this.apiBaseUrl == null) {
+      this.apiBaseUrl = this.serviceUrl;
+      if (this.apiBaseUrl.endsWith("/")) {
+        this.apiBaseUrl = this.apiBaseUrl.substring(0, this.apiBaseUrl.length() - 1);
+      }
+    }
     if (this.apiBaseUrl.endsWith("/")) {
       throw new IllegalArgumentException("connector.idm.api-base-url must not end with a /");
     }
@@ -173,13 +186,6 @@ public class IdmProperties implements InitializingBean {
       private String issuer;
 
       /**
-       * The audience to use in the issued access tokens.
-       */
-      @Getter
-      @Setter
-      private String audience;
-
-      /**
        * The duration (lifetime) for issued access tokens. The default is one hour.
        */
       @Getter
@@ -190,7 +196,6 @@ public class IdmProperties implements InitializingBean {
       @Override
       public void afterPropertiesSet() throws Exception {
         Assert.hasText(this.issuer, "connector.idm.oauth2.server.issuer must be assigned");
-        Assert.hasText(this.audience, "connector.idm.oauth2.server.audience must be assigned");
       }
 
     }

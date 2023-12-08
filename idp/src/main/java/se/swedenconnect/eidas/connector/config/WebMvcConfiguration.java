@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -42,11 +43,14 @@ import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Languag
  * @author Martin Lindström
  */
 @Configuration
-@EnableConfigurationProperties(UiConfigurationProperties.class)
+@EnableConfigurationProperties({UiConfigurationProperties.class, ConnectorConfigurationProperties.class})
 public class WebMvcConfiguration implements WebMvcConfigurer {
 
   /** UI settings. */
   private final UiConfigurationProperties ui;
+
+  /** IdM settings. */
+  private final IdmProperties idm;
 
   /** The message source. */
   private final MessageSource messageSource;
@@ -55,10 +59,14 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * Constructor.
    *
    * @param ui the UI configuration
+   * @param connector the Connector configuration
    * @param messageSource the Spring {@link MessageSource}
    */
-  public WebMvcConfiguration(final UiConfigurationProperties ui, final MessageSource messageSource) {
+  public WebMvcConfiguration(final UiConfigurationProperties ui,
+      final ConnectorConfigurationProperties connector,
+      final MessageSource messageSource) {
     this.ui = Objects.requireNonNull(ui, "ui must not be null");
+    this.idm = connector.getIdm();
     this.messageSource = Objects.requireNonNull(messageSource, "messageSource must not be null");
   }
 
@@ -147,7 +155,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
   @Bean
   EidasUiModelFactory eidasUiModelFactory(final UiLanguageHandler uiLanguageHandler) {
     return new EidasUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl(), this.messageSource,
-        this.ui.getIdm().isActive() ? this.ui.getIdm().getServiceUrl() : null);
+        Optional.ofNullable(this.idm).map(IdmProperties::getServiceUrl).orElse(null));
   }
 
   /**

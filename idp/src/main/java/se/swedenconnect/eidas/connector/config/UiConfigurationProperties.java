@@ -30,51 +30,44 @@ import lombok.Setter;
 
 /**
  * Configuration properties for UI settings.
- * 
+ *
  * @author Martin Lindström
  */
 @ConfigurationProperties("ui")
 public class UiConfigurationProperties implements InitializingBean {
-  
+
   /** Default cookie name for the selected country cookie. */
   public static final String DEFAULT_SELECTED_COUNTRY_COOKIE_NAME = "selectedCountry";
-  
+
   /** Default cookie name for the selected country session cookie. */
   public static final String DEFAULT_SELECTED_COUNTRY_SESSION_COOKIE_NAME = "selectedCountrySession";
-  
+
   /**
    * The UI language settings.
    */
   @Getter
   private List<Language> languages = new ArrayList<>();
-  
+
   /**
    * The cookie for storing the selected country (in between sessions).
    */
   @NestedConfigurationProperty
   @Getter
   private Cookie selectedCountryCookie = new Cookie();
-  
+
   /**
    * The cookie for storing the selected country (during session).
    */
   @NestedConfigurationProperty
   @Getter
   private Cookie selectedCountrySessionCookie = new Cookie();
-  
+
   /**
    * The accessibility report URL.
    */
   @Getter
   @Setter
   private String accessibilityUrl;
-  
-  /**
-   * Settings for IdM feature.
-   */
-  @NestedConfigurationProperty
-  @Getter
-  private Idm idm = new Idm();
 
   /** {@inheritDoc} */
   @Override
@@ -89,7 +82,6 @@ public class UiConfigurationProperties implements InitializingBean {
     if (!StringUtils.hasText(this.selectedCountrySessionCookie.getName())) {
       this.selectedCountrySessionCookie.setName(DEFAULT_SELECTED_COUNTRY_SESSION_COOKIE_NAME);
     }
-    this.idm.afterPropertiesSet();
   }
 
   /**
@@ -102,7 +94,7 @@ public class UiConfigurationProperties implements InitializingBean {
      * The language tag.
      */
     private String tag;
-    
+
     /**
      * The text associated with the language tag, e.g. English.
      */
@@ -114,55 +106,29 @@ public class UiConfigurationProperties implements InitializingBean {
       Assert.hasText(this.tag, "Missing ui.languages[].tag");
       Assert.hasText(this.text, "Missing ui.languages[].text");
     }
-    
+
   }
-  
+
   /**
    * Cookie settings.
    */
   @Data
   public static class Cookie {
-    
+
     /**
      * Cookie name.
      */
     private String name;
-    
+
     /**
      * Cookie domain.
      */
     private String domain;
-    
+
     /**
      * Cookie path.
      */
-    private String path;    
+    private String path;
   }
-  
-  /**
-   * IdM settings.
-   */
-  @Data
-  public static class Idm implements InitializingBean {
-    
-    /**
-     * Is the IdM feature active?
-     */
-    private boolean active;
-    
-    /**
-     * The URL to the IdM service.
-     */
-    private String serviceUrl;
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-      if (this.active) {
-        Assert.hasText(this.serviceUrl, "ui.idm.service-url must be set");
-      }
-    }
-    
-  }
-  
-  
 }

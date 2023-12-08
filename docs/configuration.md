@@ -31,6 +31,7 @@ See the [Configuration](https://docs.swedenconnect.se/saml-identity-provider/con
 | `connector.eidas.*` | The configuration for the eIDAS authentication. See [eIDAS Authentication Configuration](#eidas-authentication-configuration) below. | [EidasAuthenticationProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/EidasAuthenticationProperties.java) | - |
 | `connector.eu-metadata.*` | Configuration for retrieval of aggregated EU metadata. See [EU Metadata Configuration](#eu-metadata-configuration) below. | [EuMetadataProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/ConnectorConfigurationProperties.java) | - |
 | `connector.prid.*` | Configuration for the [PRID Service](#prid-configuration). | [PridServiceProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/ConnectorConfigurationProperties.java) | - |
+| `connector.idm.*` | Configuration for integration against the [Identity Matching Service](#idm-configuration). Optional - if not configured, no IdM integration is active. | [IdmProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/IdmProperties.java) | `null` |
 
 <a name="connector-idp-configuration"></a>
 ### Connector IdP Configuration
@@ -118,6 +119,31 @@ Below follows the settings that extend the above configuration.
 | `policy-resource` | A [Resource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html) pointing at the file containing the PRID configuration, see [The PRID Service](prid.html). | [Resource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html) | - |
 | `update-interval` | Indicates how often the policy should be re-loaded (value is given in seconds). | Integer | `600` (10 minutes) |
 
+<a name="idm-configuration"></a>
+### Identity Matching Configuration
+
+**Description:** Configuration for the integration against the Identity Matching service.
+
+The connector needs to obtain a valid OAuth2 access token in order to invoke the Identity
+Matching API. Therefore, OAuth2 configuration settings need to be supplied.
+
+**Java class:** [IdmProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/IdmProperties.java)
+
+| Property | Description | Type | Default value |
+| :--- | :--- | :--- | :--- |
+| `service-url` | The URL to the Identity Matching service. Will be displayed in the "select country" view. | String | - |
+| `api-base-url` | The base URL for the Identity Matching Query API. Must not end with a '/'. | String | `service-url` |
+| `oauth2.client-id` | The Connector OAuth2 client ID. | String | - |
+| `oauth2.scopes` | The scope(s) to request for accessing the IdM Query API. | List of strings | - |
+| `oauth2.resource-id` | The OAuth2 ID for the Identity Matching service. | String | - |
+| `oauth2.credential.*` | The credential to use for authentication against the Authorization Server (if the connector acts as an OAuth2 client) OR for use of signing of access tokens (if the connector also acts as an OAuth2 Authorization Server). If not assigned, the connector default credential will be used. | [PkiCredentialConfigurationProperties](https://github.com/swedenconnect/credentials-support/blob/main/src/main/java/se/swedenconnect/security/credential/factory/PkiCredentialConfigurationProperties.java) | The default IdP credential |
+| `oauth2.client.token-endpoint` | The endpoint to the Authorization Server. | String | - |
+| `oauth2.server.issuer` | Assigned when the connector acts as an OAuth2 AS. The issuer ID to use for the issued access tokens. | String | - |
+| `oauth2.server.lifetime` | The duration (lifetime) for issued access tokens. | [Duration](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html) | 1 hour |
+
+**Note**: The connector either sends a token request to the configured OAuth2 Authorization Server in order to obtain the Access Token (`client`-settings should be supplied) OR the connector can act as an OAuth2 Authorization Server itself (`server`-settings should be set).
+
+
 ## eIDAS Connector UI Configuration
 
 **Description:** Configuration specific for the UI of the eIDAS Connector.
@@ -130,7 +156,6 @@ Below follows the settings that extend the above configuration.
 | `ui.selected-`<br />`country-cookie.*` | Cookie settings for the cookie that is used to remember a user's selection of a country (in between sessions). See [Cookie Configuration](#cookie-configuration) below. | [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java) | Default settings for the cookie with the name set to `selectedCountry` |
 | `ui.selected-country-`<br />`session-cookie.*` | Cookie settings for the cookie that is used to remember a user's selection of a country within a session. Used for signing services. See [Cookie Configuration](#cookie-configuration) below. | [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java) | Default settings for the cookie with the name set to `selectedCountrySession` |
 | `ui.accessibility-url` | URL to the eIDAS Connector web accessibility report. | String | - |
-| `ui.idm.*` | Configuration for the Identity Matching feature. If this feature should be active, the `ui.idm.active` flag is set to `true` and the `service-url` is set to point to the eIDAS Identity Matching service. | IdM setting. | - |
 
 <a name="cookie-configuration"></a>
 ### Cookie Configuration

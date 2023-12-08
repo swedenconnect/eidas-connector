@@ -231,7 +231,7 @@ public class ConnectorConfiguration {
           this.connectorProperties.getIdm().getOauth2().getClientId(),
           this.connectorProperties.getIdm().getOauth2().getScopes(),
           this.connectorProperties.getIdm().getOauth2().getServer().getIssuer(),
-          this.connectorProperties.getIdm().getOauth2().getServer().getAudience(),
+          this.connectorProperties.getIdm().getOauth2().getResourceId(),
           connectorCredentials.getOAuth2Credential());
 
       Optional.ofNullable(this.connectorProperties.getIdm().getOauth2().getServer().getLifetime())
