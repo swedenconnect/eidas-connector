@@ -22,6 +22,7 @@ import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,10 +35,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import se.swedenconnect.eidas.connector.authn.EidasCountryHandler.SelectableCountry;
 import se.swedenconnect.eidas.connector.authn.ui.EidasUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.SignUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
 import se.swedenconnect.eidas.connector.config.CookieGenerator;
+import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent;
+import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent.NoDisplayReason;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractAuthenticationController;
@@ -97,6 +101,11 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   @Setter
   private EidasCountryHandler countryHandler;
 
+  /** The event publisher. */
+  @Autowired
+  @Setter
+  private ApplicationEventPublisher eventPublisher;
+
   /**
    * Tells whether the request is made from a signature service.
    */
@@ -129,6 +138,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       if (language != null) {
         this.uiLanguageHandler.setUiLanguage(request, response, language);
       }
+      final boolean signalEvent = language == null;
 
       // Selected country from this session.
       //
@@ -139,12 +149,19 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       log.debug("Selected country from this session: {}", Optional.ofNullable(selectedCountry).orElseGet(() -> "none"));
 
       // The first step is to prompt the user for which country to direct to.
+
       // If the request is made by a signature service and the selected country is known, we skip
       // the "select country" view.
       //
       if (isSignatureService.test(token) && selectedCountry != null) {
         log.info("Request is from a signature service. Will default to previously selected country: '{}'",
             selectedCountry);
+
+        if (signalEvent) {
+          this.eventPublisher.publishEvent(new BeforeCountrySelectionEvent(
+              token, selectedCountry, NoDisplayReason.SIGN_SERVICE_COUNTRY_FROM_SESSION));
+        }
+
         return this.initiateAuthentication(request, response, selectedCountry);
       }
 
@@ -155,6 +172,12 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
       if (!selectableCountries.displaySelection()) {
         // If request contained only one country, we skip the country selection ...
+        //
+        if (signalEvent) {
+          this.eventPublisher.publishEvent(new BeforeCountrySelectionEvent(token,
+              selectableCountries.countries().get(0).country(), NoDisplayReason.FROM_AUTHN_REQUEST));
+        }
+
         return this.initiateAuthentication(request, response, selectableCountries.countries().get(0).country());
       }
 
@@ -162,6 +185,13 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       modelAndView.addObject("pingFlag", this.provider.isPingRequest(token));
       modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
       modelAndView.addObject("ui", this.eidasUiModelFactory.createUiModel(token, selectableCountries.countries()));
+
+      if (signalEvent) {
+        this.eventPublisher.publishEvent(new BeforeCountrySelectionEvent(token, selectableCountries.countries().stream()
+            .filter(SelectableCountry::canAuthenticate)
+            .map(SelectableCountry::country)
+            .toList()));
+      }
 
       return modelAndView;
     }
@@ -294,7 +324,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       return this.complete(httpRequest, token);
     }
     else if ("cancel".equals(action)) {
-      return this.complete(httpRequest, new Saml2ErrorStatusException(Saml2ErrorStatus.CANCEL, "User did not consent to signature"));
+      return this.complete(httpRequest,
+          new Saml2ErrorStatusException(Saml2ErrorStatus.CANCEL, "User did not consent to signature"));
     }
     else {
       log.warn("Unknown action parameter {}", action);

@@ -25,6 +25,31 @@ server:
     include-message: always
     include-exception: true
     include-stacktrace: always
+    
+#
+# Management/Actuator configuration
+#
+management:
+  server:
+    port: 8444
+  endpoint:
+    health:
+      status:
+        order:
+        - DOWN
+        - OUT_OF_SERVICE
+        - UP
+        - WARNING
+        - UNKNOWN
+        http-mapping:
+          WARNING: 503
+      show-details: always
+    info:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics, loggers, refresh-prid, logfile, auditevents 
 
 spring:
   messages:    
@@ -58,6 +83,7 @@ connector:
   eidas:
     entity-id: ${saml.idp.base-url}/metadata/sp
     requires-signed-assertions: true
+    preferred-binding: urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
     skip-scoping-for:
     - DK
     metadata:

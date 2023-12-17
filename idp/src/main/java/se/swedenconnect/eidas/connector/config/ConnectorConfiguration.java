@@ -111,7 +111,8 @@ public class ConnectorConfiguration {
         .csrf(c -> c.ignoringRequestMatchers(EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**"))
         .authorizeHttpRequests((authorize) -> authorize
             .requestMatchers(HttpMethod.POST, EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**").permitAll()
-            .requestMatchers(EidasAuthenticationProvider.AUTHN_PATH + "/**", EidasAuthenticationProvider.RESUME_PATH + "/**")
+            .requestMatchers(EidasAuthenticationProvider.AUTHN_PATH + "/**",
+                EidasAuthenticationProvider.RESUME_PATH + "/**")
             .permitAll()
             .requestMatchers(HttpMethod.GET, EidasSpMetadataController.METADATA_PATH + "/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/v1/mrecord/**").permitAll() // mocked IdM
@@ -222,7 +223,7 @@ public class ConnectorConfiguration {
           connectorCredentials.getOAuth2Credential());
 
       Optional.ofNullable(this.connectorProperties.getIdm().getOauth2().getClient().getAsIssuerId())
-        .ifPresent(i -> client.setAsIssuerId(i));
+          .ifPresent(i -> client.setAsIssuerId(i));
 
       return client;
     }
@@ -235,7 +236,7 @@ public class ConnectorConfiguration {
           connectorCredentials.getOAuth2Credential());
 
       Optional.ofNullable(this.connectorProperties.getIdm().getOauth2().getServer().getLifetime())
-        .ifPresent(d -> server.setLifeTime(d));
+          .ifPresent(d -> server.setLifeTime(d));
 
       return server;
     }
@@ -257,6 +258,7 @@ public class ConnectorConfiguration {
 
   @Bean
   EidasAuthenticationProvider eidasAuthenticationProvider(
+      final ApplicationEventPublisher eventPublisher,
       final EidasAuthnRequestGenerator authnRequestGenerator,
       final EidasResponseProcessor eidasResponseProcessor,
       final EuMetadataProvider euMetadataProvider,
@@ -264,6 +266,7 @@ public class ConnectorConfiguration {
       final PridService pridService,
       final IdmClient idmClient) {
     return new EidasAuthenticationProvider(this.idpSettings.getBaseUrl(),
+        eventPublisher,
         authnRequestGenerator,
         eidasResponseProcessor,
         euMetadataProvider,

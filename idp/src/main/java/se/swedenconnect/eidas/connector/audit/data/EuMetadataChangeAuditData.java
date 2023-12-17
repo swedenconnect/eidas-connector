@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
-import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataEvent.EuMetadataUpdateData;
+import se.swedenconnect.eidas.connector.events.EuMetadataEvent.EuMetadataUpdateData;
 
 /**
  * Audit event data indicating that the contents of the EU metadata has changed.

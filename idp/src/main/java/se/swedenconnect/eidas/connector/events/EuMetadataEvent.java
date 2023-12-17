@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.swedenconnect.eidas.connector.authn.metadata;
+package se.swedenconnect.eidas.connector.events;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -25,7 +25,6 @@ import java.util.Optional;
 import lombok.Getter;
 import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
-import se.swedenconnect.eidas.connector.events.AbstractEidasConnectorEvent;
 
 /**
  * Event for EU metadata updates.

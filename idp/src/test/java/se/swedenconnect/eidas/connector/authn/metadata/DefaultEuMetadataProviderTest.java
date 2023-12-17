@@ -32,6 +32,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.shared.resolver.ResolverException;
 import se.swedenconnect.eidas.connector.OpenSamlTestBase;
+import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
 import se.swedenconnect.opensaml.saml2.metadata.provider.FilesystemMetadataProvider;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
 import se.swedenconnect.opensaml.sweid.saml2.authn.psc.RequestedPrincipalSelection;

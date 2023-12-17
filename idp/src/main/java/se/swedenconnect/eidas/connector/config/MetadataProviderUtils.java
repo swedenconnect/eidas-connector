@@ -21,12 +21,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.TrustManager;
 
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.springframework.core.io.FileSystemResource;
@@ -101,7 +103,9 @@ public class MetadataProviderUtils {
   private static HttpClient createHttpClient(final EuMetadataProperties config) {
     try {
       final List<TrustManager> managers = Arrays.asList(HttpClientSupport.buildNoTrustX509TrustManager());
-      final HostnameVerifier hnv = new DefaultHostnameVerifier();
+      final HostnameVerifier hnv = Optional.ofNullable(config.getSkipHostnameVerification())
+          .map(b -> b.booleanValue() ? NoopHostnameVerifier.INSTANCE : new DefaultHostnameVerifier())
+          .orElseGet(() -> new DefaultHostnameVerifier());
 
       HttpClientBuilder builder = new HttpClientBuilder();
       builder.setUseSystemProperties(true);

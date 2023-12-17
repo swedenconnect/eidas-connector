@@ -116,6 +116,7 @@ public class EidasAuthenticationConfiguration {
         metadata, this.credentials.getSpSigningCredential(), attributeMappingService,
         this.properties.getEidas().getProviderName());
     generator.setSkipScopingElementFor(this.properties.getEidas().getSkipScopingFor());
+    generator.setPreferredBinding(this.properties.getEidas().getPreferredBinding());
 
     return generator;
   }

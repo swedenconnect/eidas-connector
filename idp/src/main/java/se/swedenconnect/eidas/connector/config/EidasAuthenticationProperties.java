@@ -18,6 +18,7 @@ package se.swedenconnect.eidas.connector.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.NameID;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -69,6 +70,15 @@ public class EidasAuthenticationProperties implements InitializingBean {
   private Boolean requiresSignedAssertions;
 
   /**
+   * The preferred binding to use when sending authentication requests. Default is
+   * {@code urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST}. For redirect, use
+   * {@code urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect}.
+   */
+  @Getter
+  @Setter
+  private String preferredBinding;
+
+  /**
    * An ordered list of supported NameID formats.
    */
   @Getter
@@ -98,6 +108,16 @@ public class EidasAuthenticationProperties implements InitializingBean {
     if (this.requiresSignedAssertions == null) {
       this.requiresSignedAssertions = Boolean.FALSE;
     }
+    if (this.preferredBinding == null) {
+      this.preferredBinding = SAMLConstants.SAML2_POST_BINDING_URI;
+    }
+    else {
+      if (!(SAMLConstants.SAML2_POST_BINDING_URI.equals(this.preferredBinding)
+          || SAMLConstants.SAML2_REDIRECT_BINDING_URI.equals(this.preferredBinding))) {
+        throw new IllegalArgumentException("Invalid value for connector.eidas.preferred-binding");
+      }
+    }
+
     if (this.supportedNameIds.isEmpty()) {
       this.supportedNameIds.addAll(List.of(NameID.PERSISTENT, NameID.TRANSIENT, NameID.UNSPECIFIED));
     }

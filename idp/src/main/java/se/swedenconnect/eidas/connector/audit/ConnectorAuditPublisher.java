@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.audit.data.EuMetadataChangeAuditData;
-import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataEvent;
+import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
 
 /**
  * The eIDAS Connector Audit event publisher. The component listens for connector events and translates them into audit

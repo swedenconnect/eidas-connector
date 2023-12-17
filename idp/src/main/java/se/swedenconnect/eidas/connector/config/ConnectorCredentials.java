@@ -334,6 +334,22 @@ public class ConnectorCredentials {
   }
 
   /**
+   * Gets the IdP signing credential to use.
+   *
+   * @return the {@link PkiCredential}
+   * @throws IllegalArgumentException if no credential is found
+   */
+  public PkiCredential getIdpSigningCredential() {
+    final PkiCredential[] creds = { this.signCredential, this.defaultCredential };
+    for (final PkiCredential c : creds) {
+      if (c != null) {
+        return c;
+      }
+    }
+    throw new IllegalArgumentException("No signing credential is available");
+  }
+
+  /**
    * Gets the OAuth2 credential to use.
    *
    * @return the {@link PkiCredential}

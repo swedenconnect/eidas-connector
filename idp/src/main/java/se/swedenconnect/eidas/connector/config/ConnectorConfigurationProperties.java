@@ -171,6 +171,12 @@ public class ConnectorConfigurationProperties implements InitializingBean {
     private X509Certificate validationCertificate;
 
     /**
+     * If the {@code location} is an HTTPS resource, this setting tells whether to skip hostname verification in the TLS
+     * connection (useful during testing).
+     */
+    private Boolean skipHostnameVerification;
+
+    /**
      * If the {@code location} setting is an URL and a HTTP proxy is required this setting configures this proxy.
      */
     private MetadataProviderConfigurationProperties.HttpProxy httpProxy;

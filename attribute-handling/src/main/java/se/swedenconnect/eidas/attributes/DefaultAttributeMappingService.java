@@ -24,6 +24,7 @@ import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Attribute;
 
 import se.swedenconnect.eidas.attributes.conversion.AttributeConverter;
+import se.swedenconnect.spring.saml.idp.attributes.ImplicitRequestedAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 
@@ -91,6 +92,15 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
 
     final List<se.swedenconnect.opensaml.eidas.ext.RequestedAttribute> requestedAttributes = new ArrayList<>();
     requestedBySwedishSp.stream()
+        .filter(ra -> {
+          if (ra instanceof ImplicitRequestedAttribute impl) {
+            // Don't include implicitly required attributes that are not required ...
+            if (!impl.isRequired()) {
+              return false;
+            }
+          }
+          return true;
+        })
         .map(ra -> this.toEidasRequestedAttribute(ra))
         .filter(r -> r != null)
         .forEach(requestedAttributes::add);

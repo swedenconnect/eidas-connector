@@ -104,6 +104,12 @@
     </dependency>
     
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.15.1</version>
+    </dependency>    
+    
+    <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>nimbus-jose-jwt</artifactId>
     </dependency>
@@ -239,30 +245,58 @@
             <exclude>**/*Exception.class</exclude>
           </excludes>
         </configuration>
-      </plugin>      
-
+      </plugin>
+      
       <plugin>
         <groupId>com.google.cloud.tools</groupId>
         <artifactId>jib-maven-plugin</artifactId>
-        <version>3.3.1</version>
+        <version>3.4.0</version>
+        <!--
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+        -->
         <configuration>
           <from>
             <image>openjdk:18.0.2.1-slim</image>
+            <platforms>
+              <platform>
+                <architecture>amd64</architecture>
+                <os>linux</os>
+              </platform>
+              <platform>
+                <architecture>arm64</architecture>
+                <os>linux</os>
+              </platform>
+            </platforms>
           </from>
           <to>
-            <image>${DOCKER_REPO}/bankid-saml-idp</image>
+            <image>${DOCKER_REPO}/swedenconnect/eidas-connector</image>
           </to>
           <container>
             <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
             <jvmFlags>
-              <jvmFlag>-Dtomcat.ajp.enabled=true</jvmFlag>
               <jvmFlag>-Djava.net.preferIPv4Stack=true</jvmFlag>
               <jvmFlag>-Dorg.apache.xml.security.ignoreLineBreaks=true</jvmFlag>
             </jvmFlags>
             <ports>
-              <port>8012</port>
-              <port>8082</port>
+              <port>8443</port>
+              <port>8444</port>
             </ports>
+            <labels>
+              <org.opencontainers.image.source>
+                https://github.com/swedenconnect/eidas-connector
+              </org.opencontainers.image.source>
+              <org.opencontainers.image.description>
+                Swedish eIDAS Connector
+              </org.opencontainers.image.description>
+              <org.opencontainers.image.licenses>Apache-2.0</org.opencontainers.image.licenses>
+            </labels>
           </container>
         </configuration>
       </plugin>

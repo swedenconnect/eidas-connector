@@ -64,6 +64,13 @@ public interface EuMetadataProvider {
   }
 
   /**
+   * Lists all countries (even if they have the "hide-from-discovery" field set.
+   *
+   * @return a list of countries
+   */
+  List<CountryMetadata> getAllCountries();
+
+  /**
    * Lists all countries that may be displayed on the connector country selection page.
    * <p>
    * If a country has its "hide-from-discovery" field set it is filtered from the resulting list <b>unless</b> it is

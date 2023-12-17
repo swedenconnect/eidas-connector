@@ -67,6 +67,9 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
   /** Some countries can not handle the Scoping element. */
   private List<String> skipScopingElementFor = Collections.emptyList();
 
+  /** Preferred binding to use for authentication requests. */
+  private String preferredBinding;
+
   /**
    * Constructor.
    *
@@ -112,7 +115,7 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
     //
     final EidasAuthnRequestGeneratorContext context = new EidasAuthnRequestGeneratorContext(
         country.getCountryCode(), token.getAuthnRequestToken().getEntityId(), spType, requestedAttributes,
-        token.getAuthnRequirements().getAuthnContextRequirements(), this.providerName);
+        token.getAuthnRequirements().getAuthnContextRequirements(), this.providerName, this.preferredBinding);
 
     // Generate AuthnRequest ...
     //
@@ -184,6 +187,17 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
   public void setSkipScopingElementFor(final List<String> skipScopingElementFor) {
     this.skipScopingElementFor = Optional.ofNullable(skipScopingElementFor)
         .orElseGet(() -> Collections.emptyList());
+  }
+
+  /**
+   * Sets the preferred binding to use when sending authentication requests.
+   *
+   * @param preferredBinding URI
+   */
+  public void setPreferredBinding(final String preferredBinding) {
+    if (preferredBinding != null) {
+      this.preferredBinding = preferredBinding;
+    }
   }
 
 }

@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.opensaml.core.xml.Namespace;
+import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.StatusResponseType;
 import org.opensaml.xmlsec.SignatureSigningConfiguration;
@@ -57,6 +58,9 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
   /** The name to add to the SAML attribute {@code ProviderName}. */
   private final String providerName;
 
+  /** Preferred binding to use for authentication requests. */
+  private final String preferredBinding;
+
   /**
    * Constructor.
    *
@@ -66,10 +70,12 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    * @param requestedAttributes the requested SAML attributes
    * @param requestedAuthnContextClassRefs the requested authentication context class ref URI:s (Swedish)
    * @param providerName the name to add to the field {@code providerName}.
+   * @param preferredBinding the preferred binding
    */
   public EidasAuthnRequestGeneratorContext(final String country, final String nationalSpEntityId,
       final SPTypeEnumeration spType, final List<RequestedAttribute> requestedAttributes,
-      final List<String> requestedAuthnContextClassRefs, final String providerName) {
+      final List<String> requestedAuthnContextClassRefs, final String providerName,
+      final String preferredBinding) {
     this.country = Objects.requireNonNull(country, "country must not be null");
     this.nationalSpEntityId = Objects.requireNonNull(nationalSpEntityId, "nationalSpEntityId must not be null");
     this.spType = Optional.ofNullable(spType).orElseGet(() -> SPTypeEnumeration.PUBLIC);
@@ -78,6 +84,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
         "requestedAuthnContextClassRefs must not be null");
     this.providerName =
         Optional.ofNullable(providerName).orElseGet(() -> EidasAuthenticationProperties.DEFAULT_PROVIDER_NAME);
+    this.preferredBinding = Optional.ofNullable(preferredBinding).orElseGet(() -> SAMLConstants.SAML2_POST_BINDING_URI);
   }
 
   /**
@@ -87,6 +94,14 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    */
   public String getCountryCode() {
     return this.country;
+  }
+
+  /**
+   * The preferred binding.
+   */
+  @Override
+  public String getPreferredBinding() {
+    return this.preferredBinding;
   }
 
   /**

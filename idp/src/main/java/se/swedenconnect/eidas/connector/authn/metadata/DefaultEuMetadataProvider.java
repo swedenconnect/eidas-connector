@@ -31,6 +31,7 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.shared.resolver.ResolverException;
+import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
 
 /**
@@ -101,6 +102,12 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider, Initializi
               .isPresent())
           .toList();
     }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<CountryMetadata> getAllCountries() {
+    return this.getCountryMap().values().stream().toList();
   }
 
   private synchronized Map<String, CountryMetadata> getCountryMap() {

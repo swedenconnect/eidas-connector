@@ -31,6 +31,7 @@ import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Status;
 import org.opensaml.saml.saml2.core.StatusCode;
 import org.opensaml.saml.saml2.core.StatusMessage;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
@@ -97,6 +98,9 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   /** The base URL for the application. */
   private final String baseUrl;
 
+  /** The event publisher. */
+  private final ApplicationEventPublisher eventPublisher;
+
   /** For generating AuthnRequests. */
   private final EidasAuthnRequestGenerator authnRequestGenerator;
 
@@ -131,6 +135,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * Constructor.
    *
    * @param baseUrl the application base URL
+   * @param eventPublisher the event publisher
    * @param authnRequestGenerator for generating authentication requests
    * @param responseProcessor the processor handling the SAML responses received from the foreign eIDAS proxy services
    * @param metadataProvider the EU metadata provider
@@ -142,6 +147,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param pingWhitelist the whitelisted SP:s that are allowed to send ping requests
    */
   public EidasAuthenticationProvider(final String baseUrl,
+      final ApplicationEventPublisher eventPublisher,
       final EidasAuthnRequestGenerator authnRequestGenerator,
       final ResponseProcessor responseProcessor,
       final EuMetadataProvider metadataProvider,
@@ -156,6 +162,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     this.ssoVoters().add(new EidasSsoVoter());
 
     this.baseUrl = Objects.requireNonNull(baseUrl, "baseUrl must not be null");
+    this.eventPublisher = Objects.requireNonNull(eventPublisher, "eventPublisher must not be null");
     this.authnRequestGenerator =
         Objects.requireNonNull(authnRequestGenerator, "authnRequestGenerator must not be null");
     this.responseProcessor = Objects.requireNonNull(responseProcessor, "responseProcessor must not be null");
