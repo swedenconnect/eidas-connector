@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 Sweden Connect
+ * Copyright 2017-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package se.swedenconnect.eidas.connector.config;
 
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.opensaml.saml.ext.saml2alg.DigestMethod;
@@ -33,6 +34,7 @@ import se.swedenconnect.opensaml.saml2.metadata.build.DigestMethodBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.EncryptionMethodBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.KeyDescriptorBuilder;
 import se.swedenconnect.security.credential.PkiCredential;
+import se.swedenconnect.security.credential.ReloadablePkiCredential;
 import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataConfigurationProperties;
 
 /**
@@ -115,7 +117,8 @@ public class ConnectorCredentials {
    * @throws IllegalArgumentException if no credential is found
    */
   public PkiCredential getSpSigningCredential() {
-    final PkiCredential[] creds = { this.spSignCredential, this.spDefaultCredential, this.signCredential, this.defaultCredential };
+    final PkiCredential[] creds =
+        { this.spSignCredential, this.spDefaultCredential, this.signCredential, this.defaultCredential };
     for (final PkiCredential c : creds) {
       if (c != null) {
         return c;
@@ -356,13 +359,35 @@ public class ConnectorCredentials {
    * @throws IllegalArgumentException if no credential is found
    */
   public PkiCredential getOAuth2Credential() {
-    final PkiCredential[] creds = { this.oauth2Credential, this.defaultCredential, this.spDefaultCredential, this.signCredential, this.spSignCredential };
+    final PkiCredential[] creds = { this.oauth2Credential, this.defaultCredential, this.spDefaultCredential,
+        this.signCredential, this.spSignCredential };
     for (final PkiCredential c : creds) {
       if (c != null) {
         return c;
       }
     }
     throw new IllegalArgumentException("No OAuth2 credential is available");
+  }
+
+  /**
+   * Gets a list of "hardware based" credentials. Those types of credentials may need to be monitored, and possibly
+   * reloaded.
+   *
+   * @return a (possibly empty) list of {@link ReloadablePkiCredential}
+   */
+  public List<ReloadablePkiCredential> getHardwareCredentials() {
+
+    final PkiCredential[] creds = { this.signCredential, this.spSignCredential, this.encryptCredential,
+        this.spEncryptCredential, this.defaultCredential, this.spDefaultCredential, this.metadataSignCredential,
+        this.spMetadataSignCredential, this.previousEncryptCredential, this.spPreviousEncryptCredential,
+        this.oauth2Credential };
+
+    return Arrays.stream(creds)
+        .filter(c -> c != null)
+        .filter(c -> c.isHardwareCredential())
+        .filter(c -> ReloadablePkiCredential.class.isInstance(c))
+        .map(ReloadablePkiCredential.class::cast)
+        .toList();
   }
 
 }

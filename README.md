@@ -77,4 +77,4 @@ The eIDAS Connector in the Sweden Connect Sandbox-federation publishes its stati
 
 ---
 
-Copyright &copy; 2016-2020, [Sweden Connect](https://swedenconnect.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+Copyright &copy; 2016-2024, [Sweden Connect](https://swedenconnect.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
