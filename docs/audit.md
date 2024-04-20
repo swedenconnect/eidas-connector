@@ -98,7 +98,20 @@ Common for all User Audit Events is that the authentication data contains the fo
 
 ### Before Foreign Authentication
 
-> TODO
+**Type:** `CONNECTOR_BEFORE_SAML_REQUEST`
+
+**Description:** An event that is logged after the SAML authentication request that is to be sent to the foreign Identity Provider has been compiled, but before it is sent. This audit event will display in detail how the connector requests authentication based on the SAML request received from the Swedish SP and the country selection by the user.
+
+**Audit data:** `eidas-authn-request`
+
+| Parameter | Description | Type |
+| :--- | :--- | :--- |
+| `country` | The country code of the country that was selected by the user and to where the request is being sent. | String |
+| `destination-url` | The URL to where the request is being sent. | String |
+| `method` | Tells whether a redirect (`GET`) or a HTTP POST (`POST`) is used to send the request. | String |
+| `requested-authn-context` | The requested authentication context of the authentication request. Contains the `comparison` field telling `exact` or `minimum` and a `authn-context-class-refs` field that is a list of URI:s for each requested authentication context class ref URI. | See desc. |
+| `eidas-sp-type` | The type of SP that we are requesting authentication for (`public` or `private`) | String |
+| `requested-attributes` | The SAML attributes that are requested to be delivered in the assertion. | A list of objects holding the fields `name` (for attribute name) and `is-required` (telling whether the attribute is required to be present). |
 
 ### Foreign Authentication Success
 

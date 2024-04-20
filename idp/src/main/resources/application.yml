@@ -2,6 +2,21 @@
 # Configuration for the Swedish eIDAS Connector.
 #
 
+spring:
+  messages:    
+    basename: messages,idp-errors/idp-error-messages
+  ssl:
+    bundle:
+      jks:
+        localhost:
+          keystore:
+            location: classpath:localhost.jks
+            password: secret
+            type: JKS
+          key:
+            alias: localhost
+            password: secret
+
 server:
   port: 8443
   servlet:
@@ -16,11 +31,7 @@ server:
         secure: true
   ssl:
     enabled: true
-    key-store: classpath:ssl.jks
-    key-store-type: JKS
-    key-alias: local
-    key-store-password: secret
-    key-password: secret
+    bundle: localhost
   error:
     include-message: always
     include-exception: true
@@ -50,10 +61,6 @@ management:
     web:
       exposure:
         include: info, health, metrics, loggers, refresh-prid, logfile, auditevents 
-
-spring:
-  messages:    
-    basename: messages,idp-errors/idp-error-messages
         
 ui:
   languages:
@@ -139,7 +146,13 @@ connector:
 saml:
   idp:
     entity-id: https://connector.eidas.swedenconnect.se/eidas
-    base-url: ${connector.base-url}    
+    base-url: ${connector.base-url}  
+    audit:
+      in-memory:
+        capacity: 1000
+      exclude-events:
+      - AUTHENTICATION_SUCCESS
+      - AUTHORIZATION_FAILURE  
     credentials:
       sign:
         resource: classpath:idp-credentials.jks

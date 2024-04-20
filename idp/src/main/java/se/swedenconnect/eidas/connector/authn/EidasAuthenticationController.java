@@ -42,6 +42,7 @@ import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
 import se.swedenconnect.eidas.connector.config.CookieGenerator;
 import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent;
 import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent.NoDisplayReason;
+import se.swedenconnect.eidas.connector.events.BeforeEidasAuthenticationEvent;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractAuthenticationController;
@@ -231,6 +232,11 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       //
       this.selectedCountryCookieGenerator.addCookie(selectedCountry, httpResponse);
       this.selectedCountrySessionCookieGenerator.addCookie(selectedCountry, httpResponse);
+
+      // Add event ...
+      //
+      this.eventPublisher.publishEvent(new BeforeEidasAuthenticationEvent(selectedCountry,
+          authnRequest.getRequest(), authnRequest.getMethod()));
 
       // POST or redirect ...
       //

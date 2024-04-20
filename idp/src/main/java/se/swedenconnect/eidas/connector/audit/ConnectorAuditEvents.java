@@ -25,6 +25,9 @@ public class ConnectorAuditEvents {
   /** Event for indicating that the EU metadata has changed (country disappeared, ...). */
   public static final String CONNECTOR_AUDIT_EU_METADATA_CHANGED = "CONNECTOR_EU_METADATA_CHANGE";
 
+  /** Event logged before a SAML authentication request is sent to a foreign IdP. */
+  public static final String CONNECTOR_BEFORE_SAML_REQUEST = "CONNECTOR_BEFORE_SAML_REQUEST";
+
 
   // hidden
   private ConnectorAuditEvents() {

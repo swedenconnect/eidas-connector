@@ -18,6 +18,8 @@ package se.swedenconnect.eidas.connector.audit.data;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
@@ -30,6 +32,7 @@ import se.swedenconnect.eidas.connector.events.EuMetadataEvent.EuMetadataUpdateD
  *
  * @author Martin Lindström
  */
+@JsonInclude(Include.NON_NULL)
 public class EuMetadataChangeAuditData extends ConnectorAuditData {
 
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;

@@ -24,7 +24,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+import se.swedenconnect.eidas.connector.audit.data.EidasAuthnRequestAuditData;
 import se.swedenconnect.eidas.connector.audit.data.EuMetadataChangeAuditData;
+import se.swedenconnect.eidas.connector.events.BeforeEidasAuthenticationEvent;
 import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
 
 /**
@@ -50,7 +52,7 @@ public class ConnectorAuditPublisher {
   }
 
   /**
-   * Handles {@link EuMetadataEvent}s and translates them into an
+   * Handles {@link EuMetadataEvent}s and translates them into a
    * {@value ConnectorAuditEvents#CONNECTOR_AUDIT_EU_METADATA_CHANGED} event containing
    * {@link EuMetadataChangeAuditData} audit data.
    *
@@ -60,8 +62,28 @@ public class ConnectorAuditPublisher {
   public void onEuMetadataEvent(final EuMetadataEvent euMetadataEvent) {
     final EuMetadataChangeAuditData auditData = EuMetadataChangeAuditData.of(euMetadataEvent.getEuMetadataUpdateData());
     if (auditData != null) {
-      ConnectorAuditEvent auditEvent = new ConnectorAuditEvent(
+      final ConnectorAuditEvent auditEvent = new ConnectorAuditEvent(
           ConnectorAuditEvents.CONNECTOR_AUDIT_EU_METADATA_CHANGED, euMetadataEvent.getTimestamp(), auditData);
+
+      log.info("Publishing audit event: {}", auditEvent);
+
+      this.publish(auditEvent);
+    }
+  }
+
+  /**
+   * Handles {@link BeforeEidasAuthenticationEvent}s and translates them into a
+   * {@value ConnectorAuditEvents#CONNECTOR_BEFORE_SAML_REQUEST} event containing {@link EidasAuthnRequestAuditData}
+   * audit data.
+   *
+   * @param event the event
+   */
+  @EventListener
+  public void onBeforeEidasAuthenticationEvent(final BeforeEidasAuthenticationEvent event) {
+    final EidasAuthnRequestAuditData auditData = EidasAuthnRequestAuditData.of(event);
+    if (auditData != null) {
+      final ConnectorAuditEvent auditEvent = new ConnectorAuditEvent(
+          ConnectorAuditEvents.CONNECTOR_BEFORE_SAML_REQUEST, event.getTimestamp(), auditData);
 
       log.info("Publishing audit event: {}", auditEvent);
 
