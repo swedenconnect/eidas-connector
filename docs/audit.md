@@ -149,6 +149,21 @@ Common for all User Audit Events is that the authentication data contains the fo
 
 > **Note:** If `CONNECTOR_SUCCESS_RESPONSE` was previously logged, this data is not included.
 
+### Result of Signature Consent
+
+**Type:** `CONNECTOR_SIGNATURE_CONSENT_RESULT`
+
+**Description:** When an authentication is requested from a signature service, the user will be displayed a signature consent dialogue. This event is logged to state the result of this dialogue (consent or reject).
+
+**Audit data:** `signature-consent-result`
+
+| Parameter | Description | Type |
+| :--- | :--- | :--- |
+| `signature-consented` | Tells whether the user consented to the signature. | Boolean |
+| `user` | The eIDAS PersonIdentifier of the user that accepted/rejected the signature | String |
+
+
+
 ---
 
 Copyright &copy; 2017-2024, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).

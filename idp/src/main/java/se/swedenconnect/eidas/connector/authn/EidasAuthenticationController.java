@@ -21,6 +21,7 @@ import java.util.function.Predicate;
 
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
@@ -43,11 +44,11 @@ import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
 import se.swedenconnect.eidas.connector.config.CookieGenerator;
 import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent;
 import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent.NoDisplayReason;
+import se.swedenconnect.eidas.connector.events.SignatureConsentEvent;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractAuthenticationController;
 import se.swedenconnect.spring.saml.idp.authnrequest.Saml2AuthnRequestAuthenticationToken;
-import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatus;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
 
 /**
@@ -314,37 +315,43 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     return modelAndView;
   }
 
+  /**
+   * Receives the results from the sign consent page.
+   *
+   * @param httpRequest the HTTP servlet request
+   * @param httpResponse the HTTP servlet response
+   * @param action the result (ok or cancel)
+   * @return a {@link ModelAndView}
+   */
   @PostMapping(EidasAuthenticationProvider.AUTHN_PATH + "/signed")
   public ModelAndView signConsentResult(
       final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
       @RequestParam(name = "action") String action) {
 
-    if ("ok".equals(action)) {
-      final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest, true);
-      token.setSignatureConsented(true);
+    final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest, true);
+    final Saml2UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
 
-      // TODO: event
+    if ("ok".equals(action)) {
+      log.debug("User consented to signature [{}]", inputToken.getLogString());
+
+      token.setSignatureConsented(true);
+      this.eventPublisher.publishEvent(new SignatureConsentEvent(inputToken, token, true));
 
       return this.complete(httpRequest, token);
     }
     else if ("cancel".equals(action)) {
+      log.debug("User did not consent to signing [{}]", inputToken.getLogString());
+      this.eventPublisher.publishEvent(new SignatureConsentEvent(inputToken, token, false));
 
-      // TODO: event
-
+      final String msg = "User did not consent to signature";
       return this.complete(httpRequest,
-          new Saml2ErrorStatusException(Saml2ErrorStatus.CANCEL, "User did not consent to signature"));
+          new Saml2ErrorStatusException(StatusCode.RESPONDER, "http://id.elegnamnden.se/status/1.0/cancel",
+              "idp.error.status.reject-signature", msg, msg));
     }
     else {
       log.warn("Unknown action parameter {}", action);
       return this.signConsentPage(httpRequest, httpResponse, null);
     }
-  }
-
-  @PostMapping(value = EidasAuthenticationProvider.AUTHN_PATH + "/complete")
-  public ModelAndView completeAuthentication(
-      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse) {
-
-    return null;
   }
 
 }

@@ -29,10 +29,12 @@ import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.audit.data.EidasAuthnRequestAuditData;
 import se.swedenconnect.eidas.connector.audit.data.EuMetadataChangeAuditData;
 import se.swedenconnect.eidas.connector.audit.data.ProcessingErrorAuditData;
+import se.swedenconnect.eidas.connector.audit.data.SignatureConsentAuditData;
 import se.swedenconnect.eidas.connector.events.BeforeEidasAuthenticationEvent;
 import se.swedenconnect.eidas.connector.events.ErrorEidasResponseEvent;
 import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
 import se.swedenconnect.eidas.connector.events.ResponseProcessingErrorEvent;
+import se.swedenconnect.eidas.connector.events.SignatureConsentEvent;
 import se.swedenconnect.eidas.connector.events.SuccessEidasResponseEvent;
 import se.swedenconnect.spring.saml.idp.audit.data.Saml2AssertionAuditData;
 import se.swedenconnect.spring.saml.idp.audit.data.Saml2ResponseAuditData;
@@ -156,6 +158,25 @@ public class ConnectorAuditPublisher {
             event.getOriginalSpId(), event.getOriginalAuthnRequestId(),
             ProcessingErrorAuditData.of(event),
             Saml2ResponseAuditData.of(event.getResponse()));
+
+    log.info("Publishing audit event: {}", auditEvent.getLogString());
+
+    this.publish(auditEvent);
+  }
+
+  /**
+   * Handles {@link SignatureConsentEvent}s and translates them into a
+   * {@value ConnectorAuditEvents#CONNECTOR_SIGNATURE_CONSENT_RESULT} event containing
+   * {@link SignatureConsentAuditData}.
+   *
+   * @param event the event
+   */
+  @EventListener
+  public void onSignatureConsentEvent(final SignatureConsentEvent event) {
+    final ConnectorAuditEvent auditEvent =
+        new ConnectorAuthnAuditEvent(ConnectorAuditEvents.CONNECTOR_SIGNATURE_CONSENT_RESULT, event.getTimestamp(),
+            event.getOriginalSpId(), event.getOriginalAuthnRequestId(),
+            SignatureConsentAuditData.of(event));
 
     log.info("Publishing audit event: {}", auditEvent.getLogString());
 

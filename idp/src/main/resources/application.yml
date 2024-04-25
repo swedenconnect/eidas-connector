@@ -4,7 +4,7 @@
 
 spring:
   messages:    
-    basename: messages,idp-errors/idp-error-messages
+    basename: messages,idp-errors/idp-error-messages,custom-saml-errors
   ssl:
     bundle:
       jks:

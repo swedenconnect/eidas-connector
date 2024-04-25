@@ -37,6 +37,8 @@ public class ConnectorAuditEvents {
   /** Event logged for processing errors. */
   public static final String CONNECTOR_PROCESSING_ERROR = "CONNECTOR_PROCESSING_ERROR";
 
+  /** Event logged when the user has consented/rejected a signature. */
+  public static final String CONNECTOR_SIGNATURE_CONSENT_RESULT = "CONNECTOR_SIGNATURE_CONSENT_RESULT";
 
   // hidden
   private ConnectorAuditEvents() {
