@@ -48,6 +48,10 @@ import se.swedenconnect.eidas.connector.authn.sp.AuthnContextClassRefMapper;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequest;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequestGenerator;
 import se.swedenconnect.eidas.connector.authn.sp.EidasResponseValidationException;
+import se.swedenconnect.eidas.connector.events.BeforeEidasAuthenticationEvent;
+import se.swedenconnect.eidas.connector.events.ErrorEidasResponseEvent;
+import se.swedenconnect.eidas.connector.events.ResponseProcessingErrorEvent;
+import se.swedenconnect.eidas.connector.events.SuccessEidasResponseEvent;
 import se.swedenconnect.eidas.connector.prid.generator.PridGeneratorException;
 import se.swedenconnect.eidas.connector.prid.service.CountryPolicyNotFoundException;
 import se.swedenconnect.eidas.connector.prid.service.PridResult;
@@ -154,7 +158,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       final AttributeMappingService attributeMappingService,
       final PridService pridService,
       final IdmClient idmClient,
-      final List<String> supportedLoas, final List<String> entityCategories,
+      final List<String> supportedLoas,
+      final List<String> entityCategories,
       final List<String> pingWhitelist) {
 
     super(AUTHN_PATH, RESUME_PATH);
@@ -228,23 +233,34 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       // Process the SAML response ...
       //
       final ValidationContext validationContext = null;  // TODO
-      final ResponseProcessingResult result = this.responseProcessor.processSamlResponse(
-          samlResponse, relayState,
-          this.buildResponseProcessingInput(httpRequest, eidasAuthnRequest), validationContext);
+      final ResponseProcessingResult result =
+          this.responseProcessor.processSamlResponse(samlResponse, relayState,
+              this.buildResponseProcessingInput(httpRequest, eidasAuthnRequest), validationContext);
 
       log.debug("Successfully processed SAML response");
 
       final EidasAuthenticationToken eidasToken = new EidasAuthenticationToken(result, eidasAuthnRequest);
       final Saml2UserAuthenticationInputToken inputToken = this.getSamlInputToken(httpRequest);
 
+      // Signal event ...
+      //
+      this.eventPublisher.publishEvent(new SuccessEidasResponseEvent(inputToken,
+          result.getResponse(), result.getAssertion()));
+
       // Assert that the authentication context URI is valid and map it to a Swedish URI ...
       //
-      final String eidasAuthnContextUri = eidasToken.getAuthnContextClassRef();
-      AuthnContextClassRefMapper.assertReturnedAuthnContextUri(eidasAuthnContextUri,
-          eidasToken.getAuthnRequest().getAuthnRequest().getRequestedAuthnContext());
+      try {
+        final String eidasAuthnContextUri = eidasToken.getAuthnContextClassRef();
+        AuthnContextClassRefMapper.assertReturnedAuthnContextUri(eidasAuthnContextUri,
+            eidasToken.getAuthnRequest().getAuthnRequest().getRequestedAuthnContext());
 
-      eidasToken.setSwedishEidAuthnContextClassRef(AuthnContextClassRefMapper.calculateReturnAuthnContextUri(
-          eidasAuthnContextUri, inputToken.getAuthnRequirements().getAuthnContextRequirements()));
+        eidasToken.setSwedishEidAuthnContextClassRef(AuthnContextClassRefMapper.calculateReturnAuthnContextUri(
+            eidasAuthnContextUri, inputToken.getAuthnRequirements().getAuthnContextRequirements()));
+      }
+      catch (final Saml2ErrorStatusException e) {
+        this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(inputToken, e.getMessage()));
+        throw e;
+      }
 
       // Map eIDAS attributes to Swedish eID attributes ...
       //
@@ -293,6 +309,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
             eidasToken.getPrincipal(), eidasToken.getAuthnRequest().getCountry(),
             e.getMessage(), e);
 
+        this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(inputToken, e.getMessage()));
+
         throw new Saml2ErrorStatusException(StatusCode.RESPONDER, StatusCode.AUTHN_FAILED,
             null, "Failed to create PRID attribute", e.getMessage(), e);
       }
@@ -309,8 +327,14 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
       // If this is a signature service, assert any potential requirements on the signing user ...
       //
-      if (inputToken.getAuthnRequestToken().isSignatureServicePeer()) {
-        this.assertPrincipalSelection(inputToken, eidasToken.getAttributes());
+      try {
+        if (inputToken.getAuthnRequestToken().isSignatureServicePeer()) {
+          this.assertPrincipalSelection(inputToken, eidasToken.getAttributes());
+        }
+      }
+      catch (final Saml2ErrorStatusException e) {
+        this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(inputToken, e.getMessage()));
+        throw e;
       }
 
       return eidasToken;
@@ -318,7 +342,10 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     catch (final ResponseStatusErrorException e) {
       log.info("Received non successful status: {}", e.getMessage());
 
-      // TODO: Logging
+      // Signal event ...
+      //
+      this.eventPublisher.publishEvent(
+          new ErrorEidasResponseEvent(this.getSamlInputToken(httpRequest), e.getResponse()));
 
       // Let's update the status message - It may be in any language, so we add
       // a text telling that the failure was received from the foreign service.
@@ -338,11 +365,14 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     catch (final ResponseProcessingException e) {
       log.info("Error while processing eIDAS response - {}", e.getMessage(), e);
 
-      final String msg = "Validation failure of response from foreign service";
+      this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(
+          this.getSamlInputToken(httpRequest), e.getMessage(), e.getResponse()));
+
       if (e instanceof EidasResponseValidationException eidasError) {
         throw eidasError.getError();
       }
       else {
+        final String msg = "Validation failure of response from foreign service: %s".formatted(e.getMessage());
         throw new Saml2ErrorStatusException(StatusCode.REQUESTER, StatusCode.REQUEST_DENIED, null, msg, e);
       }
     }
@@ -514,7 +544,10 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       final RequestHttpObject<AuthnRequest> authnRequest =
           this.authnRequestGenerator.generateAuthnRequest(countryMetadata, token, relayState);
 
-      // TODO: logging
+      // Add event ...
+      //
+      this.eventPublisher.publishEvent(new BeforeEidasAuthenticationEvent(token, countryMetadata.getCountryCode(),
+          authnRequest.getRequest(), relayState, authnRequest.getMethod()));
 
       // Save request in session ...
       //

@@ -42,7 +42,6 @@ import se.swedenconnect.opensaml.eidas.ext.SPTypeEnumeration;
  *
  * @author Martin Lindström
  */
-@JsonInclude(Include.NON_NULL)
 public class EidasAuthnRequestAuditData extends ConnectorAuditData {
 
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
@@ -52,6 +51,18 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
   @Setter
   @JsonProperty("country")
   private String country;
+
+  /** The ID for the AuthnRequest. */
+  @Getter
+  @Setter
+  @JsonProperty("authn-request-id")
+  private String authnRequestId;
+
+  /** The relay state. */
+  @Getter
+  @Setter
+  @JsonProperty("relay-state")
+  private String relayState;
 
   /** The URL to which the authentication request is sent. */
   @Getter
@@ -103,6 +114,8 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
 
     final EidasAuthnRequestAuditData data = new EidasAuthnRequestAuditData();
     data.setCountry(event.getCountry());
+    data.setAuthnRequestId(authnRequest.getID());
+    data.setRelayState(event.getRelayState());
     data.setDestinationUrl(authnRequest.getDestination());
     data.setMethod(event.getMethod());
     data.setRequestedAuthnContext(RequestedAuthnContextData.of(authnRequest));
@@ -128,6 +141,15 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
             .orElse(null));
 
     return data;
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "country='%s', authn-request-id='%s', relay-state='%s', destination-url='%s', method='%s', "
+            + "requested-authn-context=[%s], eidas-sp-type='%s', requested-attributes=%s",
+        this.country, this.authnRequestId, this.relayState, this.destinationUrl, this.method,
+        this.requestedAuthnContext, this.eidasSpType, this.requestedAttributes);
   }
 
   /**
@@ -159,6 +181,11 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
       rad.setName(requestedAttribute.getName());
       rad.setIsRequired(requestedAttribute.isRequired());
       return rad;
+    }
+
+    @Override
+    public String toString() {
+      return String.format("name='%s', is-required='%s'", this.name, this.isRequired);
     }
 
   }
@@ -207,6 +234,11 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
         rac.setAuthnContextClassRefs(uris);
       }
       return rac;
+    }
+
+    @Override
+    public String toString() {
+      return String.format("comparison='%s', authn-context-class-refs=%s", this.comparison, this.authnContextClassRefs);
     }
 
   }

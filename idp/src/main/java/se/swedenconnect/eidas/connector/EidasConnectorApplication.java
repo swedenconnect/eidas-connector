@@ -40,15 +40,15 @@ public class EidasConnectorApplication {
    */
   public static void main(String[] args) {
 
-    try {
-      OpenSAMLInitializer.getInstance()
-          .initialize(
-              new OpenSAMLSecurityDefaultsConfig(new SwedishEidSecurityConfiguration()),
-              new OpenSAMLSecurityExtensionConfig());
-    }
-    catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+//    try {
+//      OpenSAMLInitializer.getInstance()
+//          .initialize(
+//              new OpenSAMLSecurityDefaultsConfig(new SwedishEidSecurityConfiguration()),
+//              new OpenSAMLSecurityExtensionConfig());
+//    }
+//    catch (Exception e) {
+//      throw new RuntimeException(e);
+//    }
 
     SpringApplication.run(EidasConnectorApplication.class, args);
   }

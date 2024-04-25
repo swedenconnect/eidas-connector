@@ -47,7 +47,7 @@
     <spring.boot.version>3.2.4</spring.boot.version>
     <spring.version>6.1.5</spring.version>
     <bc.version>1.77</bc.version>
-    <saml.idp.version>2.1.1</saml.idp.version>
+    <saml.idp.version>2.1.2-SNAPSHOT</saml.idp.version>
   </properties>
 
   <repositories>
@@ -137,7 +137,7 @@
       <dependency>
         <groupId>se.swedenconnect.opensaml</groupId>
         <artifactId>opensaml-addons</artifactId>
-        <version>2.0.2</version>
+        <version>2.0.3-SNAPSHOT</version>
       </dependency>
       
       <dependency>

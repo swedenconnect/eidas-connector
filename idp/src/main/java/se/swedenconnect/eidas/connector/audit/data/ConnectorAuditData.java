@@ -15,13 +15,11 @@
  */
 package se.swedenconnect.eidas.connector.audit.data;
 
-import java.io.Serializable;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
+import se.swedenconnect.spring.saml.idp.audit.data.Saml2AuditData;
 
 /**
  * Base class for a eIDAS Connector Audit data element.
@@ -29,15 +27,7 @@ import se.swedenconnect.eidas.connector.ApplicationVersion;
  * @author Martin Lindström
  */
 @JsonInclude(Include.NON_EMPTY)
-public abstract class ConnectorAuditData implements Serializable {
+public abstract class ConnectorAuditData extends Saml2AuditData {
 
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
-
-  /**
-   * Gets the name of this data element. The name should be in "kebab-case", i.e., "data-element".
-   *
-   * @return the audit data name
-   */
-  @JsonIgnore
-  public abstract String getName();
 }

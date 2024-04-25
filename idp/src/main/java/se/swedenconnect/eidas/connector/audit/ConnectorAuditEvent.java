@@ -21,13 +21,15 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.boot.actuate.audit.AuditEvent;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
-import se.swedenconnect.eidas.connector.audit.data.ConnectorAuditData;
+import se.swedenconnect.spring.saml.idp.audit.Saml2AuditEvent;
+import se.swedenconnect.spring.saml.idp.audit.data.Saml2AuditData;
 
 /**
  * Audit event for creating event objects for the eIDAS Connector.
@@ -47,23 +49,11 @@ public class ConnectorAuditEvent extends AuditEvent {
    *
    * @param type the type of audit event
    * @param timestamp the timestamp (in millis since epoch)
-   * @param data audit data
-   */
-  public ConnectorAuditEvent(
-      final String type, final long timestamp, final ConnectorAuditData... data) {
-    this(type, timestamp, DEFAULT_PRINCIPAL, buildData(data));
-  }
-
-  /**
-   * Constructor.
-   *
-   * @param type the type of audit event
-   * @param timestamp the timestamp (in millis since epoch)
    * @param principal the principal for the event
    * @param data audit data
    */
   public ConnectorAuditEvent(
-      final String type, final long timestamp, final String principal, final ConnectorAuditData... data) {
+      final String type, final long timestamp, final String principal, final Saml2AuditData... data) {
     this(type, timestamp, principal, buildData(data));
   }
 
@@ -77,8 +67,8 @@ public class ConnectorAuditEvent extends AuditEvent {
    */
   protected ConnectorAuditEvent(
       final String type, final long timestamp, final String principal, final Map<String, Object> data) {
-    super(
-        Instant.ofEpochMilli(timestamp), type, Optional.ofNullable(principal).orElseGet(() -> DEFAULT_PRINCIPAL), data);
+    super(Instant.ofEpochMilli(timestamp),
+        Optional.ofNullable(principal).orElseGet(() -> DEFAULT_PRINCIPAL), type, data);
   }
 
   /**
@@ -87,20 +77,47 @@ public class ConnectorAuditEvent extends AuditEvent {
    * @param data audit data
    * @return a {@link Map} of audit data
    */
-  protected static Map<String, Object> buildData(final ConnectorAuditData... data) {
+  protected static Map<String, Object> buildData(final Saml2AuditData... data) {
     final Map<String, Object> auditData = new HashMap<>();
 
     if (data != null) {
-      for (final ConnectorAuditData sad : data) {
-        auditData.put(sad.getName(), sad);
+      for (final Saml2AuditData ad : data) {
+        if (ad != null) {
+          auditData.put(ad.getName(), ad);
+        }
       }
     }
     return auditData;
   }
 
   /**
+   * Builds a {@link Map} given the supplied audit data
+   *
+   * @param spEntityId the entityID of the requesting SP
+   * @param authnRequestId the ID of the {@code AuthnRequest}
+   * @param data audit data
+   * @return a {@link Map} of audit data
+   */
+  protected static Map<String, Object> buildData(
+      final String spEntityId, final String authnRequestId, final Saml2AuditData... data) {
+    final Map<String, Object> auditData = new HashMap<>();
+
+    auditData.put("sp-entity-id", StringUtils.hasText(spEntityId) ? spEntityId : Saml2AuditEvent.UNKNOWN_SP);
+    auditData.put("authn-request-id", StringUtils.hasText(authnRequestId) ? authnRequestId : Saml2AuditEvent.UNKNOWN_AUTHN_REQUEST_ID);
+    if (data != null) {
+      for (final Saml2AuditData ad : data) {
+        if (ad != null) {
+          auditData.put(ad.getName(), ad);
+        }
+      }
+    }
+
+    return auditData;
+  }
+
+  /**
    * Gets a string suitable to include in log entries. It does not dump the entire audit data that can contain sensible
-   * data (that should not be present in proceess logs).
+   * data (that should not be present in process logs).
    *
    * @return a log string
    */

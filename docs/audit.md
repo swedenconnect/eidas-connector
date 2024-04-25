@@ -107,6 +107,8 @@ Common for all User Audit Events is that the authentication data contains the fo
 | Parameter | Description | Type |
 | :--- | :--- | :--- |
 | `country` | The country code of the country that was selected by the user and to where the request is being sent. | String |
+| `authn-request-id` | The ID of the authentication request that is sent to the foreign IdP. Note that this is **not** the same ID as the top-level `authn-request-id`, which is the ID for the original request from the Swedish SP. | String |
+| `relay-state` | The RelayState variable used in the request. | String |
 | `destination-url` | The URL to where the request is being sent. | String |
 | `method` | Tells whether a redirect (`GET`) or a HTTP POST (`POST`) is used to send the request. | String |
 | `requested-authn-context` | The requested authentication context of the authentication request. Contains the `comparison` field telling `exact` or `minimum` and a `authn-context-class-refs` field that is a list of URI:s for each requested authentication context class ref URI. | See desc. |
@@ -115,14 +117,37 @@ Common for all User Audit Events is that the authentication data contains the fo
 
 ### Foreign Authentication Success
 
-> TODO
+**Type:** `CONNECTOR_SUCCESS_RESPONSE`
+
+**Description:** An event that is logged when a successful SAML response message has been received from the foreign IdP. Note that this does not necessarily mean that the entire operation succeeded, since the received assertion needs to be translated into a Swedish response. The [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE) will indicate a successful authentication overall.
+
+**Audit data:** `saml-response` - See [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE).
+
+**Audit data:** `saml-assertion` - See [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE). 
 
 ### Foreign Authentication Failure
 
-> TODO
+**Type:** `CONNECTOR_ERROR_RESPONSE`
 
+**Description:** A SAML error response was received from the foreign IdP.
 
+**Audit data:** `saml-response` - See [Error SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_AUDIT_ERROR_RESPONSE).
 
+### Processing Error of Foreign Response
+
+**Type:** `CONNECTOR_PROCESSING_ERROR`
+
+**Description:** If the processing of the response received fails this event is logged. This typically happens if the foreign IdP has issued a SAML assertion that does not meet the requirements. Note that this event may follow a `CONNECTOR_SUCCESS_RESPONSE`. This may happen in cases where the SAML processing is successful, but further processing such as mapping contexts and attributes fails.
+
+**Audit data:** `processing-error`
+
+| Parameter | Description | Type |
+| :--- | :--- | :--- |
+| `error-message` | Textual description of the error. | String |
+
+**Audit data:** `saml-response` - See [Error SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_AUDIT_ERROR_RESPONSE). 
+
+> **Note:** If `CONNECTOR_SUCCESS_RESPONSE` was previously logged, this data is not included.
 
 ---
 

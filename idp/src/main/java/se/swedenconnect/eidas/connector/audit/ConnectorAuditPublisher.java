@@ -16,7 +16,9 @@
 package se.swedenconnect.eidas.connector.audit;
 
 import java.util.Objects;
+import java.util.Optional;
 
+import org.opensaml.saml.saml2.core.Response;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.listener.AuditApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -26,8 +28,14 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.audit.data.EidasAuthnRequestAuditData;
 import se.swedenconnect.eidas.connector.audit.data.EuMetadataChangeAuditData;
+import se.swedenconnect.eidas.connector.audit.data.ProcessingErrorAuditData;
 import se.swedenconnect.eidas.connector.events.BeforeEidasAuthenticationEvent;
+import se.swedenconnect.eidas.connector.events.ErrorEidasResponseEvent;
 import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
+import se.swedenconnect.eidas.connector.events.ResponseProcessingErrorEvent;
+import se.swedenconnect.eidas.connector.events.SuccessEidasResponseEvent;
+import se.swedenconnect.spring.saml.idp.audit.data.Saml2AssertionAuditData;
+import se.swedenconnect.spring.saml.idp.audit.data.Saml2ResponseAuditData;
 
 /**
  * The eIDAS Connector Audit event publisher. The component listens for connector events and translates them into audit
@@ -63,7 +71,7 @@ public class ConnectorAuditPublisher {
     final EuMetadataChangeAuditData auditData = EuMetadataChangeAuditData.of(euMetadataEvent.getEuMetadataUpdateData());
     if (auditData != null) {
       final ConnectorAuditEvent auditEvent = new ConnectorAuditEvent(
-          ConnectorAuditEvents.CONNECTOR_AUDIT_EU_METADATA_CHANGED, euMetadataEvent.getTimestamp(), auditData);
+          ConnectorAuditEvents.CONNECTOR_AUDIT_EU_METADATA_CHANGED, euMetadataEvent.getTimestamp(), null, auditData);
 
       log.info("Publishing audit event: {}", auditEvent);
 
@@ -82,13 +90,76 @@ public class ConnectorAuditPublisher {
   public void onBeforeEidasAuthenticationEvent(final BeforeEidasAuthenticationEvent event) {
     final EidasAuthnRequestAuditData auditData = EidasAuthnRequestAuditData.of(event);
     if (auditData != null) {
-      final ConnectorAuditEvent auditEvent = new ConnectorAuditEvent(
-          ConnectorAuditEvents.CONNECTOR_BEFORE_SAML_REQUEST, event.getTimestamp(), auditData);
+      final ConnectorAuditEvent auditEvent = new ConnectorAuthnAuditEvent(
+          ConnectorAuditEvents.CONNECTOR_BEFORE_SAML_REQUEST, event.getTimestamp(),
+          event.getOriginalSpId(), event.getOriginalAuthnRequestId(),
+          auditData);
 
       log.info("Publishing audit event: {}", auditEvent);
 
       this.publish(auditEvent);
     }
+  }
+
+  /**
+   * Handles {@link SuccessEidasResponseEvent}s and translates them into a
+   * {@value ConnectorAuditEvents#CONNECTOR_SUCCESS_RESPONSE} event containing {@link Saml2ResponseAuditData} and
+   * {@link Saml2AssertionAuditData}.
+   *
+   * @param event the event
+   */
+  @EventListener
+  public void onSuccessEidasResponseEvent(final SuccessEidasResponseEvent event) {
+    final ConnectorAuditEvent auditEvent =
+        new ConnectorAuthnAuditEvent(ConnectorAuditEvents.CONNECTOR_SUCCESS_RESPONSE, event.getTimestamp(),
+            event.getOriginalSpId(), event.getOriginalAuthnRequestId(),
+            Saml2ResponseAuditData.of(event.getResponse()),
+            Saml2AssertionAuditData.of(event.getAssertion(), Optional.ofNullable(event.getResponse())
+                .map(Response::getEncryptedAssertions)
+                .filter(l -> !l.isEmpty())
+                .isPresent()));
+
+    log.info("Publishing audit event: {}", auditEvent.getLogString());
+
+    this.publish(auditEvent);
+  }
+
+  /**
+   * Handles {@link ErrorEidasResponseEvent}s and translates them into a
+   * {@value ConnectorAuditEvents#CONNECTOR_ERROR_RESPONSE} event containing {@link Saml2ResponseAuditData}.
+   *
+   * @param event the event
+   */
+  @EventListener
+  public void onErrorEidasResponseEvent(final ErrorEidasResponseEvent event) {
+    final ConnectorAuditEvent auditEvent =
+        new ConnectorAuthnAuditEvent(ConnectorAuditEvents.CONNECTOR_ERROR_RESPONSE, event.getTimestamp(),
+            event.getOriginalSpId(), event.getOriginalAuthnRequestId(),
+            Saml2ResponseAuditData.of(event.getResponse()));
+
+    log.info("Publishing audit event: {}", auditEvent.getLogString());
+
+    this.publish(auditEvent);
+  }
+
+  /**
+   * Handles {@link ResponseProcessingErrorEvent}s and translates them into a
+   * {@value ConnectorAuditEvents#CONNECTOR_PROCESSING_ERROR} event containing a {@link ProcessingErrorAuditData} and
+   * optionally a {@link Saml2ResponseAuditData}.
+   *
+   * @param event the event
+   */
+  @EventListener
+  public void onResponseProcessingErrorEvent(final ResponseProcessingErrorEvent event) {
+    final ConnectorAuditEvent auditEvent =
+        new ConnectorAuthnAuditEvent(ConnectorAuditEvents.CONNECTOR_PROCESSING_ERROR, event.getTimestamp(),
+            event.getOriginalSpId(), event.getOriginalAuthnRequestId(),
+            ProcessingErrorAuditData.of(event),
+            Saml2ResponseAuditData.of(event.getResponse()));
+
+    log.info("Publishing audit event: {}", auditEvent.getLogString());
+
+    this.publish(auditEvent);
   }
 
   /**

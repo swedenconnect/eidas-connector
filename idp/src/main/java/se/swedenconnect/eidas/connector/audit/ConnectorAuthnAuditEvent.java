@@ -15,18 +15,15 @@
  */
 package se.swedenconnect.eidas.connector.audit;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-
-import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
-import se.swedenconnect.eidas.connector.audit.data.ConnectorAuditData;
+import se.swedenconnect.spring.saml.idp.audit.Saml2AuditEvent;
+import se.swedenconnect.spring.saml.idp.audit.data.Saml2AuditData;
 
 /**
  * Audit event for events that concern user authentication.
@@ -38,12 +35,6 @@ public class ConnectorAuthnAuditEvent extends ConnectorAuditEvent {
 
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
-  /** Symbolic constant for an unknown SP. */
-  public static final String UNKNOWN_SP = "unknown";
-
-  /** Symbolic constant for an unknown AuthnRequest ID. */
-  public static final String UNKNOWN_AUTHN_REQUEST_ID = "unknown";
-
   /**
    * Constructor.
    *
@@ -53,28 +44,11 @@ public class ConnectorAuthnAuditEvent extends ConnectorAuditEvent {
    * @param authnRequestId the ID of the {@code AuthnRequest}
    * @param data audit data
    */
-  public ConnectorAuthnAuditEvent(final String type, final long timestamp, final String spEntityId, final String authnRequestId,
-      final ConnectorAuditData... data) {
+  public ConnectorAuthnAuditEvent(final String type, final long timestamp, final String spEntityId,
+      final String authnRequestId, final Saml2AuditData... data) {
     super(type, timestamp,
-        Optional.ofNullable(spEntityId).orElseGet(() -> UNKNOWN_SP),
+        Optional.ofNullable(spEntityId).orElseGet(() -> Saml2AuditEvent.UNKNOWN_SP),
         buildData(spEntityId, authnRequestId, data));
-  }
-
-  /**
-   * Builds a {@link Map} given the supplied audit data
-   *
-   * @param spEntityId the entityID of the requesting SP
-   * @param authnRequestId the ID of the {@code AuthnRequest}
-   * @param data audit data
-   * @return a {@link Map} of audit data
-   */
-  private static Map<String, Object> buildData(
-      final String spEntityId, final String authnRequestId, final ConnectorAuditData... data) {
-
-    final Map<String, Object> auditData = new HashMap<>(ConnectorAuditEvent.buildData(data));
-    auditData.put("sp-entity-id", StringUtils.hasText(spEntityId) ? spEntityId : UNKNOWN_SP);
-    auditData.put("authn-request-id", StringUtils.hasText(authnRequestId) ? authnRequestId : UNKNOWN_AUTHN_REQUEST_ID);
-    return auditData;
   }
 
   /**

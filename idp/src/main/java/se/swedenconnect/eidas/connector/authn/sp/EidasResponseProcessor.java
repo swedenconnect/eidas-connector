@@ -27,7 +27,6 @@ import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.StatusCode;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessingInput;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessorImpl;
 import se.swedenconnect.opensaml.saml2.response.replay.MessageReplayChecker;
@@ -40,7 +39,6 @@ import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class EidasResponseProcessor extends ResponseProcessorImpl {
 
   /** Attribute names for the eIDAS minimum dataset. */
@@ -54,20 +52,27 @@ public class EidasResponseProcessor extends ResponseProcessorImpl {
   // ResponseValidationSettings
   // SignaturePrevalidator
 
-  public EidasResponseProcessor(
-      final MetadataResolver metadataResolver,
-      final SAMLObjectDecrypter decrypter,
-      final MessageReplayChecker messageReplayChecker) {
+  /**
+   * Constructor.
+   *
+   * @param metadataResolver for finding peer metadata
+   * @param decrypter for decrypting assertions
+   * @param messageReplayChecker for protecting against replay attacks
+   */
+  public EidasResponseProcessor(final MetadataResolver metadataResolver,
+      final SAMLObjectDecrypter decrypter, final MessageReplayChecker messageReplayChecker) {
     this.setMetadataResolver(metadataResolver);
     this.setDecrypter(decrypter);
     this.setMessageReplayChecker(messageReplayChecker);
   }
 
+  /**
+   * Extends the default implementation with checks to assert that all required attributes were received.
+   */
   @Override
   protected void validateAssertion(final Assertion assertion, final Response response,
       final ResponseProcessingInput input, final EntityDescriptor idpMetadata,
-      final ValidationContext validationContext)
-      throws ResponseValidationException {
+      final ValidationContext validationContext) throws ResponseValidationException {
 
     super.validateAssertion(assertion, response, input, idpMetadata, validationContext);
 
@@ -75,17 +80,16 @@ public class EidasResponseProcessor extends ResponseProcessorImpl {
     //
     final List<String> minimumDataSet = new ArrayList<>(EIDAS_MINIMUM_DATASET);
     Optional.ofNullable(assertion.getAttributeStatements())
-      .map(as -> as.get(0))
-      .map(AttributeStatement::getAttributes)
-      .ifPresent(attributes ->
-        attributes.stream().forEach(a -> minimumDataSet.removeIf(m -> m.equals(a.getName()))));
+        .map(as -> as.get(0))
+        .map(AttributeStatement::getAttributes)
+        .ifPresent(attributes -> attributes.stream().forEach(a -> minimumDataSet.removeIf(m -> m.equals(a.getName()))));
 
     if (minimumDataSet.size() > 0) {
       final String msg = "Invalid eIDAS assertion - missing required attribute(s) %s".formatted(minimumDataSet);
       final Saml2ErrorStatusException error = new Saml2ErrorStatusException(
           StatusCode.RESPONDER, StatusCode.AUTHN_FAILED, null,
           "Invalid assertion received from foreign IdP - missing mandatory attribute(s)", msg);
-      throw new EidasResponseValidationException(error);
+      throw new EidasResponseValidationException(error, response);
     }
   }
 

@@ -151,9 +151,10 @@ public class AuthnContextClassRefMapper {
         .filter(s -> s != null)
         .findFirst()
         .orElseThrow(() -> {
-          log.error("Could not map {} to any of the requested AuthnContext URI:s {}",
-              eidasUri, requestedSwedishUris);
-          return new Saml2ErrorStatusException(Saml2ErrorStatus.NO_AUTHN_CONTEXT);
+          final String msg = "Could not map %s to any of the requested AuthnContext URI:s %s"
+              .formatted(eidasUri, requestedSwedishUris);
+          log.error(msg);
+          return new Saml2ErrorStatusException(Saml2ErrorStatus.NO_AUTHN_CONTEXT, msg);
         });
   }
 
@@ -203,8 +204,9 @@ public class AuthnContextClassRefMapper {
         }
       }
       else {
-        log.error("Unexpected RequestedAuthnContext sent - {}", requested);
-        throw new Saml2ErrorStatusException(Saml2ErrorStatus.NO_AUTHN_CONTEXT);
+        final String msg = "Unexpected RequestedAuthnContext sent - %s".formatted(requested);
+        log.error(msg);
+        throw new Saml2ErrorStatusException(Saml2ErrorStatus.NO_AUTHN_CONTEXT, msg);
       }
     }
     else {  // exact

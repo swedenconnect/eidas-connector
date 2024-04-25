@@ -1,4 +1,5 @@
 /*
+
  * Copyright 2017-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +43,6 @@ import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
 import se.swedenconnect.eidas.connector.config.CookieGenerator;
 import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent;
 import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent.NoDisplayReason;
-import se.swedenconnect.eidas.connector.events.BeforeEidasAuthenticationEvent;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractAuthenticationController;
@@ -233,11 +233,6 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       this.selectedCountryCookieGenerator.addCookie(selectedCountry, httpResponse);
       this.selectedCountrySessionCookieGenerator.addCookie(selectedCountry, httpResponse);
 
-      // Add event ...
-      //
-      this.eventPublisher.publishEvent(new BeforeEidasAuthenticationEvent(selectedCountry,
-          authnRequest.getRequest(), authnRequest.getMethod()));
-
       // POST or redirect ...
       //
       if (SAMLConstants.POST_METHOD.equals(authnRequest.getMethod())) {
@@ -327,9 +322,15 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     if ("ok".equals(action)) {
       final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest, true);
       token.setSignatureConsented(true);
+
+      // TODO: event
+
       return this.complete(httpRequest, token);
     }
     else if ("cancel".equals(action)) {
+
+      // TODO: event
+
       return this.complete(httpRequest,
           new Saml2ErrorStatusException(Saml2ErrorStatus.CANCEL, "User did not consent to signature"));
     }

@@ -15,8 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import se.swedenconnect.opensaml.OpenSAMLInitializer;
 import se.swedenconnect.opensaml.OpenSAMLSecurityDefaultsConfig;
@@ -26,22 +26,22 @@ import se.swedenconnect.opensaml.sweid.xmlsec.config.SwedishEidSecurityConfigura
 /**
  * Configuration class for initializing OpenSAML.
  */
-@AutoConfiguration
+@Configuration
 public class OpenSAMLConfiguration {
 
-  /**
-   * Gets the OpenSAML initializer (which is needed for SAML support)
-   *
-   * @return OpenSAMLInitializer
-   * @throws Exception for init errors
-   */
-  @Bean("openSAML")
-  OpenSAMLInitializer openSAML() throws Exception {
-    OpenSAMLInitializer.getInstance()
-        .initialize(
-            new OpenSAMLSecurityDefaultsConfig(new SwedishEidSecurityConfiguration()),
-            new OpenSAMLSecurityExtensionConfig());
-    return OpenSAMLInitializer.getInstance();
-  }
+//  /**
+//   * Gets the OpenSAML initializer (which is needed for SAML support)
+//   *
+//   * @return OpenSAMLInitializer
+//   * @throws Exception for init errors
+//   */
+//  @Bean("openSAML")
+//  OpenSAMLInitializer openSAML() throws Exception {
+//    OpenSAMLInitializer.getInstance()
+//        .initialize(
+//            new OpenSAMLSecurityDefaultsConfig(new SwedishEidSecurityConfiguration()),
+//            new OpenSAMLSecurityExtensionConfig());
+//    return OpenSAMLInitializer.getInstance();
+//  }
 
 }

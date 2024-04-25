@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationEvent;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
+import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
 /**
  * An {@link ApplicationEvent} that is issued when the user has selected which country to authenticate at, but before
@@ -27,12 +28,18 @@ import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
  *
  * @author Martin Lindström
  */
-public class BeforeEidasAuthenticationEvent extends AbstractEidasConnectorEvent {
+public class BeforeEidasAuthenticationEvent extends AbstractConnectorAuthnEvent {
 
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The receiving county. */
   private final String country;
+
+  /** The authentication request. */
+  private final SerializableOpenSamlObject<AuthnRequest> authnRequest;
+
+  /** The relay state. */
+  private final String relayState;
 
   /** How the AuthnRequest was passed (GET or POST). */
   private final String method;
@@ -40,12 +47,17 @@ public class BeforeEidasAuthenticationEvent extends AbstractEidasConnectorEvent 
   /**
    * Constructor.
    *
+   * @param token the {@link Saml2UserAuthenticationInputToken}
    * @param country the receiving country
    * @param authnRequest the SAML {@link AuthnRequest}
+   * @param relayState the RelayState variable
    * @param method GET or POST
    */
-  public BeforeEidasAuthenticationEvent(final String country, final AuthnRequest authnRequest, final String method) {
-    super(new SerializableOpenSamlObject<AuthnRequest>(authnRequest));
+  public BeforeEidasAuthenticationEvent(final Saml2UserAuthenticationInputToken token,
+      final String country, final AuthnRequest authnRequest, final String relayState, final String method) {
+    super(token);
+    this.authnRequest = new SerializableOpenSamlObject<AuthnRequest>(authnRequest);
+    this.relayState = relayState;
     this.country = country;
     this.method = method;
   }
@@ -55,9 +67,17 @@ public class BeforeEidasAuthenticationEvent extends AbstractEidasConnectorEvent 
    *
    * @return the {@link AuthnRequest}
    */
-  @SuppressWarnings("unchecked")
   public AuthnRequest getAuthnRequest() {
-    return ((SerializableOpenSamlObject<AuthnRequest>) this.getSource()).get();
+    return this.authnRequest.get();
+  }
+
+  /**
+   * Gets the RelayState.
+   *
+   * @return the RelayState
+   */
+  public String getRelayState() {
+    return this.relayState;
   }
 
   /**
