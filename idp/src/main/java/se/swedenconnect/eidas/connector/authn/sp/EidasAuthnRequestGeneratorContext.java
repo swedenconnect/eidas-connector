@@ -32,6 +32,7 @@ import se.swedenconnect.opensaml.eidas.ext.RequestedAttribute;
 import se.swedenconnect.opensaml.eidas.ext.SPTypeEnumeration;
 import se.swedenconnect.opensaml.saml2.core.build.NameIDPolicyBuilder;
 import se.swedenconnect.opensaml.saml2.request.AuthnRequestGeneratorContext;
+import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 
 /**
  * {@link AuthnRequestGeneratorContext} for eIDAS.
@@ -61,6 +62,9 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
   /** Preferred binding to use for authentication requests. */
   private final String preferredBinding;
 
+  /** The security configuration we use for signing. */
+  private final SecurityConfiguration securityConfiguration;
+
   /**
    * Constructor.
    *
@@ -71,11 +75,12 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    * @param requestedAuthnContextClassRefs the requested authentication context class ref URI:s (Swedish)
    * @param providerName the name to add to the field {@code providerName}.
    * @param preferredBinding the preferred binding
+   * @param securityConfiguration the security configuration
    */
   public EidasAuthnRequestGeneratorContext(final String country, final String nationalSpEntityId,
       final SPTypeEnumeration spType, final List<RequestedAttribute> requestedAttributes,
       final List<String> requestedAuthnContextClassRefs, final String providerName,
-      final String preferredBinding) {
+      final String preferredBinding, final SecurityConfiguration securityConfiguration) {
     this.country = Objects.requireNonNull(country, "country must not be null");
     this.nationalSpEntityId = Objects.requireNonNull(nationalSpEntityId, "nationalSpEntityId must not be null");
     this.spType = Optional.ofNullable(spType).orElseGet(() -> SPTypeEnumeration.PUBLIC);
@@ -85,6 +90,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
     this.providerName =
         Optional.ofNullable(providerName).orElseGet(() -> EidasAuthenticationProperties.DEFAULT_PROVIDER_NAME);
     this.preferredBinding = Optional.ofNullable(preferredBinding).orElseGet(() -> SAMLConstants.SAML2_POST_BINDING_URI);
+    this.securityConfiguration = Objects.requireNonNull(securityConfiguration, "securityConfiguration must not be null");
   }
 
   /**
@@ -161,10 +167,12 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
 
   }
 
+  /**
+   * Delivers a configuration suitable for eIDAS.
+   */
   @Override
   public SignatureSigningConfiguration getSignatureSigningConfiguration() {
-    // TODO Auto-generated method stub
-    return AuthnRequestGeneratorContext.super.getSignatureSigningConfiguration();
+    return this.securityConfiguration.getSignatureSigningConfiguration();
   }
 
   /**

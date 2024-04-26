@@ -18,9 +18,9 @@ package se.swedenconnect.eidas.connector.config;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
+import org.opensaml.core.config.ConfigurationService;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.common.xml.SAMLConstants;
@@ -28,11 +28,19 @@ import org.opensaml.saml.ext.saml2alg.DigestMethod;
 import org.opensaml.saml.ext.saml2alg.SigningMethod;
 import org.opensaml.saml.ext.saml2mdattr.EntityAttributes;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.encryption.EncryptedElementTypeEncryptedKeyResolver;
 import org.opensaml.saml.saml2.metadata.ContactPersonTypeEnumeration;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.Extensions;
 import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
 import org.opensaml.security.credential.Credential;
+import org.opensaml.xmlsec.DecryptionConfiguration;
+import org.opensaml.xmlsec.DecryptionParameters;
+import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
+import org.opensaml.xmlsec.encryption.support.ChainingEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
@@ -62,9 +70,13 @@ import se.swedenconnect.opensaml.saml2.metadata.build.OrganizationBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.SPSSODescriptorBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.SigningMethodBuilder;
 import se.swedenconnect.opensaml.saml2.response.replay.MessageReplayChecker;
+import se.swedenconnect.opensaml.saml2.response.validation.ResponseValidationSettings;
+import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
+import se.swedenconnect.opensaml.xmlsec.encryption.support.DecryptionUtils;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.SAMLObjectDecrypter;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.opensaml.OpenSamlCredential;
+import se.swedenconnect.spring.saml.idp.settings.IdentityProviderSettings;
 
 /**
  * Configuration class for the eIDAS SP part of the connector.
@@ -84,6 +96,9 @@ public class EidasAuthenticationConfiguration {
   /** The connector properties. */
   private final ConnectorConfigurationProperties properties;
 
+  /** The IdP settings. */
+  private final IdentityProviderSettings idpSettings;
+
   /** The connector credentials. */
   private final ConnectorCredentials credentials;
 
@@ -91,30 +106,45 @@ public class EidasAuthenticationConfiguration {
    * Constructor.
    *
    * @param properties the connector properties
+   * @param idpSettings the SAML IP settings
    * @param credentials the connector credentials
    * @param buildProperties the Spring Boot build properties
    */
   public EidasAuthenticationConfiguration(final ConnectorConfigurationProperties properties,
-      final ConnectorCredentials credentials, final BuildProperties buildProperties) {
-    this.properties = Objects.requireNonNull(properties, "properties must not be null");
-    this.credentials = Objects.requireNonNull(credentials, "credentials must not be null");
+      final IdentityProviderSettings idpSettings, final ConnectorCredentials credentials,
+      final BuildProperties buildProperties) {
+    this.properties = properties;
+    this.idpSettings = idpSettings;
+    this.credentials = credentials;
+  }
+
+  /**
+   * Gets the {@link SecurityConfiguration} for eIDAS.
+   *
+   * @return a {@link SecurityConfiguration}
+   */
+  @Bean("connector.sp.SecurityConfiguration")
+  SecurityConfiguration eidasSecurityConfiguration() {
+    return new ConnectorSecurityConfiguration();
   }
 
   /**
    * Gets the {@link EidasAuthnRequestGenerator} that we use to generate {@link AuthnRequest} messages with.
    *
    * @param metadata the SP metadata
+   * @param securityConfiguration the security configuration
    * @param attributeMappingService attribute mappings
    * @return {@link EidasAuthnRequestGenerator}
    */
   @Bean
   EidasAuthnRequestGenerator eidasAuthnRequestGenerator(
       @Qualifier("connector.sp.metadata") final EntityDescriptor metadata,
+      @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration,
       final AttributeMappingService attributeMappingService) {
 
     final EidasAuthnRequestGenerator generator = new EidasAuthnRequestGenerator(
-        metadata, this.credentials.getSpSigningCredential(), attributeMappingService,
-        this.properties.getEidas().getProviderName());
+        metadata, this.credentials.getSpSigningCredential(), securityConfiguration,
+        attributeMappingService, this.properties.getEidas().getProviderName());
     generator.setSkipScopingElementFor(this.properties.getEidas().getSkipScopingFor());
     generator.setPreferredBinding(this.properties.getEidas().getPreferredBinding());
 
@@ -134,31 +164,68 @@ public class EidasAuthenticationConfiguration {
   /**
    * Sets up a {@link SAMLObjectDecrypter} for use when decrypting assertions.
    *
+   * @param securityConfiguration the {@link SecurityConfiguration} to use
    * @return a {@link SAMLObjectDecrypter}
    */
-  @Bean
-  SAMLObjectDecrypter samlObjectDecrypter() {
+  @Bean("connector.sp.SAMLObjectDecrypter")
+  SAMLObjectDecrypter samlObjectDecrypter(
+      @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration) {
     final List<PkiCredential> credentials = this.credentials.getSpEncryptCredentials();
     final boolean pkcs11Mode = credentials.get(0).isHardwareCredential();
     final List<Credential> creds = new ArrayList<>();
     credentials.stream().forEach(c -> {
-      if (c instanceof OpenSamlCredential) {
-        creds.add((OpenSamlCredential) c);
+      if (c instanceof OpenSamlCredential openSamlCred) {
+        creds.add(openSamlCred);
       }
       else {
         creds.add(new OpenSamlCredential(c));
       }
     });
-    final SAMLObjectDecrypter decrypter = new SAMLObjectDecrypter(creds);
+    final DecryptionParameters decryptionParameters = this.createDecryptionParameters(securityConfiguration, creds);
+    final SAMLObjectDecrypter decrypter = new SAMLObjectDecrypter(decryptionParameters);
     decrypter.setPkcs11Workaround(pkcs11Mode);
 
     return decrypter;
+  }
+
+  private DecryptionParameters createDecryptionParameters(
+      final SecurityConfiguration securityConfiguration,
+      final List<Credential> credentials) {
+
+    final DecryptionParameters parameters = new DecryptionParameters();
+
+    DecryptionConfiguration config = ConfigurationService.get(DecryptionConfiguration.class);
+    if (config == null) {
+      config = DefaultSecurityConfigurationBootstrap.buildDefaultDecryptionConfiguration();
+    }
+
+    parameters.setExcludedAlgorithms(config.getExcludedAlgorithms());
+    parameters.setIncludedAlgorithms(config.getIncludedAlgorithms());
+    parameters.setDataKeyInfoCredentialResolver(config.getDataKeyInfoCredentialResolver());
+
+    // We set our own encrypted key resolver (OpenSAML defaults don't include EncryptedElementTypeEncryptedKeyResolver).
+    //
+    final ChainingEncryptedKeyResolver encryptedKeyResolver = new ChainingEncryptedKeyResolver(Arrays.asList(
+        new InlineEncryptedKeyResolver(),
+        new EncryptedElementTypeEncryptedKeyResolver(),
+        new SimpleRetrievalMethodEncryptedKeyResolver(),
+        new SimpleKeyInfoReferenceEncryptedKeyResolver()));
+
+    parameters.setEncryptedKeyResolver(encryptedKeyResolver);
+
+    // Based on the supplied local credentials, set a key info credential resolver.
+    //
+    parameters.setKEKKeyInfoCredentialResolver(
+        DecryptionUtils.createKeyInfoCredentialResolver(credentials.stream().toArray(Credential[]::new)));
+
+    return parameters;
   }
 
   /**
    * Creates a {@link EidasResponseProcessor}.
    *
    * @param euMetadataProvider the EU metadata
+   * @param securityConfiguration the security configuration
    * @param decrypter object decrypter
    * @param messageReplayChecker the message replay checker
    * @return a {@link EidasResponseProcessor}.
@@ -166,27 +233,43 @@ public class EidasAuthenticationConfiguration {
    */
   @Bean
   EidasResponseProcessor eidasResponseProcessor(final EuMetadataProvider euMetadataProvider,
-      final SAMLObjectDecrypter decrypter, final MessageReplayChecker messageReplayChecker)
-      throws ComponentInitializationException {
+      @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration,
+      @Qualifier("connector.sp.SAMLObjectDecrypter") final SAMLObjectDecrypter decrypter,
+      final MessageReplayChecker messageReplayChecker) throws ComponentInitializationException {
+
+    final ResponseValidationSettings validationSettings = new ResponseValidationSettings();
+    validationSettings.setRequireSignedAssertions(
+        this.properties.getEidas().getRequiresSignedAssertions());
+    validationSettings.setAllowedClockSkew(this.idpSettings.getClockSkewAdjustment());
+    validationSettings.setMaxAgeResponse(this.idpSettings.getMaxMessageAge());
+
+    // TODO: Make configurable
+    validationSettings.setStrictValidation(false);
+
     final EidasResponseProcessor processor = new EidasResponseProcessor(
-        euMetadataProvider.getProvider().getMetadataResolver(), decrypter, messageReplayChecker);
+        euMetadataProvider.getProvider().getMetadataResolver(), securityConfiguration, decrypter,
+        messageReplayChecker, validationSettings);
     processor.initialize();
+
     return processor;
   }
 
   /**
    * Creates an {@link EntityDescriptorContainer} for publishing the eIDAS SP metadata.
    *
+   * @param securityConfiguration the security configuration
    * @param metadata the SP metadata
    * @return an {@link EntityDescriptorContainer}
    */
-  @Bean
+  @Bean("connector.sp.EntityDescriptorContainer")
   EntityDescriptorContainer spEntityDescriptorContainer(
+      @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration,
       @Qualifier("connector.sp.metadata") final EntityDescriptor metadata) {
 
     final EntityDescriptorContainer container = new EntityDescriptorContainer(
         metadata, new OpenSamlCredential(this.credentials.getSpMetadataSigningCredential()));
     container.setValidity(this.properties.getEidas().getMetadata().getValidityPeriod());
+    container.setSigningConfiguration(securityConfiguration.getSignatureSigningConfiguration());
 
     return container;
   }

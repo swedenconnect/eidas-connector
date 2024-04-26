@@ -15,24 +15,19 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
-import org.opensaml.saml.saml2.core.Assertion;
-import org.opensaml.saml.saml2.core.AttributeStatement;
-import org.opensaml.saml.saml2.core.Response;
-import org.opensaml.saml.saml2.core.StatusCode;
-import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.opensaml.xmlsec.signature.support.SignaturePrevalidator;
+import org.opensaml.xmlsec.signature.support.SignatureTrustEngine;
 
-import se.swedenconnect.opensaml.saml2.response.ResponseProcessingInput;
+import se.swedenconnect.eidas.connector.authn.sp.validators.EidasAssertionValidator;
+import se.swedenconnect.eidas.connector.authn.sp.validators.EidasResponseValidator;
+import se.swedenconnect.opensaml.saml2.assertion.validation.AssertionValidator;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessorImpl;
 import se.swedenconnect.opensaml.saml2.response.replay.MessageReplayChecker;
-import se.swedenconnect.opensaml.saml2.response.validation.ResponseValidationException;
+import se.swedenconnect.opensaml.saml2.response.validation.ResponseValidationSettings;
+import se.swedenconnect.opensaml.saml2.response.validation.ResponseValidator;
+import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.SAMLObjectDecrypter;
-import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
 
 /**
  * Bean for processing SAML responses received from the foreign country IdP.
@@ -41,56 +36,36 @@ import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
  */
 public class EidasResponseProcessor extends ResponseProcessorImpl {
 
-  /** Attribute names for the eIDAS minimum dataset. */
-  private static final List<String> EIDAS_MINIMUM_DATASET = List.of(
-      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME,
-      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_DATE_OF_BIRTH_ATTRIBUTE_NAME,
-      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_CURRENT_GIVEN_NAME_ATTRIBUTE_NAME,
-      se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_CURRENT_FAMILY_NAME_ATTRIBUTE_NAME);
-
-  // TODO
-  // ResponseValidationSettings
-  // SignaturePrevalidator
-
   /**
    * Constructor.
    *
    * @param metadataResolver for finding peer metadata
+   * @param securityConfiguration the security configuration
    * @param decrypter for decrypting assertions
    * @param messageReplayChecker for protecting against replay attacks
    */
   public EidasResponseProcessor(final MetadataResolver metadataResolver,
-      final SAMLObjectDecrypter decrypter, final MessageReplayChecker messageReplayChecker) {
+      final SecurityConfiguration securityConfiguration, final SAMLObjectDecrypter decrypter,
+      final MessageReplayChecker messageReplayChecker, final ResponseValidationSettings validationSettings) {
     this.setMetadataResolver(metadataResolver);
+    this.setSecurityConfiguration(securityConfiguration);
     this.setDecrypter(decrypter);
     this.setMessageReplayChecker(messageReplayChecker);
+    this.setResponseValidationSettings(validationSettings);
   }
 
-  /**
-   * Extends the default implementation with checks to assert that all required attributes were received.
-   */
+  /** {@inheritDoc} */
   @Override
-  protected void validateAssertion(final Assertion assertion, final Response response,
-      final ResponseProcessingInput input, final EntityDescriptor idpMetadata,
-      final ValidationContext validationContext) throws ResponseValidationException {
+  protected ResponseValidator createResponseValidator(final SignatureTrustEngine signatureTrustEngine,
+      final SignaturePrevalidator signatureProfileValidator) {
+    return new EidasResponseValidator(signatureTrustEngine, signatureProfileValidator);
+  }
 
-    super.validateAssertion(assertion, response, input, idpMetadata, validationContext);
-
-    // Validate that all attributes from the eIDAS minimum dataset were received ...
-    //
-    final List<String> minimumDataSet = new ArrayList<>(EIDAS_MINIMUM_DATASET);
-    Optional.ofNullable(assertion.getAttributeStatements())
-        .map(as -> as.get(0))
-        .map(AttributeStatement::getAttributes)
-        .ifPresent(attributes -> attributes.stream().forEach(a -> minimumDataSet.removeIf(m -> m.equals(a.getName()))));
-
-    if (minimumDataSet.size() > 0) {
-      final String msg = "Invalid eIDAS assertion - missing required attribute(s) %s".formatted(minimumDataSet);
-      final Saml2ErrorStatusException error = new Saml2ErrorStatusException(
-          StatusCode.RESPONDER, StatusCode.AUTHN_FAILED, null,
-          "Invalid assertion received from foreign IdP - missing mandatory attribute(s)", msg);
-      throw new EidasResponseValidationException(error, response);
-    }
+  /** {@inheritDoc} */
+  @Override
+  protected AssertionValidator createAssertionValidator(final SignatureTrustEngine signatureTrustEngine,
+      final SignaturePrevalidator signatureProfileValidator) {
+    return new EidasAssertionValidator(signatureTrustEngine, signatureProfileValidator);
   }
 
 }

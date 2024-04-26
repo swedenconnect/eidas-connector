@@ -31,7 +31,7 @@ public class SignatureConsentAuditData extends ConnectorAuditData {
 
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
-  /** The error message. */
+  /** Tells whether the user consented to the signature. */
   @Getter
   @Setter
   @JsonProperty("signature-consented")

@@ -29,12 +29,12 @@ import se.swedenconnect.opensaml.sweid.xmlsec.config.SwedishEidSecurityConfigura
 @Configuration
 public class OpenSAMLConfiguration {
 
-//  /**
-//   * Gets the OpenSAML initializer (which is needed for SAML support)
-//   *
-//   * @return OpenSAMLInitializer
-//   * @throws Exception for init errors
-//   */
+  /**
+   * Gets the OpenSAML initializer (which is needed for SAML support)
+   *
+   * @return OpenSAMLInitializer
+   * @throws Exception for init errors
+   */
 //  @Bean("openSAML")
 //  OpenSAMLInitializer openSAML() throws Exception {
 //    OpenSAMLInitializer.getInstance()

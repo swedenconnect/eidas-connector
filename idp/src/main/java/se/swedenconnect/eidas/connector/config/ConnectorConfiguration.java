@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
@@ -82,7 +83,7 @@ public class ConnectorConfiguration {
    * @param connectorProperties the configuration properties
    */
   public ConnectorConfiguration(final ConnectorConfigurationProperties connectorProperties,
-      IdentityProviderSettings idpSettings) {
+      final IdentityProviderSettings idpSettings) {
     this.connectorProperties = connectorProperties;
     this.idpSettings = idpSettings;
   }
@@ -259,6 +260,7 @@ public class ConnectorConfiguration {
   @Bean
   EidasAuthenticationProvider eidasAuthenticationProvider(
       final ApplicationEventPublisher eventPublisher,
+      @Qualifier("connector.sp.metadata") final EntityDescriptor metadata,
       final EidasAuthnRequestGenerator authnRequestGenerator,
       final EidasResponseProcessor eidasResponseProcessor,
       final EuMetadataProvider euMetadataProvider,
@@ -267,6 +269,7 @@ public class ConnectorConfiguration {
       final IdmClient idmClient) {
     return new EidasAuthenticationProvider(this.idpSettings.getBaseUrl(),
         eventPublisher,
+        metadata,
         authnRequestGenerator,
         eidasResponseProcessor,
         euMetadataProvider,

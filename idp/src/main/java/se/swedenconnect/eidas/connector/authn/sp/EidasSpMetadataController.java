@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.xmlsec.signature.support.SignatureException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -59,7 +60,8 @@ public class EidasSpMetadataController {
    *
    * @param metadataContainer the eIDAS SP metadata container
    */
-  public EidasSpMetadataController(final EntityDescriptorContainer metadataContainer) {
+  public EidasSpMetadataController(@Qualifier("connector.sp.EntityDescriptorContainer")
+      final EntityDescriptorContainer metadataContainer) {
     this.metadataContainer = Objects.requireNonNull(metadataContainer, "metadataContainer must not be null");
   }
 

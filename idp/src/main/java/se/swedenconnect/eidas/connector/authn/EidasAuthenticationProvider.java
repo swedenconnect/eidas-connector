@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +32,7 @@ import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Status;
 import org.opensaml.saml.saml2.core.StatusCode;
 import org.opensaml.saml.saml2.core.StatusMessage;
+import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -56,6 +58,7 @@ import se.swedenconnect.eidas.connector.prid.generator.PridGeneratorException;
 import se.swedenconnect.eidas.connector.prid.service.CountryPolicyNotFoundException;
 import se.swedenconnect.eidas.connector.prid.service.PridResult;
 import se.swedenconnect.eidas.connector.prid.service.PridService;
+import se.swedenconnect.opensaml.common.validation.CoreValidatorParameters;
 import se.swedenconnect.opensaml.saml2.request.RequestGenerationException;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessingException;
@@ -105,6 +108,9 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   /** The event publisher. */
   private final ApplicationEventPublisher eventPublisher;
 
+  /** SAML SP metadata. */
+  private final EntityDescriptor spMetadata;
+
   /** For generating AuthnRequests. */
   private final EidasAuthnRequestGenerator authnRequestGenerator;
 
@@ -140,6 +146,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    *
    * @param baseUrl the application base URL
    * @param eventPublisher the event publisher
+   * @param spMetadata SAML SP metadata
    * @param authnRequestGenerator for generating authentication requests
    * @param responseProcessor the processor handling the SAML responses received from the foreign eIDAS proxy services
    * @param metadataProvider the EU metadata provider
@@ -152,6 +159,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    */
   public EidasAuthenticationProvider(final String baseUrl,
       final ApplicationEventPublisher eventPublisher,
+      final EntityDescriptor spMetadata,
       final EidasAuthnRequestGenerator authnRequestGenerator,
       final ResponseProcessor responseProcessor,
       final EuMetadataProvider metadataProvider,
@@ -168,6 +176,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
     this.baseUrl = Objects.requireNonNull(baseUrl, "baseUrl must not be null");
     this.eventPublisher = Objects.requireNonNull(eventPublisher, "eventPublisher must not be null");
+    this.spMetadata = Objects.requireNonNull(spMetadata, "spMetadata must not be null");
     this.authnRequestGenerator =
         Objects.requireNonNull(authnRequestGenerator, "authnRequestGenerator must not be null");
     this.responseProcessor = Objects.requireNonNull(responseProcessor, "responseProcessor must not be null");
@@ -232,7 +241,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
       // Process the SAML response ...
       //
-      final ValidationContext validationContext = null;  // TODO
+      final ValidationContext validationContext =
+          new ValidationContext(Map.of(CoreValidatorParameters.SP_METADATA, this.spMetadata));
       final ResponseProcessingResult result =
           this.responseProcessor.processSamlResponse(samlResponse, relayState,
               this.buildResponseProcessingInput(httpRequest, eidasAuthnRequest), validationContext);

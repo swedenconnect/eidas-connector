@@ -43,6 +43,7 @@ import se.swedenconnect.opensaml.saml2.request.AuthnRequestGeneratorContext;
 import se.swedenconnect.opensaml.saml2.request.RequestGenerationException;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryConstants;
+import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.opensaml.OpenSamlCredential;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
@@ -70,18 +71,24 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
   /** Preferred binding to use for authentication requests. */
   private String preferredBinding;
 
+  /** The security configuration we use for signing. */
+  private final SecurityConfiguration securityConfiguration;
+
   /**
    * Constructor.
    *
    * @param spMetadata the SP metadata
    * @param signatureCredential the signature credential
+   * @param securityConfiguration the security configuration
    * @param attributeMappings attribute mapping service
    * @param providerName the provider name to use in generated requests
    */
   public EidasAuthnRequestGenerator(final EntityDescriptor spMetadata, final PkiCredential signatureCredential,
-      final AttributeMappingService attributeMappings, final String providerName) {
+      final SecurityConfiguration securityConfiguration, final AttributeMappingService attributeMappings,
+      final String providerName) {
     super(Objects.requireNonNull(spMetadata, "spMetadata must not be null").getEntityID(),
         new OpenSamlCredential(Objects.requireNonNull(signatureCredential, "signatureCredential must not be null")));
+    this.securityConfiguration = Objects.requireNonNull(securityConfiguration, "securityConfiguration must not be null");
     this.spMetadata = spMetadata;
     this.attributeMappings = Objects.requireNonNull(attributeMappings, "attributeMappings must not be null");
     this.providerName = Objects.requireNonNullElse(providerName, EidasAuthenticationProperties.DEFAULT_PROVIDER_NAME);
@@ -115,7 +122,8 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
     //
     final EidasAuthnRequestGeneratorContext context = new EidasAuthnRequestGeneratorContext(
         country.getCountryCode(), token.getAuthnRequestToken().getEntityId(), spType, requestedAttributes,
-        token.getAuthnRequirements().getAuthnContextRequirements(), this.providerName, this.preferredBinding);
+        token.getAuthnRequirements().getAuthnContextRequirements(), this.providerName, this.preferredBinding,
+        this.securityConfiguration);
 
     // Generate AuthnRequest ...
     //
