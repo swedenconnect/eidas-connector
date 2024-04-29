@@ -15,20 +15,14 @@
  */
 package se.swedenconnect.eidas.connector.authn.metadata;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
 import se.swedenconnect.opensaml.eidas.common.EidasConstants;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Representation of a country.
@@ -119,7 +113,7 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
       return true; // Special case
     }
     final List<String> supported = this.getSupportedSwedishAssuranceLevels();
-    return requestedAuthnContextClassRefs.stream().filter(u -> supported.contains(u)).findFirst().isPresent();
+    return requestedAuthnContextClassRefs.stream().anyMatch(supported::contains);
   }
 
   /**

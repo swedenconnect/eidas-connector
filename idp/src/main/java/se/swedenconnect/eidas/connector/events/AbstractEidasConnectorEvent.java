@@ -19,6 +19,8 @@ import org.springframework.context.ApplicationEvent;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 
+import java.io.Serial;
+
 /**
  * Abstract base class for all events published by the eIDAS Connector.
  *
@@ -26,6 +28,7 @@ import se.swedenconnect.eidas.connector.ApplicationVersion;
  */
 public abstract class AbstractEidasConnectorEvent extends ApplicationEvent {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /**

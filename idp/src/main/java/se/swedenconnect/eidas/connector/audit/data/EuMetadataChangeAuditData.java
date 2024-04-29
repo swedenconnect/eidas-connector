@@ -15,31 +15,32 @@
  */
 package se.swedenconnect.eidas.connector.audit.data;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Getter;
 import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.EuMetadataEvent.EuMetadataUpdateData;
+
+import java.io.Serial;
+import java.util.List;
 
 /**
  * Audit event data indicating that the contents of the EU metadata has changed.
  *
  * @author Martin Lindström
  */
+@Setter
+@Getter
 public class EuMetadataChangeAuditData extends ConnectorAuditData {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /**
    * A list of country codes for countries that previously appeared in the EU metadata, but were removed after the last
    * update.
    */
-  @Getter
-  @Setter
   @JsonProperty(value = "removed-countries")
   private List<String> removedCountries;
 
@@ -47,24 +48,18 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
    * A list of country codes for countries that previously did not appear in the EU metadata, but were added in the last
    * update.
    */
-  @Getter
-  @Setter
   @JsonProperty(value = "added-countries")
   private List<String> addedCountries;
 
   /**
    * Textual information from the update. Contains information that may be of interest.
    */
-  @Getter
-  @Setter
   @JsonProperty(value = "info")
   private String info;
 
   /**
    * Textual information from the update if an error occurred.
    */
-  @Getter
-  @Setter
   @JsonProperty(value = "error-info")
   private String errorInfo;
 

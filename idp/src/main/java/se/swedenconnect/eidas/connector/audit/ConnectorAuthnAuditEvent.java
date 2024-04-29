@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.audit;
 
+import java.io.Serial;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -33,6 +34,7 @@ import se.swedenconnect.spring.saml.idp.audit.data.Saml2AuditData;
 @JsonInclude(Include.NON_EMPTY)
 public class ConnectorAuthnAuditEvent extends ConnectorAuditEvent {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /**

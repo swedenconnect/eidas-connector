@@ -102,10 +102,10 @@ public class MetadataProviderUtils {
    */
   private static HttpClient createHttpClient(final EuMetadataProperties config) {
     try {
-      final List<TrustManager> managers = Arrays.asList(HttpClientSupport.buildNoTrustX509TrustManager());
+      final List<TrustManager> managers = List.of(HttpClientSupport.buildNoTrustX509TrustManager());
       final HostnameVerifier hnv = Optional.ofNullable(config.getSkipHostnameVerification())
-          .map(b -> b.booleanValue() ? NoopHostnameVerifier.INSTANCE : new DefaultHostnameVerifier())
-          .orElseGet(() -> new DefaultHostnameVerifier());
+          .map(b -> b ? NoopHostnameVerifier.INSTANCE : new DefaultHostnameVerifier())
+          .orElseGet(DefaultHostnameVerifier::new);
 
       HttpClientBuilder builder = new HttpClientBuilder();
       builder.setUseSystemProperties(true);

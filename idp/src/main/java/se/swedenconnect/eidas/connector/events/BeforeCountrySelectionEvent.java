@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import java.io.Serial;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,6 +32,7 @@ import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationIn
  */
 public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** A list of countries that was displayed for the user to select from. */
@@ -124,7 +126,7 @@ public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
      * The authentication request contained a {@code PrincipalSelection} extension or a {@code Scopes} element giving
      * the country to use.
      */
-    FROM_AUTHN_REQUEST;
+    FROM_AUTHN_REQUEST
   }
 
 }

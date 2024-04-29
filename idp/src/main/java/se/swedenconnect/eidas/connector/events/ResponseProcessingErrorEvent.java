@@ -21,6 +21,8 @@ import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
+import java.io.Serial;
+
 /**
  * Event indicating that an error occured when processing an eIDAS response message.
  *
@@ -28,6 +30,7 @@ import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationIn
  */
 public class ResponseProcessingErrorEvent extends AbstractConnectorAuthnEvent {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The error message. */

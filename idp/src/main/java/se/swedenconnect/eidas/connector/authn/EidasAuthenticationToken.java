@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
+import java.io.Serial;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,6 +24,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.AuthnContext;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
@@ -47,15 +50,19 @@ import se.swedenconnect.spring.saml.idp.attributes.eidas.EidasAttributeValue;
 @Slf4j
 public class EidasAuthenticationToken extends AbstractAuthenticationToken {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The ID for the response. */
+  @Getter
   private final String responseId;
 
   /** The InResponseTo attribute of the response. */
+  @Getter
   private final String inResponseTo;
 
   /** The issue instant of the response. */
+  @Getter
   private final Instant responseIssueInstant;
 
   /** The SAML assertion. */
@@ -65,12 +72,17 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   private final List<UserAttribute> attributes;
 
   /** The corresponding request. */
+  @Getter
   private final EidasAuthnRequest authnRequest;
 
   /** Was the signature consented by the user? */
+  @Setter
+  @Getter
   private boolean signatureConsented = false;
 
   /** The Swedish eID authentication context class reference. */
+  @Getter
+  @Setter
   private String swedishEidAuthnContextClassRef;
 
   /**
@@ -88,7 +100,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
     this.authnRequest = Objects.requireNonNull(authnRequest, "authnRequest must not be null");
 
     this.attributes = new ArrayList<>();
-    result.getAttributes().stream().forEach(a -> {
+    result.getAttributes().forEach(a -> {
       try {
         this.attributes.add(new UserAttribute(a));
       }
@@ -97,33 +109,6 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
       }
     });
 
-  }
-
-  /**
-   * Gets the ID for the response.
-   *
-   * @return the ID for the response
-   */
-  public String getResponseId() {
-    return this.responseId;
-  }
-
-  /**
-   * Gets the InResponseTo attribute of the response.
-   *
-   * @return the InResponseTo attribute
-   */
-  public String getInResponseTo() {
-    return this.inResponseTo;
-  }
-
-  /**
-   * Gets the issue instant of the response message.
-   *
-   * @return the issue instant
-   */
-  public Instant getResponseIssueInstant() {
-    return this.responseIssueInstant;
   }
 
   /**
@@ -196,51 +181,6 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
         .map(AuthnContext::getAuthnContextClassRef)
         .map(AuthnContextClassRef::getURI)
         .orElse(null);
-  }
-
-  /**
-   * Assigns the Swedish eID authentication context class reference URI.
-   *
-   * @param swedishEidAuthnContextClassRef URI
-   */
-  public void setSwedishEidAuthnContextClassRef(final String swedishEidAuthnContextClassRef) {
-    this.swedishEidAuthnContextClassRef = swedishEidAuthnContextClassRef;
-  }
-
-  /**
-   * Gets the Swedish eID authentication context class reference URI
-   *
-   * @return URI
-   */
-  public String getSwedishEidAuthnContextClassRef() {
-    return this.swedishEidAuthnContextClassRef;
-  }
-
-  /**
-   * Gets the authentication request object that corresponds to this token.
-   *
-   * @return an {@link EidasAuthnRequest}
-   */
-  public EidasAuthnRequest getAuthnRequest() {
-    return this.authnRequest;
-  }
-
-  /**
-   * Was a signature operation consented by the user?
-   *
-   * @return whether a signature operation was consented by the user
-   */
-  public boolean isSignatureConsented() {
-    return this.signatureConsented;
-  }
-
-  /**
-   * Sets whether a signature operation was consented by the user.
-   *
-   * @param signatureConsented consent flag
-   */
-  public void setSignatureConsented(final boolean signatureConsented) {
-    this.signatureConsented = signatureConsented;
   }
 
   /** {@inheritDoc} */

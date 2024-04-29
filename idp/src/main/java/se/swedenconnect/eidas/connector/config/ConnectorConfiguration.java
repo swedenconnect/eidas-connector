@@ -268,17 +268,9 @@ public class ConnectorConfiguration {
       final PridService pridService,
       final IdmClient idmClient) {
     return new EidasAuthenticationProvider(this.idpSettings.getBaseUrl(),
-        eventPublisher,
-        metadata,
-        authnRequestGenerator,
-        eidasResponseProcessor,
-        euMetadataProvider,
-        attributeMappingService,
-        pridService,
-        idmClient,
-        this.connectorProperties.getIdp().getSupportedLoas(),
-        this.connectorProperties.getIdp().getEntityCategories(),
-        this.connectorProperties.getIdp().getPingWhitelist());
+        eventPublisher, metadata, authnRequestGenerator, eidasResponseProcessor, euMetadataProvider,
+        attributeMappingService, pridService, idmClient, this.connectorProperties.getIdp().getSupportedLoas(),
+        this.connectorProperties.getIdp().getEntityCategories(), this.connectorProperties.getIdp().getPingWhitelist());
   }
 
   @Bean

@@ -82,14 +82,14 @@ public class EidasAuthenticationProperties implements InitializingBean {
    * An ordered list of supported NameID formats.
    */
   @Getter
-  private List<String> supportedNameIds = new ArrayList<>();
+  private final List<String> supportedNameIds = new ArrayList<>();
 
   /**
    * Some eIDAS countries can not handle the {@code Scoping} element in {@code AuthnRequest} messages. This setting
    * contains the country codes for those countries that we should not include this element for.
    */
   @Getter
-  private List<String> skipScopingFor = new ArrayList<>();
+  private final List<String> skipScopingFor = new ArrayList<>();
 
   /**
    * Metadata configuration for the eIDAS SP.

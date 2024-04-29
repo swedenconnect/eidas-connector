@@ -56,7 +56,9 @@ public class PridHealthIndicator implements HealthIndicator {
     this.euMetadata = Objects.requireNonNull(euMetadata, "euMetadata must not be null");
   }
 
-  /** {@inheritDoc} */
+  /**
+   * Calculates the health status of the PRID service.
+   */
   @Override
   public Health health() {
 

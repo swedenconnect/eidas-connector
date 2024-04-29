@@ -21,6 +21,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.spring.saml.idp.audit.data.Saml2AuditData;
 
+import java.io.Serial;
+
 /**
  * Base class for a eIDAS Connector Audit data element.
  *
@@ -29,5 +31,6 @@ import se.swedenconnect.spring.saml.idp.audit.data.Saml2AuditData;
 @JsonInclude(Include.NON_EMPTY)
 public abstract class ConnectorAuditData extends Saml2AuditData {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 }

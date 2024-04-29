@@ -148,7 +148,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param eventPublisher the event publisher
    * @param spMetadata SAML SP metadata
    * @param authnRequestGenerator for generating authentication requests
-   * @param responseProcessor the processor handling the SAML responses received from the foreign eIDAS proxy services
+   * @param responseProcessor the processor handling the SAML responses received from the foreign eIDAS proxy
+   *     services
    * @param metadataProvider the EU metadata provider
    * @param attributeMappingService attribute service
    * @param pridService the PRID service bean
@@ -197,8 +198,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   }
 
   /**
-   * The {@link #resumeAuthentication(ResumedAuthenticationToken)} method will be called when we have received the SAML
-   * response from the foreign IdP.
+   * The method will be called when we have received the SAML response from the foreign IdP.
    */
   @Override
   public Saml2UserAuthentication resumeAuthentication(final ResumedAuthenticationToken token)

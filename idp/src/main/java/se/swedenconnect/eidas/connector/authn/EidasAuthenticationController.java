@@ -1,5 +1,4 @@
 /*
-
  * Copyright 2017-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,51 +66,63 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   public static final String ACTION_CANCEL = "cancel";
 
   /** The authentication provider. */
-  @Autowired
-  @Setter
   private EidasAuthenticationProvider provider;
 
   /** The UI language handler. */
-  @Autowired
-  @Setter
   private UiLanguageHandler uiLanguageHandler;
 
   /** Factory for UI model. */
-  @Autowired
-  @Setter
   private EidasUiModelFactory eidasUiModelFactory;
 
   /** Factory for sign consent UI model. */
-  @Autowired
-  @Setter
   private SignUiModelFactory signUiModelFactory;
 
   /** Cookie generator for saving selected country. */
-  @Autowired
-  @Qualifier("selectedCountryCookieGenerator")
-  @Setter
   private CookieGenerator selectedCountryCookieGenerator;
 
   /** Session cookie generator for saving selected country. */
-  @Autowired
-  @Qualifier("selectedCountrySessionCookieGenerator")
-  @Setter
   private CookieGenerator selectedCountrySessionCookieGenerator;
 
   /** For assisting us in selecting possible countries (to display). */
-  @Autowired
-  @Setter
   private EidasCountryHandler countryHandler;
 
   /** The event publisher. */
-  @Autowired
-  @Setter
   private ApplicationEventPublisher eventPublisher;
+
+  /**
+   * Constructor.
+   *
+   * @param provider the authentication provider
+   * @param uiLanguageHandler the UI language handler
+   * @param eidasUiModelFactory factory for UI model
+   * @param signUiModelFactory factory for sign consent UI model
+   * @param selectedCountryCookieGenerator cookie generator for saving selected country
+   * @param selectedCountrySessionCookieGenerator session cookie generator for saving selected country
+   * @param countryHandler for assisting us in selecting possible countries (to display)
+   * @param eventPublisher the event publisher
+   */
+  public EidasAuthenticationController(final EidasAuthenticationProvider provider,
+      final UiLanguageHandler uiLanguageHandler,
+      final EidasUiModelFactory eidasUiModelFactory,
+      final SignUiModelFactory signUiModelFactory,
+      @Qualifier("selectedCountryCookieGenerator") final CookieGenerator selectedCountryCookieGenerator,
+      @Qualifier("selectedCountrySessionCookieGenerator") CookieGenerator selectedCountrySessionCookieGenerator,
+      final EidasCountryHandler countryHandler,
+      final ApplicationEventPublisher eventPublisher) {
+    this.provider = provider;
+    this.uiLanguageHandler = uiLanguageHandler;
+    this.eidasUiModelFactory = eidasUiModelFactory;
+    this.signUiModelFactory = signUiModelFactory;
+    this.selectedCountryCookieGenerator = selectedCountryCookieGenerator;
+    this.selectedCountrySessionCookieGenerator = selectedCountrySessionCookieGenerator;
+    this.countryHandler = countryHandler;
+    this.eventPublisher = eventPublisher;
+  }
 
   /**
    * Tells whether the request is made from a signature service.
    */
-  private static Predicate<Saml2UserAuthenticationInputToken> isSignatureService =
+  private static final Predicate<Saml2UserAuthenticationInputToken> isSignatureService =
       t -> Optional.ofNullable(t.getAuthnRequestToken())
           .map(Saml2AuthnRequestAuthenticationToken::isSignatureServicePeer)
           .orElse(false);

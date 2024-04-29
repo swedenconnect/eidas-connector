@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import java.io.Serial;
 import java.util.Objects;
 
 import org.opensaml.saml.saml2.core.Response;
@@ -30,6 +31,7 @@ import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationIn
  */
 public class ErrorEidasResponseEvent extends AbstractConnectorAuthnEvent {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The SAML response */

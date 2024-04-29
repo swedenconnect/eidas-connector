@@ -46,7 +46,7 @@ public class EidasSpMetadataProperties extends MetadataConfigurationProperties i
    * The values to use for the eIDAS entity category {@code http://eidas.europa.eu/entity-attributes/protocol-version}.
    */
   @Getter
-  private List<String> protocolVersions = new ArrayList<>();
+  private final List<String> protocolVersions = new ArrayList<>();
 
   /** {@inheritDoc} */
   @Override

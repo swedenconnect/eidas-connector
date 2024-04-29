@@ -15,21 +15,17 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
-import java.util.Iterator;
-import java.util.Objects;
-
-import org.opensaml.saml.criterion.EntityRoleCriterion;
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.metadata.IterableMetadataSource;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
-import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.shared.resolver.CriteriaSet;
+import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * {@link HealthIndicator} asserting that we have valid SAML metadata for the Sweden Connect federation.
@@ -43,9 +39,6 @@ public class SamlMetadataHealthIndicator implements HealthIndicator {
   /** The metadata resolver for the federation. */
   private final MetadataResolver metadataResolver;
 
-  /** The criterion for finding SP:s. */
-  private final CriteriaSet spCriteria;
-
   /**
    * Constructor.
    *
@@ -54,9 +47,6 @@ public class SamlMetadataHealthIndicator implements HealthIndicator {
   public SamlMetadataHealthIndicator(
       @Qualifier("saml.idp.metadata.Provider") final MetadataResolver metadataResolver) {
     this.metadataResolver = Objects.requireNonNull(metadataResolver, "metadataResolver must not be null");
-
-    this.spCriteria = new CriteriaSet();
-    this.spCriteria.add(new EntityRoleCriterion(SPSSODescriptor.DEFAULT_ELEMENT_NAME));
   }
 
   /** {@inheritDoc} */

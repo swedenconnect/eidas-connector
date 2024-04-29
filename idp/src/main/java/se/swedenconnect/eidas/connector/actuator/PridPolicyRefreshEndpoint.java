@@ -79,7 +79,7 @@ public class PridPolicyRefreshEndpoint {
   @NoArgsConstructor
   @Data
   @ToString
-  public class RefreshStatus {
+  public static class RefreshStatus {
 
     /** The overall status string. */
     private String status;

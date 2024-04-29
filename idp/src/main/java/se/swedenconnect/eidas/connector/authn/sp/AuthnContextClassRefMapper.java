@@ -15,10 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
@@ -105,42 +102,42 @@ public class AuthnContextClassRefMapper {
 
     if (EidasConstants.EIDAS_LOA_HIGH.equals(eidasUri)) {
       mappings = List.of(
-          r -> r.getHighNotified(),
-          r -> r.getHighNotifiedAcceptsNn(),
-          r -> r.getSubstantialNotified(),
-          r -> r.getSubstantialAcceptsNn(),
-          r -> r.getLowNotified(),
-          r -> r.getLowAcceptsNn());
+          SwedishRequestedUris::getHighNotified,
+          SwedishRequestedUris::getHighNotifiedAcceptsNn,
+          SwedishRequestedUris::getSubstantialNotified,
+          SwedishRequestedUris::getSubstantialAcceptsNn,
+          SwedishRequestedUris::getLowNotified,
+          SwedishRequestedUris::getLowAcceptsNn);
     }
     else if (EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED.equals(eidasUri)
         || EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED2.equals(eidasUri)) {
       mappings = List.of(
-          r -> r.getHighNotifiedAcceptsNn(),
-          r -> r.getSubstantialAcceptsNn(),
-          r -> r.getLowAcceptsNn());
+          SwedishRequestedUris::getHighNotifiedAcceptsNn,
+          SwedishRequestedUris::getSubstantialAcceptsNn,
+          SwedishRequestedUris::getLowAcceptsNn);
     }
     else if (EidasConstants.EIDAS_LOA_SUBSTANTIAL.equals(eidasUri)) {
       mappings = List.of(
-          r -> r.getSubstantialNotified(),
-          r -> r.getSubstantialAcceptsNn(),
-          r -> r.getLowNotified(),
-          r -> r.getLowAcceptsNn());
+          SwedishRequestedUris::getSubstantialNotified,
+          SwedishRequestedUris::getSubstantialAcceptsNn,
+          SwedishRequestedUris::getLowNotified,
+          SwedishRequestedUris::getLowAcceptsNn);
     }
     else if (EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.equals(eidasUri)
         || EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2.equals(eidasUri)) {
       mappings = List.of(
-          r -> r.getSubstantialAcceptsNn(),
-          r -> r.getLowAcceptsNn());
+          SwedishRequestedUris::getSubstantialAcceptsNn,
+          SwedishRequestedUris::getLowAcceptsNn);
     }
     else if (EidasConstants.EIDAS_LOA_LOW.equals(eidasUri)) {
       mappings = List.of(
-          r -> r.getLowNotified(),
-          r -> r.getLowAcceptsNn());
+          SwedishRequestedUris::getLowNotified,
+          SwedishRequestedUris::getLowAcceptsNn);
     }
     else if (EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED.equals(eidasUri)
         || EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED2.equals(eidasUri)) {
       mappings = List.of(
-          r -> r.getLowAcceptsNn());
+          SwedishRequestedUris::getLowAcceptsNn);
     }
     else {
       mappings = Collections.emptyList();
@@ -148,7 +145,7 @@ public class AuthnContextClassRefMapper {
 
     return mappings.stream()
         .map(f -> f.apply(requested))
-        .filter(s -> s != null)
+        .filter(Objects::nonNull)
         .findFirst()
         .orElseThrow(() -> {
           final String msg = "Could not map %s to any of the requested AuthnContext URI:s %s"

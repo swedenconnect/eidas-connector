@@ -22,6 +22,8 @@ import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
+import java.io.Serial;
+
 /**
  * An {@link ApplicationEvent} that is issued when the user has selected which country to authenticate at, but before
  * the authentication request is sent.
@@ -30,6 +32,7 @@ import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationIn
  */
 public class BeforeEidasAuthenticationEvent extends AbstractConnectorAuthnEvent {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The receiving county. */

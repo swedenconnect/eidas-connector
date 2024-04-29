@@ -46,21 +46,21 @@ public class UiConfigurationProperties implements InitializingBean {
    * The UI language settings.
    */
   @Getter
-  private List<Language> languages = new ArrayList<>();
+  private final List<Language> languages = new ArrayList<>();
 
   /**
    * The cookie for storing the selected country (in between sessions).
    */
   @NestedConfigurationProperty
   @Getter
-  private Cookie selectedCountryCookie = new Cookie();
+  private final Cookie selectedCountryCookie = new Cookie();
 
   /**
    * The cookie for storing the selected country (during session).
    */
   @NestedConfigurationProperty
   @Getter
-  private Cookie selectedCountrySessionCookie = new Cookie();
+  private final Cookie selectedCountrySessionCookie = new Cookie();
 
   /**
    * The accessibility report URL.

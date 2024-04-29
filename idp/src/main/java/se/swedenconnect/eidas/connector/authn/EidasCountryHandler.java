@@ -47,9 +47,17 @@ public class EidasCountryHandler {
   /** Prefix URI for country representation. */
   public static final String COUNTRY_URI_PREFIX = "http://id.swedenconnect.se/eidas/1.0/proxy-service/";
 
-  @Autowired
-  @Setter
-  private EuMetadataProvider euMetadataProvider;
+  /** The metadata provider. */
+  private final EuMetadataProvider euMetadataProvider;
+
+  /**
+   * Constructor.
+   *
+   * @param euMetadataProvider the metadata provider
+   */
+  public EidasCountryHandler(final EuMetadataProvider euMetadataProvider) {
+    this.euMetadataProvider = euMetadataProvider;
+  }
 
   /**
    * Represents a "selectable country" where {@code canAuthenticate} tells whether the country can authenticate the call
@@ -89,12 +97,12 @@ public class EidasCountryHandler {
       final List<SelectableCountry> filteredRequestedCountries = requestedCountries.stream()
           .filter(c -> {
             if (!this.euMetadataProvider.contains(c, true)) {
-              log.info("Requested country {} does not appear in EU metadata [{}]", token.getLogString());
+              log.info("Requested country {} does not appear in EU metadata [{}]", c, token.getLogString());
               return false;
             }
             return true;
           })
-          .map(c -> this.euMetadataProvider.getCountry(c))
+          .map(this.euMetadataProvider::getCountry)
           .map(c -> new SelectableCountry(c.getCountryCode(),
               c.canAuthenticate(token.getAuthnRequirements().getAuthnContextRequirements())))
           .toList();
@@ -162,8 +170,7 @@ public class EidasCountryHandler {
         continue;
       }
       if (entry.getProviderID().startsWith(COUNTRY_URI_PREFIX)) {
-        final String country =
-            entry.getProviderID().substring(COUNTRY_URI_PREFIX.length(), entry.getProviderID().length());
+        final String country = entry.getProviderID().substring(COUNTRY_URI_PREFIX.length());
         if (StringUtils.hasText(country)) {
           countries.add(country.toUpperCase());
         }

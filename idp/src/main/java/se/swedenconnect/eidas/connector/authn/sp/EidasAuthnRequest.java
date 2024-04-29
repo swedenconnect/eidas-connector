@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -30,6 +31,7 @@ import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
  */
 public class EidasAuthnRequest implements Serializable {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The authentication request. */
@@ -45,7 +47,7 @@ public class EidasAuthnRequest implements Serializable {
   private final String country;
 
   /**
-   * Conststructor.
+   * Constructor.
    *
    * @param authnRequest the authentication request
    * @param relayState the relay state (may be {@code null})

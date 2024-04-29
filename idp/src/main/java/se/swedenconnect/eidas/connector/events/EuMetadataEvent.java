@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import se.swedenconnect.eidas.connector.ApplicationVersion;
  */
 public class EuMetadataEvent extends AbstractEidasConnectorEvent {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /**

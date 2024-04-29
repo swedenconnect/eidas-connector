@@ -88,7 +88,8 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
       final String providerName) {
     super(Objects.requireNonNull(spMetadata, "spMetadata must not be null").getEntityID(),
         new OpenSamlCredential(Objects.requireNonNull(signatureCredential, "signatureCredential must not be null")));
-    this.securityConfiguration = Objects.requireNonNull(securityConfiguration, "securityConfiguration must not be null");
+    this.securityConfiguration =
+        Objects.requireNonNull(securityConfiguration, "securityConfiguration must not be null");
     this.spMetadata = spMetadata;
     this.attributeMappings = Objects.requireNonNull(attributeMappings, "attributeMappings must not be null");
     this.providerName = Objects.requireNonNullElse(providerName, EidasAuthenticationProperties.DEFAULT_PROVIDER_NAME);
@@ -110,8 +111,8 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
     //
     final SPTypeEnumeration spType = token.getAuthnRequirements().getEntityCategories()
         .contains(EntityCategoryConstants.SERVICE_TYPE_CATEGORY_PRIVATE_SECTOR_SP.getUri())
-            ? SPTypeEnumeration.PRIVATE
-            : SPTypeEnumeration.PUBLIC;
+        ? SPTypeEnumeration.PRIVATE
+        : SPTypeEnumeration.PUBLIC;
 
     // Map requested attributes from Swedish eID format to eIDAS format ...
     //
@@ -194,7 +195,7 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    */
   public void setSkipScopingElementFor(final List<String> skipScopingElementFor) {
     this.skipScopingElementFor = Optional.ofNullable(skipScopingElementFor)
-        .orElseGet(() -> Collections.emptyList());
+        .orElseGet(Collections::emptyList);
   }
 
   /**

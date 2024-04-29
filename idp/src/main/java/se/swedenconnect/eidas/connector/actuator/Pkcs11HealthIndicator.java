@@ -49,8 +49,9 @@ public class Pkcs11HealthIndicator implements HealthIndicator {
   private final List<ReloadablePkiCredential> credsToMonitor;
 
   /**
+   * Constructor.
    *
-   * @param credentials
+   * @param credentials the connector credentials
    */
   public Pkcs11HealthIndicator(final ConnectorCredentials credentials) {
 

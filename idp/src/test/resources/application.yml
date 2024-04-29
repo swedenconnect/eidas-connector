@@ -1,67 +1,8 @@
 #
-# Configuration for the Swedish eIDAS Connector.
+# Test configuration for the Swedish eIDAS Connector.
 #
 
-spring:
-  messages:    
-    basename: messages,idp-errors/idp-error-messages,custom-saml-errors
-  ssl:
-    bundle:
-      jks:
-        localhost:
-          keystore:
-            location: classpath:localhost.jks
-            password: secret
-            type: JKS
-          key:
-            alias: localhost
-            password: secret
 
-server:
-  port: 8443
-  servlet:
-    context-path: /idp
-    session:
-      cookie:
-        name: EIDASSESSION
-        domain: ${connector.domain}
-        max-age: 60m
-        same-site: NONE
-        http-only: true
-        secure: true
-  ssl:
-    enabled: true
-    bundle: localhost
-  error:
-    include-message: always
-    include-exception: true
-    include-stacktrace: always
-    
-#
-# Management/Actuator configuration
-#
-management:
-  server:
-    port: 8444
-  endpoint:
-    health:
-      status:
-        order:
-        - DOWN
-        - OUT_OF_SERVICE
-        - UP
-        - WARNING
-        - UNKNOWN
-        http-mapping:
-          WARNING: 503
-      show-details: always
-    info:
-      enabled: true
-  endpoints:
-    web:
-      exposure:
-        include: info, health, metrics, loggers, refresh-prid, logfile, auditevents 
-        
 ui:
   languages:
   - tag: sv
@@ -77,8 +18,9 @@ ui:
   accessibility-url: https://www.swedenconnect.se/om/om-webbplatsen/tillganglighet/svenska-eidas-noden       
 
 connector:
+  domain: www.example.com
   backup-directory: target
-  base-url: https://${connector.domain}:${server.port}/${server.servlet.context-path}
+  base-url: https://${connector.domain}/idp
   country: SE  
   idp:
     entity-categories:
@@ -142,7 +84,7 @@ connector:
       - algorithm: http://www.w3.org/2009/xmlenc11#aes128-gcm
       - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
       - algorithm: http://www.w3.org/2009/xmlenc11#rsa-oaep
-      
+
 saml:
   idp:
     entity-id: https://connector.eidas.swedenconnect.se/eidas

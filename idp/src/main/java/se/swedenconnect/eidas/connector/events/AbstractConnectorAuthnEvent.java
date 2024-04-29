@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import java.io.Serial;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -33,6 +34,7 @@ import se.swedenconnect.spring.saml.idp.events.AbstractSaml2IdpEvent;
  */
 public class AbstractConnectorAuthnEvent extends AbstractSaml2IdpEvent {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /**

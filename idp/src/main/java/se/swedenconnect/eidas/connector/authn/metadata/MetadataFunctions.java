@@ -72,9 +72,7 @@ public class MetadataFunctions {
 
     return EntityDescriptorUtils.getEntityCategories(ed)
         .stream()
-        .filter(a -> HIDE_FROM_DISCOVERY_ENTITY_CATEGORY.equals(a))
-        .findFirst()
-        .isPresent();
+        .anyMatch(HIDE_FROM_DISCOVERY_ENTITY_CATEGORY::equals);
   }
 
   /**
@@ -96,7 +94,7 @@ public class MetadataFunctions {
       if (xml instanceof EntityAttributes ea) {
         ea.getAttributes().stream()
             .filter(a -> AttributeConstants.ASSURANCE_CERTIFICATION_ATTRIBUTE_NAME.equals(a.getName()))
-            .map(a -> AttributeUtils.getAttributeStringValues(a))
+            .map(AttributeUtils::getAttributeStringValues)
             .flatMap(List::stream)
             .forEach(a -> {
               if (!uris.contains(a)) {

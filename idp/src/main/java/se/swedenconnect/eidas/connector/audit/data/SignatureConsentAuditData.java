@@ -22,24 +22,25 @@ import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.SignatureConsentEvent;
 
+import java.io.Serial;
+
 /**
  * Audit data for signature consent results.
  *
  * @author Martin Lindström
  */
+@Setter
+@Getter
 public class SignatureConsentAuditData extends ConnectorAuditData {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** Tells whether the user consented to the signature. */
-  @Getter
-  @Setter
   @JsonProperty("signature-consented")
   private boolean signatureConsented;
 
   /** The user identity (personal identifier) of the user that consented/rejected the signature. */
-  @Getter
-  @Setter
   @JsonProperty("user")
   private String user;
 

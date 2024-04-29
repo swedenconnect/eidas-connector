@@ -22,18 +22,21 @@ import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.ResponseProcessingErrorEvent;
 
+import java.io.Serial;
+
 /**
  * Audit data class for processing errors.
  *
  * @author Martin Lindström
  */
+@Setter
+@Getter
 public class ProcessingErrorAuditData extends ConnectorAuditData {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The error message. */
-  @Getter
-  @Setter
   @JsonProperty("error-message")
   private String errorMessage;
 
@@ -49,7 +52,7 @@ public class ProcessingErrorAuditData extends ConnectorAuditData {
    * @param event a {@link ResponseProcessingErrorEvent}
    * @return a {@link ProcessingErrorAuditData}
    */
-  public static final ProcessingErrorAuditData of(final ResponseProcessingErrorEvent event) {
+  public static ProcessingErrorAuditData of(final ResponseProcessingErrorEvent event) {
     if (event == null || event.getErrorMsg() == null) {
       return null;
     }

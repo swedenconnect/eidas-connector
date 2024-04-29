@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.audit;
 
+import java.io.Serial;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,7 @@ import se.swedenconnect.spring.saml.idp.audit.data.Saml2AuditData;
 @JsonInclude(Include.NON_EMPTY)
 public class ConnectorAuditEvent extends AuditEvent {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** Symbolic constant for the default principal. */

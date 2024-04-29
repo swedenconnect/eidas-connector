@@ -97,9 +97,7 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider, Initializi
     else {
       return availableCountries.stream()
           .filter(c -> requestedCountries.stream()
-              .filter(r -> r.equalsIgnoreCase(c.getCountryCode()))
-              .findFirst()
-              .isPresent())
+              .anyMatch(r -> r.equalsIgnoreCase(c.getCountryCode())))
           .toList();
     }
   }
@@ -111,7 +109,7 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider, Initializi
   }
 
   private synchronized Map<String, CountryMetadata> getCountryMap() {
-    if (Optional.ofNullable(this.provider.getLastUpdate()).orElseGet(() -> Instant.now())
+    if (Optional.ofNullable(this.provider.getLastUpdate()).orElseGet(Instant::now)
         .isAfter(this.countryIndexingTime)) {
       try {
         final List<String> eventInfo = new ArrayList<>();
@@ -134,11 +132,11 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider, Initializi
         }
         final List<String> removedCountries = this.countries.values().stream()
             .filter(c -> !cm.containsKey(c.getCountryCode()))
-            .map(c -> c.getCountryCode())
+            .map(CountryMetadata::getCountryCode)
             .toList();
         final List<String> addedCountries = cm.values().stream()
             .filter(c -> !this.countries.containsKey(c.getCountryCode()))
-            .map(c -> c.getCountryCode())
+            .map(CountryMetadata::getCountryCode)
             .toList();
 
         if (!removedCountries.isEmpty() || !addedCountries.isEmpty()) {

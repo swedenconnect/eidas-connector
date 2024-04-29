@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.audit.data;
 
+import java.io.Serial;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +45,7 @@ import se.swedenconnect.opensaml.eidas.ext.SPTypeEnumeration;
  */
 public class EidasAuthnRequestAuditData extends ConnectorAuditData {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The receiving country. */

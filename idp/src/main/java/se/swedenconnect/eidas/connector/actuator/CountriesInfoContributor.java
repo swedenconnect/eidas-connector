@@ -15,20 +15,18 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
-import java.util.List;
-import java.util.Objects;
-
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.boot.actuate.info.Info.Builder;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Provides information about the countries that we may send requests to.
@@ -54,7 +52,7 @@ public class CountriesInfoContributor implements InfoContributor {
   @Override
   public void contribute(final Builder builder) {
     builder.withDetail("countries", this.euMetadata.getAllCountries().stream()
-        .map(c -> new CountryInfo(c))
+        .map(CountryInfo::new)
         .toList());
   }
 
