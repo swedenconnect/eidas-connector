@@ -15,14 +15,13 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.InitializingBean;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Configuration properties for the IdP part of the eIDAS Connector.
@@ -42,18 +41,18 @@ public class ConnectorIdpProperties implements InitializingBean {
    * The SAML entity categories this IdP declares.
    */
   @Getter
-  private List<String> entityCategories = new ArrayList<>();
+  private final List<String> entityCategories = new ArrayList<>();
 
   /**
    * A list of SAML entityID:s for the SP:s that are allowed to send special "eIDAS ping" authentication requests to the
    * connector. If the list is empty, no ping requests will be served.
    */
   @Getter
-  private List<String> pingWhitelist = new ArrayList<>();
+  private final List<String> pingWhitelist = new ArrayList<>();
 
   /** {@inheritDoc} */
   @Override
-  public void afterPropertiesSet() throws Exception {
+  public void afterPropertiesSet() {
     if (this.supportedLoas.isEmpty()) {
       this.supportedLoas = List.of(
           LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW,

@@ -15,17 +15,16 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
-import java.io.Serial;
-import java.util.Objects;
-import java.util.Optional;
-
 import org.opensaml.saml.saml2.core.AuthnRequest;
-
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.spring.saml.idp.audit.Saml2AuditEvent;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authnrequest.Saml2AuthnRequestAuthenticationToken;
 import se.swedenconnect.spring.saml.idp.events.AbstractSaml2IdpEvent;
+
+import java.io.Serial;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Abstract base class for eIDAS authentication events.
@@ -63,7 +62,7 @@ public class AbstractConnectorAuthnEvent extends AbstractSaml2IdpEvent {
   public final String getOriginalSpId() {
     return Optional.ofNullable(this.getToken().getAuthnRequestToken())
         .map(Saml2AuthnRequestAuthenticationToken::getEntityId)
-        .orElseGet(() -> Saml2AuditEvent.UNKNOWN_SP);
+        .orElse(Saml2AuditEvent.UNKNOWN_SP);
   }
 
   /**
@@ -75,7 +74,7 @@ public class AbstractConnectorAuthnEvent extends AbstractSaml2IdpEvent {
     return Optional.ofNullable(this.getToken().getAuthnRequestToken())
         .map(Saml2AuthnRequestAuthenticationToken::getAuthnRequest)
         .map(AuthnRequest::getID)
-        .orElseGet(() -> Saml2AuditEvent.UNKNOWN_AUTHN_REQUEST_ID);
+        .orElse(Saml2AuditEvent.UNKNOWN_AUTHN_REQUEST_ID);
   }
 
 }

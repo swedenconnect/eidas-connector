@@ -50,6 +50,11 @@ public class EidasResponseValidator extends SwedishEidResponseValidator {
    */
   @Override
   public ValidationResult validateAssertions(final Response response, final ValidationContext context) {
+    if (response.getStatus() == null || response.getStatus().getStatusCode() == null) {
+      context.getValidationFailureMessages().add("Response message does not contain status code");
+      return ValidationResult.INVALID;
+    }
+
     if (StatusCode.SUCCESS.equals(response.getStatus().getStatusCode().getValue())) {
       if (response.getAssertions().isEmpty() && response.getEncryptedAssertions().isEmpty()) {
         context.getValidationFailureMessages().add(
@@ -78,7 +83,7 @@ public class EidasResponseValidator extends SwedishEidResponseValidator {
       }
     }
     else {
-      if (response.getAssertions().size() > 0 || response.getEncryptedAssertions().size() > 0) {
+      if (!response.getAssertions().isEmpty() || !response.getEncryptedAssertions().isEmpty()) {
         log.warn("Response message has failure status but contains assertions [response-id:'{}']", response.getID());
       }
     }

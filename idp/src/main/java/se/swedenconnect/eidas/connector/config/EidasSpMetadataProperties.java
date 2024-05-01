@@ -50,7 +50,7 @@ public class EidasSpMetadataProperties extends MetadataConfigurationProperties i
 
   /** {@inheritDoc} */
   @Override
-  public void afterPropertiesSet() throws Exception {
+  public void afterPropertiesSet() {
     if (!StringUtils.hasText(this.applicationIdentifierPrefix)) {
       this.applicationIdentifierPrefix = "SE:connector:";
     }

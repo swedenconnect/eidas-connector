@@ -15,9 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp.validators;
 
-import java.util.Collection;
-import java.util.List;
-
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.common.assertion.AssertionValidationException;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.common.assertion.ValidationResult;
@@ -25,13 +23,14 @@ import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AttributeStatement;
 import org.opensaml.saml.saml2.core.Statement;
-
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
 import se.swedenconnect.opensaml.sweid.saml2.validation.SwedishEidAttributeStatementValidator;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
- * {@link AttributeStatementValidator} for the eIDAS Framework.
+ * Attribute statement validator for the eIDAS Framework.
  *
  * @author Martin Lindström
  */
@@ -59,7 +58,8 @@ public class EidasAttributeStatementValidator extends SwedishEidAttributeStateme
     }
     final AttributeStatement attributeStatement = (AttributeStatement) statement;
 
-    if (attributeStatement.getAttributes().stream().filter(a -> isRepresentativeAttribute(a)).findAny().isPresent()) {
+    if (attributeStatement.getAttributes().stream().anyMatch(
+        EidasAttributeStatementValidator::isRepresentativeAttribute)) {
       final String msg = "Assertion contains eIDAS representative attributes - not supported";
       log.info("{} [assertion-id:{}]", msg, assertion.getID());
       context.getValidationFailureMessages().add(msg);

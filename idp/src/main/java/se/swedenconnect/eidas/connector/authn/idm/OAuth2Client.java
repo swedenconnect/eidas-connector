@@ -15,44 +15,34 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
-
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.oauth2.sdk.AccessTokenResponse;
-import com.nimbusds.oauth2.sdk.ClientCredentialsGrant;
-import com.nimbusds.oauth2.sdk.ErrorObject;
-import com.nimbusds.oauth2.sdk.ParseException;
-import com.nimbusds.oauth2.sdk.TokenErrorResponse;
-import com.nimbusds.oauth2.sdk.TokenRequest;
-import com.nimbusds.oauth2.sdk.TokenResponse;
+import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.PrivateKeyJWT;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.util.tls.TLSVersion;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import se.swedenconnect.eidas.connector.config.DevelopmentMode;
 import se.swedenconnect.security.credential.PkiCredential;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * An OAuth2 client implementation of the {@link OAuth2Handler} interface. The implementation will request an access
@@ -120,7 +110,7 @@ public class OAuth2Client extends AbstractOAuth2Handler {
               (JWSAlgorithm) this.getOauth2Jwk().jwk().getAlgorithm(),
               this.getOauth2Credential().getPrivateKey(),
               this.getOauth2Jwk().jwk().getKeyID(),
-              (Provider) null);
+              null);
 
       // Create the token request ...
       //
@@ -168,7 +158,7 @@ public class OAuth2Client extends AbstractOAuth2Handler {
     if (error == null) {
       return "Unknown OAuth2 error";
     }
-    final StringBuffer sb = new StringBuffer("OAuth2 Error Response: ");
+    final StringBuilder sb = new StringBuilder("OAuth2 Error Response: ");
     sb.append("code=").append(Optional.ofNullable(error.getCode()).orElse("<not set>"));
     sb.append(", description=").append(Optional.ofNullable(error.getDescription()).orElse("<not set>"));
 

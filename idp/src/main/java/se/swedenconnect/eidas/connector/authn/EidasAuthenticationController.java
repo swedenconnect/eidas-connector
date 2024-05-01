@@ -15,13 +15,13 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
-import java.util.Optional;
-import java.util.function.Predicate;
-
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.StatusCode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Controller;
@@ -30,12 +30,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.WebUtils;
-
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.authn.EidasCountryHandler.SelectableCountry;
 import se.swedenconnect.eidas.connector.authn.ui.EidasUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.SignUiModelFactory;
@@ -49,6 +43,9 @@ import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationIn
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractAuthenticationController;
 import se.swedenconnect.spring.saml.idp.authnrequest.Saml2AuthnRequestAuthenticationToken;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
+
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * The authentication controller.
@@ -66,28 +63,28 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   public static final String ACTION_CANCEL = "cancel";
 
   /** The authentication provider. */
-  private EidasAuthenticationProvider provider;
+  private final EidasAuthenticationProvider provider;
 
   /** The UI language handler. */
-  private UiLanguageHandler uiLanguageHandler;
+  private final UiLanguageHandler uiLanguageHandler;
 
   /** Factory for UI model. */
-  private EidasUiModelFactory eidasUiModelFactory;
+  private final EidasUiModelFactory eidasUiModelFactory;
 
   /** Factory for sign consent UI model. */
-  private SignUiModelFactory signUiModelFactory;
+  private final SignUiModelFactory signUiModelFactory;
 
   /** Cookie generator for saving selected country. */
-  private CookieGenerator selectedCountryCookieGenerator;
+  private final CookieGenerator selectedCountryCookieGenerator;
 
   /** Session cookie generator for saving selected country. */
-  private CookieGenerator selectedCountrySessionCookieGenerator;
+  private final CookieGenerator selectedCountrySessionCookieGenerator;
 
   /** For assisting us in selecting possible countries (to display). */
-  private EidasCountryHandler countryHandler;
+  private final EidasCountryHandler countryHandler;
 
   /** The event publisher. */
-  private ApplicationEventPublisher eventPublisher;
+  private final ApplicationEventPublisher eventPublisher;
 
   /**
    * Constructor.
@@ -156,10 +153,10 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       // Selected country from this session.
       //
       final String selectedCountry = Optional.ofNullable(WebUtils.getCookie(
-          request, this.selectedCountrySessionCookieGenerator.getName()))
+              request, this.selectedCountrySessionCookieGenerator.getName()))
           .map(Cookie::getValue)
           .orElse(null);
-      log.debug("Selected country from this session: {}", Optional.ofNullable(selectedCountry).orElseGet(() -> "none"));
+      log.debug("Selected country from this session: {}", Optional.ofNullable(selectedCountry).orElse("none"));
 
       // The first step is to prompt the user for which country to direct to.
 
@@ -308,6 +305,14 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     }
   }
 
+  /**
+   * Delivers the sign consent page.
+   *
+   * @param httpRequest the HttpServletRequest object
+   * @param httpResponse the HttpServletResponse object
+   * @param language the language parameter (optional)
+   * @return a ModelAndView object representing the sign consent page
+   */
   @GetMapping(EidasAuthenticationProvider.AUTHN_PATH + "/consent")
   public ModelAndView signConsentPage(
       final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,

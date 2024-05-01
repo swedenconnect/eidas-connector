@@ -32,7 +32,7 @@ public class UiCountry implements Comparable<UiCountry> {
   private final String name;
 
   @Getter
-  private boolean realCountry = true;
+  private final boolean realCountry;
 
   @Getter
   @Setter

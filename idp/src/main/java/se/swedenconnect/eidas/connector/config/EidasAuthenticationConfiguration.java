@@ -15,11 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
+import net.shibboleth.shared.component.ComponentInitializationException;
 import org.opensaml.core.config.ConfigurationService;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.util.XMLObjectSupport;
@@ -46,8 +42,6 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
-
-import net.shibboleth.shared.component.ComponentInitializationException;
 import se.swedenconnect.eidas.attributes.AttributeMappingService;
 import se.swedenconnect.eidas.attributes.DefaultAttributeMappingService;
 import se.swedenconnect.eidas.attributes.conversion.AttributeConverterConstants;
@@ -61,14 +55,7 @@ import se.swedenconnect.opensaml.eidas.ext.NodeCountry;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.EntityDescriptorContainer;
 import se.swedenconnect.opensaml.saml2.metadata.EntityDescriptorUtils;
-import se.swedenconnect.opensaml.saml2.metadata.build.AssertionConsumerServiceBuilder;
-import se.swedenconnect.opensaml.saml2.metadata.build.ContactPersonBuilder;
-import se.swedenconnect.opensaml.saml2.metadata.build.DigestMethodBuilder;
-import se.swedenconnect.opensaml.saml2.metadata.build.EntityAttributesBuilder;
-import se.swedenconnect.opensaml.saml2.metadata.build.EntityDescriptorBuilder;
-import se.swedenconnect.opensaml.saml2.metadata.build.OrganizationBuilder;
-import se.swedenconnect.opensaml.saml2.metadata.build.SPSSODescriptorBuilder;
-import se.swedenconnect.opensaml.saml2.metadata.build.SigningMethodBuilder;
+import se.swedenconnect.opensaml.saml2.metadata.build.*;
 import se.swedenconnect.opensaml.saml2.response.replay.MessageReplayChecker;
 import se.swedenconnect.opensaml.saml2.response.validation.ResponseValidationSettings;
 import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
@@ -77,6 +64,11 @@ import se.swedenconnect.opensaml.xmlsec.encryption.support.SAMLObjectDecrypter;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.opensaml.OpenSamlCredential;
 import se.swedenconnect.spring.saml.idp.settings.IdentityProviderSettings;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Configuration class for the eIDAS SP part of the connector.
@@ -173,7 +165,7 @@ public class EidasAuthenticationConfiguration {
     final List<PkiCredential> credentials = this.credentials.getSpEncryptCredentials();
     final boolean pkcs11Mode = credentials.get(0).isHardwareCredential();
     final List<Credential> creds = new ArrayList<>();
-    credentials.stream().forEach(c -> {
+    credentials.forEach(c -> {
       if (c instanceof OpenSamlCredential openSamlCred) {
         creds.add(openSamlCred);
       }
@@ -216,7 +208,7 @@ public class EidasAuthenticationConfiguration {
     // Based on the supplied local credentials, set a key info credential resolver.
     //
     parameters.setKEKKeyInfoCredentialResolver(
-        DecryptionUtils.createKeyInfoCredentialResolver(credentials.stream().toArray(Credential[]::new)));
+        DecryptionUtils.createKeyInfoCredentialResolver(credentials.toArray(Credential[]::new)));
 
     return parameters;
   }
@@ -337,7 +329,7 @@ public class EidasAuthenticationConfiguration {
     if (mprop.getDigestMethods() != null && !mprop.isIncludeDigestMethodsUnderRole()) {
       extensions.getUnknownXMLObjects().removeIf(o -> DigestMethod.class.isAssignableFrom(o.getClass()));
       mprop.getDigestMethods().stream()
-          .filter(d -> StringUtils.hasText(d))
+          .filter(StringUtils::hasText)
           .forEach(d -> extensions.getUnknownXMLObjects().add(DigestMethodBuilder.builder().algorithm(d).build()));
     }
     if (mprop.getSigningMethods() != null && !mprop.isIncludeSigningMethodsUnderRole()) {
@@ -372,7 +364,7 @@ public class EidasAuthenticationConfiguration {
     if (mprop.getDigestMethods() != null && mprop.isIncludeDigestMethodsUnderRole()) {
       roleExtensions.getUnknownXMLObjects().removeIf(o -> DigestMethod.class.isAssignableFrom(o.getClass()));
       mprop.getDigestMethods().stream()
-          .filter(d -> StringUtils.hasText(d))
+          .filter(StringUtils::hasText)
           .forEach(d -> roleExtensions.getUnknownXMLObjects().add(DigestMethodBuilder.builder().algorithm(d).build()));
     }
     if (mprop.getSigningMethods() != null && mprop.isIncludeSigningMethodsUnderRole()) {
@@ -437,7 +429,7 @@ public class EidasAuthenticationConfiguration {
               .type(Arrays.stream(ContactPersonTypeEnumeration.values())
                   .filter(t -> e.getKey().name().equals(t.toString()))
                   .findFirst()
-                  .orElseGet(() -> ContactPersonTypeEnumeration.OTHER))
+                  .orElse(ContactPersonTypeEnumeration.OTHER))
               .company(e.getValue().getCompany())
               .emailAddresses(e.getValue().getEmailAddresses())
               .givenName(e.getValue().getGivenName())

@@ -15,32 +15,23 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm.mock;
 
-import java.security.interfaces.RSAPublicKey;
-import java.text.ParseException;
-import java.util.Objects;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import se.swedenconnect.eidas.connector.authn.idm.IdmQueryResponse;
+
+import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
+import java.util.Objects;
 
 /**
  * Mocked Identity Matching API.
@@ -53,9 +44,16 @@ import se.swedenconnect.eidas.connector.authn.idm.IdmQueryResponse;
 @Slf4j
 public class MockedIdmApi {
 
-  @Setter
-  @Autowired
-  private MockedIdmData mockData;
+  private final MockedIdmData mockData;
+
+  /**
+   * Constructs a new MockedIdmApi object.
+   *
+   * @param mockData the mocked Idm data object
+   */
+  public MockedIdmApi(final MockedIdmData mockData) {
+    this.mockData = mockData;
+  }
 
   @GetMapping(path = "/{prid}", produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
@@ -104,7 +102,7 @@ public class MockedIdmApi {
       return mrecord;
     }
     else {
-      log.info("Mocked IdM: {} -> not found", prid, mrecord);
+      log.info("Mocked IdM: {} -> not found", prid);
       throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 

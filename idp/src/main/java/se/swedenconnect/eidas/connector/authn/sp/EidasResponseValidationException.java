@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
+import java.io.Serial;
 import java.util.Objects;
 
 import org.opensaml.saml.saml2.core.Response;
@@ -30,6 +31,7 @@ import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
  */
 public class EidasResponseValidationException extends ResponseValidationException {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   private final Saml2ErrorStatusException error;

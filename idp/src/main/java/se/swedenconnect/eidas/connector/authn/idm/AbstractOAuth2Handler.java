@@ -15,11 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
-import java.security.interfaces.RSAPublicKey;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSSigner;
@@ -30,8 +25,12 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.ClientID;
-
 import se.swedenconnect.security.credential.PkiCredential;
+
+import java.security.interfaces.RSAPublicKey;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Abstract base implementation of the {@link OAuth2Handler} interface.
@@ -58,7 +57,7 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
   /**
    * Holds information about a JWK.
    */
-  protected static record JwkInfo(JWK jwk, JWSSigner signer, JWSAlgorithm signingAlgorithm) {
+  protected record JwkInfo(JWK jwk, JWSSigner signer, JWSAlgorithm signingAlgorithm) {
   }
 
   /**
@@ -149,24 +148,23 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
   protected JwkInfo createJwk(final PkiCredential credential) {
     try {
       if ("RSA".equals(credential.getPublicKey().getAlgorithm())) {
-        final JWK jwk = new RSAKey.Builder(RSAPublicKey.class.cast(credential.getPublicKey()))
+        final RSAKey jwk = new RSAKey.Builder((RSAPublicKey) credential.getPublicKey())
             .privateKey(credential.getPrivateKey())
             .keyIDFromThumbprint()
             .algorithm(JWSAlgorithm.RS256)
             .build();
-        return new JwkInfo(jwk, new RSASSASigner((RSAKey) jwk), JWSAlgorithm.RS256);
+        return new JwkInfo(jwk, new RSASSASigner(jwk), JWSAlgorithm.RS256);
       }
       else if ("EC".equals(credential.getPublicKey().getAlgorithm())) {
-        final JWK jwk = new ECKey.Builder(ECKey.parse(credential.getCertificate()))
+        final ECKey jwk = new ECKey.Builder(ECKey.parse(credential.getCertificate()))
             .privateKey(credential.getPrivateKey())
             .keyIDFromThumbprint()
             .algorithm(JWSAlgorithm.ES256)
             .build();
-        return new JwkInfo(jwk, new ECDSASigner((ECKey) jwk), JWSAlgorithm.ES256);
+        return new JwkInfo(jwk, new ECDSASigner(jwk), JWSAlgorithm.ES256);
       }
       else {
-        throw new SecurityException(
-            "Unsupported key type - " + credential.getPublicKey().getAlgorithm());
+        throw new SecurityException("Unsupported key type - " + credential.getPublicKey().getAlgorithm());
       }
     }
     catch (final JOSEException e) {

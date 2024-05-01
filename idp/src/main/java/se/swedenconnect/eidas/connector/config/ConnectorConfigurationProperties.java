@@ -15,9 +15,10 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.io.File;
-import java.security.cert.X509Certificate;
-
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -25,13 +26,11 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.authn.sp.EidasSpMetadataController;
 import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataProviderConfigurationProperties;
+
+import java.io.File;
+import java.security.cert.X509Certificate;
 
 /**
  * Main configuration properties.
@@ -68,7 +67,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
 
   /**
    * Tells whether we are running the connector in "development mode". This can mean that we allow any TLS server
-   * certificates or that other settings are setup with less security.
+   * certificates or that other settings are set up with less security.
    */
   @Getter
   @Setter
@@ -86,28 +85,28 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    */
   @NestedConfigurationProperty
   @Getter
-  private ConnectorIdpProperties idp = new ConnectorIdpProperties();
+  private final ConnectorIdpProperties idp = new ConnectorIdpProperties();
 
   /**
    * Configuration for eIDAS authentication.
    */
   @NestedConfigurationProperty
   @Getter
-  private EidasAuthenticationProperties eidas = new EidasAuthenticationProperties();
+  private final EidasAuthenticationProperties eidas = new EidasAuthenticationProperties();
 
   /**
    * The configuration for retrieval of aggregated EU metadata.
    */
   @NestedConfigurationProperty
   @Getter
-  private EuMetadataProperties euMetadata = new EuMetadataProperties();
+  private final EuMetadataProperties euMetadata = new EuMetadataProperties();
 
   /**
    * The PRID service configuration.
    */
   @NestedConfigurationProperty
   @Getter
-  private PridServiceProperties prid = new PridServiceProperties();
+  private final PridServiceProperties prid = new PridServiceProperties();
 
   /**
    * Identity Matching configuration.
@@ -156,12 +155,12 @@ public class ConnectorConfigurationProperties implements InitializingBean {
   public static class EuMetadataProperties implements InitializingBean {
 
     /**
-     * The location of the metadata. Can be an URL, a file, or even a classpath resource.
+     * The location of the metadata. Can be a URL, a file, or even a classpath resource.
      */
     private Resource location;
 
     /**
-     * If the {@code location} setting is an URL, a "backup location" may be assigned to store downloaded metadata.
+     * If the {@code location} setting is a URL, a "backup location" may be assigned to store downloaded metadata.
      */
     private File backupLocation;
 
@@ -177,13 +176,13 @@ public class ConnectorConfigurationProperties implements InitializingBean {
     private Boolean skipHostnameVerification;
 
     /**
-     * If the {@code location} setting is an URL and a HTTP proxy is required this setting configures this proxy.
+     * If the {@code location} setting is a URL and an HTTP proxy is required this setting configures this proxy.
      */
     private MetadataProviderConfigurationProperties.HttpProxy httpProxy;
 
     /** {@inheritDoc} */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
       Assert.notNull(this.location, "connector.eu-metadata.location must be set");
       if (this.validationCertificate == null) {
         log.warn("connector.eu-metadata.validation-certificate has not been set - Metadata can not be trusted");
@@ -212,7 +211,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
       Assert.notNull(this.policyResource, "connector.prid.policy-resource must be set");
       if (this.updateInterval == null) {
         this.updateInterval = DEFAULT_UPDATE_INTERVAL;

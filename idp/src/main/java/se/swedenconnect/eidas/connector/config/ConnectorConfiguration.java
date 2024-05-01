@@ -15,9 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.util.List;
-import java.util.Optional;
-
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,17 +31,10 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.thymeleaf.spring6.SpringTemplateEngine;
-
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.attributes.AttributeMappingService;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationController;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
-import se.swedenconnect.eidas.connector.authn.idm.DefaultIdmClient;
-import se.swedenconnect.eidas.connector.authn.idm.IdmClient;
-import se.swedenconnect.eidas.connector.authn.idm.NoopIdmClient;
-import se.swedenconnect.eidas.connector.authn.idm.OAuth2Client;
-import se.swedenconnect.eidas.connector.authn.idm.OAuth2Handler;
-import se.swedenconnect.eidas.connector.authn.idm.OAuth2Server;
+import se.swedenconnect.eidas.connector.authn.idm.*;
 import se.swedenconnect.eidas.connector.authn.metadata.DefaultEuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequestGenerator;
@@ -61,6 +52,9 @@ import se.swedenconnect.spring.saml.idp.extensions.SignatureMessagePreprocessor;
 import se.swedenconnect.spring.saml.idp.metadata.EntityCategoryHelper;
 import se.swedenconnect.spring.saml.idp.response.ThymeleafResponsePage;
 import se.swedenconnect.spring.saml.idp.settings.IdentityProviderSettings;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Configuration class for the IdP part of the Sweden Connect eIDAS Connector.
@@ -224,7 +218,7 @@ public class ConnectorConfiguration {
           connectorCredentials.getOAuth2Credential());
 
       Optional.ofNullable(this.connectorProperties.getIdm().getOauth2().getClient().getAsIssuerId())
-          .ifPresent(i -> client.setAsIssuerId(i));
+          .ifPresent(client::setAsIssuerId);
 
       return client;
     }
@@ -237,7 +231,7 @@ public class ConnectorConfiguration {
           connectorCredentials.getOAuth2Credential());
 
       Optional.ofNullable(this.connectorProperties.getIdm().getOauth2().getServer().getLifetime())
-          .ifPresent(d -> server.setLifeTime(d));
+          .ifPresent(server::setLifeTime);
 
       return server;
     }

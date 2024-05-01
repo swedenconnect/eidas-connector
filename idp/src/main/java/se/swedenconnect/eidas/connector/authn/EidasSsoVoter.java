@@ -15,19 +15,15 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import org.opensaml.saml.saml2.core.IDPEntry;
 import org.opensaml.saml.saml2.core.Scoping;
 import org.springframework.util.StringUtils;
-
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthentication;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.authentication.provider.SsoVoter;
+
+import java.util.*;
 
 /**
  * An SSO voter that prevents SSO if one or more countries were selected and those do not match the country from the
@@ -47,9 +43,10 @@ public class EidasSsoVoter implements SsoVoter {
             .map(Scoping::getIDPList)
             .map(list -> list.getIDPEntrys().stream()
                 .map(IDPEntry::getProviderID)
+                .filter(Objects::nonNull)
                 .filter(p -> p.startsWith(EidasCountryHandler.COUNTRY_URI_PREFIX))
-                .map(p -> p.substring(EidasCountryHandler.COUNTRY_URI_PREFIX.length(), p.length()))
-                .filter(c -> StringUtils.hasText(c))
+                .map(p -> p.substring(EidasCountryHandler.COUNTRY_URI_PREFIX.length()))
+                .filter(StringUtils::hasText)
                 .toList())
             .orElse(Collections.emptyList());
 
@@ -60,7 +57,7 @@ public class EidasSsoVoter implements SsoVoter {
     final String previousCountry = userAuthn.getSaml2UserDetails().getAttributes().stream()
         .filter(a -> AttributeConstants.ATTRIBUTE_NAME_C.equals(a.getId()))
         .filter(a -> !a.getValues().isEmpty())
-        .map(a -> String.class.cast(a.getValues().get(0)))
+        .map(a -> (String) a.getValues().get(0))
         .findFirst()
         .orElse(null);
 

@@ -15,17 +15,16 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.security.cert.X509Certificate;
-import java.util.Optional;
-
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.factory.PkiCredentialConfigurationProperties;
 import se.swedenconnect.security.credential.factory.PkiCredentialFactoryBean;
 import se.swedenconnect.spring.saml.idp.autoconfigure.settings.CredentialConfigurationProperties;
+
+import java.security.cert.X509Certificate;
+import java.util.Optional;
 
 /**
  * Configuration for connector credentials (i.e., the SP credentials).
@@ -49,7 +48,7 @@ public class ConnectorCredentialsConfiguration {
    */
   public ConnectorCredentialsConfiguration(final ConnectorConfigurationProperties connectorProperties) {
     this.properties = Optional.ofNullable(connectorProperties.getEidas().getCredentials())
-        .orElseGet(() -> new CredentialConfigurationProperties());
+        .orElseGet(CredentialConfigurationProperties::new);
     this.oauth2Properties = Optional.ofNullable(connectorProperties.getIdm())
         .map(IdmProperties::getOauth2)
         .orElseThrow(() -> new IllegalArgumentException("Missing connector.idm.oauth2"));
@@ -66,7 +65,7 @@ public class ConnectorCredentialsConfiguration {
   }
 
   @Bean("connector.sp.credentials.FutureSign")
-  X509Certificate futureSignCertificate() throws Exception {
+  X509Certificate futureSignCertificate() {
     return this.properties.getFutureSign();
   }
 

@@ -15,24 +15,16 @@
  */
 package se.swedenconnect.eidas.connector.authn.metadata;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
+import lombok.extern.slf4j.Slf4j;
+import net.shibboleth.shared.resolver.ResolverException;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
-
-import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.shared.resolver.ResolverException;
 import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
+
+import java.time.Instant;
+import java.util.*;
 
 /**
  * Default implementation of the {@link EuMetadataProvider} interface.
@@ -131,12 +123,12 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider, Initializi
           eventInfo.add("Initial load of EU metadata");
         }
         final List<String> removedCountries = this.countries.values().stream()
-            .filter(c -> !cm.containsKey(c.getCountryCode()))
             .map(CountryMetadata::getCountryCode)
+            .filter(countryCode -> !cm.containsKey(countryCode))
             .toList();
         final List<String> addedCountries = cm.values().stream()
-            .filter(c -> !this.countries.containsKey(c.getCountryCode()))
             .map(CountryMetadata::getCountryCode)
+            .filter(countryCode -> !this.countries.containsKey(countryCode))
             .toList();
 
         if (!removedCountries.isEmpty() || !addedCountries.isEmpty()) {
@@ -167,7 +159,7 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider, Initializi
 
   /** {@inheritDoc} */
   @Override
-  public void afterPropertiesSet() throws Exception {
+  public void afterPropertiesSet() {
     log.info("Initial contents of EU metadata: {}",
         this.getCountries().stream().map(CountryMetadata::getCountryCode).toList());
   }

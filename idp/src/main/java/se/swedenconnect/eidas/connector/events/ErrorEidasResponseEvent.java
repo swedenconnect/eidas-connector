@@ -15,17 +15,16 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
-import java.io.Serial;
-import java.util.Objects;
-
 import org.opensaml.saml.saml2.core.Response;
-
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
+import java.io.Serial;
+import java.util.Objects;
+
 /**
- * Event that is signalled when a error SAML response was received from the foreign IdP.
+ * Event that is signalled when an error SAML response was received from the foreign IdP.
  *
  * @author Martin Lindström
  */
@@ -45,7 +44,7 @@ public class ErrorEidasResponseEvent extends AbstractConnectorAuthnEvent {
    */
   public ErrorEidasResponseEvent(final Saml2UserAuthenticationInputToken token, final Response response) {
     super(token);
-    this.response = new SerializableOpenSamlObject<Response>(
+    this.response = new SerializableOpenSamlObject<>(
         Objects.requireNonNull(response, "response must not be null"));
   }
 

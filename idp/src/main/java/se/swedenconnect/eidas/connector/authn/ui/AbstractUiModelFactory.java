@@ -120,10 +120,7 @@ public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
       if (logo.getHeight() == null) {
         return false;
       }
-      if (logo.getHeight() > 80 && logo.getHeight() < 120) {
-        return true;
-      }
-      return false;
+      return logo.getHeight() > 80 && logo.getHeight() < 120;
     };
   }
 

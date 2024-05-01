@@ -60,7 +60,7 @@ public class BearerAccessTokenHolder {
    * @return {@code true} if the token still is valid and {@code false} otherwise
    */
   public boolean isValid() {
-    return this.expires != null ? Instant.now().plusSeconds(10).isBefore(this.expires) : false;
+    return this.expires != null && Instant.now().plusSeconds(10).isBefore(this.expires);
   }
 
 }

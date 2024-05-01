@@ -15,6 +15,10 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import lombok.Getter;
+import lombok.Setter;
+import se.swedenconnect.eidas.connector.ApplicationVersion;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
@@ -22,10 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import lombok.Getter;
-import lombok.Setter;
-import se.swedenconnect.eidas.connector.ApplicationVersion;
 
 /**
  * Event for EU metadata updates.
@@ -65,7 +65,7 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
    * @return an {@link EuMetadataUpdateData} object
    */
   public EuMetadataUpdateData getEuMetadataUpdateData() {
-    return EuMetadataUpdateData.class.cast(this.getSource());
+    return (EuMetadataUpdateData) this.getSource();
   }
 
   /**
@@ -82,6 +82,7 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
    */
   public static class EuMetadataUpdateData implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
     /** The update instant. */
@@ -115,8 +116,8 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
     public EuMetadataUpdateData(final Instant instant, final List<String> removedCountries,
         final List<String> addedCountries) {
       this.instant = Objects.requireNonNull(instant, "instant must not be null");
-      this.removedCountries = Optional.ofNullable(removedCountries).orElseGet(() -> Collections.emptyList());
-      this.addedCountries = Optional.ofNullable(addedCountries).orElseGet(() -> Collections.emptyList());
+      this.removedCountries = Optional.ofNullable(removedCountries).orElse(Collections.emptyList());
+      this.addedCountries = Optional.ofNullable(addedCountries).orElse(Collections.emptyList());
       this.error = null;
     }
 

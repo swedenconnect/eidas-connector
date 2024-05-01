@@ -15,18 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Predicate;
-
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Status;
@@ -37,10 +28,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.attributes.AttributeMappingService;
 import se.swedenconnect.eidas.connector.authn.idm.IdmClient;
 import se.swedenconnect.eidas.connector.authn.idm.IdmException;
@@ -61,11 +48,7 @@ import se.swedenconnect.eidas.connector.prid.service.PridService;
 import se.swedenconnect.opensaml.common.validation.CoreValidatorParameters;
 import se.swedenconnect.opensaml.saml2.request.RequestGenerationException;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
-import se.swedenconnect.opensaml.saml2.response.ResponseProcessingException;
-import se.swedenconnect.opensaml.saml2.response.ResponseProcessingInput;
-import se.swedenconnect.opensaml.saml2.response.ResponseProcessingResult;
-import se.swedenconnect.opensaml.saml2.response.ResponseProcessor;
-import se.swedenconnect.opensaml.saml2.response.ResponseStatusErrorException;
+import se.swedenconnect.opensaml.saml2.response.*;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthentication;
@@ -78,6 +61,11 @@ import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatus;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
 import se.swedenconnect.spring.saml.idp.error.UnrecoverableSaml2IdpError;
 import se.swedenconnect.spring.saml.idp.error.UnrecoverableSaml2IdpException;
+
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * The {@link AuthenticationProvider} handling the authentication of the user against the foreign eIDAS countries.
@@ -101,9 +89,6 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
   /** The session key where we store the eIDAS authentication token. */
   public static final String EIDAS_AUTHNTOKEN_SESSION_KEY = EidasAuthenticationToken.class.getName();
-
-  /** The base URL for the application. */
-  private final String baseUrl;
 
   /** The event publisher. */
   private final ApplicationEventPublisher eventPublisher;
@@ -175,13 +160,13 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
     this.ssoVoters().add(new EidasSsoVoter());
 
-    this.baseUrl = Objects.requireNonNull(baseUrl, "baseUrl must not be null");
     this.eventPublisher = Objects.requireNonNull(eventPublisher, "eventPublisher must not be null");
     this.spMetadata = Objects.requireNonNull(spMetadata, "spMetadata must not be null");
     this.authnRequestGenerator =
         Objects.requireNonNull(authnRequestGenerator, "authnRequestGenerator must not be null");
     this.responseProcessor = Objects.requireNonNull(responseProcessor, "responseProcessor must not be null");
-    this.samlResponseUrl = String.format("%s%s", this.baseUrl, EidasAuthenticationController.ASSERTION_CONSUMER_PATH);
+    this.samlResponseUrl = String.format("%s%s", Objects.requireNonNull(baseUrl, "baseUrl must not be null"),
+        EidasAuthenticationController.ASSERTION_CONSUMER_PATH);
     this.metadataProvider = Objects.requireNonNull(metadataProvider, "metadataProvider must not be null");
     this.attributeMappingService =
         Objects.requireNonNull(attributeMappingService, "attributeMappingService must not be null");
@@ -191,7 +176,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
         Objects.requireNonNull(supportedLoas, "supportedLoas must not be null"));
     this.entityCategories = Collections.unmodifiableList(
         Objects.requireNonNull(entityCategories, "entityCategories must not be null"));
-    this.pingWhitelist = Optional.ofNullable(pingWhitelist).orElseGet(() -> Collections.emptyList());
+    this.pingWhitelist = Optional.ofNullable(pingWhitelist).orElseGet(Collections::emptyList);
 
     // "http://eidas.europa.eu/LoA/test"
 
@@ -204,7 +189,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   public Saml2UserAuthentication resumeAuthentication(final ResumedAuthenticationToken token)
       throws Saml2ErrorStatusException {
 
-    final EidasAuthenticationToken eidasToken = EidasAuthenticationToken.class.cast(token.getAuthnToken());
+    final EidasAuthenticationToken eidasToken = (EidasAuthenticationToken) token.getAuthnToken();
 
     // Build the user details for the authentication ...
     //
@@ -277,10 +262,10 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       {
         final Collection<UserAttribute> mappedAttributes = new ArrayList<>(eidasToken.getAttributes());
         eidasToken.getAttributes().stream()
-            .map(a -> this.attributeMappingService.toSwedishEidAttribute(a))
+            .map(this.attributeMappingService::toSwedishEidAttribute)
             .filter(Objects::nonNull)
-            .forEach(a -> mappedAttributes.add(a));
-        mappedAttributes.stream().forEach(a -> eidasToken.addAttribute(a));
+            .forEach(mappedAttributes::add);
+        mappedAttributes.forEach(eidasToken::addAttribute);
       }
 
       // Add country attribute ...
@@ -362,14 +347,14 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       //
       final Status status = e.getStatus();
       throw new Saml2ErrorStatusException(
-          Optional.ofNullable(status.getStatusCode()).map(StatusCode::getValue).orElseGet(() -> StatusCode.RESPONDER),
+          Optional.ofNullable(status.getStatusCode()).map(StatusCode::getValue).orElse(StatusCode.RESPONDER),
           Optional.ofNullable(status.getStatusCode()).map(StatusCode::getStatusCode).map(StatusCode::getValue)
-              .orElseGet(() -> StatusCode.AUTHN_FAILED),
+              .orElse(StatusCode.AUTHN_FAILED),
           null,
           Optional.ofNullable(status.getStatusMessage())
               .map(StatusMessage::getValue)
-              .map(v -> "Failure received from foreign service: %s".formatted(v))
-              .orElseGet(() -> "Failure received from foreign service"),
+              .map("Failure received from foreign service: %s"::formatted)
+              .orElse("Failure received from foreign service"),
           e);
     }
     catch (final ResponseProcessingException e) {
@@ -548,7 +533,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
     try {
       final String relayState = Optional.ofNullable(token.getAuthnRequestToken().getRelayState())
-          .filter(r -> StringUtils.hasText(r))
+          .filter(StringUtils::hasText)
           .orElseGet(() -> UUID.randomUUID().toString());
 
       final RequestHttpObject<AuthnRequest> authnRequest =
@@ -579,7 +564,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    */
   @Override
   public boolean supportsUserAuthenticationToken(final Authentication authentication) {
-    return EidasAuthenticationToken.class.isInstance(authentication);
+    return authentication instanceof EidasAuthenticationToken;
   }
 
   /** {@inheritDoc} */
@@ -595,7 +580,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   }
 
   /**
-   * Special handling since we also may support the special URI "http://eidas.europa.eu/LoA/test".
+   * Special handling since we also may support the special URI {@code http://eidas.europa.eu/LoA/test}.
    */
   @Override
   protected List<String> filterRequestedAuthnContextUris(final Saml2UserAuthenticationInputToken token) {

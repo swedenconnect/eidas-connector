@@ -19,6 +19,8 @@ import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
+import java.io.Serial;
+
 /**
  * An event that tells whether a user has consented or rejected a signature.
  *
@@ -26,6 +28,7 @@ import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationIn
  */
 public class SignatureConsentEvent extends AbstractConnectorAuthnEvent {
 
+  @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The authentication token. */

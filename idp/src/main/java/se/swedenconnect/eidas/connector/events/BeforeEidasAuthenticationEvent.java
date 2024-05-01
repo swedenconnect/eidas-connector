@@ -59,7 +59,7 @@ public class BeforeEidasAuthenticationEvent extends AbstractConnectorAuthnEvent 
   public BeforeEidasAuthenticationEvent(final Saml2UserAuthenticationInputToken token,
       final String country, final AuthnRequest authnRequest, final String relayState, final String method) {
     super(token);
-    this.authnRequest = new SerializableOpenSamlObject<AuthnRequest>(authnRequest);
+    this.authnRequest = new SerializableOpenSamlObject<>(authnRequest);
     this.relayState = relayState;
     this.country = country;
     this.method = method;

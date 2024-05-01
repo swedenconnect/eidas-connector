@@ -15,33 +15,27 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
-import java.util.List;
+import lombok.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.List;
 
 /**
  * Model object for the eiDAS Connector "choose country" UI view.
  *
  * @author Martin Lindström
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class EidasUiModel extends BaseUiModel {
 
   /**
    * Identity Matching info.
    */
-  @Getter
-  @Setter
   private IdmInfo idm;
 
   /**
    * The countries to display.
    */
-  @Getter
-  @Setter
   private List<UiCountry> countries;
 
   /**
@@ -53,7 +47,7 @@ public class EidasUiModel extends BaseUiModel {
     if (this.countries == null) {
       return false;
     }
-    return this.countries.stream().anyMatch(c -> c.isDisabled());
+    return this.countries.stream().anyMatch(UiCountry::isDisabled);
   }
 
   /**

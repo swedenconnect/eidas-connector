@@ -55,13 +55,12 @@ public class ResponseProcessingErrorEvent extends AbstractConnectorAuthnEvent {
    * @param token the authentication input token
    * @param errorMsg the error message
    * @param response the SAML response
-   * @param assertion the SAML assertion
    */
   public ResponseProcessingErrorEvent(final Saml2UserAuthenticationInputToken token, final String errorMsg,
       final Response response) {
     super(token);
     this.errorMsg = errorMsg;
-    this.response = response != null ? new SerializableOpenSamlObject<Response>(response) : null;
+    this.response = response != null ? new SerializableOpenSamlObject<>(response) : null;
   }
 
   /**

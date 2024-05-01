@@ -15,15 +15,14 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.time.Duration;
-import java.util.List;
-
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 import se.swedenconnect.security.credential.factory.PkiCredentialConfigurationProperties;
+
+import java.time.Duration;
+import java.util.List;
 
 /**
  * Configuration properties for eIDAS Identity Matching.
@@ -166,7 +165,7 @@ public class IdmProperties implements InitializingBean {
 
       /** {@inheritDoc} */
       @Override
-      public void afterPropertiesSet() throws Exception {
+      public void afterPropertiesSet() {
         Assert.hasText(this.tokenEndpoint, "connector.idm.oauth2.client.token-endpoint must be assigned");
       }
 
@@ -194,7 +193,7 @@ public class IdmProperties implements InitializingBean {
 
       /** {@inheritDoc} */
       @Override
-      public void afterPropertiesSet() throws Exception {
+      public void afterPropertiesSet() {
         Assert.hasText(this.issuer, "connector.idm.oauth2.server.issuer must be assigned");
       }
 

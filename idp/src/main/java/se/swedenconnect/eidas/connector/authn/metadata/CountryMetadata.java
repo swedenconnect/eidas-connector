@@ -156,34 +156,34 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
     return this.supportedSwedishAssuranceLevels;
   }
 
-  private static List<String> SUPPORTED_FOR_EIDAS_LOA_LOW = List.of(
+  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_LOW = List.of(
       LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW,
       LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW_NF);
 
-  private static List<String> SUPPORTED_FOR_EIDAS_LOA_LOW_NON_NOTIFIED = List.of(
+  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_LOW_NON_NOTIFIED = List.of(
       LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW);
 
-  private static List<String> SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL = Stream.concat(
-      List.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL,
-          LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF).stream(),
-      SUPPORTED_FOR_EIDAS_LOA_LOW.stream())
+  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL = Stream.concat(
+          Stream.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL,
+              LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF),
+          SUPPORTED_FOR_EIDAS_LOA_LOW.stream())
       .toList();
 
-  private static List<String> SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED = Stream.concat(
-      List.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL).stream(),
-      SUPPORTED_FOR_EIDAS_LOA_LOW_NON_NOTIFIED.stream())
+  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED = Stream.concat(
+          Stream.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL),
+          SUPPORTED_FOR_EIDAS_LOA_LOW_NON_NOTIFIED.stream())
       .toList();
 
-  private static List<String> SUPPORTED_FOR_EIDAS_LOA_HIGH = Stream.concat(
-      Arrays.asList(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH,
-          LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF).stream(),
-      SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL.stream())
+  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_HIGH = Stream.concat(
+          Stream.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH,
+              LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF),
+          SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL.stream())
       .collect(Collectors.toList());
 
-  private static List<String> SUPPORTED_FOR_EIDAS_LOA_HIGH_NON_NOTIFIED = Stream.concat(
-      Arrays.asList(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH).stream(),
-      SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.stream())
-      .collect(Collectors.toList());
+  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_HIGH_NON_NOTIFIED = Stream.concat(
+          Stream.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH),
+          SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.stream())
+      .toList();
 
   /**
    * Tells whether the country should be hidden from discovery.

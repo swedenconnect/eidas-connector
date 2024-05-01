@@ -15,12 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp.validators;
 
-import java.time.Instant;
-import java.util.Arrays;
-
-import javax.xml.namespace.QName;
-
-import org.opensaml.saml.common.assertion.AssertionValidationException;
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.common.assertion.ValidationResult;
 import org.opensaml.saml.saml2.assertion.ConditionValidator;
@@ -31,10 +26,12 @@ import org.opensaml.saml.saml2.core.Condition;
 import org.opensaml.saml.saml2.core.OneTimeUse;
 import org.opensaml.xmlsec.signature.support.SignaturePrevalidator;
 import org.opensaml.xmlsec.signature.support.SignatureTrustEngine;
-
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.opensaml.saml2.assertion.validation.AssertionValidator;
 import se.swedenconnect.opensaml.sweid.saml2.validation.SwedishEidAssertionValidator;
+
+import javax.xml.namespace.QName;
+import java.time.Instant;
+import java.util.List;
 
 /**
  * An {@link AssertionValidator} for the eIDAS Framework.
@@ -47,7 +44,7 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
   /**
    * Constructor setting up the validator with the following validators:
    * <ul>
-   * <li>confirmationValidators: {@link SwedishEidSubjectConfirmationValidator}</li>
+   * <li>confirmationValidators: {@link BearerSubjectConfirmationValidator}</li>
    * <li>conditionValidators: {@link AudienceRestrictionConditionValidator}</li>
    * <li>statementValidators: {@link EidasAuthnStatementValidator}, {@link EidasAttributeStatementValidator}.</li>
    * </ul>
@@ -58,9 +55,9 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
   public EidasAssertionValidator(final SignatureTrustEngine trustEngine,
       final SignaturePrevalidator signaturePrevalidator) {
     super(trustEngine, signaturePrevalidator,
-        Arrays.asList(new BearerSubjectConfirmationValidator()),
-        Arrays.asList(new AudienceRestrictionConditionValidator(), new OneTimeUseDummyConditionValidator()),
-        Arrays.asList(new EidasAuthnStatementValidator(), new EidasAttributeStatementValidator()));
+        List.of(new BearerSubjectConfirmationValidator()),
+        List.of(new AudienceRestrictionConditionValidator(), new OneTimeUseDummyConditionValidator()),
+        List.of(new EidasAuthnStatementValidator(), new EidasAttributeStatementValidator()));
   }
 
   /**
@@ -73,7 +70,7 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
     final Instant responseIssueInstant = this.getResponseIssueInstant(context);
     if (responseIssueInstant != null) {
 
-      if (assertion.getIssueInstant().isAfter(responseIssueInstant)) {
+      if (assertion.getIssueInstant() != null && assertion.getIssueInstant().isAfter(responseIssueInstant)) {
         final String msg =
             String.format("Invalid Assertion - Its issue-instant (%s) is after the response message issue-instant (%s)",
                 assertion.getIssueInstant(), responseIssueInstant);
@@ -105,7 +102,7 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
 
     @Override
     public ValidationResult validate(final Condition condition, final Assertion assertion,
-        final ValidationContext context) throws AssertionValidationException {
+        final ValidationContext context) {
       return ValidationResult.VALID;
     }
 

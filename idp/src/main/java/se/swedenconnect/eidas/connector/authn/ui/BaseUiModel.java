@@ -15,47 +15,40 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * Base UI model class.
  *
  * @author Martin Lindström
  */
+@Data
 public class BaseUiModel {
 
   /**
    * The SP UI info.
    */
-  @Getter
-  @Setter
   private SpInfo spInfo;
 
   /**
    * The accessibility report URL.
    */
-  @Getter
-  @Setter
   private String accessibilityUrl;
 
   /**
    * SP UI Info.
    */
+  @Data
   public static class SpInfo {
 
     /**
      * The SP display name.
      */
-    @Getter
-    @Setter
     private String displayName;
 
     /**
      * The SP logotype URL.
      */
-    @Getter
-    @Setter
     private String logoUrl;
   }
 

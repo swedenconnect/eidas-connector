@@ -15,70 +15,61 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Objects;
-
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
 import se.swedenconnect.opensaml.eidas.ext.attributes.TransliterationStringType;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.eidas.EidasAttributeValue;
 import se.swedenconnect.spring.saml.idp.attributes.eidas.TransliterationString;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
+
 /**
  * Model class for the Sign Consent view.
  *
  * @author Martin Lindström
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class SignUiModel extends BaseUiModel {
 
   /**
    * The sign message.
    */
-  @Getter
-  @Setter
   private String textMessage;
 
   /**
    * Information about the user that signs.
    */
-  @Getter
-  @Setter
   private UserInfo userInfo;
 
   /**
    * User info.
    */
+  @Data
   public static class UserInfo {
 
     /**
      * The display name.
      */
-    @Getter
-    @Setter
     private String name;
 
     /**
      * The Swedish personal identity number.
      */
-    @Getter
-    @Setter
     private String swedishId;
 
     /**
      * The date of birth
      */
-    @Getter
-    @Setter
     private String dateOfBirth;
 
     /**
      * The eIDAS person identifier
      */
-    @Getter
-    @Setter
     private String internationalId;
 
     /**
@@ -114,23 +105,23 @@ public class SignUiModel extends BaseUiModel {
               .orElse(null);
         }
 
-        final StringBuffer _name = new StringBuffer();
+        final StringBuilder _name = new StringBuilder();
         if (givenName != null) {
           _name.append(givenName);
         }
         if (surName != null) {
-          if (_name.length() > 0) {
+          if (!_name.isEmpty()) {
             _name.append(" ");
           }
           _name.append(surName);
         }
-        this.name = _name.length() > 0 ? _name.toString() : null;
+        this.name = !_name.isEmpty() ? _name.toString() : null;
       }
 
     }
 
     private static String getEidasAttributeValue(final List<? extends Serializable> values) {
-      final boolean transliterated = values.isEmpty() ? values.get(0) instanceof TransliterationString : false;
+      final boolean transliterated = !values.isEmpty() && values.get(0) instanceof TransliterationString;
       if (transliterated && values.size() > 1) {
         return values.stream()
             .filter(Objects::nonNull)

@@ -64,7 +64,7 @@ public interface EuMetadataProvider {
   }
 
   /**
-   * Lists all countries (even if they have the "hide-from-discovery" field set.
+   * Lists all countries (even if they have the "hide-from-discovery" field set).
    *
    * @return a list of countries
    */

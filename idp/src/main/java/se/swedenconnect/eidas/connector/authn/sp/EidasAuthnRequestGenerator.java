@@ -15,17 +15,11 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Scoping;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.attributes.AttributeMappingService;
 import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
 import se.swedenconnect.eidas.connector.authn.metadata.MetadataFunctions;
@@ -37,16 +31,17 @@ import se.swedenconnect.opensaml.eidas.ext.SPTypeEnumeration;
 import se.swedenconnect.opensaml.saml2.core.build.AuthnRequestBuilder;
 import se.swedenconnect.opensaml.saml2.core.build.ExtensionsBuilder;
 import se.swedenconnect.opensaml.saml2.core.build.ScopingBuilder;
-import se.swedenconnect.opensaml.saml2.request.AbstractAuthnRequestGenerator;
-import se.swedenconnect.opensaml.saml2.request.AuthnRequestGenerator;
-import se.swedenconnect.opensaml.saml2.request.AuthnRequestGeneratorContext;
-import se.swedenconnect.opensaml.saml2.request.RequestGenerationException;
-import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
+import se.swedenconnect.opensaml.saml2.request.*;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryConstants;
 import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.opensaml.OpenSamlCredential;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * An {@link AuthnRequestGenerator} for generating {@link AuthnRequest}s for eIDAS.
@@ -136,9 +131,9 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    */
   @Override
   protected void addScoping(final AuthnRequestBuilder builder, final AuthnRequestGeneratorContext context,
-      final EntityDescriptor idpMetadata) throws RequestGenerationException {
+      final EntityDescriptor idpMetadata) {
 
-    final EidasAuthnRequestGeneratorContext eidasContext = EidasAuthnRequestGeneratorContext.class.cast(context);
+    final EidasAuthnRequestGeneratorContext eidasContext = (EidasAuthnRequestGeneratorContext) context;
     final String country = eidasContext.getCountryCode();
     if (this.skipScopingElementFor.contains(country)) {
       log.debug("AuthnRequest generator will not add Scoping element for {} - configured to skip", country);
@@ -153,9 +148,9 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    */
   @Override
   protected void addExtensions(final AuthnRequestBuilder builder, final AuthnRequestGeneratorContext context,
-      final EntityDescriptor idpMetadata) throws RequestGenerationException {
+      final EntityDescriptor idpMetadata) {
 
-    final EidasAuthnRequestGeneratorContext eidasContext = EidasAuthnRequestGeneratorContext.class.cast(context);
+    final EidasAuthnRequestGeneratorContext eidasContext = (EidasAuthnRequestGeneratorContext) context;
 
     final ExtensionsBuilder extensionsBuilder = ExtensionsBuilder.builder();
 
@@ -177,7 +172,7 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
   /** {@inheritDoc} */
   @Override
   protected List<String> getAssuranceCertificationUris(final EntityDescriptor idpMetadata,
-      final AuthnRequestGeneratorContext context) throws RequestGenerationException {
+      final AuthnRequestGeneratorContext context) {
     return MetadataFunctions.getAssuranceLevels(idpMetadata);
   }
 

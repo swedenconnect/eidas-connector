@@ -15,20 +15,19 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
-import java.util.*;
-import java.util.function.Function;
-
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
 import org.opensaml.saml.saml2.core.StatusCode;
-
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.opensaml.eidas.common.EidasConstants;
 import se.swedenconnect.opensaml.saml2.core.build.RequestedAuthnContextBuilder;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatus;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
+
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * Handles mappings between eIDAS and Swedish AuthnContextClassRef URI:s.
@@ -559,33 +558,33 @@ public class AuthnContextClassRefMapper {
       }
 
       if (requested.highNotified()) {
-        minimumMatching |= EIDAS_HIGH & this.supported;
+        minimumMatching |= (byte) (EIDAS_HIGH & this.supported);
       }
       if (requested.highAcceptsNn()) {
-        exactMatching |= (EIDAS_HIGH_NN & this.supported) | (EIDAS_HIGH & this.supported);
-        minimumMatching |= EIDAS_HIGH & this.supported;
+        exactMatching |= (byte) ((EIDAS_HIGH_NN & this.supported) | (EIDAS_HIGH & this.supported));
+        minimumMatching |= (byte) (EIDAS_HIGH & this.supported);
       }
       if (requested.substantialNotified()) {
-        minimumMatching |= EIDAS_SUB & this.supported;
+        minimumMatching |= (byte) (EIDAS_SUB & this.supported);
       }
       if (requested.substantialAcceptsNn()) {
-        exactMatching |= (EIDAS_HIGH & this.supported)
-            | (EIDAS_HIGH_NN & this.supported)
-            | (EIDAS_SUB & this.supported)
-            | (EIDAS_SUB_NN & this.supported);
-        minimumMatching |= EIDAS_SUB & this.supported;
+        exactMatching |= (byte) ((EIDAS_HIGH & this.supported)
+                    | (EIDAS_HIGH_NN & this.supported)
+                    | (EIDAS_SUB & this.supported)
+                    | (EIDAS_SUB_NN & this.supported));
+        minimumMatching |= (byte) (EIDAS_SUB & this.supported);
       }
       if (requested.lowNotified()) {
-        minimumMatching |= EIDAS_LOW & this.supported;
+        minimumMatching |= (byte) (EIDAS_LOW & this.supported);
       }
       if (requested.lowAcceptsNn()) {
-        exactMatching |= (EIDAS_HIGH & this.supported)
-            | (EIDAS_HIGH_NN & this.supported)
-            | (EIDAS_SUB & this.supported)
-            | (EIDAS_SUB_NN & this.supported)
-            | (EIDAS_LOW & this.supported)
-            | (EIDAS_LOW_NN & this.supported);
-        minimumMatching |= EIDAS_LOW & this.supported;
+        exactMatching |= (byte) ((EIDAS_HIGH & this.supported)
+                    | (EIDAS_HIGH_NN & this.supported)
+                    | (EIDAS_SUB & this.supported)
+                    | (EIDAS_SUB_NN & this.supported)
+                    | (EIDAS_LOW & this.supported)
+                    | (EIDAS_LOW_NN & this.supported));
+        minimumMatching |= (byte) (EIDAS_LOW & this.supported);
       }
 
       if ((exactMatching & EIDAS_NN) != 0) {
@@ -597,14 +596,14 @@ public class AuthnContextClassRefMapper {
     }
 
     // Represents a mapping between URI:s and their byte values
-    private static record Uri(String uri, String additionalUri, byte value) {
+    private record Uri(String uri, String additionalUri, byte value) {
       public Uri(String uri, byte value) {
         this(uri, null, value);
       }
     }
 
     // Internal for representing a match result between requested and supported URI:s
-    private static record MatchResult(AuthnContextComparisonTypeEnumeration comparison, byte value) {
+    private record MatchResult(AuthnContextComparisonTypeEnumeration comparison, byte value) {
     }
 
   }

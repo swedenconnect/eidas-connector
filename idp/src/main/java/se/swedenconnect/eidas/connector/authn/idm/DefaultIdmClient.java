@@ -15,11 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.net.ssl.SSLContext;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
@@ -38,12 +34,14 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
-
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 import se.swedenconnect.eidas.connector.config.DevelopmentMode;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
+
+import javax.net.ssl.SSLContext;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Default implementation of the {@link IdmClient} interface.
@@ -107,6 +105,9 @@ public class DefaultIdmClient implements IdmClient {
           .retrieve()
           .body(IdmQueryResponse.class);
 
+      if (response == null) {
+        throw new IdmException("Invalid response from IdM API - missing response");
+      }
       if (response.getSwedishId() == null) {
         throw new IdmException("Invalid response from IdM API - missing Swedish ID");
       }

@@ -19,11 +19,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import se.swedenconnect.opensaml.OpenSAMLInitializer;
-import se.swedenconnect.opensaml.OpenSAMLSecurityDefaultsConfig;
-import se.swedenconnect.opensaml.OpenSAMLSecurityExtensionConfig;
-import se.swedenconnect.opensaml.sweid.xmlsec.config.SwedishEidSecurityConfiguration;
-
 /**
  * Application main.
  *
@@ -39,17 +34,6 @@ public class EidasConnectorApplication {
    * @param args program arguments
    */
   public static void main(String[] args) {
-
-//    try {
-//      OpenSAMLInitializer.getInstance()
-//          .initialize(
-//              new OpenSAMLSecurityDefaultsConfig(new SwedishEidSecurityConfiguration()),
-//              new OpenSAMLSecurityExtensionConfig());
-//    }
-//    catch (Exception e) {
-//      throw new RuntimeException(e);
-//    }
-
     SpringApplication.run(EidasConnectorApplication.class, args);
   }
 

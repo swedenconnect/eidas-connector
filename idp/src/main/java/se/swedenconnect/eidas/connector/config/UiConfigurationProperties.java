@@ -15,18 +15,17 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Configuration properties for UI settings.
@@ -71,7 +70,7 @@ public class UiConfigurationProperties implements InitializingBean {
 
   /** {@inheritDoc} */
   @Override
-  public void afterPropertiesSet() throws Exception {
+  public void afterPropertiesSet() {
     Assert.notEmpty(this.languages, "ui.languages must contain at least one language");
     for (final Language lang : this.languages) {
       lang.afterPropertiesSet();
@@ -102,7 +101,7 @@ public class UiConfigurationProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
       Assert.hasText(this.tag, "Missing ui.languages[].tag");
       Assert.hasText(this.text, "Missing ui.languages[].text");
     }

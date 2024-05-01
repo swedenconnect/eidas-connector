@@ -115,7 +115,7 @@ public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
   /**
    * Represents the different reasons that no country selection view was displayed.
    */
-  public static enum NoDisplayReason {
+  public enum NoDisplayReason {
     /**
      * The request was made from a signature service and country that was used from the authentication was found in a
      * session cookie.

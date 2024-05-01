@@ -15,17 +15,10 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.TrustManager;
-
+import lombok.extern.slf4j.Slf4j;
+import net.shibboleth.shared.httpclient.HttpClientBuilder;
+import net.shibboleth.shared.httpclient.HttpClientSupport;
+import net.shibboleth.shared.httpclient.TLSSocketFactoryBuilder;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
@@ -35,17 +28,17 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
-
-import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.shared.httpclient.HttpClientBuilder;
-import net.shibboleth.shared.httpclient.HttpClientSupport;
-import net.shibboleth.shared.httpclient.TLSSocketFactoryBuilder;
 import se.swedenconnect.eidas.connector.config.ConnectorConfigurationProperties.EuMetadataProperties;
-import se.swedenconnect.opensaml.saml2.metadata.provider.AbstractMetadataProvider;
-import se.swedenconnect.opensaml.saml2.metadata.provider.FilesystemMetadataProvider;
-import se.swedenconnect.opensaml.saml2.metadata.provider.HTTPMetadataProvider;
-import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
-import se.swedenconnect.opensaml.saml2.metadata.provider.StaticMetadataProvider;
+import se.swedenconnect.opensaml.saml2.metadata.provider.*;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.TrustManager;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Utility methods for handling metadata providers.
@@ -81,7 +74,7 @@ public class MetadataProviderUtils {
             + "- downloaded metadata can not be trusted", config.getLocation());
       }
     }
-    else if (FileSystemResource.class.isInstance(config.getLocation())) {
+    else if (config.getLocation() instanceof FileSystemResource) {
       provider = new FilesystemMetadataProvider(config.getLocation().getFile());
     }
     else {
@@ -95,7 +88,7 @@ public class MetadataProviderUtils {
   }
 
   /**
-   * Creates a HTTP client to use for the {@link MetadataProvider}.
+   * Creates an HTTP client to use for the {@link MetadataProvider}.
    *
    * @param config the configuration
    * @return a HttpClient

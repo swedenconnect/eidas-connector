@@ -15,25 +15,22 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.IDPEntry;
 import org.opensaml.saml.saml2.core.StatusCode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Bean assisting us in selecting countries.
@@ -63,15 +60,15 @@ public class EidasCountryHandler {
    * Represents a "selectable country" where {@code canAuthenticate} tells whether the country can authenticate the call
    * (i.e., whether the requested/supported authn context match).
    */
-  public static record SelectableCountry(String country, boolean canAuthenticate) {
+  public record SelectableCountry(String country, boolean canAuthenticate) {
   }
 
   /**
-   * Represents the selectable countries and a flag {@code displaySelection}. If this is set an UI with all countries
+   * Represents the selectable countries and a flag {@code displaySelection}. If this is set a dialogue with all countries
    * should be displayed. Otherwise, the {@code countries} will only contain one country (known in advance by the SP)
    * and we may skip the selection UI.
    */
-  public static record SelectableCountries(List<SelectableCountry> countries, boolean displaySelection) {
+  public record SelectableCountries(List<SelectableCountry> countries, boolean displaySelection) {
   }
 
   /**
@@ -109,14 +106,14 @@ public class EidasCountryHandler {
 
       if (filteredRequestedCountries.isEmpty()) {
         final String msg = String.format("Country/countries %s not available for authentication", requestedCountries);
-        log.info("Invalid request: {} [{}]", msg, token.getLogString());
+        log.info("{} [{}]", msg, token.getLogString());
         throw new Saml2ErrorStatusException(StatusCode.REQUESTER, StatusCode.NO_AVAILABLE_IDP, null, msg, msg);
       }
       else if (filteredRequestedCountries.size() == 1 && requestedCountries.size() == 1) {
         if (!filteredRequestedCountries.get(0).canAuthenticate()) {
           final String msg = String.format("Can not send request to %s - it does not support requested authn context",
               filteredRequestedCountries.get(0).country());
-          log.info("Invalid request: {} [{}]", msg, token.getLogString());
+          log.info("{} [{}]", msg, token.getLogString());
           throw new Saml2ErrorStatusException(StatusCode.REQUESTER, StatusCode.NO_AVAILABLE_IDP, null, msg, msg);
         }
         return new SelectableCountries(filteredRequestedCountries, false);
@@ -137,7 +134,7 @@ public class EidasCountryHandler {
    * Checks the AuthnRequest to see if the SP has requested a specific country.
    *
    * @param token the input
-   * @return a list of country codes (may be empty)
+   * @return a list of country codes (possibly empty)
    */
   public static List<String> getRequestedCountries(final Saml2UserAuthenticationInputToken token) {
 

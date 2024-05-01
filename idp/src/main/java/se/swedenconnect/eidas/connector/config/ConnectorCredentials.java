@@ -15,11 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.opensaml.saml.ext.saml2alg.DigestMethod;
 import org.opensaml.saml.saml2.metadata.EncryptionMethod;
 import org.opensaml.saml.saml2.metadata.KeyDescriptor;
@@ -28,14 +23,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
-import lombok.Setter;
 import se.swedenconnect.opensaml.saml2.metadata.build.DigestMethodBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.EncryptionMethodBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.KeyDescriptorBuilder;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.ReloadablePkiCredential;
 import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataConfigurationProperties;
+
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * A helper bean that gives us the connector credentials.
@@ -45,70 +44,60 @@ import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataConfigura
 @Component
 public class ConnectorCredentials {
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("saml.idp.credentials.Default")
-  private PkiCredential defaultCredential;
+  private final PkiCredential defaultCredential;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("saml.idp.credentials.Sign")
-  private PkiCredential signCredential;
+  private final PkiCredential signCredential;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("saml.idp.credentials.FutureSign")
-  private X509Certificate futureSignCertificate;
+  private final X509Certificate futureSignCertificate;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("saml.idp.credentials.Encrypt")
-  private PkiCredential encryptCredential;
+  private final PkiCredential encryptCredential;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("saml.idp.credentials.PreviousEncrypt")
-  private PkiCredential previousEncryptCredential;
+  private final PkiCredential previousEncryptCredential;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("saml.idp.credentials.MetadataSign")
-  private PkiCredential metadataSignCredential;
+  private final PkiCredential metadataSignCredential;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("connector.sp.credentials.Default")
-  private PkiCredential spDefaultCredential;
+  private final PkiCredential spDefaultCredential;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("connector.sp.credentials.Sign")
-  private PkiCredential spSignCredential;
+  private final PkiCredential spSignCredential;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("connector.sp.credentials.FutureSign")
-  private X509Certificate spFutureSignCertificate;
+  private final X509Certificate spFutureSignCertificate;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("connector.sp.credentials.Encrypt")
-  private PkiCredential spEncryptCredential;
+  private final PkiCredential spEncryptCredential;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("connector.sp.credentials.PreviousEncrypt")
-  private PkiCredential spPreviousEncryptCredential;
+  private final PkiCredential spPreviousEncryptCredential;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("connector.sp.credentials.MetadataSign")
-  private PkiCredential spMetadataSignCredential;
+  private final PkiCredential spMetadataSignCredential;
 
-  @Setter
-  @Autowired(required = false)
-  @Qualifier("connector.idm.oauth2.Credential")
-  private PkiCredential oauth2Credential;
+  private final PkiCredential oauth2Credential;
+
+  public ConnectorCredentials(
+      final @Qualifier("saml.idp.credentials.Default") @Autowired(required = false) PkiCredential defaultCredential,
+      final @Qualifier("saml.idp.credentials.Sign") @Autowired(required = false) PkiCredential signCredential,
+      final @Qualifier("saml.idp.credentials.FutureSign") @Autowired(required = false) X509Certificate futureSignCertificate,
+      final @Qualifier("saml.idp.credentials.Encrypt") @Autowired(required = false) PkiCredential encryptCredential,
+      final @Qualifier("saml.idp.credentials.PreviousEncrypt") @Autowired(required = false) PkiCredential previousEncryptCredential,
+      final @Qualifier("connector.sp.credentials.Default") @Autowired(required = false) PkiCredential spDefaultCredential,
+      final @Qualifier("connector.sp.credentials.Sign") @Autowired(required = false) PkiCredential spSignCredential,
+      final @Qualifier("connector.sp.credentials.FutureSign") @Autowired(required = false) X509Certificate spFutureSignCertificate,
+      final @Qualifier("connector.sp.credentials.Encrypt") @Autowired(required = false) PkiCredential spEncryptCredential,
+      final @Qualifier("connector.sp.credentials.PreviousEncrypt") @Autowired(required = false) PkiCredential spPreviousEncryptCredential,
+      final @Qualifier("saml.idp.credentials.MetadataSign") @Autowired(required = false) PkiCredential metadataSignCredential,
+      final @Qualifier("connector.sp.credentials.MetadataSign") @Autowired(required = false) PkiCredential spMetadataSignCredential,
+      final @Qualifier("connector.idm.oauth2.Credential") @Autowired(required = false) PkiCredential oauth2Credential) {
+    this.defaultCredential = defaultCredential;
+    this.signCredential = signCredential;
+    this.futureSignCertificate = futureSignCertificate;
+    this.encryptCredential = encryptCredential;
+    this.previousEncryptCredential = previousEncryptCredential;
+    this.spDefaultCredential = spDefaultCredential;
+    this.spSignCredential = spSignCredential;
+    this.spFutureSignCertificate = spFutureSignCertificate;
+    this.spEncryptCredential = spEncryptCredential;
+    this.metadataSignCredential = metadataSignCredential;
+    this.spMetadataSignCredential = spMetadataSignCredential;
+    this.spPreviousEncryptCredential = spPreviousEncryptCredential;
+    this.oauth2Credential = oauth2Credential;
+  }
 
   /**
    * Gets the SP signing credential to use.
@@ -230,9 +219,8 @@ public class ConnectorCredentials {
     else if (this.spDefaultCredential != null) {
       unspecifiedEncrypt = true;
       if (unspecifiedBuilder == null) {
-        KeyDescriptorBuilder.builder()
+        unspecifiedBuilder = KeyDescriptorBuilder.builder()
             .certificate(this.spDefaultCredential.getCertificate());
-
       }
       unspecifiedBuilder
           .encryptionMethodsExt(this.createEncryptionMethods(encryptionMethods));
@@ -247,9 +235,8 @@ public class ConnectorCredentials {
     else if (this.defaultCredential != null) {
       unspecifiedEncrypt = true;
       if (unspecifiedBuilder == null) {
-        KeyDescriptorBuilder.builder()
+        unspecifiedBuilder = KeyDescriptorBuilder.builder()
             .certificate(this.defaultCredential.getCertificate());
-
       }
       unspecifiedBuilder
           .encryptionMethodsExt(this.createEncryptionMethods(encryptionMethods));
@@ -383,9 +370,9 @@ public class ConnectorCredentials {
         this.oauth2Credential };
 
     return Arrays.stream(creds)
-        .filter(c -> c != null)
-        .filter(c -> c.isHardwareCredential())
-        .filter(c -> ReloadablePkiCredential.class.isInstance(c))
+        .filter(Objects::nonNull)
+        .filter(PkiCredential::isHardwareCredential)
+        .filter(ReloadablePkiCredential.class::isInstance)
         .map(ReloadablePkiCredential.class::cast)
         .toList();
   }

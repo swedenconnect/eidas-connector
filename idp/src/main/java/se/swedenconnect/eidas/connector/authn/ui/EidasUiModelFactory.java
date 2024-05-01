@@ -15,19 +15,18 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.NoSuchMessageException;
+import org.springframework.context.i18n.LocaleContextHolder;
+import se.swedenconnect.eidas.connector.authn.EidasCountryHandler.SelectableCountry;
+import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
+import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-
-import org.springframework.context.MessageSource;
-import org.springframework.context.NoSuchMessageException;
-import org.springframework.context.i18n.LocaleContextHolder;
-
-import se.swedenconnect.eidas.connector.authn.EidasCountryHandler.SelectableCountry;
-import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
 /**
  * Factory bean for creating {@link EidasUiModel} objects.
@@ -101,16 +100,14 @@ public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
           try {
             displayName =
                 this.messageSource.getMessage("connector.ui.country." + c.country(), null, new Locale(lang.getTag()));
-            if (displayName != null) {
-              break;
-            }
+            break;
           }
-          catch (final NoSuchMessageException e2) {
+          catch (final NoSuchMessageException ignored) {
           }
         }
       }
 
-      UiCountry uiCountry = null;
+      UiCountry uiCountry;
       if (displayName != null) {
         uiCountry = new UiCountry(c.country(), displayName);
       }

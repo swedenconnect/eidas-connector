@@ -15,25 +15,15 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
-import java.io.Serial;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Predicate;
-
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.AuthnContext;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnStatement;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
-
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequest;
 import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
@@ -41,6 +31,11 @@ import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessingResult;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.eidas.EidasAttributeValue;
+
+import java.io.Serial;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * An {@link Authentication} object representing a validated response from the foreign country.
@@ -192,7 +187,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
         .map(v -> v.get(0))
         .map(EidasAttributeValue.class::cast)
         .map(EidasAttributeValue::getValueAsString)
-        .orElseGet(() -> "unknown");
+        .orElse("unknown");
   }
 
   /** {@inheritDoc} */
