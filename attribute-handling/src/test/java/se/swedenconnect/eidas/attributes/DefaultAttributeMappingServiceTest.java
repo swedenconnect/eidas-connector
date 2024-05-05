@@ -15,23 +15,17 @@
  */
 package se.swedenconnect.eidas.attributes;
 
-import java.util.List;
-import java.util.Objects;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.opensaml.saml.saml2.core.Attribute;
-
 import se.swedenconnect.eidas.attributes.conversion.AttributeConverterConstants;
-import se.swedenconnect.opensaml.eidas.ext.attributes.BirthNameType;
-import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentFamilyNameType;
-import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentGivenNameType;
-import se.swedenconnect.opensaml.eidas.ext.attributes.DateOfBirthType;
-import se.swedenconnect.opensaml.eidas.ext.attributes.PersonIdentifierType;
-import se.swedenconnect.opensaml.eidas.ext.attributes.PlaceOfBirthType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.*;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Test cases for DefaultAttributeMappingService.
@@ -41,7 +35,7 @@ import se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute;
 public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
 
   @Test
-  public void testConvert() throws Exception {
+  public void testConvert() {
 
     final DefaultAttributeMappingService service =
         new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
@@ -150,7 +144,7 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
   }
 
   @Test
-  public void testToEidasRequestedAttribute() throws Exception {
+  public void testToEidasRequestedAttribute() {
     final DefaultAttributeMappingService service =
         new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
 
@@ -164,7 +158,7 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
     Assertions.assertEquals(EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE.getFriendlyName(),
         eidasR.getFriendlyName());
     // Not in minimum data set
-    Assertions.assertFalse(eidasR.isRequired());
+    Assertions.assertEquals(false, eidasR.isRequired());
 
     ra = new RequestedAttribute(
         AttributeConstants.ATTRIBUTE_NAME_GIVEN_NAME,
@@ -176,7 +170,7 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
     Assertions.assertEquals(EidasAttributeTemplateConstants.CURRENT_GIVEN_NAME_TEMPLATE.getFriendlyName(),
         eidasR.getFriendlyName());
     // In minimum data set
-    Assertions.assertTrue(eidasR.isRequired());
+    Assertions.assertEquals(true, eidasR.isRequired());
 
     // No mapping
     ra = new RequestedAttribute(
@@ -187,7 +181,7 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
   }
 
   @Test
-  public void testToEidasRequestedAttributes() throws Exception {
+  public void testToEidasRequestedAttributes() {
 
     final DefaultAttributeMappingService service =
         new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);

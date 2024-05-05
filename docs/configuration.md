@@ -135,11 +135,13 @@ Matching API. Therefore, OAuth2 configuration settings need to be supplied.
 | :--- | :--- | :--- | :--- |
 | `service-url` | The URL to the Identity Matching service. Will be displayed in the "select country" view. | String | - |
 | `api-base-url` | The base URL for the Identity Matching Query API. Must not end with a '/'. | String | `service-url` |
-| `oauth2.client-id` | The Connector OAuth2 client ID. | String | - |
-| `oauth2.scopes` | The scope(s) to request for accessing the IdM Query API. | List of strings | - |
+| `trust-bundle` | A reference to a Spring Boot SSL Bundle holding the trust configuration for TLS-calls against the IdM server. If no bundle is set, the system defaults are used. | String | - |
+| `oauth2.client-id` | The Connector OAuth2 client ID. Used for check calls. | String | - |
+| `oauth2.check-scopes` | The scope(s) to request for making check calls the IdM Query API. | List of strings | - |
+| `oauth2.get-scopes` | The scope(s) to request for making get calls the IdM Query API. | List of strings | - |
 | `oauth2.resource-id` | The OAuth2 ID for the Identity Matching service. | String | - |
 | `oauth2.credential.*` | The credential to use for authentication against the Authorization Server (if the connector acts as an OAuth2 client) OR for use of signing of access tokens (if the connector also acts as an OAuth2 Authorization Server). If not assigned, the connector default credential will be used. | [PkiCredentialConfigurationProperties](https://github.com/swedenconnect/credentials-support/blob/main/src/main/java/se/swedenconnect/security/credential/factory/PkiCredentialConfigurationProperties.java) | The default IdP credential |
-| `oauth2.client.token-endpoint` | The endpoint to the Authorization Server. | String | - |
+| ~~`oauth2.client.token-endpoint`~~ | ~~The endpoint to the Authorization Server.~~ | ~~String~~ | - |
 | `oauth2.server.issuer` | Assigned when the connector acts as an OAuth2 AS. The issuer ID to use for the issued access tokens. | String | - |
 | `oauth2.server.lifetime` | The duration (lifetime) for issued access tokens. | [Duration](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html) | 1 hour |
 
@@ -157,6 +159,7 @@ Matching API. Therefore, OAuth2 configuration settings need to be supplied.
 | `ui.languages[].*` | A list of the supported languages where the fields are `tag` containing the two-letter ISO-language code and `text` contains the text to display in the UI for changing to this language. | List of language | - |
 | `ui.selected-`<br />`country-cookie.*` | Cookie settings for the cookie that is used to remember a user's selection of a country (in between sessions). See [Cookie Configuration](#cookie-configuration) below. | [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java) | Default settings for the cookie with the name set to `selectedCountry` |
 | `ui.selected-country-`<br />`session-cookie.*` | Cookie settings for the cookie that is used to remember a user's selection of a country within a session. Used for signing services. See [Cookie Configuration](#cookie-configuration) below. | [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java) | Default settings for the cookie with the name set to `selectedCountrySession` |
+| `ui.idm-consent-`<br />`session-cookie.*` | Cookie settings for the cookie that is used to remember a user's consent to obtaining the user's Identity Matching within a session. Used for signing services. See [Cookie Configuration](#cookie-configuration) below. | [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java) | Default settings for the cookie with the name set to `idmConsentSession` |
 | `ui.accessibility-url` | URL to the eIDAS Connector web accessibility report. | String | - |
 
 <a name="cookie-configuration"></a>

@@ -15,18 +15,17 @@
  */
 package se.swedenconnect.eidas.attributes;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Attribute;
-
 import se.swedenconnect.eidas.attributes.conversion.AttributeConverter;
 import se.swedenconnect.spring.saml.idp.attributes.ImplicitRequestedAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Default implementation of the {@link AttributeMappingService} interface.
@@ -71,17 +70,23 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
     if (template == null) {
       return null;
     }
+    se.swedenconnect.opensaml.eidas.ext.RequestedAttribute requestedAttribute = this.createRequestedAttribute(template);
+
+    // Check if the attribute is part of the minimum data set. If so, set isRequired.
+    requestedAttribute.setIsRequired(
+        AttributeMappingService.NATURAL_PERSON_MINIMUM_DATASET.contains(template.getName()));
+
+    return requestedAttribute;
+  }
+
+  private se.swedenconnect.opensaml.eidas.ext.RequestedAttribute createRequestedAttribute(
+      final EidasAttributeTemplate template) {
     final se.swedenconnect.opensaml.eidas.ext.RequestedAttribute requestedAttribute =
         (se.swedenconnect.opensaml.eidas.ext.RequestedAttribute) XMLObjectSupport.buildXMLObject(
             se.swedenconnect.opensaml.eidas.ext.RequestedAttribute.DEFAULT_ELEMENT_NAME);
     requestedAttribute.setName(template.getName());
     requestedAttribute.setFriendlyName(template.getFriendlyName());
     requestedAttribute.setNameFormat(template.getNameFormat());
-
-    // Check if the attribute is part of the minimum data set. If so, set isRequired.
-    requestedAttribute.setIsRequired(
-        AttributeMappingService.NATURAL_PERSON_MINIMUM_DATASET.contains(template.getName()));
-
     return requestedAttribute;
   }
 
@@ -95,14 +100,12 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
         .filter(ra -> {
           if (ra instanceof ImplicitRequestedAttribute impl) {
             // Don't include implicitly required attributes that are not required ...
-            if (!impl.isRequired()) {
-              return false;
-            }
+            return impl.isRequired();
           }
           return true;
         })
-        .map(ra -> this.toEidasRequestedAttribute(ra))
-        .filter(r -> r != null)
+        .map(this::toEidasRequestedAttribute)
+        .filter(Objects::nonNull)
         .forEach(requestedAttributes::add);
 
     if (includeMinimumDataSet) {
@@ -113,14 +116,8 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
               .findFirst()
               .orElseThrow(() -> new IllegalArgumentException("eIDAS minimum data set config error"));
 
-          final se.swedenconnect.opensaml.eidas.ext.RequestedAttribute requestedAttribute =
-              (se.swedenconnect.opensaml.eidas.ext.RequestedAttribute) XMLObjectSupport.buildXMLObject(
-                  se.swedenconnect.opensaml.eidas.ext.RequestedAttribute.DEFAULT_ELEMENT_NAME);
-          requestedAttribute.setName(template.getName());
-          requestedAttribute.setFriendlyName(template.getFriendlyName());
-          requestedAttribute.setNameFormat(template.getNameFormat());
+          final se.swedenconnect.opensaml.eidas.ext.RequestedAttribute requestedAttribute = this.createRequestedAttribute(template);
           requestedAttribute.setIsRequired(true);
-
           requestedAttributes.add(requestedAttribute);
         }
       }
@@ -141,7 +138,7 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
 
   /** {@inheritDoc} */
   @Override
-  public UserAttribute toSwedishEidAttribute(UserAttribute eidasAttribute) {
+  public UserAttribute toSwedishEidAttribute(final UserAttribute eidasAttribute) {
     return this.converters.stream()
         .filter(c -> c.supportsConversionToSwedishAttribute(eidasAttribute.getId()))
         .findFirst()

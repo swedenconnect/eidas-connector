@@ -23,11 +23,19 @@ package se.swedenconnect.eidas.connector.authn.idm;
 public interface OAuth2Handler {
 
   /**
-   * Gets the OAuth2 access token needed for our call to the IdM Query API.
-   *
+   * Gets an OAuth2 access token for the HEAD call to the IdM Query API.
    * @return a serialized access token
    * @throws IdmException for errors getting the access token
    */
-  String getAccessToken() throws IdmException;
+  String getCheckAccessToken() throws IdmException;
+
+  /**
+   * Gets the OAuth2 access token needed for our GET call to the IdM Query API.
+   *
+   * @param prid the user identity
+   * @return a serialized access token
+   * @throws IdmException for errors getting the access token
+   */
+  String getGetAccessToken(final String prid) throws IdmException;
 
 }

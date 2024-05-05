@@ -15,20 +15,20 @@
  */
 package se.swedenconnect.eidas.attributes.conversion;
 
-import java.net.URLDecoder;
-import java.util.List;
-
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.saml.saml2.core.Attribute;
-
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplate;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplateConstants;
 import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentAddressType;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeBuilder;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * Specialized converter for the CurrentAddress attribute, since its value representation differs between eIDAS and the
@@ -58,10 +58,9 @@ public class CurrentAddressAttributeConverter extends DefaultAttributeConverter 
     }
     try {
       final XMLObject eidasAttributeValue = template.createAttributeValueObject();
-      if (!CurrentAddressType.class.isInstance(eidasAttributeValue)) {
+      if (!(eidasAttributeValue instanceof final CurrentAddressType currentAddress)) {
         return null;
       }
-      final CurrentAddressType currentAddress = CurrentAddressType.class.cast(eidasAttributeValue);
       // Parse the string ...
       final String[] parts = value.split(";");
       for (final String p : parts) {
@@ -71,7 +70,7 @@ public class CurrentAddressAttributeConverter extends DefaultAttributeConverter 
           continue;
         }
         final String type = kv[0];
-        final String subValue = URLDecoder.decode(kv[1], "UTF-8");
+        final String subValue = URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
         if (type.equalsIgnoreCase("PoBox")) {
           currentAddress.setPoBox(subValue);
         }
@@ -120,10 +119,9 @@ public class CurrentAddressAttributeConverter extends DefaultAttributeConverter 
     if (values.isEmpty()) {
       return null;
     }
-    if (!CurrentAddressType.class.isInstance(values.get(0))) {
+    if (!(values.get(0) instanceof final CurrentAddressType currentAddress)) {
       return null;
     }
-    final CurrentAddressType currentAddress = CurrentAddressType.class.cast(values.get(0));
 
     final String value = currentAddress.toSwedishEidString();
     final XSString stringValue = AttributeBuilder.createValueObject(XSString.TYPE_NAME, XSString.class);

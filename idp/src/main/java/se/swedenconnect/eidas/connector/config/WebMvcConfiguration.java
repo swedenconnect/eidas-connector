@@ -15,12 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.MessageSource;
@@ -31,11 +25,17 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-
 import se.swedenconnect.eidas.connector.authn.ui.EidasUiModelFactory;
+import se.swedenconnect.eidas.connector.authn.ui.IdmUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.SignUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Web MVC configuration.
@@ -43,7 +43,7 @@ import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Languag
  * @author Martin Lindström
  */
 @Configuration
-@EnableConfigurationProperties({UiConfigurationProperties.class, ConnectorConfigurationProperties.class})
+@EnableConfigurationProperties({ UiConfigurationProperties.class, ConnectorConfigurationProperties.class })
 public class WebMvcConfiguration implements WebMvcConfigurer {
 
   /** UI settings. */
@@ -97,8 +97,8 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return a {@link LocaleResolver}
    */
   @Bean("localeResolver")
-  LocaleResolver localeResolver(@Value("${server.servlet.context-path}") String contextPath) {
-    CookieLocaleResolver resolver = new CookieLocaleResolver();
+  LocaleResolver localeResolver(@Value("${server.servlet.context-path}") final String contextPath) {
+    final CookieLocaleResolver resolver = new CookieLocaleResolver();
     resolver.setDefaultLocale(new Locale("en"));
     resolver.setCookiePath(contextPath);
     resolver.setCookieMaxAge(Duration.ofDays(365));
@@ -114,7 +114,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    */
   @Bean
   LocaleChangeInterceptor localeChangeInterceptor() {
-    LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
+    final LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
     interceptor.setParamName("lang");
     return interceptor;
   }
@@ -147,6 +147,19 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
   }
 
   /**
+   * Gets a {@link CookieGenerator} for the IdM consent during the session.
+   *
+   * @return {@link CookieGenerator}
+   */
+  @Bean("idmConsentSessionCookieGenerator")
+  CookieGenerator idmConsentSessionCookieGenerator() {
+    return new CookieGenerator(
+        this.ui.getIdmConsentSessionCookie().getName(),
+        this.ui.getIdmConsentSessionCookie().getDomain(),
+        this.ui.getIdmConsentSessionCookie().getPath());
+  }
+
+  /**
    * Gets the {@link EidasUiModelFactory} bean
    *
    * @param uiLanguageHandler the language handler
@@ -167,6 +180,17 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
   @Bean
   SignUiModelFactory signUiModelFactory(final UiLanguageHandler uiLanguageHandler) {
     return new SignUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl());
+  }
+
+  /**
+   * Gets the {@link IdmUiModelFactory} bean.
+   *
+   * @param uiLanguageHandler the language handler
+   * @return an {@link IdmUiModelFactory}
+   */
+  @Bean
+  IdmUiModelFactory idmUiModelFactory(final UiLanguageHandler uiLanguageHandler) {
+    return new IdmUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl());
   }
 
   /**

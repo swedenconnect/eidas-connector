@@ -21,6 +21,8 @@ import org.opensaml.saml.saml2.core.Attribute;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeBuilder;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeTemplate;
 
+import java.io.Serial;
+
 /**
  * Extends the {@link AttributeTemplate} with support for creating the attribute value object to be used for the
  * attribute.
@@ -29,6 +31,7 @@ import se.swedenconnect.opensaml.saml2.attribute.AttributeTemplate;
  */
 public class EidasAttributeTemplate extends AttributeTemplate {
 
+  @Serial
   private static final long serialVersionUID = 3099219622410367843L;
 
   /** The class implementing the attribute's value. */

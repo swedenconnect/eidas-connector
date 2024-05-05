@@ -24,6 +24,7 @@ import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.StatusCode;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +33,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.WebUtils;
 import se.swedenconnect.eidas.connector.authn.EidasCountryHandler.SelectableCountry;
 import se.swedenconnect.eidas.connector.authn.ui.EidasUiModelFactory;
+import se.swedenconnect.eidas.connector.authn.ui.IdmUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.SignUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
 import se.swedenconnect.eidas.connector.config.CookieGenerator;
@@ -59,6 +61,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   /** The path for receiving eIDAS assertions. */
   public static final String ASSERTION_CONSUMER_PATH = "/extauth/saml2/post";
 
+  /** Symbolic name for the action parameter value of "ok". */
+  public static final String ACTION_OK = "ok";
+
   /** Symbolic name for the action parameter value of "cancel". */
   public static final String ACTION_CANCEL = "cancel";
 
@@ -74,11 +79,17 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   /** Factory for sign consent UI model. */
   private final SignUiModelFactory signUiModelFactory;
 
+  /** Factory for IdM consent UI model. */
+  private final IdmUiModelFactory idmUiModelFactory;
+
   /** Cookie generator for saving selected country. */
   private final CookieGenerator selectedCountryCookieGenerator;
 
   /** Session cookie generator for saving selected country. */
   private final CookieGenerator selectedCountrySessionCookieGenerator;
+
+  /** Session cookie generator for IdM consents. */
+  private final CookieGenerator idmConsentCookieGenerator;
 
   /** For assisting us in selecting possible countries (to display). */
   private final EidasCountryHandler countryHandler;
@@ -93,8 +104,10 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @param uiLanguageHandler the UI language handler
    * @param eidasUiModelFactory factory for UI model
    * @param signUiModelFactory factory for sign consent UI model
+   * @param idmUiModelFactory factory for IdM consent UI model
    * @param selectedCountryCookieGenerator cookie generator for saving selected country
    * @param selectedCountrySessionCookieGenerator session cookie generator for saving selected country
+   * @param idmConsentCookieGenerator session cookie generator for IdM consents
    * @param countryHandler for assisting us in selecting possible countries (to display)
    * @param eventPublisher the event publisher
    */
@@ -102,16 +115,20 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       final UiLanguageHandler uiLanguageHandler,
       final EidasUiModelFactory eidasUiModelFactory,
       final SignUiModelFactory signUiModelFactory,
+      final IdmUiModelFactory idmUiModelFactory,
       @Qualifier("selectedCountryCookieGenerator") final CookieGenerator selectedCountryCookieGenerator,
-      @Qualifier("selectedCountrySessionCookieGenerator") CookieGenerator selectedCountrySessionCookieGenerator,
+      @Qualifier("selectedCountrySessionCookieGenerator") final CookieGenerator selectedCountrySessionCookieGenerator,
+      @Qualifier("idmConsentSessionCookieGenerator") final CookieGenerator idmConsentCookieGenerator,
       final EidasCountryHandler countryHandler,
       final ApplicationEventPublisher eventPublisher) {
     this.provider = provider;
     this.uiLanguageHandler = uiLanguageHandler;
     this.eidasUiModelFactory = eidasUiModelFactory;
     this.signUiModelFactory = signUiModelFactory;
+    this.idmUiModelFactory = idmUiModelFactory;
     this.selectedCountryCookieGenerator = selectedCountryCookieGenerator;
     this.selectedCountrySessionCookieGenerator = selectedCountrySessionCookieGenerator;
+    this.idmConsentCookieGenerator = idmConsentCookieGenerator;
     this.countryHandler = countryHandler;
     this.eventPublisher = eventPublisher;
   }
@@ -140,7 +157,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    */
   @GetMapping(EidasAuthenticationProvider.AUTHN_PATH)
   public ModelAndView authenticate(final HttpServletRequest request, final HttpServletResponse response,
-      @RequestParam(name = "lang", required = false) String language) {
+      @RequestParam(name = "lang", required = false) final String language) {
 
     try {
       final Saml2UserAuthenticationInputToken token = this.getInputToken(request).getAuthnInputToken();
@@ -234,7 +251,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
       // Generate AuthnRequest
       //
-      RequestHttpObject<AuthnRequest> authnRequest = this.getProvider().generateAuthnRequest(
+      final RequestHttpObject<AuthnRequest> authnRequest = this.getProvider().generateAuthnRequest(
           httpRequest, selectedCountry, this.getInputToken(httpRequest).getAuthnInputToken());
 
       // Save the country as "selected" ...
@@ -245,7 +262,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       // POST or redirect ...
       //
       if (SAMLConstants.POST_METHOD.equals(authnRequest.getMethod())) {
-        ModelAndView modelAndView = new ModelAndView("post-request");
+        final ModelAndView modelAndView = new ModelAndView("post-request");
         modelAndView.addObject("action", authnRequest.getSendUrl());
         modelAndView.addAllObjects(authnRequest.getRequestParameters());
         return modelAndView;
@@ -287,22 +304,149 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       final EidasAuthenticationToken token =
           this.getProvider().processSamlResponse(httpRequest, samlResponse, relayState);
 
-      // TODO: IDM
-
-      // Is this a sign request? If so, display the sign consent page ...
+      // OK, now we have an authentication token. Time to complete the authentication ...
       //
-      final Saml2UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
-      if (inputToken.getAuthnRequestToken().isSignatureServicePeer()) {
-        this.getProvider().saveEidasAuthenticationToken(httpRequest, token);
-        return this.signConsentPage(httpRequest, httpResponse, null);
-      }
-      else {
-        return this.complete(httpRequest, token);
-      }
+      return this.completeAuthentication(httpRequest, httpResponse, token, false, false);
     }
     catch (final Saml2ErrorStatusException e) {
       return this.complete(httpRequest, e);
     }
+  }
+
+  /**
+   * Helper method that assists us in completing an authentication. Given an {@link EidasAuthenticationToken} the method
+   * will perform the final (optional) steps in the authentication including consents from the user.
+   *
+   * @param httpRequest the HTTP servlet request
+   * @param httpResponse the HTTP servlet response
+   * @param token the eIDAS authentication token
+   * @param idmProcessed if the IdM-step has been completed
+   * @param signConsentProcessed if the Sign consent step has been completed
+   * @return a {@link ModelAndView} instance
+   */
+  private ModelAndView completeAuthentication(final HttpServletRequest httpRequest,
+      final HttpServletResponse httpResponse, final EidasAuthenticationToken token,
+      final boolean idmProcessed, final boolean signConsentProcessed) {
+
+    final Saml2UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
+
+    if (!idmProcessed) {
+      if (this.getProvider().isIdmActive()) {
+
+        // Before we check whether the user has an IdM record, we check if the IdM consent cookie has been set.
+        // If so, it means that we have already checked the IdM status in this session (and possibly prompted
+        // for the consent).
+        // We only check the cookie if this is a signature request since the legal requirements state that the
+        // user needs to be prompted for consent every time he/she authenticates.
+        //
+        final IdmSessionState idmState = isSignatureService.test(inputToken)
+            ? Optional.ofNullable(WebUtils.getCookie(httpRequest, this.idmConsentCookieGenerator.getName()))
+            .map(Cookie::getValue)
+            .map(IdmSessionState::fromString)
+            .orElse(null)
+            : null;
+        if (idmState != null) {
+          if (idmState == IdmSessionState.NO_RECORD) {
+            log.debug("IdM record has already been checked for '{}' in the current session - skipping ... [{}]",
+                token.getPrincipal(), token.getLogString());
+            return this.completeAuthentication(httpRequest, httpResponse, token, true, false);
+          }
+          else {
+            final String consent = idmState == IdmSessionState.GAVE_CONSENT ? ACTION_OK : ACTION_CANCEL;
+            log.debug("User '{}' has already been prompted for Identity Matching consent ({}) [{}]",
+                token.getPrincipal(), idmState.getValue(), token.getLogString());
+            return this.idmConsentResult(httpRequest, httpResponse, consent);
+          }
+        }
+
+        if (this.getProvider().hasIdmRecord(token)) {
+          // If the user has an IdM record, we need to ask for his or hers consent to read it ...
+          //
+          this.getProvider().saveEidasAuthenticationToken(httpRequest, token);
+          return this.idmConsentPage(httpRequest, httpResponse, null);
+        }
+        // else: User does not have a record ...
+      }
+    }
+    else {
+      log.trace("IdM feature is not active - no IdM record will be queried");
+    }
+
+    if (!signConsentProcessed) {
+      if (isSignatureService.test(inputToken)) {
+        log.debug("User '{}' has performed authentication given a request from a SignService. "
+            + "Directing to signature consent dialogue ... [{}]", token.getPrincipal(), token.getLogString());
+
+        this.getProvider().saveEidasAuthenticationToken(httpRequest, token);
+        return this.signConsentPage(httpRequest, httpResponse, null);
+      }
+    }
+
+    // OK, we are done communicating with the user. As a final step, we assert any potential
+    // requirements on the authenticating/signing user.
+    //
+    try {
+      this.getProvider().assertPrincipalSelection(inputToken, token);
+    }
+    catch (final Saml2ErrorStatusException e) {
+      return this.complete(httpRequest, e);
+    }
+
+    return this.complete(httpRequest, token);
+  }
+
+  /**
+   * Delivers the Identity Matching consent page.
+   *
+   * @param httpRequest the HttpServletRequest object
+   * @param httpResponse the HttpServletResponse object
+   * @param language the language parameter (optional)
+   * @return a ModelAndView object representing the IdM consent page
+   */
+  @GetMapping(EidasAuthenticationProvider.AUTHN_PATH + "/idmconsent")
+  public ModelAndView idmConsentPage(
+      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
+      @RequestParam(name = "lang", required = false) final String language) {
+
+    if (language != null) {
+      this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
+    }
+    final ModelAndView modelAndView = new ModelAndView("idm-consent");
+    modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
+    modelAndView.addObject("idmConsent",
+        this.idmUiModelFactory.createUiModel(this.getInputToken(httpRequest).getAuthnInputToken()));
+
+    return modelAndView;
+  }
+
+  /**
+   * Receives the results from the sign consent page.
+   *
+   * @param httpRequest the HTTP servlet request
+   * @param httpResponse the HTTP servlet response
+   * @param action the result (ok or cancel)
+   * @return a {@link ModelAndView}
+   */
+  @PostMapping(EidasAuthenticationProvider.AUTHN_PATH + "/idmresult")
+  public ModelAndView idmConsentResult(
+      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
+      @RequestParam(name = "action") final String action) {
+
+    final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest);
+
+    if (ACTION_OK.equals(action)) {
+      log.debug("User '{}' consented to getting IdM record [{}]", token.getPrincipal(), token.getLogString());
+      this.getProvider().obtainIdMRecord(token);
+    }
+    else if (ACTION_CANCEL.equals(action)) {
+      log.debug("User '{}' did not consent to getting IdM record [{}]", token.getPrincipal(), token.getLogString());
+      // TODO: audit
+    }
+    else {
+      log.warn("Unknown action parameter {}", action);
+      return this.idmConsentPage(httpRequest, httpResponse, null);
+    }
+    return this.completeAuthentication(httpRequest, httpResponse, token, true, false);
   }
 
   /**
@@ -316,7 +460,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   @GetMapping(EidasAuthenticationProvider.AUTHN_PATH + "/consent")
   public ModelAndView signConsentPage(
       final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
-      @RequestParam(name = "lang", required = false) String language) {
+      @RequestParam(name = "lang", required = false) final String language) {
 
     if (language != null) {
       this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
@@ -326,7 +470,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
     modelAndView.addObject("signMessageConsent", this.signUiModelFactory.createUiModel(
         this.getInputToken(httpRequest).getAuthnInputToken(),
-        this.getProvider().getEidasAuthenticationToken(httpRequest, false)));
+        this.getProvider().getEidasAuthenticationToken(httpRequest)));
 
     return modelAndView;
   }
@@ -342,22 +486,24 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   @PostMapping(EidasAuthenticationProvider.AUTHN_PATH + "/signed")
   public ModelAndView signConsentResult(
       final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
-      @RequestParam(name = "action") String action) {
+      @RequestParam(name = "action") final String action) {
 
-    final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest, true);
+    final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest);
     final Saml2UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
 
-    if ("ok".equals(action)) {
+    if (ACTION_OK.equals(action)) {
       log.debug("User consented to signature [{}]", inputToken.getLogString());
 
       token.setSignatureConsented(true);
       this.eventPublisher.publishEvent(new SignatureConsentEvent(inputToken, token, true));
 
-      return this.complete(httpRequest, token);
+      return this.completeAuthentication(httpRequest, httpResponse, token, true, true);
     }
-    else if ("cancel".equals(action)) {
+    else if (ACTION_CANCEL.equals(action)) {
       log.debug("User did not consent to signing [{}]", inputToken.getLogString());
       this.eventPublisher.publishEvent(new SignatureConsentEvent(inputToken, token, false));
+
+      // TODO: clean up session
 
       final String msg = "User did not consent to signature";
       return this.complete(httpRequest,
@@ -367,6 +513,55 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     else {
       log.warn("Unknown action parameter {}", action);
       return this.signConsentPage(httpRequest, httpResponse, null);
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected ModelAndView complete(final HttpServletRequest request, final Authentication authentication) {
+    this.getProvider().removeEidasAuthenticationToken(request);
+    return super.complete(request, authentication);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected ModelAndView complete(final HttpServletRequest request, final Saml2ErrorStatusException error) {
+    this.getProvider().removeEidasAuthenticationToken(request);
+    return super.complete(request, error);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected ModelAndView cancel(final HttpServletRequest request) {
+    this.getProvider().removeEidasAuthenticationToken(request);
+    return super.cancel(request);
+  }
+
+  /**
+   * For storing the IdM state in a cookie.
+   */
+  private enum IdmSessionState {
+    NO_RECORD("no-record"),
+    DENIED_CONSENT("denied-consent"),
+    GAVE_CONSENT("gave-consent");
+
+    public String getValue() {
+      return this.value;
+    }
+
+    public static IdmSessionState fromString(final String value) {
+      for (final IdmSessionState state : IdmSessionState.values()) {
+        if (state.value.equals(value)) {
+          return state;
+        }
+      }
+      return null;
+    }
+
+    private final String value;
+
+    IdmSessionState(final String value) {
+      this.value = value;
     }
   }
 

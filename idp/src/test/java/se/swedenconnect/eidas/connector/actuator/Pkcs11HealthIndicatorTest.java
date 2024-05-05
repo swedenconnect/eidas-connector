@@ -40,7 +40,7 @@ import se.swedenconnect.security.credential.ReloadablePkiCredential;
  */
 public class Pkcs11HealthIndicatorTest {
 
-  private static ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper = new ObjectMapper();
 
   @Test
   public void testSoftwareCredentials() {

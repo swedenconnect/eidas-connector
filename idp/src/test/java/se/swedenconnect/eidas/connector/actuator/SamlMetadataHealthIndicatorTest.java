@@ -39,6 +39,7 @@ public class SamlMetadataHealthIndicatorTest {
   public void testHealthWhenMetadataResolverIsIterableAndHasNext() {
     final HTTPMetadataResolver iterableMetadataResolver = mock(HTTPMetadataResolver.class);
     when(iterableMetadataResolver.getId()).thenReturn("mockResolver");
+    @SuppressWarnings("unchecked")
     final Iterator<EntityDescriptor> iterator = mock(Iterator.class);
     when(iterator.hasNext()).thenReturn(true);
     when(iterableMetadataResolver.iterator()).thenReturn(iterator);
@@ -53,6 +54,7 @@ public class SamlMetadataHealthIndicatorTest {
   public void testHealthWhenMetadataResolverIsIterableAndHasNoNext() {
     final HTTPMetadataResolver iterableMetadataResolver = mock(HTTPMetadataResolver.class);
     when(iterableMetadataResolver.getId()).thenReturn("mockResolver");
+    @SuppressWarnings("unchecked")
     final Iterator<EntityDescriptor> iterator = mock(Iterator.class);
     when(iterator.hasNext()).thenReturn(false);
     when(iterableMetadataResolver.iterator()).thenReturn(iterator);

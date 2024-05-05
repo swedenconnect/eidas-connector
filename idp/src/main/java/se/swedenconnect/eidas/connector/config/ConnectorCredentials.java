@@ -70,6 +70,23 @@ public class ConnectorCredentials {
 
   private final PkiCredential oauth2Credential;
 
+  /**
+   * Initializes the ConnectorCredentials object with the provided credentials for various purposes.
+   *
+   * @param defaultCredential the default credential for the SAML IdP
+   * @param signCredential the signing credential for the SAML IdP
+   * @param futureSignCertificate the future signing certificate for the SAML IdP
+   * @param encryptCredential the encryption credential for the SAML IdP
+   * @param previousEncryptCredential the previous encryption credential for the SAML IdP
+   * @param spDefaultCredential the default credential for the connector SP
+   * @param spSignCredential the signing credential for the connector SP
+   * @param spFutureSignCertificate the future signing certificate for the connector SP
+   * @param spEncryptCredential the encryption credential for the connector SP
+   * @param spPreviousEncryptCredential the previous encryption credential for the connector SP
+   * @param metadataSignCredential the metadata signing credential for the SAML IdP
+   * @param spMetadataSignCredential the metadata signing credential for the connector SP
+   * @param oauth2Credential the PKI credential for OAuth2 use
+   */
   public ConnectorCredentials(
       final @Qualifier("saml.idp.credentials.Default") @Autowired(required = false) PkiCredential defaultCredential,
       final @Qualifier("saml.idp.credentials.Sign") @Autowired(required = false) PkiCredential signCredential,

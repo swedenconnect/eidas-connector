@@ -16,20 +16,26 @@
 package se.swedenconnect.eidas.connector.authn.idm;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
 import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.ssl.TrustStrategy;
+import org.springframework.boot.ssl.SslBundle;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
@@ -65,35 +71,81 @@ public class DefaultIdmClient implements IdmClient {
    *
    * @param idmApiBaseUrl the base URL for the API
    * @param oauth2 the OAuth2 handler
+   * @param trustBundle SSL Bundle holding the trust configuration for TLS-calls against the IdM server (optional)
    */
-  public DefaultIdmClient(final String idmApiBaseUrl, final OAuth2Handler oauth2) {
+  public DefaultIdmClient(final String idmApiBaseUrl, final OAuth2Handler oauth2, final SslBundle trustBundle) {
 
     Objects.requireNonNull(idmApiBaseUrl, "idmApiBaseUrl must not be null");
     this.oauth2 = Objects.requireNonNull(oauth2, "oauth2 must not be null");
 
     final RestClient.Builder builder = RestClient.builder().baseUrl(idmApiBaseUrl);
-    if (DevelopmentMode.isActive()) {
+    if (trustBundle != null) {
+      final SSLConnectionSocketFactory sslSocketFactory =
+          SSLConnectionSocketFactoryBuilder.create().setSslContext(trustBundle.createSslContext()).build();
+      final HttpClientConnectionManager cm =
+          PoolingHttpClientConnectionManagerBuilder.create().setSSLSocketFactory(sslSocketFactory).build();
+      final HttpClient httpClient = HttpClients.custom().setConnectionManager(cm).evictExpiredConnections().build();
+      builder.requestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
+    }
+    else if (DevelopmentMode.isActive()) {
       builder.requestFactory(developmentModeSettings());
     }
     this.restClient = builder.build();
+  }
+
+  /**
+   * Returns {@code true}.
+   */
+  @Override
+  public boolean isActive() {
+    return true;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean hasRecord(final EidasAuthenticationToken token) throws IdmException {
+
+    final String prid = this.getPridAttribute(token);
+
+    log.debug("Querying Identity Matching API for existence of record for user '{}' ...", prid);
+
+    final String accessToken = this.oauth2.getCheckAccessToken();
+
+    try {
+      final ResponseEntity<Void> result = this.restClient.head()
+          .uri(IDM_API_PATH, prid)
+          .header(HttpHeaders.AUTHORIZATION, accessToken)
+          .retrieve()
+          .toBodilessEntity();
+
+      if (result.getStatusCode() == HttpStatus.OK) {
+        log.debug("IdM reported that there is an IdM record for '{}'", prid);
+        return true;
+      }
+      else if (result.getStatusCode() == HttpStatus.NOT_FOUND) {
+        log.debug("IdM reported that there is no IdM record for '{}'", prid);
+        return false;
+      }
+      else {
+        throw new IdmException("Error querying for IdM record - unexpected status code: " + result.getStatusCode());
+      }
+    }
+    catch (final RestClientResponseException e) {
+      throw new IdmException("Failure querying for IdM record - " + e.getMessage(), e);
+    }
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean getRecord(final EidasAuthenticationToken token) throws IdmException {
 
-    // First extract the PRID attribute ...
-    //
-    final String prid = Optional.ofNullable(token.getAttribute(AttributeConstants.ATTRIBUTE_NAME_PRID))
-        .filter(a -> !a.getValues().isEmpty())
-        .map(a -> a.getStringValues().get(0))
-        .orElseThrow(() -> new IdmException("No PRID attribute available for user"));
+    final String prid = this.getPridAttribute(token);
 
-    log.debug("Querying Identity Matching API for record for '{} ...'", prid);
+    log.debug("Querying Identity Matching API for record contents for '{}' ...", prid);
 
     // Get the OAuth2 token needed for our call to the IdM Query API ...
     //
-    final String accessToken = this.oauth2.getAccessToken();
+    final String accessToken = this.oauth2.getGetAccessToken(prid);
 
     // Invoke the API ...
     //
@@ -132,7 +184,7 @@ public class DefaultIdmClient implements IdmClient {
           AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PERSONAL_IDENTITY_NUMBER_BINDING,
           response.getBindingLevel()));
 
-      log.info("Identity matching record exists for user '{}'", prid); // TODO
+      log.info("Identity matching record exists for user '{}'", prid);
 
       return true;
     }
@@ -151,6 +203,20 @@ public class DefaultIdmClient implements IdmClient {
       log.info("{}", msg, e);
       throw new IdmException(msg, e);
     }
+  }
+
+  /**
+   * Extracts the PRID attribute value from the user authentication token.
+   *
+   * @param token the user authentication token
+   * @return the PRID attribute value
+   * @throws IdmException if no PRID attribute is available
+   */
+  private String getPridAttribute(final EidasAuthenticationToken token) throws IdmException {
+    return Optional.ofNullable(token.getAttribute(AttributeConstants.ATTRIBUTE_NAME_PRID))
+        .filter(a -> !a.getValues().isEmpty())
+        .map(a -> a.getStringValues().get(0))
+        .orElseThrow(() -> new IdmException("No PRID attribute available for user"));
   }
 
   private static ClientHttpRequestFactory developmentModeSettings() {

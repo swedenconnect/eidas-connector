@@ -41,6 +41,9 @@ public class UiConfigurationProperties implements InitializingBean {
   /** Default cookie name for the selected country session cookie. */
   public static final String DEFAULT_SELECTED_COUNTRY_SESSION_COOKIE_NAME = "selectedCountrySession";
 
+  /** Default cookie name for storing the IdM consent session cookie. */
+  public static final String DEFAULT_IDM_CONSENT_COOKIE_NAME = "idmConsentSession";
+
   /**
    * The UI language settings.
    */
@@ -62,6 +65,13 @@ public class UiConfigurationProperties implements InitializingBean {
   private final Cookie selectedCountrySessionCookie = new Cookie();
 
   /**
+   * The cookie for remembering consent to access IdM record (during session).
+   */
+  @NestedConfigurationProperty
+  @Getter
+  private final Cookie idmConsentSessionCookie = new Cookie();
+
+  /**
    * The accessibility report URL.
    */
   @Getter
@@ -80,6 +90,9 @@ public class UiConfigurationProperties implements InitializingBean {
     }
     if (!StringUtils.hasText(this.selectedCountrySessionCookie.getName())) {
       this.selectedCountrySessionCookie.setName(DEFAULT_SELECTED_COUNTRY_SESSION_COOKIE_NAME);
+    }
+    if (!StringUtils.hasText(this.idmConsentSessionCookie.getName())) {
+      this.idmConsentSessionCookie.setName(DEFAULT_IDM_CONSENT_COOKIE_NAME);
     }
   }
 

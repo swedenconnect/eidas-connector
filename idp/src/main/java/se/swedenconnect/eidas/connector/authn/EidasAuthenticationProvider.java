@@ -48,7 +48,11 @@ import se.swedenconnect.eidas.connector.prid.service.PridService;
 import se.swedenconnect.opensaml.common.validation.CoreValidatorParameters;
 import se.swedenconnect.opensaml.saml2.request.RequestGenerationException;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
-import se.swedenconnect.opensaml.saml2.response.*;
+import se.swedenconnect.opensaml.saml2.response.ResponseProcessingException;
+import se.swedenconnect.opensaml.saml2.response.ResponseProcessingInput;
+import se.swedenconnect.opensaml.saml2.response.ResponseProcessingResult;
+import se.swedenconnect.opensaml.saml2.response.ResponseProcessor;
+import se.swedenconnect.opensaml.saml2.response.ResponseStatusErrorException;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthentication;
@@ -64,7 +68,14 @@ import se.swedenconnect.spring.saml.idp.error.UnrecoverableSaml2IdpException;
 
 import java.security.cert.X509Certificate;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 /**
@@ -234,8 +245,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
       log.debug("Successfully processed SAML response");
 
-      final EidasAuthenticationToken eidasToken = new EidasAuthenticationToken(result, eidasAuthnRequest);
       final Saml2UserAuthenticationInputToken inputToken = this.getSamlInputToken(httpRequest);
+      final EidasAuthenticationToken eidasToken = new EidasAuthenticationToken(result, eidasAuthnRequest, inputToken);
 
       // Signal event ...
       //
@@ -299,7 +310,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
             AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PRID_PERSISTENCE,
             pridResult.pridPersistence()));
       }
-      catch (IllegalArgumentException | PridGeneratorException | CountryPolicyNotFoundException e) {
+      catch (final IllegalArgumentException | PridGeneratorException | CountryPolicyNotFoundException e) {
         log.error("Failed to generate PRID attribute from ID '{}' ({}) - {}",
             eidasToken.getPrincipal(), eidasToken.getAuthnRequest().getCountry(),
             e.getMessage(), e);
@@ -308,28 +319,6 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
         throw new Saml2ErrorStatusException(StatusCode.RESPONDER, StatusCode.AUTHN_FAILED,
             null, "Failed to create PRID attribute", e.getMessage(), e);
-      }
-
-      // Query the Identity Matching API to check if there is a mapped Swedish ID available ...
-      //
-      try {
-        this.idmClient.getRecord(eidasToken);
-        // TODO: log
-      }
-      catch (final IdmException e) {
-        // TODO
-      }
-
-      // If this is a signature service, assert any potential requirements on the signing user ...
-      //
-      try {
-        if (inputToken.getAuthnRequestToken().isSignatureServicePeer()) {
-          this.assertPrincipalSelection(inputToken, eidasToken.getAttributes());
-        }
-      }
-      catch (final Saml2ErrorStatusException e) {
-        this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(inputToken, e.getMessage()));
-        throw e;
       }
 
       return eidasToken;
@@ -363,13 +352,25 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(
           this.getSamlInputToken(httpRequest), e.getMessage(), e.getResponse()));
 
-      if (e instanceof EidasResponseValidationException eidasError) {
+      if (e instanceof final EidasResponseValidationException eidasError) {
         throw eidasError.getError();
       }
       else {
         final String msg = "Validation failure of response from foreign service: %s".formatted(e.getMessage());
         throw new Saml2ErrorStatusException(StatusCode.REQUESTER, StatusCode.REQUEST_DENIED, null, msg, e);
       }
+    }
+  }
+
+  public void obtainIdMRecord(final EidasAuthenticationToken token) {
+    // Query the Identity Matching API to check if there is a mapped Swedish ID available ...
+    //
+    try {
+      this.idmClient.getRecord(token);
+      // TODO: log
+    }
+    catch (final IdmException e) {
+      // TODO
     }
   }
 
@@ -429,60 +430,99 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * attributes.
    *
    * @param inputToken the SAML input token
-   * @param attributes the authenticated attributes
+   * @param token the eIDAS authentication token
    * @throws Saml2ErrorStatusException for assertion errors
    */
-  private void assertPrincipalSelection(
-      final Saml2UserAuthenticationInputToken inputToken, final Collection<UserAttribute> attributes)
+  public void assertPrincipalSelection(
+      final Saml2UserAuthenticationInputToken inputToken, final EidasAuthenticationToken token)
       throws Saml2ErrorStatusException {
 
-    final Collection<UserAttribute> principalSelection =
-        inputToken.getAuthnRequirements().getPrincipalSelectionAttributes();
-    if (principalSelection.isEmpty()) {
+    // Only assert for signing user ...
+    //
+    if (!inputToken.getAuthnRequestToken().isSignatureServicePeer()) {
       return;
     }
-    // We assert the typical identity attributes.
-    //
-    for (final UserAttribute ps : principalSelection) {
 
-      final String psValue = Optional.of(ps.getValues())
-          .filter(Predicate.not(List::isEmpty))
-          .map(v -> v.get(0))
-          .map(String.class::cast)
-          .orElse(null);
-      if (psValue == null) {
-        continue;
-      }
+    try {
+      final Collection<UserAttribute> attributes = token.getAttributes();
 
-      if (AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER.equals(ps.getId())
-          || AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER.equals(ps.getId())) {
+      final Collection<UserAttribute> principalSelection =
+          inputToken.getAuthnRequirements().getPrincipalSelectionAttributes();
+      if (principalSelection.isEmpty()) {
+        return;
+      }
+      // We assert the typical identity attributes.
+      //
+      for (final UserAttribute ps : principalSelection) {
 
-        checkPrincipalSelectionValue(ps.getId(), psValue,
-            AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PERSONAL_IDENTITY_NUMBER,
-            attributes.stream()
-                .filter(a -> AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER.equals(a.getId()))
-                .map(UserAttribute::getStringValues)
-                .findFirst()
-                .orElse(null));
+        final String psValue = Optional.of(ps.getValues())
+            .filter(Predicate.not(List::isEmpty))
+            .map(v -> v.get(0))
+            .map(String.class::cast)
+            .orElse(null);
+        if (psValue == null) {
+          continue;
+        }
+
+        if (AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER.equals(ps.getId())
+            || AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER.equals(ps.getId())) {
+
+          checkPrincipalSelectionValue(ps.getId(), psValue,
+              AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PERSONAL_IDENTITY_NUMBER,
+              attributes.stream()
+                  .filter(a -> AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER.equals(a.getId()))
+                  .map(UserAttribute::getStringValues)
+                  .findFirst()
+                  .orElse(null));
+        }
+        else if (AttributeConstants.ATTRIBUTE_NAME_PRID.equals(ps.getId())) {
+          checkPrincipalSelectionValue(ps.getId(), psValue,
+              AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PRID,
+              attributes.stream()
+                  .filter(a -> AttributeConstants.ATTRIBUTE_NAME_PRID.equals(a.getId()))
+                  .map(UserAttribute::getStringValues)
+                  .findFirst()
+                  .orElse(null));
+        }
+        else if (AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER.equals(ps.getId())) {
+          checkPrincipalSelectionValue(ps.getId(), psValue,
+              AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_EIDAS_PERSON_IDENTIFIER,
+              attributes.stream()
+                  .filter(a -> AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER.equals(a.getId()))
+                  .map(UserAttribute::getStringValues)
+                  .findFirst()
+                  .orElse(null));
+        }
       }
-      else if (AttributeConstants.ATTRIBUTE_NAME_PRID.equals(ps.getId())) {
-        checkPrincipalSelectionValue(ps.getId(), psValue,
-            AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PRID,
-            attributes.stream()
-                .filter(a -> AttributeConstants.ATTRIBUTE_NAME_PRID.equals(a.getId()))
-                .map(UserAttribute::getStringValues)
-                .findFirst()
-                .orElse(null));
-      }
-      else if (AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER.equals(ps.getId())) {
-        checkPrincipalSelectionValue(ps.getId(), psValue,
-            AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_EIDAS_PERSON_IDENTIFIER,
-            attributes.stream()
-                .filter(a -> AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER.equals(a.getId()))
-                .map(UserAttribute::getStringValues)
-                .findFirst()
-                .orElse(null));
-      }
+    }
+    catch (final Saml2ErrorStatusException e) {
+      this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(inputToken, e.getMessage()));
+      throw e;
+    }
+  }
+
+  /**
+   * Tells whether the Identity Matching feature is active.
+   *
+   * @return {@code true} if IdM is active and {@code false} otherwise
+   */
+  public boolean isIdmActive() {
+    return this.idmClient.isActive();
+  }
+
+  /**
+   * Checks if the user identified by the authentication token has an IdM record.
+   *
+   * @param token the authentication token
+   * @return {@code true} if the user has a record and {@code false} otherwise
+   */
+  public boolean hasIdmRecord(final EidasAuthenticationToken token) {
+    try {
+      return this.idmClient.hasRecord(token);
+    }
+    catch (final IdmException e) {
+      // TODO: log and possibly audit log
+      return false;
     }
   }
 
@@ -622,16 +662,19 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     httpRequest.getSession().setAttribute(EIDAS_AUTHNTOKEN_SESSION_KEY, token);
   }
 
+  public void removeEidasAuthenticationToken(final HttpServletRequest httpRequest) {
+    final HttpSession session = httpRequest.getSession();
+    session.removeAttribute(EIDAS_AUTHNTOKEN_SESSION_KEY);
+  }
+
   /**
    * Gets the {@link EidasAuthenticationToken} from session storage.
    *
    * @param httpRequest the HTTP servlet request
-   * @param remove whether the token should be removed from the session storage
    * @return an {@link EidasAuthenticationToken}
    * @throws UnrecoverableSaml2IdpException for session errors
    */
-  public EidasAuthenticationToken getEidasAuthenticationToken(final HttpServletRequest httpRequest,
-      final boolean remove)
+  public EidasAuthenticationToken getEidasAuthenticationToken(final HttpServletRequest httpRequest)
       throws UnrecoverableSaml2IdpException {
 
     final HttpSession session = httpRequest.getSession();
@@ -643,9 +686,6 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
           Optional.ofNullable(this.getTokenRepository().getExternalAuthenticationToken(httpRequest))
               .map(RedirectForAuthenticationToken::getAuthnInputToken)
               .orElse(null));
-    }
-    if (remove) {
-      session.removeAttribute(EIDAS_AUTHNTOKEN_SESSION_KEY);
     }
     return token;
   }

@@ -25,6 +25,19 @@ import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 public class NoopIdmClient implements IdmClient {
 
   /**
+   * Returns {@code false}.
+   */
+  @Override
+  public boolean isActive() {
+    return false;
+  }
+
+  @Override
+  public boolean hasRecord(final EidasAuthenticationToken token) {
+    return false;
+  }
+
+  /**
    * Will always return {@code false}.
    */
   @Override

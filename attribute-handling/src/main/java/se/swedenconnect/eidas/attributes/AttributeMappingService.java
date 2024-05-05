@@ -15,13 +15,12 @@
  */
 package se.swedenconnect.eidas.attributes;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.opensaml.saml.saml2.core.Attribute;
-
 import se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Handles mappings between Swedish eID attributes and eIDAS attributes.
@@ -33,7 +32,7 @@ public interface AttributeMappingService {
   /**
    * The eIDAS minimum data set for natural persons.
    */
-  static List<String> NATURAL_PERSON_MINIMUM_DATASET = List.of(
+  List<String> NATURAL_PERSON_MINIMUM_DATASET = List.of(
       se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME,
       se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_CURRENT_GIVEN_NAME_ATTRIBUTE_NAME,
       se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_CURRENT_FAMILY_NAME_ATTRIBUTE_NAME,
@@ -50,7 +49,7 @@ public interface AttributeMappingService {
   /**
    * Given a {@link se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute
    * se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute}  calculated by the SAML IdP base, the method builds
-   * an eIDAS {@link se.litsec.eidas.opensaml.ext.RequestedAttribute} element to be used in an eIDAS AuthnRequest.
+   * an eIDAS {@link se.swedenconnect.opensaml.eidas.ext.RequestedAttribute} element to be used in an eIDAS AuthnRequest.
    * <p>
    * Note: The implementation may not assign the {@code isRequired} attribute to the resulting object even if it is set
    * in the supplied metadata requested attribute. For interoperability reasons only attributes part of the eIDAS
@@ -64,12 +63,12 @@ public interface AttributeMappingService {
       final RequestedAttribute requestedBySwedishSp);
 
   /**
-   * Gets a list of eIDAS {@link se.litsec.eidas.opensaml.ext.RequestedAttribute}s based on the requested attributes set
+   * Gets a list of eIDAS {@link se.swedenconnect.opensaml.eidas.ext.RequestedAttribute}s based on the requested attributes set
    * by the Swedish SP. If the {@code includeMinimumDataSet} is set, the minimum data set is always returned.
    *
    * @param requestedBySwedishSp the requested attributes from the Swedish SP
    * @param includeMinimumDataSet whether the minimum data set should be included (independently of what is passed)
-   * @return a list of eIDAS {@link se.litsec.eidas.opensaml.ext.RequestedAttribute RequestedAttribute} objects
+   * @return a list of eIDAS {@link se.swedenconnect.opensaml.eidas.ext.RequestedAttribute RequestedAttribute} objects
    */
   List<se.swedenconnect.opensaml.eidas.ext.RequestedAttribute> toEidasRequestedAttributes(
       final Collection<RequestedAttribute> requestedBySwedishSp, final boolean includeMinimumDataSet);

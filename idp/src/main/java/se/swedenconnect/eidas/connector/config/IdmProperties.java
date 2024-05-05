@@ -46,6 +46,14 @@ public class IdmProperties implements InitializingBean {
   private String apiBaseUrl;
 
   /**
+   * A reference to a Spring Boot SSL Bundle holding the trust configuration for TLS-calls against the IdM server. If no
+   * bundle is set, the system defaults are used.
+   */
+  @Getter
+  @Setter
+  private String trustBundle;
+
+  /**
    * Connector OAuth2 client settings.
    */
   @Getter
@@ -82,11 +90,18 @@ public class IdmProperties implements InitializingBean {
     private String clientId;
 
     /**
-     * The scope(s) to request for accessing the IdM Query API.
+     * The scope(s) to request for making check calls to the IdM Query API.
      */
     @Getter
     @Setter
-    private List<String> scopes;
+    private List<String> checkScopes;
+
+    /**
+     * The scope(s) to request for making get calls to the IdM Query API.
+     */
+    @Getter
+    @Setter
+    private List<String> getScopes;
 
     /**
      * The ID for the resource we are sending our access tokens to (the IdM-service).
@@ -112,8 +127,8 @@ public class IdmProperties implements InitializingBean {
     private OAuth2ClientProperties client;
 
     /**
-     * Settings if the eIDAS connector should act as an OAuth2 Authorization Server and issue
-     * access token for itself. Mutually exclusive with 'client'.
+     * Settings if the eIDAS connector should act as an OAuth2 Authorization Server and issue access token for itself.
+     * Mutually exclusive with 'client'.
      */
     @Getter
     @Setter
@@ -123,7 +138,8 @@ public class IdmProperties implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
       Assert.hasText(this.clientId, "connector.idm.oauth2.client-id must be assigned");
-      Assert.notEmpty(this.scopes, "connector.idm.oauth2.scopes must contain at least one scope");
+      Assert.notEmpty(this.checkScopes, "connector.idm.oauth2.check-scopes must contain at least one scope");
+      Assert.notEmpty(this.getScopes, "connector.idm.oauth2.get-scopes must contain at least one scope");
       Assert.hasText(this.resourceId, "connector.idm.oauth2.resource-id must be assigned");
 
       if (this.client == null && this.server == null) {
@@ -155,13 +171,12 @@ public class IdmProperties implements InitializingBean {
       private String tokenEndpoint;
 
       /**
-       * When running in development mode we set the audience of our private_key_jwt objects
-       * to the AS issuer id instead of the token endpoint. Needed if running in development mode.
+       * When running in development mode we set the audience of our private_key_jwt objects to the AS issuer id instead
+       * of the token endpoint. Needed if running in development mode.
        */
       @Getter
       @Setter
       private String asIssuerId;
-
 
       /** {@inheritDoc} */
       @Override
@@ -172,8 +187,7 @@ public class IdmProperties implements InitializingBean {
     }
 
     /**
-     * Settings if the eIDAS connector should act as an OAuth2 Authorization Server and issue
-     * access token for itself.
+     * Settings if the eIDAS connector should act as an OAuth2 Authorization Server and issue access token for itself.
      */
     public static class OAuth2ServerProperties implements InitializingBean {
 

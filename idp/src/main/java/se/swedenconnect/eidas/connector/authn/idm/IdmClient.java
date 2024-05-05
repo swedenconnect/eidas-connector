@@ -25,13 +25,29 @@ import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 public interface IdmClient {
 
   /**
+   * Tells whether IdM is active.
+   *
+   * @return {@code true} if the Identity Matching feature is active and {@code false} otherwise
+   */
+  boolean isActive();
+
+  /**
+   * Tells whether the user identified by {@code token} has a record at the Identity Matching service.
+   *
+   * @param token the user authentication token
+   * @return {@code true} if the user has a record and {@code false otherwise}
+   * @throws IdmException for errors communicating with the Identity Matching service
+   */
+  boolean hasRecord(final EidasAuthenticationToken token) throws IdmException;
+
+  /**
    * The method will attempt to get the Identity Matching Record for the authenticated user, and if a valid record
    * exists update the supplied token with attributes for the Swedish identity and information about the identity
    * matching binding used.
    *
    * @param token the authentication token
    * @return {@code true} if there was a binding and the token was updated, and {@code false} if there was no binding
-   * @throws IdmException for errors communicating with the Identity Matching service.
+   * @throws IdmException for errors communicating with the Identity Matching service
    */
   boolean getRecord(final EidasAuthenticationToken token) throws IdmException;
 

@@ -15,14 +15,11 @@
  */
 package se.swedenconnect.eidas.attributes.conversion;
 
-import java.util.List;
-
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplate;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplateConstants;
 import se.swedenconnect.opensaml.eidas.ext.attributes.GenderType;
@@ -32,6 +29,8 @@ import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.eidas.Gender;
+
+import java.util.List;
 
 /**
  * Specialized converter for the Gender attribute, since its value representation differs between eIDAS and the Swedish
@@ -62,10 +61,9 @@ public class GenderAttributeConverter extends DefaultAttributeConverter {
     }
     try {
       final XMLObject eidasAttributeValue = template.createAttributeValueObject();
-      if (!GenderType.class.isInstance(eidasAttributeValue)) {
+      if (!(eidasAttributeValue instanceof final GenderType genderValue)) {
         return null;
       }
-      final GenderType genderValue = GenderType.class.cast(eidasAttributeValue);
       if ("M".equalsIgnoreCase(value) || GenderTypeEnumeration.MALE.getValue().equalsIgnoreCase(value)) {
         genderValue.setGender(GenderTypeEnumeration.MALE);
       }
@@ -92,11 +90,10 @@ public class GenderAttributeConverter extends DefaultAttributeConverter {
     if (values.isEmpty()) {
       return null;
     }
-    if (!GenderType.class.isInstance(values.get(0))) {
+    if (!(values.get(0) instanceof final GenderType genderValue)) {
       return null;
     }
-    final GenderType genderValue = GenderType.class.cast(values.get(0));
-    String value = null;
+    String value;
     if (genderValue.getGender().equals(GenderTypeEnumeration.MALE)) {
       value = "M";
     }
@@ -117,7 +114,7 @@ public class GenderAttributeConverter extends DefaultAttributeConverter {
     if (eidasAttribute.getValues().isEmpty()) {
       return null;
     }
-    final String gender = Gender.class.cast(eidasAttribute.getValues().get(0)).getValueAsString();
+    final String gender = ((Gender) eidasAttribute.getValues().get(0)).getValueAsString();
     if (GenderTypeEnumeration.MALE.getValue().equalsIgnoreCase(gender)) {
       return "M";
     }

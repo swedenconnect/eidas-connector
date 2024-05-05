@@ -31,10 +31,15 @@ import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessingResult;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.eidas.EidasAttributeValue;
+import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
 import java.io.Serial;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -80,13 +85,24 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   @Setter
   private String swedishEidAuthnContextClassRef;
 
+  /** For logging. */
+  @Getter
+  private final String logString;
+
+  /** For caching the principal name. */
+  private transient String principalCache;
+
   /**
    * Constructor.
    *
    * @param result result of response processing
+   * @param authnRequest the eIDAS authentication request
+   * @param inputToken the input token (used for logging)
    */
-  public EidasAuthenticationToken(final ResponseProcessingResult result, final EidasAuthnRequest authnRequest) {
+  public EidasAuthenticationToken(final ResponseProcessingResult result, final EidasAuthnRequest authnRequest,
+      final Saml2UserAuthenticationInputToken inputToken) {
     super(Collections.emptyList());
+    this.logString = Objects.requireNonNull(inputToken, "inputToken must not be null").getLogString();
     Objects.requireNonNull(result, "result must not be null");
     this.responseId = result.getResponseId();
     this.inResponseTo = result.getInResponseTo();
@@ -133,6 +149,8 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
     if (attribute != null) {
       this.attributes.add(attribute);
     }
+    // Clear cache
+    this.principalCache = null;
   }
 
   /**
@@ -181,13 +199,16 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   /** {@inheritDoc} */
   @Override
   public Object getPrincipal() {
-    return Optional.ofNullable(this.getAttribute(AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME))
-        .map(UserAttribute::getValues)
-        .filter(Predicate.not(List::isEmpty))
-        .map(v -> v.get(0))
-        .map(EidasAttributeValue.class::cast)
-        .map(EidasAttributeValue::getValueAsString)
-        .orElse("unknown");
+    if (this.principalCache == null) {
+      this.principalCache = Optional.ofNullable(this.getAttribute(AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME))
+          .map(UserAttribute::getValues)
+          .filter(Predicate.not(List::isEmpty))
+          .map(v -> v.get(0))
+          .map(EidasAttributeValue.class::cast)
+          .map(EidasAttributeValue::getValueAsString)
+          .orElse("unknown");
+    }
+    return this.principalCache;
   }
 
   /** {@inheritDoc} */

@@ -39,7 +39,7 @@ import java.util.Optional;
  */
 public abstract class AbstractOAuth2Handler implements OAuth2Handler {
 
-  /** The cached access token. */
+  /** The cached access token for the HEAD calls. */
   private BearerAccessTokenHolder cachedAccessToken;
 
   /** The OAuth2 credential - used to sign OAuth2 items. */
@@ -51,8 +51,11 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
   /** The Connector OAuth2 client ID. */
   private final ClientID clientId;
 
-  /** The OAuth2 scope(s) to use. */
-  private final Scope scope;
+  /** The OAuth2 scope(s) to use for HEAD calls. */
+  private final Scope checkScope;
+
+  /** The OAuth2 scope(s) to use for GET calls. */
+  private final Scope getScope;
 
   /**
    * Holds information about a JWK.
@@ -64,23 +67,27 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
    * Constructor.
    *
    * @param clientId the Connector OAuth2 client ID
-   * @param scopes the OAuth2 scope(s) to use
+   * @param checkScopes the OAuth2 scope(s) to use when making HEAD requests
+   * @param getScopes the OAuth2 scope(s) to use when making GET requests
    * @param oauth2Credential the credential used to sign the OAuth2 items
    */
   public AbstractOAuth2Handler(
       final String clientId,
-      final List<String> scopes,
+      final List<String> checkScopes,
+      final List<String> getScopes,
       final PkiCredential oauth2Credential) {
     this.clientId = new ClientID(Objects.requireNonNull(clientId, "clientId must not be null"));
-    this.scope = Optional.ofNullable(Scope.parse(scopes))
-        .orElseThrow(() -> new IllegalArgumentException("Missing scopes parameter"));
+    this.checkScope = Optional.ofNullable(Scope.parse(checkScopes))
+        .orElseThrow(() -> new IllegalArgumentException("Missing checkScopes parameter"));
+    this.getScope = Optional.ofNullable(Scope.parse(getScopes))
+        .orElseThrow(() -> new IllegalArgumentException("Missing getScopes parameter"));
     this.oauth2Credential = Objects.requireNonNull(oauth2Credential, "oauth2Credential must not be null");
     this.oauth2Jwk = this.createJwk(this.oauth2Credential);
   }
 
   /** {@inheritDoc} */
   @Override
-  public synchronized String getAccessToken() throws IdmException {
+  public synchronized String getCheckAccessToken() throws IdmException {
 
     final String header = Optional.ofNullable(this.cachedAccessToken)
         .filter(BearerAccessTokenHolder::isValid)
@@ -90,36 +97,45 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
     if (header != null) {
       return header;
     }
-    this.cachedAccessToken = this.obtainAccessToken();
+    this.cachedAccessToken = this.obtainAccessToken(this.clientId.getValue(), this.checkScope);
 
     return this.cachedAccessToken.getBearerAccessToken();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String getGetAccessToken(final String prid) throws IdmException {
+    return this.obtainAccessToken(prid, this.getScope).getBearerAccessToken();
   }
 
   /**
    * Obtains an OAuth2 access token.
    *
+   * @param subject the subject of the access token
+   * @param scope the scope of the access token
    * @return the {@link BearerAccessTokenHolder}
    * @throws IdmException for OAuth2 errors
    */
-  protected abstract BearerAccessTokenHolder obtainAccessToken() throws IdmException;
+  protected abstract BearerAccessTokenHolder obtainAccessToken(final String subject, final Scope scope)
+      throws IdmException;
 
   /**
    * Gets the connector OAuth2 client ID.
    *
    * @return the client ID
    */
-  protected ClientID getClientId() {
-    return this.clientId;
-  }
+  //protected ClientID getClientId() {
+//    return this.clientId;
+//  }
 
   /**
    * Gets the OAuth2 scope(s) to use.
    *
    * @return the scope(s)
    */
-  protected Scope getScope() {
-    return this.scope;
-  }
+//  protected Scope getScope() {
+//    return this.scope;
+//  }
 
   /**
    * Gets the OAuth2 credential - used to sign OAuth2 items.

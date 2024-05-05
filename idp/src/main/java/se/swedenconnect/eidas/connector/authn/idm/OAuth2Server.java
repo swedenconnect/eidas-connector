@@ -15,21 +15,21 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.oauth2.sdk.Scope;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import se.swedenconnect.security.credential.PkiCredential;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
-
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-import se.swedenconnect.security.credential.PkiCredential;
 
 /**
  * An implementation of the {@link OAuth2Handler} interface where the connector itself acts as an OAuth2 Authorization
@@ -54,21 +54,22 @@ public class OAuth2Server extends AbstractOAuth2Handler {
    * Constructor.
    *
    * @param clientId the Connector OAuth2 client ID
-   * @param scopes the OAuth2 scope(s) to use
+   * @param checkScopes the OAuth2 scope(s) to use when making HEAD requests
+   * @param getScopes the OAuth2 scope(s) to use when making GET requests
    * @param issuer the issuer of the access tokens
    * @param audience the audience of the access tokens
    * @param oauth2Credential the credential used to sign the OAuth2 items
    */
-  public OAuth2Server(final String clientId, final List<String> scopes, final String issuer,
-      final String audience, final PkiCredential oauth2Credential) {
-    super(clientId, scopes, oauth2Credential);
+  public OAuth2Server(final String clientId, final List<String> checkScopes, final List<String> getScopes,
+      final String issuer, final String audience, final PkiCredential oauth2Credential) {
+    super(clientId, checkScopes, getScopes, oauth2Credential);
     this.issuer = Objects.requireNonNull(issuer, "issuer must not be null");
     this.audience = Objects.requireNonNull(audience, "audience must not be null");
   }
 
   /** {@inheritDoc} */
   @Override
-  protected BearerAccessTokenHolder obtainAccessToken() throws IdmException {
+  protected BearerAccessTokenHolder obtainAccessToken(final String subject, final Scope scope) throws IdmException {
 
     try {
       final Instant now = Instant.now();
@@ -76,13 +77,14 @@ public class OAuth2Server extends AbstractOAuth2Handler {
 
       final JWTClaimsSet jwt = new JWTClaimsSet.Builder()
           .issuer(this.issuer)
-          .subject(this.getClientId().getValue())
+          .subject(subject)
           .audience(this.audience)
           .expirationTime(Date.from(expires))
           .notBeforeTime(Date.from(now.minusSeconds(10)))
           .issueTime(Date.from(now))
           .jwtID(UUID.randomUUID().toString())
-          .claim("client_id", this.getClientId().getValue())
+          .claim("scope", scope.toString())
+          .claim("client_id", subject)
           .build();
 
       log.debug("Issuing access token: {}", jwt);

@@ -15,17 +15,10 @@
  */
 package se.swedenconnect.eidas.attributes.conversion;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-
+import lombok.extern.slf4j.Slf4j;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.saml.saml2.core.Attribute;
-
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplate;
 import se.swedenconnect.opensaml.eidas.ext.attributes.EidasAttributeValueType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.TransliterationStringType;
@@ -35,6 +28,12 @@ import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.eidas.EidasAttributeValue;
 import se.swedenconnect.spring.saml.idp.attributes.eidas.TransliterationString;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Default implementation for the {@link AttributeConverter} interface.
@@ -92,14 +91,14 @@ public class DefaultAttributeConverter implements AttributeConverter {
     }
     try {
       final XMLObject eidasAttributeValue = template.createAttributeValueObject();
-      if (EidasAttributeValueType.class.isInstance(eidasAttributeValue)) {
+      if (eidasAttributeValue instanceof EidasAttributeValueType) {
         ((EidasAttributeValueType) eidasAttributeValue).parseStringValue(value);
         log.trace("Transformed Swedish eID attribute '{}' into eIDAS attribute '{}' ({})",
             swedishEidAttribute.getName(), template.getName(), template.getFriendlyName());
         return template.createBuilder().value(eidasAttributeValue).build();
       }
       // This is how we hope eIDAS attributes will turn out, so we'll add support for it.
-      else if (XSString.class.isInstance(eidasAttributeValue)) {
+      else if (eidasAttributeValue instanceof XSString) {
         return template.createBuilder().value(eidasAttributeValue).build();
       }
       else {
@@ -233,13 +232,13 @@ public class DefaultAttributeConverter implements AttributeConverter {
         .orElseGet(() -> values.get(0));
 
     final XMLObject eidasValue = values.size() == 1 ? values.get(0) : singleFunc.apply(values);
-    if (EidasAttributeValueType.class.isInstance(eidasValue)) {
+    if (eidasValue instanceof EidasAttributeValueType) {
       final String value = ((EidasAttributeValueType) eidasValue).toStringValue();
       final XSString stringValue = AttributeBuilder.createValueObject(XSString.TYPE_NAME, XSString.class);
       stringValue.setValue(value);
       return stringValue;
     }
-    else if (XSString.class.isInstance(eidasValue)) {
+    else if (eidasValue instanceof XSString) {
       final XSString stringValue = AttributeBuilder.createValueObject(XSString.TYPE_NAME, XSString.class);
       stringValue.setValue(((XSString) eidasValue).getValue());
       return stringValue;
@@ -264,10 +263,10 @@ public class DefaultAttributeConverter implements AttributeConverter {
           .map(TransliterationString::createXmlObject)
           .map(XMLObject.class::cast)
           .toList());
-      return XSString.class.cast(attributeValue).getValue();
+      return ((XSString) attributeValue).getValue();
     }
     else if (values.get(0) instanceof EidasAttributeValue) {
-      return EidasAttributeValue.class.cast(values.get(0)).getValueAsString();
+      return ((EidasAttributeValue<?>) values.get(0)).getValueAsString();
     }
     else {
       return values.get(0).toString();

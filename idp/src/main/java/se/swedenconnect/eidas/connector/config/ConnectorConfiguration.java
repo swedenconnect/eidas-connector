@@ -21,6 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.ssl.NoSuchSslBundleException;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +33,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.util.StringUtils;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import se.swedenconnect.eidas.attributes.AttributeMappingService;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationController;
@@ -71,15 +75,20 @@ public class ConnectorConfiguration {
 
   private final IdentityProviderSettings idpSettings;
 
+  private final SslBundles sslBundles;
+
   /**
    * Connector.
    *
    * @param connectorProperties the configuration properties
+   * @param idpSettings the IdP configuration
+   * @param sslBundles the SSL bundles
    */
   public ConnectorConfiguration(final ConnectorConfigurationProperties connectorProperties,
-      final IdentityProviderSettings idpSettings) {
+      final IdentityProviderSettings idpSettings, final SslBundles sslBundles) {
     this.connectorProperties = connectorProperties;
     this.idpSettings = idpSettings;
+    this.sslBundles = sslBundles;
   }
 
   /**
@@ -211,21 +220,13 @@ public class ConnectorConfiguration {
       return null;
     }
     if (this.connectorProperties.getIdm().getOauth2().getClient() != null) {
-      final OAuth2Client client = new OAuth2Client(
-          this.connectorProperties.getIdm().getOauth2().getClient().getTokenEndpoint(),
-          this.connectorProperties.getIdm().getOauth2().getClientId(),
-          this.connectorProperties.getIdm().getOauth2().getScopes(),
-          connectorCredentials.getOAuth2Credential());
-
-      Optional.ofNullable(this.connectorProperties.getIdm().getOauth2().getClient().getAsIssuerId())
-          .ifPresent(client::setAsIssuerId);
-
-      return client;
+      throw new IllegalArgumentException("OAuth2 client is not yet supported");
     }
     else {
       final OAuth2Server server = new OAuth2Server(
           this.connectorProperties.getIdm().getOauth2().getClientId(),
-          this.connectorProperties.getIdm().getOauth2().getScopes(),
+          this.connectorProperties.getIdm().getOauth2().getCheckScopes(),
+          this.connectorProperties.getIdm().getOauth2().getGetScopes(),
           this.connectorProperties.getIdm().getOauth2().getServer().getIssuer(),
           this.connectorProperties.getIdm().getOauth2().getResourceId(),
           connectorCredentials.getOAuth2Credential());
@@ -243,7 +244,18 @@ public class ConnectorConfiguration {
       if (oauth2 == null) {
         throw new IllegalArgumentException("Missing OAuth2 handler");
       }
-      return new DefaultIdmClient(this.connectorProperties.getIdm().getApiBaseUrl(), oauth2);
+      try {
+        final SslBundle sslBundle = StringUtils.hasText(this.connectorProperties.getIdm().getTrustBundle())
+            ? this.sslBundles.getBundle(this.connectorProperties.getIdm().getTrustBundle())
+            : null;
+        return new DefaultIdmClient(this.connectorProperties.getIdm().getApiBaseUrl(), oauth2, sslBundle);
+      }
+      catch (final NoSuchSslBundleException e) {
+        log.warn("Configured SSL bundle '{}' does not exist - correct configuration!",
+            this.connectorProperties.getIdm().getTrustBundle());
+
+        return new DefaultIdmClient(this.connectorProperties.getIdm().getApiBaseUrl(), oauth2, null);
+      }
     }
     else {
       log.warn("eIDAS Identity Matching feature is turned off");
