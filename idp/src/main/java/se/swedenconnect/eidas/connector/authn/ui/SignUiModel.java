@@ -104,20 +104,23 @@ public class SignUiModel extends BaseUiModel {
               .findFirst()
               .orElse(null);
         }
-
-        final StringBuilder _name = new StringBuilder();
-        if (givenName != null) {
-          _name.append(givenName);
-        }
-        if (surName != null) {
-          if (!_name.isEmpty()) {
-            _name.append(" ");
-          }
-          _name.append(surName);
-        }
-        this.name = !_name.isEmpty() ? _name.toString() : null;
       }
 
+      if (this.swedishId != null && this.swedishId.length() == 12) {
+        this.swedishId = "%s-%s".formatted(this.swedishId.substring(0, 8), this.swedishId.substring(8));
+      }
+
+      final StringBuilder _name = new StringBuilder();
+      if (givenName != null) {
+        _name.append(givenName);
+      }
+      if (surName != null) {
+        if (!_name.isEmpty()) {
+          _name.append(" ");
+        }
+        _name.append(surName);
+      }
+      this.name = !_name.isEmpty() ? _name.toString() : null;
     }
 
     private static String getEidasAttributeValue(final List<? extends Serializable> values) {

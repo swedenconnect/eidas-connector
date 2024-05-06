@@ -34,8 +34,8 @@ import org.apache.hc.core5.ssl.TrustStrategy;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
@@ -43,7 +43,6 @@ import org.springframework.web.client.RestClientResponseException;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 import se.swedenconnect.eidas.connector.config.DevelopmentMode;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
-import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 
 import javax.net.ssl.SSLContext;
 import java.util.Objects;
@@ -112,32 +111,33 @@ public class DefaultIdmClient implements IdmClient {
     final String accessToken = this.oauth2.getCheckAccessToken();
 
     try {
-      final ResponseEntity<Void> result = this.restClient.head()
+      return this.restClient.head()
           .uri(IDM_API_PATH, prid)
           .header(HttpHeaders.AUTHORIZATION, accessToken)
-          .retrieve()
-          .toBodilessEntity();
-
-      if (result.getStatusCode() == HttpStatus.OK) {
-        log.debug("IdM reported that there is an IdM record for '{}'", prid);
-        return true;
-      }
-      else if (result.getStatusCode() == HttpStatus.NOT_FOUND) {
-        log.debug("IdM reported that there is no IdM record for '{}'", prid);
-        return false;
-      }
-      else {
-        throw new IdmException("Error querying for IdM record - unexpected status code: " + result.getStatusCode());
-      }
+          .exchange((request, response) -> {
+            if (response.getStatusCode().is2xxSuccessful()) {
+              log.debug("IdM reported that there is an IdM record for '{}'", prid);
+              return true;
+            }
+            else if (response.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(HttpStatus.NOT_FOUND.value()))) {
+              log.debug("IdM reported that there is no IdM record for '{}'", prid);
+              return false;
+            }
+            else {
+              log.warn("Error checking for IdM record for '{}' - {}", prid, response.getStatusCode());
+              return false;
+            }
+          });
     }
     catch (final RestClientResponseException e) {
+      log.info("Failed to query IdM service", e);
       throw new IdmException("Failure querying for IdM record - " + e.getMessage(), e);
     }
   }
 
   /** {@inheritDoc} */
   @Override
-  public boolean getRecord(final EidasAuthenticationToken token) throws IdmException {
+  public IdmRecord getRecord(final EidasAuthenticationToken token) throws IdmException {
 
     final String prid = this.getPridAttribute(token);
 
@@ -160,6 +160,9 @@ public class DefaultIdmClient implements IdmClient {
       if (response == null) {
         throw new IdmException("Invalid response from IdM API - missing response");
       }
+      if (response.getRecordId() == null) {
+        throw new IdmException("Invalid response from IdM API - missing record ID");
+      }
       if (response.getSwedishId() == null) {
         throw new IdmException("Invalid response from IdM API - missing Swedish ID");
       }
@@ -167,40 +170,22 @@ public class DefaultIdmClient implements IdmClient {
         throw new IdmException("Invalid response from IdM API - missing binding level");
       }
       if (!Objects.equals(prid, response.getEidasUserId())) {
-        log.error("Invalid response from IdM API - expected prid '{}', but was '{}'", prid, response.getEidasUserId());
+        final String msg = "Invalid response from IdM API - expected prid '%s', but was '%s'"
+            .formatted(prid, response.getEidasUserId());
         throw new IdmException("Invalid response from IdM API - mismatching PRID");
       }
-
-      // TODO: audit log
-
-      // Add attributes ...
-      //
-      token.addAttribute(new UserAttribute(
-          AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER,
-          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER,
-          response.getSwedishId()));
-      token.addAttribute(new UserAttribute(
-          AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER_BINDING,
-          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PERSONAL_IDENTITY_NUMBER_BINDING,
-          response.getBindingLevel()));
-
-      log.info("Identity matching record exists for user '{}'", prid);
-
-      return true;
+      return new IdmRecord(response.getRecordId(), response.getSwedishId(), response.getBindingLevel());
     }
     catch (final RestClientResponseException e) {
       if (e.getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
-        log.debug("User '{}' has no Identity Matching record", prid);
-        return false;
+        throw new IdmException("User '%s' has no Identity Matching record".formatted(prid), e);
       }
-      final String msg =
-          "Error querying for IdM record - %d %s".formatted(e.getStatusCode().value(), e.getResponseBodyAsString());
-      log.info("{}", msg, e);
+      final String msg = "Error querying for IdM record - %d %s"
+          .formatted(e.getStatusCode().value(), e.getResponseBodyAsString());
       throw new IdmException(msg, e);
     }
     catch (final Exception e) {
       final String msg = "Error querying for IdM record - %s".formatted(e.getMessage());
-      log.info("{}", msg, e);
       throw new IdmException(msg, e);
     }
   }

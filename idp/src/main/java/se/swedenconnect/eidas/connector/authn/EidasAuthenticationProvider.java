@@ -31,6 +31,7 @@ import org.springframework.util.StringUtils;
 import se.swedenconnect.eidas.attributes.AttributeMappingService;
 import se.swedenconnect.eidas.connector.authn.idm.IdmClient;
 import se.swedenconnect.eidas.connector.authn.idm.IdmException;
+import se.swedenconnect.eidas.connector.authn.idm.IdmRecord;
 import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.sp.AuthnContextClassRefMapper;
@@ -271,7 +272,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       // Map eIDAS attributes to Swedish eID attributes ...
       //
       {
-        final Collection<UserAttribute> mappedAttributes = new ArrayList<>(eidasToken.getAttributes());
+        final Collection<UserAttribute> mappedAttributes = new ArrayList<>();
         eidasToken.getAttributes().stream()
             .map(this.attributeMappingService::toSwedishEidAttribute)
             .filter(Objects::nonNull)
@@ -362,15 +363,27 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     }
   }
 
-  public void obtainIdMRecord(final EidasAuthenticationToken token) {
-    // Query the Identity Matching API to check if there is a mapped Swedish ID available ...
+  public void obtainIdmRecord(final EidasAuthenticationToken token) {
     //
     try {
-      this.idmClient.getRecord(token);
-      // TODO: log
+      final IdmRecord idmRecord = this.idmClient.getRecord(token);
+
+      log.info("Received IdM record for user '{}': swedish-id:'{}', binding:{} [{}]",
+          token.getPrincipal(), idmRecord.getSwedishIdentity(), idmRecord.getBinding(), token.getLogString());
+
+      token.addAttribute(new UserAttribute(
+          AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER,
+          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER,
+          idmRecord.getSwedishIdentity()));
+      token.addAttribute(new UserAttribute(
+          AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER_BINDING,
+          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PERSONAL_IDENTITY_NUMBER_BINDING,
+          idmRecord.getBinding()));
+
+      // TODO: audit log
     }
     catch (final IdmException e) {
-      // TODO
+      log.error("Failed to obtain IdM record: {}", e.getMessage(), e);
     }
   }
 

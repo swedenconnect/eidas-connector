@@ -39,6 +39,7 @@ import se.swedenconnect.eidas.connector.authn.ui.UiLanguageHandler;
 import se.swedenconnect.eidas.connector.config.CookieGenerator;
 import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent;
 import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent.NoDisplayReason;
+import se.swedenconnect.eidas.connector.events.IdentityMatchingConsentEvent;
 import se.swedenconnect.eidas.connector.events.SignatureConsentEvent;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
@@ -165,6 +166,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       if (language != null) {
         this.uiLanguageHandler.setUiLanguage(request, response, language);
       }
+      // If this is a call with the language parameter set it means that we have already processed the request,
+      // and we shouldn't signal any events (or log stuff). That will be confusing.
+      //
       final boolean signalEvent = language == null;
 
       // Selected country from this session.
@@ -173,7 +177,11 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
               request, this.selectedCountrySessionCookieGenerator.getName()))
           .map(Cookie::getValue)
           .orElse(null);
-      log.debug("Selected country from this session: {}", Optional.ofNullable(selectedCountry).orElse("none"));
+
+      if (signalEvent) {
+        log.debug("Selected country from this session: {} [{}]",
+            Optional.ofNullable(selectedCountry).orElse("none"), token.getLogString());
+      }
 
       // The first step is to prompt the user for which country to direct to.
 
@@ -181,10 +189,10 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       // the "select country" view.
       //
       if (isSignatureService.test(token) && selectedCountry != null) {
-        log.info("Request is from a signature service. Will default to previously selected country: '{}'",
-            selectedCountry);
-
         if (signalEvent) {
+          log.info("Request is from a signature service. Will default to previously selected country: '{}' [{}]",
+              selectedCountry, token.getLogString());
+
           this.eventPublisher.publishEvent(new BeforeCountrySelectionEvent(
               token, selectedCountry, NoDisplayReason.SIGN_SERVICE_COUNTRY_FROM_SESSION));
         }
@@ -201,6 +209,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
         // If request contained only one country, we skip the country selection ...
         //
         if (signalEvent) {
+          log.info("Request contains requested country '{}'. Will not display country selection [{}]",
+              selectableCountries.countries().get(0).country(), token.getLogString());
           this.eventPublisher.publishEvent(new BeforeCountrySelectionEvent(token,
               selectableCountries.countries().get(0).country(), NoDisplayReason.FROM_AUTHN_REQUEST));
         }
@@ -241,18 +251,20 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
       @RequestParam(name = "selectedCountry") final String selectedCountry) {
 
+    final Saml2UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
+
     if (ACTION_CANCEL.equals(selectedCountry)) {
-      log.info("User cancelled country selection - aborting authentication");
+      log.info("User cancelled country selection - aborting authentication [{}]", inputToken.getLogString());
       return this.cancel(httpRequest);
     }
 
     try {
-      log.debug("User selected country '{}'", selectedCountry);
+      log.debug("User selected country '{}' [{}]", selectedCountry, inputToken.getLogString());
 
       // Generate AuthnRequest
       //
       final RequestHttpObject<AuthnRequest> authnRequest = this.getProvider().generateAuthnRequest(
-          httpRequest, selectedCountry, this.getInputToken(httpRequest).getAuthnInputToken());
+          httpRequest, selectedCountry, inputToken);
 
       // Save the country as "selected" ...
       //
@@ -355,6 +367,11 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
             final String consent = idmState == IdmSessionState.GAVE_CONSENT ? ACTION_OK : ACTION_CANCEL;
             log.debug("User '{}' has already been prompted for Identity Matching consent ({}) [{}]",
                 token.getPrincipal(), idmState.getValue(), token.getLogString());
+
+            this.eventPublisher.publishEvent(new IdentityMatchingConsentEvent(inputToken, token,
+                idmState == IdmSessionState.GAVE_CONSENT));
+
+            this.getProvider().saveEidasAuthenticationToken(httpRequest, token);
             return this.idmConsentResult(httpRequest, httpResponse, consent);
           }
         }
@@ -365,7 +382,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
           this.getProvider().saveEidasAuthenticationToken(httpRequest, token);
           return this.idmConsentPage(httpRequest, httpResponse, null);
         }
-        // else: User does not have a record ...
+        else {
+          this.idmConsentCookieGenerator.addCookie(IdmSessionState.NO_RECORD.getValue(), httpResponse);
+        }
       }
     }
     else {
@@ -433,14 +452,19 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       @RequestParam(name = "action") final String action) {
 
     final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest);
+    final Saml2UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
 
     if (ACTION_OK.equals(action)) {
       log.debug("User '{}' consented to getting IdM record [{}]", token.getPrincipal(), token.getLogString());
-      this.getProvider().obtainIdMRecord(token);
+      this.eventPublisher.publishEvent(new IdentityMatchingConsentEvent(inputToken, token, true));
+      this.idmConsentCookieGenerator.addCookie(IdmSessionState.GAVE_CONSENT.getValue(), httpResponse);
+
+      this.getProvider().obtainIdmRecord(token);
     }
     else if (ACTION_CANCEL.equals(action)) {
       log.debug("User '{}' did not consent to getting IdM record [{}]", token.getPrincipal(), token.getLogString());
-      // TODO: audit
+      this.eventPublisher.publishEvent(new IdentityMatchingConsentEvent(inputToken, token, false));
+      this.idmConsentCookieGenerator.addCookie(IdmSessionState.DENIED_CONSENT.getValue(), httpResponse);
     }
     else {
       log.warn("Unknown action parameter {}", action);
@@ -551,7 +575,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
     public static IdmSessionState fromString(final String value) {
       for (final IdmSessionState state : IdmSessionState.values()) {
-        if (state.value.equals(value)) {
+        if (state.getValue().equals(value)) {
           return state;
         }
       }

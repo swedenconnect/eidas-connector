@@ -120,6 +120,7 @@ public class ConnectorConfiguration {
             .permitAll()
             .requestMatchers(HttpMethod.GET, EidasSpMetadataController.METADATA_PATH + "/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/v1/mrecord/**").permitAll() // mocked IdM
+            .requestMatchers(HttpMethod.HEAD, "/api/v1/mrecord/**").permitAll() // mocked IdM
             .requestMatchers(HttpMethod.GET, "/images/**", "/error", "/js/**", "/scripts/**", "/webjars/**", "/css/**")
             .permitAll()
             .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()

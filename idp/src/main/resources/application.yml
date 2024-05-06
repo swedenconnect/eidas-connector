@@ -74,7 +74,10 @@ ui:
   selected-country-session-cookie:
     path: ${server.servlet.context-path}
     domain: ${connector.domain}
-  accessibility-url: https://www.swedenconnect.se/om/om-webbplatsen/tillganglighet/svenska-eidas-noden       
+  idm-consent-session-cookie:
+    path: ${server.servlet.context-path}
+    domain: ${connector.domain}
+  accessibility-url: https://www.swedenconnect.se/om/om-webbplatsen/tillganglighet/svenska-eidas-noden
 
 connector:
   backup-directory: target

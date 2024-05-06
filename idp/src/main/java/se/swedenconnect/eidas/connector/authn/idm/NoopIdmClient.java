@@ -41,8 +41,8 @@ public class NoopIdmClient implements IdmClient {
    * Will always return {@code false}.
    */
   @Override
-  public boolean getRecord(final EidasAuthenticationToken token) throws IdmException {
-    return false;
+  public IdmRecord getRecord(final EidasAuthenticationToken token) throws IdmException {
+    throw new IdmException("NoopIdmClient can not get record");
   }
 
 }
