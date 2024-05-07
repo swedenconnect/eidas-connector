@@ -15,16 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.prid.service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.boot.context.properties.bind.BindException;
@@ -35,11 +27,19 @@ import org.springframework.boot.context.properties.source.ConfigurationPropertyS
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Scheduled;
-
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.prid.generator.PridGenerator;
 import se.swedenconnect.eidas.connector.prid.generator.PridGeneratorException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * The PRID service that knows how to generate PRID attributes based on the PRID policy configuration.
@@ -131,22 +131,26 @@ public class PridService implements InitializingBean {
 
   /**
    * Updates the PRID policy configuration by re-loading the policy file.
+   */
+  @Scheduled(timeUnit = TimeUnit.SECONDS, initialDelayString = "${connector.prid.update-interval:600}", fixedRateString = "${connector.prid.update-interval:600}")
+  public void scheduledUpdatePolicy() {
+    this.updatePolicy();
+  }
+
+  /**
+   * Updates the PRID policy configuration by re-loading the policy file.
    *
    * @return the validation result for the updated policy
    */
-  @Scheduled(timeUnit = TimeUnit.SECONDS, initialDelayString = "${connector.prid.update-interval:600}", fixedRateString = "${connector.prid.update-interval:600}")
-  public PridPolicyValidation updatePolicy() {
+  public synchronized PridPolicyValidation updatePolicy() {
 
     log.debug("Updating PRID policy configuration ...");
 
     final PridPolicyValidation validation = new PridPolicyValidation();
     try {
       final PridPolicy newPolicy = this.loadPolicy();
-      final PridPolicy updatedPolicy = this.validate(newPolicy, validation);
-      synchronized (this.policy) {
-        this.policy = updatedPolicy;
-        this.latestValidationResult = validation;
-      }
+      this.policy = this.validate(newPolicy, validation);
+      this.latestValidationResult = validation;
       log.debug("PRID policy configuration was updated");
     }
     catch (final BindException e) {
@@ -167,7 +171,7 @@ public class PridService implements InitializingBean {
   /**
    * Loads the PRID policy from the policy resource file.
    *
-   * @return a {@link PridPolicy} element.
+   * @return a {@link PridPolicy} element
    * @throws IOException for errors reading the policy file
    * @throws BindException for format errors when creating a policy object
    */
@@ -182,15 +186,13 @@ public class PridService implements InitializingBean {
     pfactory.afterPropertiesSet();
 
     final ConfigurationPropertySource propertySource = new MapConfigurationPropertySource(
-        pfactory.getObject()
-            .entrySet()
-            .stream()
-            .collect(
-                Collectors.toMap(e -> e.getKey(), e -> e.getValue())));
+        Optional.ofNullable(pfactory.getObject())
+            .map(p -> p.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
+            .orElseGet(Collections::emptyMap));
 
     final Binder binder = new Binder(propertySource);
     final BindResult<PridPolicy> result = binder.bind("", Bindable.of(PridPolicy.class));
-    PridPolicy pridPolicy;
+    final PridPolicy pridPolicy;
     if (result.isBound()) {
       pridPolicy = result.get();
       log.debug("Successfully loaded policy: {}", pridPolicy);
@@ -234,7 +236,7 @@ public class PridService implements InitializingBean {
       if (p.getValue().getPersistenceClass() == null) {
         result.add(String.format("Invalid entry - Missing 'persistenceClass' for country %s", p.getKey()));
       }
-      if (!p.getValue().getPersistenceClass().matches("A|B|C")) {
+      else if (!p.getValue().getPersistenceClass().matches("[ABC]")) {
         result.add(String.format(
             "Invalid entry - Bad value for 'persistenceClass' for country %s (%s) - A, B or C is required",
             p.getKey(), p.getValue().getPersistenceClass()));
@@ -261,13 +263,11 @@ public class PridService implements InitializingBean {
    * Predicate that tests if the supplied algorithm is valid given the installed PRID generators.
    *
    * @param algorithm the algorithm to test
-   * @return {@code true} if the algorithm is valid and {@code false} otherwise
+   * @return {@code true} if the algorithm is valid and {@code false} otherwise
    */
   protected boolean isValidAlgorithm(final String algorithm) {
     return this.pridGenerators.stream()
-        .filter(p -> p.getAlgorithmName().equalsIgnoreCase(algorithm))
-        .findFirst()
-        .isPresent();
+        .anyMatch(p -> p.getAlgorithmName().equalsIgnoreCase(algorithm));
   }
 
   /**

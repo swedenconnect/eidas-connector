@@ -15,12 +15,15 @@
  */
 package se.swedenconnect.eidas.connector.prid.service;
 
+import java.io.Serial;
+
 /**
  * Exception class that indicates that a country's policy does not exist.
  */
 public class CountryPolicyNotFoundException extends Exception {
 
   /** For serializing. */
+  @Serial
   private static final long serialVersionUID = 2085860820134370793L;
 
   /**

@@ -15,11 +15,11 @@
  */
 package se.swedenconnect.eidas.connector.prid.service;
 
-import java.util.Map;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.Map;
 
 /**
  * Represents a PRID policy.
@@ -60,9 +60,9 @@ public class PridPolicy {
   }
 
   /**
-   * Predicate that tells if there any polices stored.
+   * Predicate that tells if there are any polices stored.
    *
-   * @return {@code true} if no policies are stored and {@code false} otherwise
+   * @return {@code true} if no policies are stored and {@code false} otherwise
    */
   public boolean isEmpty() {
     return this.policy == null || this.policy.isEmpty();

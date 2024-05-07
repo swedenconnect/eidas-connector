@@ -15,12 +15,15 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
+import java.io.Serial;
+
 /**
  * Exception class for PRID generation errors.
  */
 public class PridGeneratorException extends Exception {
 
   /** For serializing. */
+  @Serial
   private static final long serialVersionUID = 8619422156944522349L;
 
   /**

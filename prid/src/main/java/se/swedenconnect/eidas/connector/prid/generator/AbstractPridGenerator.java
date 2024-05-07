@@ -15,14 +15,14 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.regex.Pattern;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Base class for PRID generator implementations.
@@ -31,9 +31,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public abstract class AbstractPridGenerator implements PridGenerator {
-
-  /** The country to which the eIDAS person identifiers are issued for. */
-  private final String destinationCountry;
 
   /** Regexp pattern for checking if the supplied identifier can be processed. */
   private final Pattern personIdentifierPrefixPattern;
@@ -51,9 +48,10 @@ public abstract class AbstractPridGenerator implements PridGenerator {
    * @param destinationCountry country code to which the eIDAS person identifiers are issued for
    */
   public AbstractPridGenerator(final String destinationCountry) {
-    this.destinationCountry = Objects.requireNonNull(destinationCountry, "destinationCountry must not be null").toUpperCase();
+    Objects.requireNonNull(destinationCountry, "destinationCountry must not be null");
     this.personIdentifierPrefixPattern = Pattern.compile(
-        "^[A-Za-z]{2}[\\/](%s|%s)[\\/]".formatted(this.destinationCountry, this.destinationCountry.toLowerCase()));
+        "^[A-Za-z]{2}[\\/](%s|%s)[\\/]".formatted(
+            destinationCountry.toUpperCase(), destinationCountry.toLowerCase()));
   }
 
   /**
