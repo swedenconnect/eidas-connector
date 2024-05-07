@@ -160,8 +160,20 @@ Common for all User Audit Events is that the authentication data contains the fo
 | Parameter | Description | Type |
 | :--- | :--- | :--- |
 | `signature-consented` | Tells whether the user consented to the signature. | Boolean |
-| `user` | The eIDAS PersonIdentifier of the user that accepted/rejected the signature | String |
+| `user` | The eIDAS PersonIdentifier of the user that accepted/rejected the signature. | String |
 
+### Result of Identity Matching Consent
+
+**Type:** `CONNECTOR_IDM_CONSENT_RESULT`
+
+**Description:** If the user has an Identity Matching record stored at the Identity Matching service, the connector needs to obtain the user's consent before reading this record and including the Swedish identity number in the resulting SAML assertion. This event is logged to tell whether the user gave his or hers consent to this, or whether the consent was rejected.
+
+**Audit data:** `idm-consent-result`
+
+| Parameter | Description | Type |
+| :--- | :--- | :--- |
+| `idm-consented` | Tells whether the user consented to releasing his/her Identity Matching record to the connector. | Boolean |
+| `user` | The eIDAS PersonIdentifier of the user that consented/rejected the IdM query. | String |
 
 
 ---

@@ -40,6 +40,9 @@ public class ConnectorAuditEvents {
   /** Event logged when the user has consented/rejected a signature. */
   public static final String CONNECTOR_SIGNATURE_CONSENT_RESULT = "CONNECTOR_SIGNATURE_CONSENT_RESULT";
 
+  /** Event logged when the user has consented/rejected the connector to query for the user's IdM record. */
+  public static final String CONNECTOR_IDM_CONSENT_RESULT = "CONNECTOR_IDM_CONSENT_RESULT";
+
   // hidden
   private ConnectorAuditEvents() {
   }
