@@ -376,7 +376,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
           }
         }
 
-        if (this.getProvider().hasIdmRecord(token)) {
+        if (this.getProvider().hasIdmRecord(token, inputToken)) {
           // If the user has an IdM record, we need to ask for his or hers consent to read it ...
           //
           this.getProvider().saveEidasAuthenticationToken(httpRequest, token);
@@ -459,7 +459,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       this.eventPublisher.publishEvent(new IdentityMatchingConsentEvent(inputToken, token, true));
       this.idmConsentCookieGenerator.addCookie(IdmSessionState.GAVE_CONSENT.getValue(), httpResponse);
 
-      this.getProvider().obtainIdmRecord(token);
+      this.getProvider().obtainIdmRecord(token, inputToken);
     }
     else if (ACTION_CANCEL.equals(action)) {
       log.debug("User '{}' did not consent to getting IdM record [{}]", token.getPrincipal(), token.getLogString());

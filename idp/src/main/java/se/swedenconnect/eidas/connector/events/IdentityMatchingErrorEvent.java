@@ -22,34 +22,33 @@ import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationIn
 import java.io.Serial;
 
 /**
- * Event for the Identity Matching consent.
+ * Event used to signal errors for communications with the Identity Matching service.
  *
  * @author Martin Lindström
  */
-public class IdentityMatchingConsentEvent extends AbstractConnectorAuthnEvent {
+public class IdentityMatchingErrorEvent extends AbstractConnectorAuthnEvent {
 
   @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
-  /** The authentication token. */
+  /** The eIDAS authentication token. */
   private final EidasAuthenticationToken eidasToken;
 
-  /** Whether the user consented to sharing IdM record. */
-  private final boolean consented;
+  /** The error raised during the IdM operation. */
+  private final Exception error;
 
   /**
    * Constructor.
    *
-   * @param inputToken the authentication input token
+   * @param token the authentication input token
    * @param eidasToken the eIDAS authentication token
-   * @param consented whether the user consented to sharing IdM record
+   * @param error the error raised during the IdM operation
    */
-  public IdentityMatchingConsentEvent(
-      final Saml2UserAuthenticationInputToken inputToken, final EidasAuthenticationToken eidasToken,
-      final boolean consented) {
-    super(inputToken);
+  public IdentityMatchingErrorEvent(final Saml2UserAuthenticationInputToken token,
+      final EidasAuthenticationToken eidasToken, final Exception error) {
+    super(token);
     this.eidasToken = eidasToken;
-    this.consented = false;
+    this.error = error;
   }
 
   /**
@@ -62,11 +61,11 @@ public class IdentityMatchingConsentEvent extends AbstractConnectorAuthnEvent {
   }
 
   /**
-   * Returns whether the user has consented to sharing the IdM record.
-   *
-   * @return {@code true} if the user has consented, {@code false} otherwise
+   * Gets the error raised during the IdM operation.
+   * @return an {@link Exception}
    */
-  public boolean isConsented() {
-    return this.consented;
+  public Exception getError() {
+    return this.error;
   }
+
 }

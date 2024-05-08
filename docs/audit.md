@@ -175,6 +175,33 @@ Common for all User Audit Events is that the authentication data contains the fo
 | `idm-consented` | Tells whether the user consented to releasing his/her Identity Matching record to the connector. | Boolean |
 | `user` | The eIDAS PersonIdentifier of the user that consented/rejected the IdM query. | String |
 
+### Identity Matching Record Obtained
+
+**Type:** `CONNECTOR_IDM_RECORD`
+
+**Description:** If the user has an Identity Matching record at the Identity Matching service, and has consented to that the contents of this record (i.e., the Swedish identity number) may be used in the resulting SAML assertion, this event is logged to signal that the record was obtained.
+
+**Audit data:** `idm-record`
+
+| Parameter | Description | Type |
+| :--- | :--- | :--- |
+| `user` | The eIDAS PersonIdentifier of the user. | String |
+| `swedish-id` | The Swedish identity number of the user read from the IdM record. | String |
+| `record-id` | The unique ID of the IdM record. | String |
+
+### Identity Matching Record Error
+
+**Type:** `CONNECTOR_IDM_ERROR`
+
+**Description:** If there is a problem communicating with the Identity Matching service this will not be visible in the flow. Therefore, a separate audit event is created.
+
+**Audit data:** `idm-error`
+
+| Parameter | Description | Type |
+| :--- | :--- | :--- |
+| `user` | The eIDAS PersonIdentifier of the user. | String |
+| `error-message` | The error message. | String |
+
 
 ---
 

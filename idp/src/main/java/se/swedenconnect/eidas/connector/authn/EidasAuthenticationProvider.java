@@ -40,6 +40,8 @@ import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequestGenerator;
 import se.swedenconnect.eidas.connector.authn.sp.EidasResponseValidationException;
 import se.swedenconnect.eidas.connector.events.BeforeEidasAuthenticationEvent;
 import se.swedenconnect.eidas.connector.events.ErrorEidasResponseEvent;
+import se.swedenconnect.eidas.connector.events.IdentityMatchingErrorEvent;
+import se.swedenconnect.eidas.connector.events.IdentityMatchingRecordEvent;
 import se.swedenconnect.eidas.connector.events.ResponseProcessingErrorEvent;
 import se.swedenconnect.eidas.connector.events.SuccessEidasResponseEvent;
 import se.swedenconnect.eidas.connector.prid.generator.PridGeneratorException;
@@ -363,30 +365,6 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     }
   }
 
-  public void obtainIdmRecord(final EidasAuthenticationToken token) {
-    //
-    try {
-      final IdmRecord idmRecord = this.idmClient.getRecord(token);
-
-      log.info("Received IdM record for user '{}': swedish-id:'{}', binding:{} [{}]",
-          token.getPrincipal(), idmRecord.getSwedishIdentity(), idmRecord.getBinding(), token.getLogString());
-
-      token.addAttribute(new UserAttribute(
-          AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER,
-          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER,
-          idmRecord.getSwedishIdentity()));
-      token.addAttribute(new UserAttribute(
-          AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER_BINDING,
-          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PERSONAL_IDENTITY_NUMBER_BINDING,
-          idmRecord.getBinding()));
-
-      // TODO: audit log
-    }
-    catch (final IdmException e) {
-      log.error("Failed to obtain IdM record: {}", e.getMessage(), e);
-    }
-  }
-
   /**
    * Builds a {@link ResponseProcessingInput} for use when processing a SAML response.
    *
@@ -527,15 +505,48 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * Checks if the user identified by the authentication token has an IdM record.
    *
    * @param token the authentication token
+   * @param inputToken the authentication input token
    * @return {@code true} if the user has a record and {@code false} otherwise
    */
-  public boolean hasIdmRecord(final EidasAuthenticationToken token) {
+  public boolean hasIdmRecord(final EidasAuthenticationToken token,
+      final Saml2UserAuthenticationInputToken inputToken) {
     try {
       return this.idmClient.hasRecord(token);
     }
     catch (final IdmException e) {
-      // TODO: log and possibly audit log
+      this.eventPublisher.publishEvent(new IdentityMatchingErrorEvent(inputToken, token, e));
       return false;
+    }
+  }
+
+  /**
+   * Gets the Identity Matching record for the given user and updates the supplied {@link EidasAuthenticationToken}
+   * with the attributes found in the IdM record.
+   * @param token the token to update
+   * @param inputToken the SAML input token
+   */
+  public void obtainIdmRecord(final EidasAuthenticationToken token,
+      final Saml2UserAuthenticationInputToken inputToken) {
+    try {
+      final IdmRecord idmRecord = this.idmClient.getRecord(token);
+
+      log.info("Received IdM record for user '{}': swedish-id:'{}', binding:{} [{}]",
+          token.getPrincipal(), idmRecord.getSwedishIdentity(), idmRecord.getBinding(), token.getLogString());
+
+      token.addAttribute(new UserAttribute(
+          AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER,
+          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER,
+          idmRecord.getSwedishIdentity()));
+      token.addAttribute(new UserAttribute(
+          AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER_BINDING,
+          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PERSONAL_IDENTITY_NUMBER_BINDING,
+          idmRecord.getBinding()));
+
+      this.eventPublisher.publishEvent(new IdentityMatchingRecordEvent(inputToken, token, idmRecord));
+    }
+    catch (final IdmException e) {
+      log.error("Failed to obtain IdM record: {}", e.getMessage(), e);
+      this.eventPublisher.publishEvent(new IdentityMatchingErrorEvent(inputToken, token, e));
     }
   }
 

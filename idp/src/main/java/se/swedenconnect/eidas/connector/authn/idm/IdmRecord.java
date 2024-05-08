@@ -15,6 +15,10 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
+import se.swedenconnect.eidas.connector.ApplicationVersion;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -22,7 +26,10 @@ import java.util.Objects;
  *
  * @author Martin Lindström
  */
-public class IdmRecord {
+public class IdmRecord implements Serializable {
+
+  @Serial
+  private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The ID for the record. */
   private final String id;

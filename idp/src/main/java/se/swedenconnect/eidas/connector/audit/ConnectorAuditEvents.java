@@ -43,6 +43,12 @@ public class ConnectorAuditEvents {
   /** Event logged when the user has consented/rejected the connector to query for the user's IdM record. */
   public static final String CONNECTOR_IDM_CONSENT_RESULT = "CONNECTOR_IDM_CONSENT_RESULT";
 
+  /** Event logged when the connector has obtained an Identity Matching record for the user. */
+  public static final String CONNECTOR_IDM_RECORD = "CONNECTOR_IDM_RECORD";
+
+  /** Event logged when there are errors communicating with the IdM service. */
+  public static final String CONNECTOR_IDM_ERROR = "CONNECTOR_IDM_ERROR";
+
   // hidden
   private ConnectorAuditEvents() {
   }

@@ -25,12 +25,16 @@ import org.springframework.stereotype.Component;
 import se.swedenconnect.eidas.connector.audit.data.EidasAuthnRequestAuditData;
 import se.swedenconnect.eidas.connector.audit.data.EuMetadataChangeAuditData;
 import se.swedenconnect.eidas.connector.audit.data.IdmConsentAuditData;
+import se.swedenconnect.eidas.connector.audit.data.IdmErrorAuditData;
+import se.swedenconnect.eidas.connector.audit.data.IdmRecordAuditData;
 import se.swedenconnect.eidas.connector.audit.data.ProcessingErrorAuditData;
 import se.swedenconnect.eidas.connector.audit.data.SignatureConsentAuditData;
 import se.swedenconnect.eidas.connector.events.BeforeEidasAuthenticationEvent;
 import se.swedenconnect.eidas.connector.events.ErrorEidasResponseEvent;
 import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
 import se.swedenconnect.eidas.connector.events.IdentityMatchingConsentEvent;
+import se.swedenconnect.eidas.connector.events.IdentityMatchingErrorEvent;
+import se.swedenconnect.eidas.connector.events.IdentityMatchingRecordEvent;
 import se.swedenconnect.eidas.connector.events.ResponseProcessingErrorEvent;
 import se.swedenconnect.eidas.connector.events.SignatureConsentEvent;
 import se.swedenconnect.eidas.connector.events.SuccessEidasResponseEvent;
@@ -197,6 +201,44 @@ public class ConnectorAuditPublisher {
         new ConnectorAuthnAuditEvent(ConnectorAuditEvents.CONNECTOR_IDM_CONSENT_RESULT, event.getTimestamp(),
             event.getOriginalSpId(), event.getOriginalAuthnRequestId(),
             IdmConsentAuditData.of(event));
+
+    log.info("Publishing audit event: {}", auditEvent.getLogString());
+
+    this.publish(auditEvent);
+  }
+
+  /**
+   * Handles {@link IdentityMatchingRecordEvent}s and translates them into a
+   * {@value ConnectorAuditEvents#CONNECTOR_IDM_RECORD} event containing
+   * {@link IdmRecordAuditData}.
+   *
+   * @param event the event
+   */
+  @EventListener
+  public void onIdmRecordEvent(final IdentityMatchingRecordEvent event) {
+    final ConnectorAuditEvent auditEvent =
+        new ConnectorAuthnAuditEvent(ConnectorAuditEvents.CONNECTOR_IDM_RECORD, event.getTimestamp(),
+            event.getOriginalSpId(), event.getOriginalAuthnRequestId(),
+            IdmRecordAuditData.of(event));
+
+    log.info("Publishing audit event: {}", auditEvent.getLogString());
+
+    this.publish(auditEvent);
+  }
+
+  /**
+   * Handles {@link IdentityMatchingConsentEvent}s and translates them into a
+   * {@value ConnectorAuditEvents#CONNECTOR_IDM_ERROR} event containing
+   * {@link IdmErrorAuditData}.
+   *
+   * @param event the event
+   */
+  @EventListener
+  public void onIdmErrorEvent(final IdentityMatchingErrorEvent event) {
+    final ConnectorAuditEvent auditEvent =
+        new ConnectorAuthnAuditEvent(ConnectorAuditEvents.CONNECTOR_IDM_ERROR, event.getTimestamp(),
+            event.getOriginalSpId(), event.getOriginalAuthnRequestId(),
+            IdmErrorAuditData.of(event));
 
     log.info("Publishing audit event: {}", auditEvent.getLogString());
 

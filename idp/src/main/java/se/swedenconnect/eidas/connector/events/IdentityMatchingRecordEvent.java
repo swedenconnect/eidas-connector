@@ -17,39 +17,38 @@ package se.swedenconnect.eidas.connector.events;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
+import se.swedenconnect.eidas.connector.authn.idm.IdmRecord;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
 import java.io.Serial;
 
 /**
- * Event for the Identity Matching consent.
- *
+ * Event that is signalled when an Identity Matching record has been obtained.
  * @author Martin Lindström
  */
-public class IdentityMatchingConsentEvent extends AbstractConnectorAuthnEvent {
+public class IdentityMatchingRecordEvent extends AbstractConnectorAuthnEvent {
 
   @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
-  /** The authentication token. */
+  /** The eIDAS authentication token. */
   private final EidasAuthenticationToken eidasToken;
 
-  /** Whether the user consented to sharing IdM record. */
-  private final boolean consented;
+  /** The Identity Matching record obtained. */
+  private final IdmRecord idmRecord;
 
   /**
    * Constructor.
    *
-   * @param inputToken the authentication input token
+   * @param token the authentication input token
    * @param eidasToken the eIDAS authentication token
-   * @param consented whether the user consented to sharing IdM record
+   * @param idmRecord the Identity Matching record
    */
-  public IdentityMatchingConsentEvent(
-      final Saml2UserAuthenticationInputToken inputToken, final EidasAuthenticationToken eidasToken,
-      final boolean consented) {
-    super(inputToken);
+  public IdentityMatchingRecordEvent(final Saml2UserAuthenticationInputToken token,
+      final EidasAuthenticationToken eidasToken, final IdmRecord idmRecord) {
+    super(token);
     this.eidasToken = eidasToken;
-    this.consented = false;
+    this.idmRecord = idmRecord;
   }
 
   /**
@@ -62,11 +61,12 @@ public class IdentityMatchingConsentEvent extends AbstractConnectorAuthnEvent {
   }
 
   /**
-   * Returns whether the user has consented to sharing the IdM record.
+   * Returns the Identity Matching record associated with this event.
    *
-   * @return {@code true} if the user has consented, {@code false} otherwise
+   * @return the Identity Matching record
    */
-  public boolean isConsented() {
-    return this.consented;
+  public IdmRecord getIdmRecord() {
+    return this.idmRecord;
   }
+
 }
