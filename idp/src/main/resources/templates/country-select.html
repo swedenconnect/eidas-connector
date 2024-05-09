@@ -204,11 +204,11 @@
             </button>
           </form>
         </div>
-
-        <footer th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${ui.getAccessibilityUrl()})}"></footer>
       </div>
       <!-- mainRow -->
     </main>
+
+    <footer th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${ui.getAccessibilityUrl()})}"></footer>
 
     <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
     <th:block th:insert="~{fragments/base :: scriptFragment2}"></th:block>

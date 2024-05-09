@@ -26,9 +26,9 @@
           </form>
         </div>
       </div>
-
-      <footer th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${idmConsent.getAccessibilityUrl()})}"></footer>
     </main>
+
+    <footer th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${idmConsent.getAccessibilityUrl()})}"></footer>
 
     <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
     <th:block th:insert="~{fragments/base :: scriptFragment2}"></th:block>
