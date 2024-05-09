@@ -22,19 +22,14 @@
 
           <div class="row">
             <form class="form-horizontal" method="POST" action="#" th:action="@{/extauth/idmresult}" id="consentForm">
+              <button class="btn btn-secondary" type="submit" name="action" value="cancel" id="denyButton">
+                <span th:text="#{connector.ui.idm.consent.button.deny}">Deny Access</span>
+              </button>
               <button type="submit" class="btn btn-primary" name="action" value="ok" id="allowButton">
                 <span th:text="#{connector.ui.idm.consent.button.ok}">Allow Access</span>
               </button>
             </form>
           </div>
-        </div>
-
-        <div class="col-sm-12 return">
-          <form method="POST" action="#" th:action="@{/extauth/idmresult}" id="consentForm2">
-            <button class="btn btn-link" type="submit" name="action" value="cancel">
-              <span th:text="#{connector.ui.idm.consent.button.deny}">Deny Access</span>
-            </button>
-          </form>
         </div>
       </div>
       <!-- mainRow -->
