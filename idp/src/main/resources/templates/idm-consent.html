@@ -12,8 +12,13 @@
           <div class="content-heading">
             <h1 th:text="#{connector.ui.idm.consent.subtitle}">Consent for access to Swedish identity</h1>
           </div>
-          <p class="info content-heading-text">
-            <span th:text="#{connector.ui.idm.consent.initial-text}"> Bla bla </span>
+
+          <p
+            class="info content-heading-text"
+            th:text="#{connector.ui.idm.consent.initial-text(${idmConsent.getSpInfo().getDisplayName()} ?: #{connector.ui.sp-generic-the})}"
+          >
+            You have a Swedish personal identity number or coordination number linked to this foreign eID. Do you want Example organization
+            to get access to this?
           </p>
 
           <form class="form-horizontal" method="POST" action="#" th:action="@{/extauth/idmresult}" id="consentForm">
