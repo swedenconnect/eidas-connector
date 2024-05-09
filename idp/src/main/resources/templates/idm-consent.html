@@ -4,7 +4,7 @@
   <body>
     <div th:replace="~{fragments/header :: splogotype(url = ${idmConsent.getSpInfo().getLogoUrl()})}"></div>
 
-    <div class="container main" id="main">
+    <main class="container main" id="main">
       <div th:replace="~{fragments/header :: language(languages = ${languages}, path='/extauth/idmconsent')}"></div>
 
       <div class="row" id="mainRow">
@@ -40,8 +40,7 @@
       <!-- mainRow -->
 
       <div th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${idmConsent.getAccessibilityUrl()})}"></div>
-    </div>
-    <!-- main -->
+    </main>
 
     <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
     <th:block th:insert="~{fragments/base :: scriptFragment2}"></th:block>

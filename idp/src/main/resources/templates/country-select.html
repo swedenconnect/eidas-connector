@@ -4,7 +4,7 @@
   <body>
     <div th:replace="~{fragments/header :: splogotype(url = ${ui.getSpInfo().getLogoUrl()})}"></div>
 
-    <div class="container main" id="main">
+    <main class="container main" id="main">
       <div th:replace="~{fragments/header :: language(languages = ${languages}, path='/extauth')}"></div>
 
       <th:block th:if="${pingFlag}">
@@ -208,8 +208,7 @@
         <div th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${ui.getAccessibilityUrl()})}"></div>
       </div>
       <!-- mainRow -->
-    </div>
-    <!-- main -->
+    </main>
 
     <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
     <th:block th:insert="~{fragments/base :: scriptFragment2}"></th:block>

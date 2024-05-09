@@ -4,7 +4,7 @@
   <body>
     <div th:replace="~{fragments/header :: logotype}"></div>
 
-    <div class="container main">
+    <main class="container main">
       <div class="row" id="languageDiv">
         <span class="lang float-right">&nbsp;</span>
       </div>
@@ -27,8 +27,7 @@
         <div th:replace="~{fragments/footer :: only-copyright}"></div>
       </div>
       <!-- /#mainDiv -->
-    </div>
-    <!-- /.container main -->
+    </main>
 
     <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
   </body>
