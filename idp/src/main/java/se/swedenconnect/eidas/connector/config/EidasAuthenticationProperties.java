@@ -15,18 +15,17 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.NameID;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import lombok.Getter;
-import lombok.Setter;
 import se.swedenconnect.spring.saml.idp.autoconfigure.settings.CredentialConfigurationProperties;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Configuration properties for our SP (authentication provider).

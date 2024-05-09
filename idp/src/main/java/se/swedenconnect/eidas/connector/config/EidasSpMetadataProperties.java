@@ -15,16 +15,15 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.StringUtils;
+import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataConfigurationProperties;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.StringUtils;
-
-import lombok.Getter;
-import lombok.Setter;
-import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataConfigurationProperties;
 
 /**
  * Configuration properties for the eIDAS SP metadata.

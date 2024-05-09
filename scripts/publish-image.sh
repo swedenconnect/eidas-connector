@@ -20,5 +20,5 @@ fi
 echo "Logging in to ${DOCKER_REPO} ..."
 echo $GITHUB_ACCESS_TOKEN | docker login $DOCKER_REPO -u $GITHUB_USER --password-stdin
 
-mvn -f ${SCRIPT_DIR}/../idp/pom.xml clean install jib:build    
+mvn -f ${SCRIPT_DIR}/../idp/pom.xml clean install jib:build
 

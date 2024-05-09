@@ -19,7 +19,7 @@
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -90,13 +90,7 @@
       <artifactId>eidas-prid</artifactId>
       <version>${project.version}</version>
     </dependency>    
-    
-    <dependency>
-      <groupId>se.swedenconnect.eidas</groupId>
-      <artifactId>eidas-connector-authn</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    
+
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-text</artifactId>
@@ -138,11 +132,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
       <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
     </dependency>
 
 <!--
