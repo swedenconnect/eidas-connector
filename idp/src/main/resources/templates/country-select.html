@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}">
   <head th:insert="~{fragments/base :: headerFragment}"></head>
   <body>
-    <div th:replace="~{fragments/header :: splogotype(url = ${ui.getSpInfo().getLogoUrl()})}"></div>
+    <header th:replace="~{fragments/header :: splogotype(url = ${ui.getSpInfo().getLogoUrl()})}"></header>
 
     <main class="container main" id="main">
       <div th:replace="~{fragments/header :: language(languages = ${languages}, path='/extauth')}"></div>
