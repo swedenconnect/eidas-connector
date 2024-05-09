@@ -1,39 +1,36 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-</head>
-<body>
-
-  <div class="col-sm-12 copyright" th:fragment="only-copyright">
-    <div class="row">
-      <div class="col-6">
-        <img class="float-left" th:src="@{/images/idp-logo.svg}" src="images/idp-logo.svg" height="40" alt="Sweden Connect" /> 
-      </div>
-      <div class="col-6">
-        <p class="float-right" th:text="#{connector.ui.copyright}">Copyright &copy; Service provided by Sweden Connect</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-sm-12 copyright" th:fragment="copyright(accessibilityUrl)">
-    <div class="row">
-      <div class="col-6">
-        <img class="float-left" th:src="@{/images/idp-logo.svg}" src="images/idp-logo.svg" height="40" alt="Sweden Connect" /> 
-      </div>
-      <div class="col-6">
-        <p class="float-right" th:text="#{connector.ui.copyright}">Copyright &copy; Service provided by Sweden Connect</p>
-      </div>
-    </div>
-    <div class="row mt-4" th:if="${accessibilityUrl != null}">
-      <div class="col-12">
-        <div class="d-flex justify-content-end">
-          <a href="#" th:href="${accessibilityUrl}" id="accesability-report">
-            <span th:text="#{connector.ui.accessibility-link}">Accessibility report</span>
-          </a>
+  <head></head>
+  <body>
+    <div class="col-sm-12 copyright" th:fragment="only-copyright">
+      <div class="row">
+        <div class="col-6">
+          <img class="float-left" th:src="@{/images/idp-logo.svg}" src="images/idp-logo.svg" height="40" alt="Sweden Connect" />
+        </div>
+        <div class="col-6">
+          <p class="float-right" th:text="#{connector.ui.copyright}">Copyright &copy; Service provided by Sweden Connect</p>
         </div>
       </div>
     </div>
-  </div>
 
-</body>
+    <div class="col-sm-12 copyright" th:fragment="copyright(accessibilityUrl)">
+      <div class="row">
+        <div class="col-6">
+          <img class="float-left" th:src="@{/images/idp-logo.svg}" src="images/idp-logo.svg" height="40" alt="Sweden Connect" />
+        </div>
+        <div class="col-6">
+          <p class="float-right" th:text="#{connector.ui.copyright}">Copyright &copy; Service provided by Sweden Connect</p>
+        </div>
+      </div>
+      <div class="row mt-4" th:if="${accessibilityUrl != null}">
+        <div class="col-12">
+          <div class="d-flex justify-content-end">
+            <a href="#" th:href="${accessibilityUrl}" id="accesability-report">
+              <span th:text="#{connector.ui.accessibility-link}">Accessibility report</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

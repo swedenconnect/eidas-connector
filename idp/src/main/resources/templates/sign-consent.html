@@ -1,99 +1,94 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}"> 
-<head th:insert="~{fragments/base :: headerFragment}">
-</head>
-<body>
-  
-  <div th:replace="~{fragments/header :: splogotype(url = ${signMessageConsent.getSpInfo().getLogoUrl()})}"></div>
-  
-  <div class="container main" id="main">
-    
-    <div th:replace="~{fragments/header :: language(languages = ${languages}, path='/extauth/consent')}"></div>
-    
-    <div class="row" id="mainRow">
-      
-      <div class="col-sm-12 content-container">
-        
-        <div class="row">
-          <div class="col-sm-12 content-heading">
-            <h1 th:text="#{connector.ui.sign.subtitle}">Electronic Signature Consent</h1>              
-          </div>
-          <div class="col-sm-12">
-            <p class="info content-heading-text">
-              <span th:text="${signMessageConsent.getSpInfo().getDisplayName()} ?: #{connector.ui.sp-generic-a}">
-                Example organization
-              </span>              
-              <span th:text="#{connector.ui.sign.info}" th:if="${signMessageConsent.getTextMessage() != null}">
-                has requested that you approve the signature of the data presented below.
-              </span>
-              <span th:text="#{connector.ui.sign.info.nosigmsg}" th:if="${signMessageConsent.getTextMessage() == null}">
-                has requested your digital signature.
-              </span>              
-            </p>            
-          </div>
-        </div>
-        
-        <div class="full-width sign-message" th:if="${signMessageConsent.getTextMessage() != null}">
-          <div class="row no-gutters">
-            <div class="col">
-              <span th:utext="${signMessageConsent.getTextMessage()}">Text to sign</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="verification">
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}">
+  <head th:insert="~{fragments/base :: headerFragment}"></head>
+  <body>
+    <div th:replace="~{fragments/header :: splogotype(url = ${signMessageConsent.getSpInfo().getLogoUrl()})}"></div>
+
+    <div class="container main" id="main">
+      <div th:replace="~{fragments/header :: language(languages = ${languages}, path='/extauth/consent')}"></div>
+
+      <div class="row" id="mainRow">
+        <div class="col-sm-12 content-container">
           <div class="row">
-            <div class="col-12">
-              <p class="info">
-                <span th:text="#{connector.ui.sign.signing-as}">You are signing as:</span>
+            <div class="col-sm-12 content-heading">
+              <h1 th:text="#{connector.ui.sign.subtitle}">Electronic Signature Consent</h1>
+            </div>
+            <div class="col-sm-12">
+              <p class="info content-heading-text">
+                <span th:text="${signMessageConsent.getSpInfo().getDisplayName()} ?: #{connector.ui.sp-generic-a}">
+                  Example organization
+                </span>
+                <span th:text="#{connector.ui.sign.info}" th:if="${signMessageConsent.getTextMessage() != null}">
+                  has requested that you approve the signature of the data presented below.
+                </span>
+                <span th:text="#{connector.ui.sign.info.nosigmsg}" th:if="${signMessageConsent.getTextMessage() == null}">
+                  has requested your digital signature.
+                </span>
               </p>
             </div>
-            <div class="col-12">
-              <div class="box">
-                <div>
-                  <span class="name dont-break-out" th:text="${signMessageConsent.getUserInfo().getName()}">Name</span>
-                </div>
-                                
-                <div th:if="${signMessageConsent.getUserInfo().getSwedishId() != null}">
-                  <span class="info-line dont-break-out" th:text="${signMessageConsent.getUserInfo().getSwedishId()}">PNR</span>
-                </div>
-                <div th:if="${signMessageConsent.getUserInfo().getSwedishId() == null}">
-                  <span class="info-line dont-break-out" th:text="${signMessageConsent.getUserInfo().getDateOfBirth()}">Date of birth</span>
-                </div>                
-                <div>
-                  <span class="info-line dont-break-out" th:text="#{connector.ui.sign.user.int-id}">International ID:</span>
-                  <span class="info-line dont-break-out" th:text="${signMessageConsent.getUserInfo().getInternationalId()}">ID</span>
-                </div>                
-                
-                <form class="form-horizontal" method="POST" action="#" th:action="@{/extauth/signed}" id="signForm">                  
-                  <button type="submit" class="btn btn-primary" name="action" value="ok" id="okButton">
-                    <span th:text="#{connector.ui.sign.button.sign}">Sign</span>
-                  </button>            
-                </form>
+          </div>
+
+          <div class="full-width sign-message" th:if="${signMessageConsent.getTextMessage() != null}">
+            <div class="row no-gutters">
+              <div class="col">
+                <span th:utext="${signMessageConsent.getTextMessage()}">Text to sign</span>
               </div>
-              
             </div>
           </div>
-        </div> <!-- ./verification -->        
-        
-      </div>
-      
-      <div class="col-sm-12 return">
-        <form method="POST" action="#" th:action="@{/extauth/signed}" id="signForm2">
-          <button class="btn btn-link" type="submit" name="action" value="cancel">
-            <span th:text="#{connector.ui.button.cancel-return}">Cancel and return to the service</span>
-          </button>
-        </form>
-      </div>
-      
-    </div> <!-- mainRow --> 
-    
-    <div th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${signMessageConsent.getAccessibilityUrl()})}"></div>
-    
-  </div> <!-- main -->  
-  
-  <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
-  <th:block th:insert="~{fragments/base :: scriptFragment2}"></th:block>
 
-</body>
+          <div class="verification">
+            <div class="row">
+              <div class="col-12">
+                <p class="info">
+                  <span th:text="#{connector.ui.sign.signing-as}">You are signing as:</span>
+                </p>
+              </div>
+              <div class="col-12">
+                <div class="box">
+                  <div>
+                    <span class="name dont-break-out" th:text="${signMessageConsent.getUserInfo().getName()}">Name</span>
+                  </div>
+
+                  <div th:if="${signMessageConsent.getUserInfo().getSwedishId() != null}">
+                    <span class="info-line dont-break-out" th:text="${signMessageConsent.getUserInfo().getSwedishId()}">PNR</span>
+                  </div>
+                  <div th:if="${signMessageConsent.getUserInfo().getSwedishId() == null}">
+                    <span class="info-line dont-break-out" th:text="${signMessageConsent.getUserInfo().getDateOfBirth()}">
+                      Date of Birth
+                    </span>
+                  </div>
+                  <div>
+                    <span class="info-line dont-break-out" th:text="#{connector.ui.sign.user.int-id}">International ID:</span>
+                    <span class="info-line dont-break-out" th:text="${signMessageConsent.getUserInfo().getInternationalId()}">ID</span>
+                  </div>
+
+                  <form class="form-horizontal" method="POST" action="#" th:action="@{/extauth/signed}" id="signForm">
+                    <button type="submit" class="btn btn-primary" name="action" value="ok" id="okButton">
+                      <span th:text="#{connector.ui.sign.button.sign}">Sign</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- ./verification -->
+        </div>
+
+        <div class="col-sm-12 return">
+          <form method="POST" action="#" th:action="@{/extauth/signed}" id="signForm2">
+            <button class="btn btn-link" type="submit" name="action" value="cancel">
+              <span th:text="#{connector.ui.button.cancel-return}">Cancel and return to the service</span>
+            </button>
+          </form>
+        </div>
+      </div>
+      <!-- mainRow -->
+
+      <div th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${signMessageConsent.getAccessibilityUrl()})}"></div>
+    </div>
+    <!-- main -->
+
+    <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
+    <th:block th:insert="~{fragments/base :: scriptFragment2}"></th:block>
+  </body>
 </html>
