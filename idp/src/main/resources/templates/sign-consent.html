@@ -84,7 +84,7 @@
       </div>
       <!-- mainRow -->
 
-      <div th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${signMessageConsent.getAccessibilityUrl()})}"></div>
+      <footer th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${signMessageConsent.getAccessibilityUrl()})}"></footer>
     </main>
 
     <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>

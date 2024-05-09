@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head></head>
   <body>
-    <div class="col-sm-12 copyright" th:fragment="only-copyright">
+    <footer class="col-sm-12 copyright" th:fragment="only-copyright">
       <div class="row">
         <div class="col-6">
           <img class="float-left" th:src="@{/images/idp-logo.svg}" src="images/idp-logo.svg" height="40" alt="Sweden Connect" />
@@ -11,9 +11,9 @@
           <p class="float-right" th:text="#{connector.ui.copyright}">Copyright &copy; Service provided by Sweden Connect</p>
         </div>
       </div>
-    </div>
+    </footer>
 
-    <div class="col-sm-12 copyright" th:fragment="copyright(accessibilityUrl)">
+    <footer class="col-sm-12 copyright" th:fragment="copyright(accessibilityUrl)">
       <div class="row">
         <div class="col-6">
           <img class="float-left" th:src="@{/images/idp-logo.svg}" src="images/idp-logo.svg" height="40" alt="Sweden Connect" />
@@ -31,6 +31,6 @@
           </div>
         </div>
       </div>
-    </div>
+    </footer>
   </body>
 </html>

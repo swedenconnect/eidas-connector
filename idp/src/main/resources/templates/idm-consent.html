@@ -39,7 +39,7 @@
       </div>
       <!-- mainRow -->
 
-      <div th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${idmConsent.getAccessibilityUrl()})}"></div>
+      <footer th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${idmConsent.getAccessibilityUrl()})}"></footer>
     </main>
 
     <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
