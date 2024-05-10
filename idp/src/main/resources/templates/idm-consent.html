@@ -10,23 +10,27 @@
       <div class="row" id="mainRow">
         <div class="col-sm-12 content-container">
           <div class="content-heading">
-            <h1 th:text="#{connector.ui.idm.consent.subtitle}">Consent for access to Swedish identity</h1>
+            <h1
+              th:text="#{connector.ui.idm.consent.subtitle(${idmConsent.getSpInfo().getDisplayName()} ?: #{connector.ui.sp-generic-the})}"
+            >
+              Share Swedish identifier with Example organization?
+            </h1>
           </div>
 
-          <p
-            class="info content-heading-text"
-            th:text="#{connector.ui.idm.consent.initial-text(${idmConsent.getSpInfo().getDisplayName()} ?: #{connector.ui.sp-generic-the})}"
-          >
-            You have a Swedish personal identity number or coordination number linked to this foreign eID. Do you want Example organization
-            to get access to this?
+          <p th:text="#{connector.ui.idm.consent.initial-text}">
+            You have linked your Swedish personal identity number or coordination number to your european eID.
+          </p>
+
+          <p th:text="#{connector.ui.idm.consent.question(${idmConsent.getSpInfo().getDisplayName()} ?: #{connector.ui.sp-generic-the})}">
+            Do you want to share it with Example organization?
           </p>
 
           <form class="form-inline" method="POST" action="#" th:action="@{/extauth/idmresult}" id="consentForm">
             <button class="btn btn-secondary mr-2" type="submit" name="action" value="cancel" id="denyButton">
-              <span th:text="#{connector.ui.idm.consent.button.deny}">Deny Access</span>
+              <span th:text="#{connector.ui.idm.consent.button.deny}">No, do not share</span>
             </button>
             <button type="submit" class="btn btn-primary" name="action" value="ok" id="allowButton">
-              <span th:text="#{connector.ui.idm.consent.button.ok}">Allow Access</span>
+              <span th:text="#{connector.ui.idm.consent.button.ok}">Yes, share</span>
             </button>
           </form>
         </div>
