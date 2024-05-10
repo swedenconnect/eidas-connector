@@ -59,9 +59,9 @@
             <div class="row" th:if="${ui.getCountries().isEmpty()}">
               <div class="col-sm error">
                 <p class="error-text">
-                  <span th:text="#{connector.ui.no-countries}"
-                    >Currently, there are no available countries that you can use to authenticate.</span
-                  >
+                  <span th:text="#{connector.ui.no-countries}">
+                    Currently, there are no available countries that you can use to authenticate.
+                  </span>
                 </p>
                 <p class="error-text">
                   <button type="submit" class="btn btn-primary" name="selectedCountry" value="cancel">
