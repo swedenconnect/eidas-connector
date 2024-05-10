@@ -21,8 +21,8 @@
             to get access to this?
           </p>
 
-          <form class="form-horizontal" method="POST" action="#" th:action="@{/extauth/idmresult}" id="consentForm">
-            <button class="btn btn-secondary" type="submit" name="action" value="cancel" id="denyButton">
+          <form class="form-inline" method="POST" action="#" th:action="@{/extauth/idmresult}" id="consentForm">
+            <button class="btn btn-secondary mr-2" type="submit" name="action" value="cancel" id="denyButton">
               <span th:text="#{connector.ui.idm.consent.button.deny}">Deny Access</span>
             </button>
             <button type="submit" class="btn btn-primary" name="action" value="ok" id="allowButton">
