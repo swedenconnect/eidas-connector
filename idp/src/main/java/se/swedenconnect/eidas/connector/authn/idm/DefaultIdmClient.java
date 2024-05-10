@@ -45,6 +45,7 @@ import se.swedenconnect.eidas.connector.config.DevelopmentMode;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 
 import javax.net.ssl.SSLContext;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -64,6 +65,9 @@ public class DefaultIdmClient implements IdmClient {
 
   /** The RestClient. */
   private final RestClient restClient;
+
+  /** Constant for binding URI that we should not receive ... */
+  private static final String REGISTERED_USER_BINDING = "http://id.swedenconnect.se/id-binding/process/registered";
 
   /**
    * Constructor.
@@ -174,7 +178,22 @@ public class DefaultIdmClient implements IdmClient {
             .formatted(prid, response.getEidasUserId());
         throw new IdmException("Invalid response from IdM API - mismatching PRID");
       }
-      return new IdmRecord(response.getRecordId(), response.getSwedishId(), response.getBindingLevel());
+      if (response.getBindings() == null || response.getBindings().isEmpty()) {
+        throw new IdmException("Invalid response from IdM API - missing Binding URI");
+      }
+      final List<String> bindings = response.getBindings().stream()
+          .filter(b -> {
+            if (Objects.equals(REGISTERED_USER_BINDING, b)) {
+              log.warn("IdM service included '{}' binding for user '{}' - this is incorrect",
+                  REGISTERED_USER_BINDING, prid);
+              return false;
+            }
+            return true;
+          })
+          .toList();
+      final String bindingUris = String.join(";", bindings);
+
+      return new IdmRecord(response.getRecordId(), response.getSwedishId(), bindingUris);
     }
     catch (final RestClientResponseException e) {
       if (e.getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
