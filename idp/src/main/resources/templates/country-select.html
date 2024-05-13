@@ -102,15 +102,15 @@
           <noscript>
             <dl>
               <dt><span th:text="#{connector.ui.help.1.title}"></span></dt>
-              <dd><span th:utext="#{connector.ui.help.1.text}"></span></dd>
+              <dd><div th:utext="#{connector.ui.help.1.text}"></div></dd>
               <dt><span th:text="#{connector.ui.help.2.title}"></span></dt>
-              <dd><span th:utext="#{connector.ui.help.2.text}"></span></dd>
+              <dd><div th:utext="#{connector.ui.help.2.text}"></div></dd>
               <div th:if="${ui.hasDisabledCountry()}">
                 <dt>
                   <span th:text="#{connector.ui.help.3.title}"></span>
                 </dt>
                 <dd>
-                  <span th:utext="#{connector.ui.help.3.text}"></span>
+                  <div th:utext="#{connector.ui.help.3.text}"></div>
                 </dd>
               </div>
             </dl>
