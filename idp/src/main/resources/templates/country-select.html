@@ -113,6 +113,17 @@
                 <dt th:text="#{connector.ui.help.3.title}"></dt>
                 <dd th:utext="#{connector.ui.help.3.text}"></dd>
               </div>
+              <div th:if="${ui.getIdm().isActive()}">
+                <dt th:text="#{connector.ui.help.4.title}"></dt>
+                <dd>
+                  <p th:text="#{connector.ui.help.4.text}"></p>
+                  <p>
+                    <a href="#" th:href="${ui.getIdm().getServiceUrl()}">
+                      <span th:text="#{connector.ui.help.4.link}"></span>
+                    </a>
+                  </p>
+                </dd>
+              </div>
             </dl>
           </noscript>
 
@@ -191,6 +202,33 @@
                   </div>
                 </div>
                 <!-- card -->
+                <div class="card" th:if="${ui.getIdm().isActive()}">
+                  <div class="card-header" id="helpHeading4">
+                    <h2 class="mb-0">
+                      <button
+                        class="btn btn-accordion btn-block text-left"
+                        type="button"
+                        data-toggle="collapse"
+                        data-target="#collapse4"
+                        aria-expanded="false"
+                        aria-controls="collapse4"
+                      >
+                        <span th:text="#{connector.ui.help.4.title}">I have a Swedish personal identity number or coordination number</span>
+                        <span class="btn-accordion-arrow"></span>
+                      </button>
+                    </h2>
+                  </div>
+                  <div id="collapse4" class="collapse" aria-labelledby="helpHeading4" data-parent="#helpAccordion">
+                    <div class="card-body">
+                      <p th:text="#{connector.ui.help.4.text}"></p>
+                      <p>
+                        <a href="#" th:href="${ui.getIdm().getServiceUrl()}">
+                          <span th:text="#{connector.ui.help.4.link}"></span>
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
