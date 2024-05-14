@@ -116,7 +116,7 @@ select:focus {
   background-color: #f7f7f7;
 }
 .btn-accordion[aria-expanded="true"] .btn-accordion-arrow::after {
-  background-image: url(../images/arrow_dropdown_up.svg);
+  transform: rotate(-180deg);
 }
 
 .show .card-body {
@@ -136,6 +136,7 @@ select:focus {
   background-image: url(../images/arrow_dropdown.svg);
   background-repeat: no-repeat;
   background-position: center;
+  transition: all 0.35s ease;
 }
 
 * {
