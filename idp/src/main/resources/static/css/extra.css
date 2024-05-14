@@ -141,3 +141,12 @@ select:focus {
 * {
   min-height: 0.01px;
 }
+
+aside {
+  font-size: 0.875rem;
+}
+
+aside h2 {
+  font-size: 1em;
+  font-weight: bold;
+}

@@ -39,16 +39,20 @@
 
             <!--/* Identity matching */-->
             <div class="col-sm-12" th:if="${ui.getIdm().isActive()}">
-              <p class="info content-heading-text">
-                <span
-                  th:text="#{connector.ui.select-country.info.idm(${ui.getSpInfo().getDisplayName()} ?: #{connector.ui.sp-generic-the})}"
-                >
-                  Example organization requires a Swedish personal identity number to grant access to the service. See
-                </span>
-                <a href="#" th:href="${ui.getIdm().getServiceUrl()}" id="idm-link">
-                  <span th:text="#{connector.ui.idm-link}">Link to IdM Service</span> </a
-                >.
-              </p>
+              <aside class="card mb-4 bg-light">
+                <div class="card-body">
+                  <h2 class="card-title" th:text="#{connector.ui.select-country.info.idm-title}">
+                    Got a Swedish personal identity number or coordination number?
+                  </h2>
+                  <span th:text="#{connector.ui.select-country.info.idm-text}">
+                    You can get access to more services at Swedish authorities and organisations if you connect your Swedish personal
+                    identity number or coordination number to your eID.
+                  </span>
+                  <a href="#" th:href="${ui.getIdm().getServiceUrl()}" id="idm-link" class="stretched-link">
+                    <span th:text="#{connector.ui.idm-link}">Read more</span>
+                  </a>
+                </div>
+              </aside>
             </div>
           </div>
           <!-- chooseEidCountry -->
