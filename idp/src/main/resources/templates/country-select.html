@@ -2,6 +2,14 @@
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}">
   <head th:insert="~{fragments/base :: headerFragment}"></head>
   <body>
+    <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+      <symbol id="external-link" viewBox="0 0 12 12">
+        <path
+          d="M10.1 6.8h-.3a.4.4 0 0 0-.4.3v3.6a.1.1 0 0 1-.2.2h-8a.1.1 0 0 1 0-.2v-8H5a.4.4 0 0 0 .3-.5V2a.4.4 0 0 0-.3-.4H1a1.1 1.1 0 0 0-1 1V11a1.1 1.1 0 0 0 1.1 1h8.3a1.1 1.1 0 0 0 1.1-1.1V7a.4.4 0 0 0-.4-.3ZM11.7 0H8.5a.3.3 0 0 0-.2.5l1.2 1.1L3 8a.3.3 0 0 0 0 .4l.5.5A.3.3 0 0 0 4 9l6.4-6.4 1.1 1.2a.3.3 0 0 0 .5-.2V.3a.3.3 0 0 0-.3-.3Z"
+        />
+      </symbol>
+    </svg>
+
     <header th:replace="~{fragments/header :: splogotype(url = ${ui.getSpInfo().getLogoUrl()})}"></header>
 
     <main class="container main" id="main">
@@ -48,8 +56,9 @@
                     You can get access to more services at Swedish authorities and organisations if you connect your Swedish personal
                     identity number or coordination number to your eID.
                   </span>
-                  <a href="#" th:href="${ui.getIdm().getServiceUrl()}" id="idm-link" class="stretched-link">
+                  <a href="#" th:href="${ui.getIdm().getServiceUrl()}" id="idm-link" class="external-link stretched-link">
                     <span th:text="#{connector.ui.idm-link}">Read more</span>
+                    <svg class="link-icon" aria-hidden="true"><use xlink:href="#external-link"></use></svg>
                   </a>
                 </div>
               </aside>
@@ -113,8 +122,9 @@
                 <div th:if="${ui.getIdm().isActive()}">
                   <p th:text="#{connector.ui.help.2.idm-text}"></p>
                   <p>
-                    <a href="#" th:href="${ui.getIdm().getServiceUrl()}">
+                    <a href="#" th:href="${ui.getIdm().getServiceUrl()}" class="external-link">
                       <span th:text="#{connector.ui.help.2.idm-link}"></span>
+                      <svg class="link-icon" aria-hidden="true"><use xlink:href="#external-link"></use></svg>
                     </a>
                   </p>
                 </div>
@@ -128,8 +138,9 @@
                 <dd>
                   <p th:text="#{connector.ui.help.4.text}"></p>
                   <p>
-                    <a href="#" th:href="${ui.getIdm().getServiceUrl()}">
+                    <a href="#" th:href="${ui.getIdm().getServiceUrl()}" class="external-link">
                       <span th:text="#{connector.ui.help.4.link}"></span>
+                      <svg class="link-icon" aria-hidden="true"><use xlink:href="#external-link"></use></svg>
                     </a>
                   </p>
                 </dd>
@@ -188,8 +199,9 @@
                       <div th:if="${ui.getIdm().isActive()}">
                         <p th:text="#{connector.ui.help.2.idm-text}"></p>
                         <p>
-                          <a href="#" th:href="${ui.getIdm().getServiceUrl()}">
+                          <a href="#" th:href="${ui.getIdm().getServiceUrl()}" class="external-link">
                             <span th:text="#{connector.ui.help.2.idm-link}"></span>
+                            <svg class="link-icon" aria-hidden="true"><use xlink:href="#external-link"></use></svg>
                           </a>
                         </p>
                       </div>
@@ -240,8 +252,9 @@
                     <div class="card-body">
                       <p th:text="#{connector.ui.help.4.text}"></p>
                       <p>
-                        <a href="#" th:href="${ui.getIdm().getServiceUrl()}">
+                        <a href="#" th:href="${ui.getIdm().getServiceUrl()}" class="external-link">
                           <span th:text="#{connector.ui.help.4.link}"></span>
+                          <svg class="link-icon" aria-hidden="true"><use xlink:href="#external-link"></use></svg>
                         </a>
                       </p>
                     </div>
