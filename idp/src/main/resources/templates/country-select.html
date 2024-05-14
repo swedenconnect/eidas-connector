@@ -108,7 +108,17 @@
               <dt th:text="#{connector.ui.help.1.title}"></dt>
               <dd th:utext="#{connector.ui.help.1.text}"></dd>
               <dt th:text="#{connector.ui.help.2.title}"></dt>
-              <dd th:utext="#{connector.ui.help.2.text}"></dd>
+              <dd>
+                <div th:utext="#{connector.ui.help.2.text}"></div>
+                <div th:if="${ui.getIdm().isActive()}">
+                  <p th:text="#{connector.ui.help.2.idm-text}"></p>
+                  <p>
+                    <a href="#" th:href="${ui.getIdm().getServiceUrl()}">
+                      <span th:text="#{connector.ui.help.2.idm-link}"></span>
+                    </a>
+                  </p>
+                </div>
+              </dd>
               <div th:if="${ui.hasDisabledCountry()}">
                 <dt th:text="#{connector.ui.help.3.title}"></dt>
                 <dd th:utext="#{connector.ui.help.3.text}"></dd>
@@ -175,6 +185,14 @@
                   <div id="collapse2" class="collapse" aria-labelledby="helpHeading2" data-parent="#helpAccordion">
                     <div class="card-body">
                       <div th:utext="#{connector.ui.help.2.text}"></div>
+                      <div th:if="${ui.getIdm().isActive()}">
+                        <p th:text="#{connector.ui.help.2.idm-text}"></p>
+                        <p>
+                          <a href="#" th:href="${ui.getIdm().getServiceUrl()}">
+                            <span th:text="#{connector.ui.help.2.idm-link}"></span>
+                          </a>
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
