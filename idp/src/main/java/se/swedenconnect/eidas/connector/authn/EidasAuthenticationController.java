@@ -92,6 +92,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   /** Session cookie generator for IdM consents. */
   private final CookieGenerator idmConsentCookieGenerator;
 
+  /** Cookie generator for controlling whether the IdM banner should be hidden. */
+  private final CookieGenerator idmHideBannerCookieGenerator;
+
   /** For assisting us in selecting possible countries (to display). */
   private final EidasCountryHandler countryHandler;
 
@@ -109,6 +112,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @param selectedCountryCookieGenerator cookie generator for saving selected country
    * @param selectedCountrySessionCookieGenerator session cookie generator for saving selected country
    * @param idmConsentCookieGenerator session cookie generator for IdM consents
+   * @param idmHideBannerCookieGenerator cookie generator for controlling whether the IdM banner should be hidden
    * @param countryHandler for assisting us in selecting possible countries (to display)
    * @param eventPublisher the event publisher
    */
@@ -120,6 +124,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       @Qualifier("selectedCountryCookieGenerator") final CookieGenerator selectedCountryCookieGenerator,
       @Qualifier("selectedCountrySessionCookieGenerator") final CookieGenerator selectedCountrySessionCookieGenerator,
       @Qualifier("idmConsentSessionCookieGenerator") final CookieGenerator idmConsentCookieGenerator,
+      @Qualifier("idmHideBannerCookieGenerator") final CookieGenerator idmHideBannerCookieGenerator,
       final EidasCountryHandler countryHandler,
       final ApplicationEventPublisher eventPublisher) {
     this.provider = provider;
@@ -130,6 +135,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     this.selectedCountryCookieGenerator = selectedCountryCookieGenerator;
     this.selectedCountrySessionCookieGenerator = selectedCountrySessionCookieGenerator;
     this.idmConsentCookieGenerator = idmConsentCookieGenerator;
+    this.idmHideBannerCookieGenerator = idmHideBannerCookieGenerator;
     this.countryHandler = countryHandler;
     this.eventPublisher = eventPublisher;
   }
@@ -221,7 +227,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       final ModelAndView modelAndView = new ModelAndView("country-select");
       modelAndView.addObject("pingFlag", this.provider.isPingRequest(token));
       modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
-      modelAndView.addObject("ui", this.eidasUiModelFactory.createUiModel(token, selectableCountries.countries()));
+      modelAndView.addObject("ui", this.eidasUiModelFactory.createUiModel(
+          request, token, selectableCountries.countries()));
 
       if (signalEvent) {
         this.eventPublisher.publishEvent(new BeforeCountrySelectionEvent(token, selectableCountries.countries().stream()
@@ -384,6 +391,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
         }
         else {
           this.idmConsentCookieGenerator.addCookie(IdmSessionState.NO_RECORD.getValue(), httpResponse);
+          this.idmHideBannerCookieGenerator.addCookie("false", httpResponse);
         }
       }
     }
@@ -458,6 +466,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       log.debug("User '{}' consented to getting IdM record [{}]", token.getPrincipal(), token.getLogString());
       this.eventPublisher.publishEvent(new IdentityMatchingConsentEvent(inputToken, token, true));
       this.idmConsentCookieGenerator.addCookie(IdmSessionState.GAVE_CONSENT.getValue(), httpResponse);
+      this.idmHideBannerCookieGenerator.addCookie("true", httpResponse);
 
       this.getProvider().obtainIdmRecord(token, inputToken);
     }
@@ -465,6 +474,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       log.debug("User '{}' did not consent to getting IdM record [{}]", token.getPrincipal(), token.getLogString());
       this.eventPublisher.publishEvent(new IdentityMatchingConsentEvent(inputToken, token, false));
       this.idmConsentCookieGenerator.addCookie(IdmSessionState.DENIED_CONSENT.getValue(), httpResponse);
+      this.idmHideBannerCookieGenerator.addCookie("false", httpResponse);
     }
     else {
       log.warn("Unknown action parameter {}", action);

@@ -15,10 +15,14 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.web.util.WebUtils;
 import se.swedenconnect.eidas.connector.authn.EidasCountryHandler.SelectableCountry;
+import se.swedenconnect.eidas.connector.config.CookieGenerator;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
@@ -27,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Factory bean for creating {@link EidasUiModel} objects.
@@ -41,6 +46,9 @@ public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
   /** The IdM Service URL. */
   private final String idmServiceUrl;
 
+  /** Cookie generator for controlling whether the IdM banner should be hidden. */
+  private final CookieGenerator idmHideBannerCookieGenerator;
+
   /**
    * Constructor.
    *
@@ -50,20 +58,24 @@ public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
    * @param idmServiceUrl the IdM service URL
    */
   public EidasUiModelFactory(final UiLanguageHandler languageHandler, final String accessibilityUrl,
-      final MessageSource messageSource, final String idmServiceUrl) {
+      final MessageSource messageSource, final String idmServiceUrl,
+      final CookieGenerator idmHideBannerCookieGenerator) {
     super(languageHandler, accessibilityUrl);
     this.messageSource = messageSource;
     this.idmServiceUrl = idmServiceUrl;
+    this.idmHideBannerCookieGenerator = idmHideBannerCookieGenerator;
   }
 
   /**
    * Creates an {@link EidasUiModel}.
    *
+   * @param request the HTTP servlet request
    * @param token the SAML input token
    * @param selectableCountries available countries
    * @return an {@link EidasUiModel}
    */
-  public EidasUiModel createUiModel(final Saml2UserAuthenticationInputToken token,
+  public EidasUiModel createUiModel(final HttpServletRequest request,
+      final Saml2UserAuthenticationInputToken token,
       final List<SelectableCountry> selectableCountries) {
 
     final EidasUiModel uiModel = new EidasUiModel();
@@ -72,10 +84,16 @@ public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
     final Locale locale = LocaleContextHolder.getLocale();
 
     if (this.idmServiceUrl != null) {
-      uiModel.setIdm(new EidasUiModel.IdmInfo(true, this.idmServiceUrl));
+      final boolean hideBanner =
+          Optional.ofNullable(WebUtils.getCookie(request, this.idmHideBannerCookieGenerator.getName()))
+              .map(Cookie::getValue)
+              .map(Boolean::parseBoolean)
+              .orElse(false);
+
+      uiModel.setIdm(new EidasUiModel.IdmInfo(true, !hideBanner, this.idmServiceUrl));
     }
     else {
-      uiModel.setIdm(new EidasUiModel.IdmInfo(false, null));
+      uiModel.setIdm(new EidasUiModel.IdmInfo(false, false, null));
     }
     uiModel.setCountries(this.getUiCountries(selectableCountries, locale));
 

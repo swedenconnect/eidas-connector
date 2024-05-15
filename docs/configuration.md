@@ -160,6 +160,7 @@ Matching API. Therefore, OAuth2 configuration settings need to be supplied.
 | `ui.selected-`<br />`country-cookie.*` | Cookie settings for the cookie that is used to remember a user's selection of a country (in between sessions). See [Cookie Configuration](#cookie-configuration) below. | [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java) | Default settings for the cookie with the name set to `selectedCountry` |
 | `ui.selected-country-`<br />`session-cookie.*` | Cookie settings for the cookie that is used to remember a user's selection of a country within a session. Used for signing services. See [Cookie Configuration](#cookie-configuration) below. | [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java) | Default settings for the cookie with the name set to `selectedCountrySession` |
 | `ui.idm-consent-`<br />`session-cookie.*` | Cookie settings for the cookie that is used to remember a user's consent to obtaining the user's Identity Matching within a session. Used for signing services. See [Cookie Configuration](#cookie-configuration) below. | [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java) | Default settings for the cookie with the name set to `idmConsentSession` |
+| `ui.idm-hide-`<br />`banner-cookie.*` | Cookie settings for the cookie that controls whether the IdM banner (at the country selection page) should be hidden. See [Cookie Configuration](#cookie-configuration) below. | [UiConfigurationProperties.Cookie](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/UiConfigurationProperties.java) | Default settings for the cookie with the name set to `idmHideBanner` |
 | `ui.accessibility-url` | URL to the eIDAS Connector web accessibility report. | String | - |
 
 <a name="cookie-configuration"></a>
@@ -174,8 +175,8 @@ Matching API. Therefore, OAuth2 configuration settings need to be supplied.
 | Property | Description | Type | Default value |
 | :--- | :--- | :--- | :--- | 
 | `name` | The cookie name. | String | - |
-| `domain` | The cookie domain. | String | - |
-| `path` | The cookie path. | String | `"/"` |
+| `domain` | The cookie domain. | String | `${connector.domain}` |
+| `path` | The cookie path. | String | `${server.servlet.context-path}` |
 
 ---
 

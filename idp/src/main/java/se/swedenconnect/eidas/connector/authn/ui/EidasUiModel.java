@@ -64,6 +64,11 @@ public class EidasUiModel extends BaseUiModel {
     private boolean active;
 
     /**
+     * Should the banner be displayed?
+     */
+    private boolean showBanner;
+
+    /**
      * The URL to the IdM service.
      */
     private String serviceUrl;

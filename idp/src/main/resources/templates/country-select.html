@@ -43,7 +43,7 @@
       </p>
 
       <!--/* Identity matching */-->
-      <aside th:if="${ui.getIdm().isActive()}" class="card mb-4 bg-light">
+      <aside th:if="${ui.getIdm().isShowBanner()}" class="card mb-4 bg-light">
         <div class="card-body">
           <h2 class="card-title" th:text="#{connector.ui.select-country.info.idm-title}">
             Got a Swedish personal identity number or coordination number?
@@ -52,13 +52,8 @@
                 You can get access to more services at Swedish authorities and organisations if you connect your Swedish personal identity
                 number or coordination number to your eID.
               </span>
-          <a
-              href="#"
-              th:href="${ui.getIdm().getServiceUrl()}"
-              id="idm-link"
-              class="external-link stretched-link"
-              aria-describedby="idm-text"
-          >
+          <a href="#" th:href="${ui.getIdm().getServiceUrl()}" id="idm-link"
+             class="external-link stretched-link" aria-describedby="idm-text">
             <span th:text="#{connector.ui.idm-link}">Read more</span>
             <svg class="link-icon" aria-hidden="true">
               <use xlink:href="#external-link"></use>
