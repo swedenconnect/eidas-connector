@@ -160,6 +160,20 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
   }
 
   /**
+   * Gets a {@link CookieGenerator} that controls whether the IdM banner should be hidden.
+   *
+   * @return {@link CookieGenerator}
+   */
+  @Bean("idmHideBannerCookieGenerator")
+  CookieGenerator idmHideBannerCookieGenerator() {
+    return new CookieGenerator(
+        this.ui.getIdmHideBannerCookie().getName(),
+        this.ui.getIdmHideBannerCookie().getDomain(),
+        this.ui.getIdmHideBannerCookie().getPath(),
+        Duration.ofDays(365));
+  }
+
+  /**
    * Gets the {@link EidasUiModelFactory} bean
    *
    * @param uiLanguageHandler the language handler
@@ -168,7 +182,8 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
   @Bean
   EidasUiModelFactory eidasUiModelFactory(final UiLanguageHandler uiLanguageHandler) {
     return new EidasUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl(), this.messageSource,
-        Optional.ofNullable(this.idm).map(IdmProperties::getServiceUrl).orElse(null));
+        Optional.ofNullable(this.idm).map(IdmProperties::getServiceUrl).orElse(null),
+        this.idmHideBannerCookieGenerator());
   }
 
   /**

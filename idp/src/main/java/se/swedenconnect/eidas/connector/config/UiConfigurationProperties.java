@@ -19,6 +19,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.util.Assert;
@@ -43,6 +44,15 @@ public class UiConfigurationProperties implements InitializingBean {
 
   /** Default cookie name for storing the IdM consent session cookie. */
   public static final String DEFAULT_IDM_CONSENT_COOKIE_NAME = "idmConsentSession";
+
+  /** Default cookie name for the cookie that controls displaying of the IdM banner. */
+  public static final String DEFAULT_IDM_HIDE_BANNER_COOKIE_NAME = "idmHideBanner";
+
+  @Value("${server.servlet.context-path:/}")
+  private String contextPath;
+
+  @Value("${connector.domain:#{null}}")
+  private String domain;
 
   /**
    * The UI language settings.
@@ -72,6 +82,13 @@ public class UiConfigurationProperties implements InitializingBean {
   private final Cookie idmConsentSessionCookie = new Cookie();
 
   /**
+   * The cookie that controls whether the IdM banner (at the country selection page) should be hidden.
+   */
+  @NestedConfigurationProperty
+  @Getter
+  private final Cookie idmHideBannerCookie = new Cookie();
+
+  /**
    * The accessibility report URL.
    */
   @Getter
@@ -88,11 +105,37 @@ public class UiConfigurationProperties implements InitializingBean {
     if (!StringUtils.hasText(this.selectedCountryCookie.getName())) {
       this.selectedCountryCookie.setName(DEFAULT_SELECTED_COUNTRY_COOKIE_NAME);
     }
+    this.checkPath(this.selectedCountryCookie);
+    this.checkDomain(this.selectedCountryCookie);
+
     if (!StringUtils.hasText(this.selectedCountrySessionCookie.getName())) {
       this.selectedCountrySessionCookie.setName(DEFAULT_SELECTED_COUNTRY_SESSION_COOKIE_NAME);
     }
+    this.checkPath(this.selectedCountrySessionCookie);
+    this.checkDomain(this.selectedCountrySessionCookie);
+
     if (!StringUtils.hasText(this.idmConsentSessionCookie.getName())) {
       this.idmConsentSessionCookie.setName(DEFAULT_IDM_CONSENT_COOKIE_NAME);
+    }
+    this.checkPath(this.idmConsentSessionCookie);
+    this.checkDomain(this.idmConsentSessionCookie);
+
+    if (!StringUtils.hasText(this.idmHideBannerCookie.getName())) {
+      this.idmHideBannerCookie.setName(DEFAULT_IDM_HIDE_BANNER_COOKIE_NAME);
+    }
+    this.checkPath(this.idmHideBannerCookie);
+    this.checkDomain(this.idmHideBannerCookie);
+  }
+
+  private void checkPath(final Cookie cookie) {
+    if (!StringUtils.hasText(cookie.getPath())) {
+      cookie.setPath(this.contextPath);
+    }
+  }
+
+  private void checkDomain(final Cookie cookie) {
+    if (!StringUtils.hasText(cookie.getDomain())) {
+      cookie.setDomain(this.domain);
     }
   }
 

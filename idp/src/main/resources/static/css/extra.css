@@ -18,23 +18,13 @@ select:focus {
   box-shadow: none !important;
 }
 
-dt {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-}
-
-dd p:last-child {
-  margin-bottom: 2rem;
-}
-
 .sign-message {
   margin-bottom: 30px;
 }
 
 .sign-message div {
   margin: 0;
-  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 @media (min-width: 576px) {
@@ -126,7 +116,7 @@ dd p:last-child {
   background-color: #f7f7f7;
 }
 .btn-accordion[aria-expanded="true"] .btn-accordion-arrow::after {
-  background-image: url(../images/arrow_dropdown_up.svg);
+  transform: rotate(-180deg);
 }
 
 .show .card-body {
@@ -146,8 +136,32 @@ dd p:last-child {
   background-image: url(../images/arrow_dropdown.svg);
   background-repeat: no-repeat;
   background-position: center;
+  transition: all 0.35s ease;
 }
 
 * {
   min-height: 0.01px;
+}
+
+aside {
+  font-size: 0.875rem;
+}
+
+aside h2 {
+  font-size: 1em;
+  font-weight: bold;
+}
+
+a.external-link,
+a.external-link:hover {
+  text-decoration: none;
+}
+a.external-link span {
+  text-decoration: underline;
+}
+.link-icon {
+  fill: currentColor;
+  width: 1em;
+  height: 1em;
+  margin-top: -2px;
 }

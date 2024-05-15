@@ -1,58 +1,41 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}"> 
-<head th:insert="~{fragments/base :: headerFragment}">
-</head>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}">
+<head th:insert="~{fragments/base :: headerFragment}"></head>
 <body>
-  
-  <div th:replace="~{fragments/header :: splogotype(url = ${idmConsent.getSpInfo().getLogoUrl()})}"></div>
-  
-  <div class="container main" id="main">
-    
-    <div th:replace="~{fragments/header :: language(languages = ${languages}, path='/extauth/idmconsent')}"></div>
-    
-    <div class="row" id="mainRow">
-      
-      <div class="col-sm-12 content-container">
-        
-        <div class="row">
-          <div class="col-sm-12 content-heading">
-            <h1 th:text="#{connector.ui.idm.consent.subtitle}">Consent for access to Swedish identity</h1>
-          </div>
-          <div class="col-sm-12">
-            <p class="info content-heading-text">
-              <span th:text="#{connector.ui.idm.consent.initial-text}" >
-                Bla bla
-              </span>
-            </p>            
-          </div>
-        </div>
+<header th:replace="~{fragments/header :: splogotype(url = ${idmConsent.getSpInfo().getLogoUrl()})}"></header>
 
-        <div class="row">
-          <form class="form-horizontal" method="POST" action="#" th:action="@{/extauth/idmresult}" id="consentForm">
-            <button type="submit" class="btn btn-primary" name="action" value="ok" id="allowButton">
-              <span th:text="#{connector.ui.idm.consent.button.ok}">Allow Access</span>
-            </button>
-          </form>
-        </div>
+<main class="container main" id="main">
+  <div th:replace="~{fragments/header :: language(languages = ${languages}, path='/extauth/idmconsent')}"></div>
 
+  <div class="row" id="mainRow">
+    <div class="col-sm-12 content-container">
+      <div class="content-heading">
+        <h1 th:text="#{connector.ui.idm.consent.subtitle}">Share Swedish identifier?</h1>
       </div>
-      
-      <div class="col-sm-12 return">
-        <form method="POST" action="#" th:action="@{/extauth/idmresult}" id="consentForm2">
-          <button class="btn btn-link" type="submit" name="action" value="cancel">
-            <span th:text="#{connector.ui.idm.consent.button.deny}">Deny Access</span>
-          </button>
-        </form>
-      </div>
-      
-    </div> <!-- mainRow --> 
-    
-    <div th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${idmConsent.getAccessibilityUrl()})}"></div>
-    
-  </div> <!-- main -->  
-  
-  <th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
-  <th:block th:insert="~{fragments/base :: scriptFragment2}"></th:block>
 
+      <p th:text="#{connector.ui.idm.consent.initial-text}">
+        You have linked your Swedish personal identity number or coordination number to your european eID.
+      </p>
+
+      <p th:text="#{connector.ui.idm.consent.question(${idmConsent.getSpInfo().getDisplayName()} ?: #{connector.ui.sp-generic-the})}">
+        Do you want to share it with Example organization?
+      </p>
+
+      <form class="form-inline" method="POST" action="#" th:action="@{/extauth/idmresult}" id="consentForm">
+        <button class="btn btn-secondary mr-2" type="submit" name="action" value="cancel" id="denyButton">
+          <span th:text="#{connector.ui.idm.consent.button.deny}">No, do not share</span>
+        </button>
+        <button type="submit" class="btn btn-primary" name="action" value="ok" id="allowButton">
+          <span th:text="#{connector.ui.idm.consent.button.ok}">Yes, share</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${idmConsent.getAccessibilityUrl()})}"></footer>
+
+<th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
+<th:block th:insert="~{fragments/base :: scriptFragment2}"></th:block>
 </body>
 </html>

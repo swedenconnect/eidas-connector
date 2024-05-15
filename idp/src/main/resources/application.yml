@@ -67,15 +67,6 @@ ui:
       text: Svenska
     - tag: en
       text: English
-  selected-country-cookie:
-    path: ${server.servlet.context-path}
-    domain: ${connector.domain}
-  selected-country-session-cookie:
-    path: ${server.servlet.context-path}
-    domain: ${connector.domain}
-  idm-consent-session-cookie:
-    path: ${server.servlet.context-path}
-    domain: ${connector.domain}
   accessibility-url: https://www.swedenconnect.se/om/om-webbplatsen/tillganglighet/svenska-eidas-noden
 
 connector:
