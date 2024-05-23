@@ -32,7 +32,6 @@ import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.xmlsec.DecryptionConfiguration;
 import org.opensaml.xmlsec.DecryptionParameters;
-import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xmlsec.encryption.support.ChainingEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver;
@@ -50,14 +49,23 @@ import se.swedenconnect.eidas.connector.authn.EidasAuthenticationController;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequestGenerator;
 import se.swedenconnect.eidas.connector.authn.sp.EidasResponseProcessor;
+import se.swedenconnect.opensaml.OpenSAMLInitializer;
 import se.swedenconnect.opensaml.common.utils.LocalizedString;
 import se.swedenconnect.opensaml.eidas.ext.NodeCountry;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.EntityDescriptorContainer;
 import se.swedenconnect.opensaml.saml2.metadata.EntityDescriptorUtils;
-import se.swedenconnect.opensaml.saml2.metadata.build.*;
+import se.swedenconnect.opensaml.saml2.metadata.build.AssertionConsumerServiceBuilder;
+import se.swedenconnect.opensaml.saml2.metadata.build.ContactPersonBuilder;
+import se.swedenconnect.opensaml.saml2.metadata.build.DigestMethodBuilder;
+import se.swedenconnect.opensaml.saml2.metadata.build.EntityAttributesBuilder;
+import se.swedenconnect.opensaml.saml2.metadata.build.EntityDescriptorBuilder;
+import se.swedenconnect.opensaml.saml2.metadata.build.OrganizationBuilder;
+import se.swedenconnect.opensaml.saml2.metadata.build.SPSSODescriptorBuilder;
+import se.swedenconnect.opensaml.saml2.metadata.build.SigningMethodBuilder;
 import se.swedenconnect.opensaml.saml2.response.replay.MessageReplayChecker;
 import se.swedenconnect.opensaml.saml2.response.validation.ResponseValidationSettings;
+import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
 import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.DecryptionUtils;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.SAMLObjectDecrypter;
@@ -163,16 +171,11 @@ public class EidasAuthenticationConfiguration {
   SAMLObjectDecrypter samlObjectDecrypter(
       @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration) {
     final List<PkiCredential> credentials = this.credentials.getSpEncryptCredentials();
-    final boolean pkcs11Mode = credentials.get(0).isHardwareCredential();
-    final List<Credential> creds = new ArrayList<>();
-    credentials.forEach(c -> {
-      if (c instanceof OpenSamlCredential openSamlCred) {
-        creds.add(openSamlCred);
-      }
-      else {
-        creds.add(new OpenSamlCredential(c));
-      }
-    });
+
+    final List<Credential> creds = new ArrayList<>(credentials.size());
+    credentials.forEach(c -> creds.add(new OpenSamlCredential(c)));
+    final boolean pkcs11Mode = credentials.stream().anyMatch(PkiCredential::isHardwareCredential);
+
     final DecryptionParameters decryptionParameters = this.createDecryptionParameters(securityConfiguration, creds);
     final SAMLObjectDecrypter decrypter = new SAMLObjectDecrypter(decryptionParameters);
     decrypter.setPkcs11Workaround(pkcs11Mode);
@@ -186,10 +189,9 @@ public class EidasAuthenticationConfiguration {
 
     final DecryptionParameters parameters = new DecryptionParameters();
 
-    DecryptionConfiguration config = ConfigurationService.get(DecryptionConfiguration.class);
-    if (config == null) {
-      config = DefaultSecurityConfigurationBootstrap.buildDefaultDecryptionConfiguration();
-    }
+    final DecryptionConfiguration config = Optional.ofNullable(securityConfiguration.getDecryptionConfiguration())
+        .orElseGet(() -> Optional.ofNullable(ConfigurationService.get(DecryptionConfiguration.class))
+            .orElseGet(ExtendedDefaultSecurityConfigurationBootstrap::buildDefaultDecryptionConfiguration));
 
     parameters.setExcludedAlgorithms(config.getExcludedAlgorithms());
     parameters.setIncludedAlgorithms(config.getIncludedAlgorithms());
@@ -280,7 +282,14 @@ public class EidasAuthenticationConfiguration {
     final EntityDescriptorBuilder builder;
     if (mprop.getTemplate() != null) {
       final EntityDescriptor template = (EntityDescriptor) XMLObjectSupport.unmarshallFromInputStream(
-          XMLObjectProviderRegistrySupport.getParserPool(), mprop.getTemplate().getInputStream());
+          Optional.ofNullable(XMLObjectProviderRegistrySupport.getParserPool()).orElseGet(() -> {
+            try {
+              return OpenSAMLInitializer.createDefaultParserPool();
+            }
+            catch (final ComponentInitializationException e) {
+              throw new RuntimeException(e);
+            }
+          }), mprop.getTemplate().getInputStream());
       builder = new EntityDescriptorBuilder(template);
     }
     else {

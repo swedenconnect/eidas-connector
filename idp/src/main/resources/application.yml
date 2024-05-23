@@ -92,6 +92,8 @@ connector:
         - 1.0
         - 1.1
         - 1.2
+        - 1.3
+        - 1.4
       organization:
         names:
           en: Sweden Connect
@@ -133,7 +135,6 @@ connector:
         - algorithm: http://www.w3.org/2009/xmlenc11#aes256-gcm
         - algorithm: http://www.w3.org/2009/xmlenc11#aes192-gcm
         - algorithm: http://www.w3.org/2009/xmlenc11#aes128-gcm
-        - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
         - algorithm: http://www.w3.org/2009/xmlenc11#rsa-oaep
 
 saml:

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>eidas-connector</artifactId>
   <packaging>jar</packaging>
-  
+
   <parent>
     <groupId>se.swedenconnect.eidas</groupId>
     <artifactId>eidas-connector-parent</artifactId>
     <version>2.0.0-SNAPSHOT</version>
-  </parent>  
+  </parent>
 
   <name>Sweden Connect :: eIDAS :: Connector :: IdP</name>
   <description>Sweden Connect eIDAS Connector IdP</description>
@@ -41,87 +41,87 @@
       <email>martin@idsec.se</email>
       <organization>IDsec Solutions AB</organization>
       <organizationUrl>https://www.idsec.se</organizationUrl>
-    </developer>    
+    </developer>
   </developers>
-  
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>17</java.version>
   </properties>
-    
+
   <dependencyManagement>
 
     <dependencies>
-      
+
     </dependencies>
-  </dependencyManagement>  
-  
+  </dependencyManagement>
+
   <dependencies>
-        
+
     <dependency>
       <groupId>se.swedenconnect.spring.saml.idp</groupId>
       <artifactId>saml-idp-spring-boot-starter</artifactId>
       <version>${saml.idp.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>se.swedenconnect.opensaml</groupId>
       <artifactId>opensaml-addons</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>se.swedenconnect.opensaml</groupId>
       <artifactId>opensaml-swedish-eid</artifactId>
-    </dependency>      
-    
+    </dependency>
+
     <dependency>
       <groupId>se.swedenconnect.opensaml</groupId>
       <artifactId>opensaml-eidas</artifactId>
-    </dependency>    
-    
+    </dependency>
+
     <dependency>
       <groupId>se.swedenconnect.eidas</groupId>
       <artifactId>eidas-attribute-handling</artifactId>
       <version>${project.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>se.swedenconnect.eidas</groupId>
       <artifactId>eidas-prid</artifactId>
       <version>${project.version}</version>
-    </dependency>    
+    </dependency>
 
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-text</artifactId>
       <version>1.10.0</version>
     </dependency>
-    
+
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>2.15.1</version>
-    </dependency>    
-    
+    </dependency>
+
     <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>nimbus-jose-jwt</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>oauth2-oidc-sdk</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-thymeleaf</artifactId>      
-    </dependency>    
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -134,12 +134,12 @@
       <optional>true</optional>
     </dependency>
 
-<!--
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-devtools</artifactId>
-    </dependency>
-    -->
+    <!--
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-devtools</artifactId>
+        </dependency>
+        -->
 
     <dependency>
       <groupId>org.webjars</groupId>
@@ -168,37 +168,37 @@
       <artifactId>jquery</artifactId>
       <version>3.6.1</version>
     </dependency>
-<!--
-    <dependency>
-      <groupId>org.redisson</groupId>
-      <artifactId>redisson-spring-boot-starter</artifactId>
-      <version>3.20.1</version>
-      <exclusions>
-        <exclusion>
+    <!--
+        <dependency>
           <groupId>org.redisson</groupId>
-          <artifactId>redisson-spring-data-30</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+          <artifactId>redisson-spring-boot-starter</artifactId>
+          <version>3.20.1</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.redisson</groupId>
+              <artifactId>redisson-spring-data-30</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
 
-    <dependency>
-      <groupId>org.redisson</groupId>
-      <artifactId>redisson-spring-data-27</artifactId>
-      <version>3.20.1</version>
-    </dependency>
+        <dependency>
+          <groupId>org.redisson</groupId>
+          <artifactId>redisson-spring-data-27</artifactId>
+          <version>3.20.1</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.springframework.session</groupId>
-      <artifactId>spring-session-data-redis</artifactId>
-    </dependency>
--->    
+        <dependency>
+          <groupId>org.springframework.session</groupId>
+          <artifactId>spring-session-data-redis</artifactId>
+        </dependency>
+    -->
     <!-- Test -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
@@ -208,8 +208,8 @@
   </dependencies>
 
   <build>
-    
-    <plugins>      
+
+    <plugins>
 
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -224,7 +224,7 @@
           </execution>
         </executions>
       </plugin>
-      
+
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -235,7 +235,7 @@
           </excludes>
         </configuration>
       </plugin>
-      
+
       <plugin>
         <groupId>com.google.cloud.tools</groupId>
         <artifactId>jib-maven-plugin</artifactId>
@@ -257,7 +257,8 @@
               <jvmFlag>-Dorg.apache.xml.security.ignoreLineBreaks=true</jvmFlag>
             </jvmFlags>
             <labels>
-              <org.opencontainers.image.source>https://github.com/swedenconnect/eidas-connector</org.opencontainers.image.source>
+              <org.opencontainers.image.source>https://github.com/swedenconnect/eidas-connector
+              </org.opencontainers.image.source>
               <org.opencontainers.image.description>Swedish eIDAS Connector</org.opencontainers.image.description>
               <org.opencontainers.image.licenses>Apache-2.0</org.opencontainers.image.licenses>
             </labels>
@@ -301,7 +302,7 @@
       </plugin>
 
     </plugins>
-        
+
     <testResources>
       <testResource>
         <directory>src/test/resources</directory>
@@ -313,9 +314,9 @@
       <testResource>
         <directory>src/test/resources</directory>
         <filtering>false</filtering>
-      </testResource>      
+      </testResource>
     </testResources>
-        
+
   </build>
 
 </project>

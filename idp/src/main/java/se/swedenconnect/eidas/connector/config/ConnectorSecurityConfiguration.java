@@ -17,8 +17,7 @@ package se.swedenconnect.eidas.connector.config;
 
 import org.opensaml.xmlsec.DecryptionConfiguration;
 import org.opensaml.xmlsec.SignatureValidationConfiguration;
-
-import se.swedenconnect.opensaml.eidas.xmlsec.EidasSecurityConfiguration;
+import se.swedenconnect.opensaml.eidas.xmlsec.Eidas_1_4_SecurityConfiguration;
 import se.swedenconnect.opensaml.eidas.xmlsec.RelaxedEidasSecurityConfiguration;
 import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 
@@ -27,7 +26,7 @@ import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
  *
  * @author Martin Lindström
  */
-public class ConnectorSecurityConfiguration extends EidasSecurityConfiguration {
+public class ConnectorSecurityConfiguration extends Eidas_1_4_SecurityConfiguration {
 
   /** Relaxed configuration for what we receive. */
   private final RelaxedConfiguration relaxedConfiguration = new RelaxedConfiguration();
@@ -61,6 +60,5 @@ public class ConnectorSecurityConfiguration extends EidasSecurityConfiguration {
     }
 
   }
-
 
 }
