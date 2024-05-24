@@ -32,6 +32,13 @@ import java.util.List;
 public class IdmProperties implements InitializingBean {
 
   /**
+   * Whether the IdM feature is active or not.
+   */
+  @Getter
+  @Setter
+  private Boolean active;
+
+  /**
    * The URL to the Identity Matching service (for inclusion in views).
    */
   @Getter
@@ -63,18 +70,23 @@ public class IdmProperties implements InitializingBean {
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() throws Exception {
-    Assert.hasText(this.serviceUrl, "connector.idm.serviceUrl must be assigned");
-    if (this.apiBaseUrl == null) {
-      this.apiBaseUrl = this.serviceUrl;
-      if (this.apiBaseUrl.endsWith("/")) {
-        this.apiBaseUrl = this.apiBaseUrl.substring(0, this.apiBaseUrl.length() - 1);
+    if (this.active == null) {
+      this.active = Boolean.FALSE;
+    }
+    if (this.active) {
+      Assert.hasText(this.serviceUrl, "connector.idm.serviceUrl must be assigned");
+      if (this.apiBaseUrl == null) {
+        this.apiBaseUrl = this.serviceUrl;
+        if (this.apiBaseUrl.endsWith("/")) {
+          this.apiBaseUrl = this.apiBaseUrl.substring(0, this.apiBaseUrl.length() - 1);
+        }
       }
+      if (this.apiBaseUrl.endsWith("/")) {
+        throw new IllegalArgumentException("connector.idm.api-base-url must not end with a /");
+      }
+      Assert.notNull(this.oauth2, "connector.idm.oauth2.* must be set");
+      this.oauth2.afterPropertiesSet();
     }
-    if (this.apiBaseUrl.endsWith("/")) {
-      throw new IllegalArgumentException("connector.idm.api-base-url must not end with a /");
-    }
-    Assert.notNull(this.oauth2, "connector.idm.oauth2.* must be set");
-    this.oauth2.afterPropertiesSet();
   }
 
   /**

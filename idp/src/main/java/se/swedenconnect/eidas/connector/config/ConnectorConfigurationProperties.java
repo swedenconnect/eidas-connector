@@ -111,9 +111,9 @@ public class ConnectorConfigurationProperties implements InitializingBean {
   /**
    * Identity Matching configuration.
    */
+  @NestedConfigurationProperty
   @Getter
-  @Setter
-  private IdmProperties idm = new IdmProperties();
+  private final IdmProperties idm = new IdmProperties();
 
   /** {@inheritDoc} */
   @Override
@@ -141,11 +141,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
     this.eidas.afterPropertiesSet();
     this.euMetadata.afterPropertiesSet();
     this.prid.afterPropertiesSet();
-
-    if (this.idm != null) {
-      this.idm.afterPropertiesSet();
-    }
-
+    this.idm.afterPropertiesSet();
   }
 
   /**

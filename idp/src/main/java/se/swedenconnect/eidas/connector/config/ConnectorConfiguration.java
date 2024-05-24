@@ -38,7 +38,11 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import se.swedenconnect.eidas.attributes.AttributeMappingService;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationController;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
-import se.swedenconnect.eidas.connector.authn.idm.*;
+import se.swedenconnect.eidas.connector.authn.idm.DefaultIdmClient;
+import se.swedenconnect.eidas.connector.authn.idm.IdmClient;
+import se.swedenconnect.eidas.connector.authn.idm.NoopIdmClient;
+import se.swedenconnect.eidas.connector.authn.idm.OAuth2Handler;
+import se.swedenconnect.eidas.connector.authn.idm.OAuth2Server;
 import se.swedenconnect.eidas.connector.authn.metadata.DefaultEuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequestGenerator;
@@ -106,12 +110,12 @@ public class ConnectorConfiguration {
   SecurityFilterChain defaultSecurityFilterChain(final HttpSecurity http) throws Exception {
     http
         .securityContext(sc -> sc.requireExplicitSave(false))
-//        .csrf(csrf -> {
-//          csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
-//          final CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-//          requestHandler.setCsrfRequestAttributeName(null);
-//          csrf.csrfTokenRequestHandler(requestHandler);
-//        })
+        //        .csrf(csrf -> {
+        //          csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+        //          final CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        //          requestHandler.setCsrfRequestAttributeName(null);
+        //          csrf.csrfTokenRequestHandler(requestHandler);
+        //        })
         .csrf(c -> c.ignoringRequestMatchers(EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**"))
         .authorizeHttpRequests((authorize) -> authorize
             .requestMatchers(HttpMethod.POST, EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**").permitAll()
@@ -141,9 +145,9 @@ public class ConnectorConfiguration {
       configurer
           .authnRequestProcessor(c -> c.authenticationProvider(
               pc -> pc.signatureMessagePreprocessor(signMessageProcessor)));
-//          .idpMetadataEndpoint(mdCustomizer -> {
-//            mdCustomizer.entityDescriptorCustomizer(this.metadataCustomizer());
-//          });
+      //          .idpMetadataEndpoint(mdCustomizer -> {
+      //            mdCustomizer.entityDescriptorCustomizer(this.metadataCustomizer());
+      //          });
     };
   }
 
@@ -151,21 +155,21 @@ public class ConnectorConfiguration {
   //
   private Customizer<EntityDescriptor> metadataCustomizer() {
     return e -> {
-//      final RequestedPrincipalSelection rps = RequestedPrincipalSelectionBuilder.builder()
-//          .matchValues(MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_PRID).build(),
-//              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER).build(),
-//              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER).build(),
-//              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER)
-//                  .build())
-//          .build();
-//
-//      final IDPSSODescriptor ssoDescriptor = e.getIDPSSODescriptor(SAMLConstants.SAML20P_NS);
-//      Extensions extensions = ssoDescriptor.getExtensions();
-//      if (extensions == null) {
-//        extensions = (Extensions) XMLObjectSupport.buildXMLObject(Extensions.DEFAULT_ELEMENT_NAME);
-//        ssoDescriptor.setExtensions(extensions);
-//      }
-//      extensions.getUnknownXMLObjects().add(rps);
+      //      final RequestedPrincipalSelection rps = RequestedPrincipalSelectionBuilder.builder()
+      //          .matchValues(MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_PRID).build(),
+      //              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER).build(),
+      //              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER).build(),
+      //              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER)
+      //                  .build())
+      //          .build();
+      //
+      //      final IDPSSODescriptor ssoDescriptor = e.getIDPSSODescriptor(SAMLConstants.SAML20P_NS);
+      //      Extensions extensions = ssoDescriptor.getExtensions();
+      //      if (extensions == null) {
+      //        extensions = (Extensions) XMLObjectSupport.buildXMLObject(Extensions.DEFAULT_ELEMENT_NAME);
+      //        ssoDescriptor.setExtensions(extensions);
+      //      }
+      //      extensions.getUnknownXMLObjects().add(rps);
     };
   }
 
@@ -215,8 +219,8 @@ public class ConnectorConfiguration {
   }
 
   @Bean
-  OAuth2Handler oauth2Handler(final ConnectorCredentials connectorCredentials) throws Exception {
-    if (this.connectorProperties.getIdm() == null) {
+  OAuth2Handler oauth2Handler(final ConnectorCredentials connectorCredentials) {
+    if (!this.connectorProperties.getIdm().getActive()) {
       // IdM-feature is not active
       return null;
     }
@@ -241,7 +245,7 @@ public class ConnectorConfiguration {
 
   @Bean
   IdmClient idmClient(@Autowired(required = false) final OAuth2Handler oauth2) {
-    if (this.connectorProperties.getIdm() != null) {
+    if (this.connectorProperties.getIdm().getActive()) {
       if (oauth2 == null) {
         throw new IllegalArgumentException("Missing OAuth2 handler");
       }

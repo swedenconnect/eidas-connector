@@ -31,7 +31,7 @@ See the [Configuration](https://docs.swedenconnect.se/saml-identity-provider/con
 | `connector.eidas.*` | The configuration for the eIDAS authentication. See [eIDAS Authentication Configuration](#eidas-authentication-configuration) below. | [EidasAuthenticationProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/EidasAuthenticationProperties.java) | - |
 | `connector.eu-metadata.*` | Configuration for retrieval of aggregated EU metadata. See [EU Metadata Configuration](#eu-metadata-configuration) below. | [EuMetadataProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/ConnectorConfigurationProperties.java) | - |
 | `connector.prid.*` | Configuration for the [PRID Service](#prid-configuration). | [PridServiceProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/ConnectorConfigurationProperties.java) | - |
-| `connector.idm.*` | Configuration for integration against the [Identity Matching Service](#idm-configuration). Optional - if not configured, no IdM integration is active. | [IdmProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/IdmProperties.java) | `null` |
+| `connector.idm.*` | Configuration for integration against the [Identity Matching Service](#idm-configuration). | [IdmProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/IdmProperties.java) | Not active |
 
 <a name="connector-idp-configuration"></a>
 ### Connector IdP Configuration
@@ -133,6 +133,7 @@ Matching API. Therefore, OAuth2 configuration settings need to be supplied.
 
 | Property | Description | Type | Default value |
 | :--- | :--- | :--- | :--- |
+| `active` | Whether the IdM feature is active or not. | Boolean | `false` |
 | `service-url` | The URL to the Identity Matching service. Will be displayed in the "select country" view. | String | - |
 | `api-base-url` | The base URL for the Identity Matching Query API. Must not end with a '/'. | String | `service-url` |
 | `trust-bundle` | A reference to a Spring Boot SSL Bundle holding the trust configuration for TLS-calls against the IdM server. If no bundle is set, the system defaults are used. | String | - |
