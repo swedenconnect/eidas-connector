@@ -33,7 +33,7 @@ public class EidasConnectorApplication {
    *
    * @param args program arguments
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     SpringApplication.run(EidasConnectorApplication.class, args);
   }
 

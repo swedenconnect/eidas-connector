@@ -22,7 +22,7 @@ import lombok.Setter;
 
 /**
  * Configuration properties for Tomcat AJP.
- * 
+ *
  * @author Martin Lindström
  * @author Felix Hellman
  */

@@ -16,6 +16,7 @@
 package se.swedenconnect.eidas.connector.config;
 
 import lombok.extern.slf4j.Slf4j;
+import net.shibboleth.shared.component.ComponentInitializationException;
 import net.shibboleth.shared.httpclient.HttpClientBuilder;
 import net.shibboleth.shared.httpclient.HttpClientSupport;
 import net.shibboleth.shared.httpclient.TLSSocketFactoryBuilder;
@@ -29,7 +30,12 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import se.swedenconnect.eidas.connector.config.ConnectorConfigurationProperties.EuMetadataProperties;
-import se.swedenconnect.opensaml.saml2.metadata.provider.*;
+import se.swedenconnect.opensaml.OpenSAMLInitializer;
+import se.swedenconnect.opensaml.saml2.metadata.provider.AbstractMetadataProvider;
+import se.swedenconnect.opensaml.saml2.metadata.provider.FilesystemMetadataProvider;
+import se.swedenconnect.opensaml.saml2.metadata.provider.HTTPMetadataProvider;
+import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
+import se.swedenconnect.opensaml.saml2.metadata.provider.StaticMetadataProvider;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.TrustManager;
@@ -57,8 +63,8 @@ public class MetadataProviderUtils {
    */
   public static MetadataProvider createMetadataProvider(final EuMetadataProperties config) throws Exception {
 
-    AbstractMetadataProvider provider;
-    if (config.getLocation() instanceof UrlResource urlResource && !urlResource.isFile()) {
+    final AbstractMetadataProvider provider;
+    if (config.getLocation() instanceof final UrlResource urlResource && !urlResource.isFile()) {
       if (config.getBackupLocation() == null) {
         log.warn("No backup-location for metadata source {} - Using a backup file is strongly recommended",
             config.getLocation());
@@ -78,8 +84,17 @@ public class MetadataProviderUtils {
       provider = new FilesystemMetadataProvider(config.getLocation().getFile());
     }
     else {
-      final Document doc =
-          XMLObjectProviderRegistrySupport.getParserPool().parse(config.getLocation().getInputStream());
+      final Document doc = Optional.ofNullable(XMLObjectProviderRegistrySupport.getParserPool())
+          .orElseGet(() -> {
+            try {
+              return OpenSAMLInitializer.createDefaultParserPool();
+            }
+            catch (final ComponentInitializationException e) {
+              throw new RuntimeException(e);
+            }
+          })
+          .parse(config.getLocation().getInputStream());
+
       provider = new StaticMetadataProvider(doc.getDocumentElement());
     }
     provider.setPerformSchemaValidation(false);
@@ -100,7 +115,7 @@ public class MetadataProviderUtils {
           .map(b -> b ? NoopHostnameVerifier.INSTANCE : new DefaultHostnameVerifier())
           .orElseGet(DefaultHostnameVerifier::new);
 
-      HttpClientBuilder builder = new HttpClientBuilder();
+      final HttpClientBuilder builder = new HttpClientBuilder();
       builder.setUseSystemProperties(true);
       if (config.getHttpProxy() != null) {
         if (config.getHttpProxy().getHost() == null || config.getHttpProxy().getPort() == null) {

@@ -30,7 +30,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.StringUtils;
@@ -110,12 +109,6 @@ public class ConnectorConfiguration {
   SecurityFilterChain defaultSecurityFilterChain(final HttpSecurity http) throws Exception {
     http
         .securityContext(sc -> sc.requireExplicitSave(false))
-        //        .csrf(csrf -> {
-        //          csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
-        //          final CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-        //          requestHandler.setCsrfRequestAttributeName(null);
-        //          csrf.csrfTokenRequestHandler(requestHandler);
-        //        })
         .csrf(c -> c.ignoringRequestMatchers(EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**"))
         .authorizeHttpRequests((authorize) -> authorize
             .requestMatchers(HttpMethod.POST, EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**").permitAll()
@@ -123,9 +116,8 @@ public class ConnectorConfiguration {
                 EidasAuthenticationProvider.RESUME_PATH + "/**")
             .permitAll()
             .requestMatchers(HttpMethod.GET, EidasSpMetadataController.METADATA_PATH + "/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/v1/mrecord/**").permitAll() // mocked IdM
-            .requestMatchers(HttpMethod.HEAD, "/api/v1/mrecord/**").permitAll() // mocked IdM
-            .requestMatchers(HttpMethod.GET, "/images/**", "/error", "/js/**", "/scripts/**", "/webjars/**", "/css/**")
+            .requestMatchers(HttpMethod.GET,
+                "/img/**", "/images/**", "/error", "/js/**", "/scripts/**", "/webjars/**", "/css/**")
             .permitAll()
             .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
             .anyRequest().denyAll());
@@ -141,36 +133,9 @@ public class ConnectorConfiguration {
    */
   @Bean
   Saml2IdpConfigurerAdapter samlIdpSettingsAdapter(final SignatureMessagePreprocessor signMessageProcessor) {
-    return (http, configurer) -> {
-      configurer
-          .authnRequestProcessor(c -> c.authenticationProvider(
-              pc -> pc.signatureMessagePreprocessor(signMessageProcessor)));
-      //          .idpMetadataEndpoint(mdCustomizer -> {
-      //            mdCustomizer.entityDescriptorCustomizer(this.metadataCustomizer());
-      //          });
-    };
-  }
-
-  // For customizing the metadata published by the IdP
-  //
-  private Customizer<EntityDescriptor> metadataCustomizer() {
-    return e -> {
-      //      final RequestedPrincipalSelection rps = RequestedPrincipalSelectionBuilder.builder()
-      //          .matchValues(MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_PRID).build(),
-      //              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER).build(),
-      //              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_PERSONAL_IDENTITY_NUMBER).build(),
-      //              MatchValueBuilder.builder().name(AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER)
-      //                  .build())
-      //          .build();
-      //
-      //      final IDPSSODescriptor ssoDescriptor = e.getIDPSSODescriptor(SAMLConstants.SAML20P_NS);
-      //      Extensions extensions = ssoDescriptor.getExtensions();
-      //      if (extensions == null) {
-      //        extensions = (Extensions) XMLObjectSupport.buildXMLObject(Extensions.DEFAULT_ELEMENT_NAME);
-      //        ssoDescriptor.setExtensions(extensions);
-      //      }
-      //      extensions.getUnknownXMLObjects().add(rps);
-    };
+    return (http, configurer) -> configurer
+        .authnRequestProcessor(c -> c.authenticationProvider(
+            pc -> pc.signatureMessagePreprocessor(signMessageProcessor)));
   }
 
   /**

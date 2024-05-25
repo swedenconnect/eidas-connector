@@ -176,7 +176,7 @@ public class DefaultIdmClient implements IdmClient {
       if (!Objects.equals(prid, response.getEidasUserId())) {
         final String msg = "Invalid response from IdM API - expected prid '%s', but was '%s'"
             .formatted(prid, response.getEidasUserId());
-        throw new IdmException("Invalid response from IdM API - mismatching PRID");
+        throw new IdmException(msg);
       }
       if (response.getBindings() == null || response.getBindings().isEmpty()) {
         throw new IdmException("Invalid response from IdM API - missing Binding URI");

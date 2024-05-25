@@ -26,7 +26,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import se.swedenconnect.eidas.connector.authn.idm.IdmQueryResponse;
 
@@ -107,7 +113,8 @@ public class MockedIdmApi {
       final SignedJWT signedJwt = SignedJWT.parse(authorizationHeader.substring("Bearer ".length()));
 
       if (this.mockData.getAsCertificate() != null) {
-        final RSASSAVerifier verifier = new RSASSAVerifier((RSAPublicKey) this.mockData.getAsCertificate().getPublicKey());
+        final RSASSAVerifier verifier =
+            new RSASSAVerifier((RSAPublicKey) this.mockData.getAsCertificate().getPublicKey());
         if (!signedJwt.verify(verifier)) {
           throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid access token - signature validation failed");
         }
@@ -122,7 +129,7 @@ public class MockedIdmApi {
         }
       }
     }
-    catch (ParseException | JOSEException e) {
+    catch (final ParseException | JOSEException e) {
       log.info("Mocked IdM: Invalid Authorization header - Failed to parse access token", e);
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Failed to parse access token");
     }

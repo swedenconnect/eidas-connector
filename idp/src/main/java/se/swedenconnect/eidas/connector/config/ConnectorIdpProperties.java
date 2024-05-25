@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * Configuration properties for the IdP part of the eIDAS Connector.
- * 
+ *
  * @author Martin Lindström
  */
 @Slf4j

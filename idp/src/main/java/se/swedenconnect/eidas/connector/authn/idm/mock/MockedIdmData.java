@@ -15,18 +15,17 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm.mock;
 
-import java.security.cert.X509Certificate;
-import java.util.List;
-import java.util.Objects;
-
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-
-import lombok.Getter;
-import lombok.Setter;
 import se.swedenconnect.eidas.connector.authn.idm.IdmQueryResponse;
+
+import java.security.cert.X509Certificate;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Mocked IdM data.
@@ -56,9 +55,9 @@ public class MockedIdmData {
       return null;
     }
     return this.records.stream()
-      .filter(r -> Objects.equals(prid, r.getEidasUserId()))
-      .findFirst()
-      .orElse(null);
+        .filter(r -> Objects.equals(prid, r.getEidasUserId()))
+        .findFirst()
+        .orElse(null);
   }
 
 }

@@ -99,9 +99,9 @@ public class EidasAuthenticationProperties implements InitializingBean {
 
   /** {@inheritDoc} */
   @Override
-  public void afterPropertiesSet() throws Exception {
+  public void afterPropertiesSet() {
     Assert.hasText(this.entityId, "connector.eidas.entity-id must be set");
-    if (!StringUtils.hasText(providerName)) {
+    if (!StringUtils.hasText(this.providerName)) {
       this.providerName = DEFAULT_PROVIDER_NAME;
     }
     if (this.requiresSignedAssertions == null) {
