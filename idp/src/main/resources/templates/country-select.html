@@ -87,6 +87,7 @@
                   class="btn country-button"
                   type="submit"
                   name="selectedCountry"
+                  th:id="${'countryFlag_' + country.getCode()}"
                   th:value="${country.getCode()}"
                   th:disabled="${country.isDisabled()}"
               >
