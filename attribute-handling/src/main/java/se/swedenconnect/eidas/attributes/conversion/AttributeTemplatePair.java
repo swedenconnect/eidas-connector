@@ -15,30 +15,24 @@
  */
 package se.swedenconnect.eidas.attributes.conversion;
 
-import java.util.Objects;
-
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplate;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeTemplate;
 
 /**
  * A pair of attribute templates.
- * 
- * @author Martin Lindström
+ *
+ * @param eidasTemplate the eIDAS attribute template
+ * @param swedishEidTemplate the Swedish eID template
  */
 public record AttributeTemplatePair(EidasAttributeTemplate eidasTemplate, AttributeTemplate swedishEidTemplate) {
 
-  /**
-   * Creates a {@link AttributeTemplatePair}.
-   * 
-   * @param eidasTemplate the eIDAS attribute template
-   * @param swedishEidTemplate the Swedish eID template
-   * @return a template pair
-   */
-  public static AttributeTemplatePair of(final EidasAttributeTemplate eidasTemplate,
-      final AttributeTemplate swedishEidTemplate) {
-    return new AttributeTemplatePair(
-        Objects.requireNonNull(eidasTemplate, "eidasTemplate must not be null"), 
-        Objects.requireNonNull(swedishEidTemplate, "swedishEidTemplate must not be null"));
+  public AttributeTemplatePair {
+    if (eidasTemplate == null) {
+      throw new IllegalArgumentException("eidasTemplate cannot be null");
+    }
+    if (swedishEidTemplate == null) {
+      throw new IllegalArgumentException("swedishEidTemplate cannot be null");
+    }
   }
-  
+
 }

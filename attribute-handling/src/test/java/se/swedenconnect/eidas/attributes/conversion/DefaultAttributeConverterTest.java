@@ -15,13 +15,12 @@
  */
 package se.swedenconnect.eidas.attributes.conversion;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.saml2.core.Attribute;
-
+import se.swedenconnect.eidas.attributes.EidasAttributeTemplateConstants;
+import se.swedenconnect.eidas.attributes.OpenSamlTestBase;
 import se.swedenconnect.opensaml.eidas.ext.attributes.BirthNameType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentFamilyNameType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentGivenNameType;
@@ -29,10 +28,10 @@ import se.swedenconnect.opensaml.eidas.ext.attributes.DateOfBirthType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.EidasAttributeValueType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.PersonIdentifierType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.PlaceOfBirthType;
-import se.swedenconnect.eidas.attributes.EidasAttributeTemplateConstants;
-import se.swedenconnect.eidas.attributes.OpenSamlTestBase;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
+
+import java.util.List;
 
 /**
  * Test cases for DefaultAttributeConverter.
@@ -44,17 +43,17 @@ public class DefaultAttributeConverterTest extends OpenSamlTestBase {
   @Test
   public void testConvert() throws Exception {
     final DefaultAttributeConverter converter = new DefaultAttributeConverter(List.of(
-        AttributeTemplatePair.of(EidasAttributeTemplateConstants.PERSON_IDENTIFIER_TEMPLATE,
+        new AttributeTemplatePair(EidasAttributeTemplateConstants.PERSON_IDENTIFIER_TEMPLATE,
             AttributeConstants.ATTRIBUTE_TEMPLATE_EIDAS_PERSON_IDENTIFIER),
-        AttributeTemplatePair.of(EidasAttributeTemplateConstants.CURRENT_FAMILY_NAME_TEMPLATE,
+        new AttributeTemplatePair(EidasAttributeTemplateConstants.CURRENT_FAMILY_NAME_TEMPLATE,
             AttributeConstants.ATTRIBUTE_TEMPLATE_SN),
-        AttributeTemplatePair.of(EidasAttributeTemplateConstants.CURRENT_GIVEN_NAME_TEMPLATE,
+        new AttributeTemplatePair(EidasAttributeTemplateConstants.CURRENT_GIVEN_NAME_TEMPLATE,
             AttributeConstants.ATTRIBUTE_TEMPLATE_GIVEN_NAME),
-        AttributeTemplatePair.of(EidasAttributeTemplateConstants.DATE_OF_BIRTH_TEMPLATE,
+        new AttributeTemplatePair(EidasAttributeTemplateConstants.DATE_OF_BIRTH_TEMPLATE,
             AttributeConstants.ATTRIBUTE_TEMPLATE_DATE_OF_BIRTH),
-        AttributeTemplatePair.of(EidasAttributeTemplateConstants.BIRTH_NAME_TEMPLATE,
+        new AttributeTemplatePair(EidasAttributeTemplateConstants.BIRTH_NAME_TEMPLATE,
             AttributeConstants.ATTRIBUTE_TEMPLATE_BIRTH_NAME),
-        AttributeTemplatePair.of(EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE,
+        new AttributeTemplatePair(EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE,
             AttributeConstants.ATTRIBUTE_TEMPLATE_PLACE_OF_BIRTH)));
 
     // Person identifier
@@ -178,9 +177,9 @@ public class DefaultAttributeConverterTest extends OpenSamlTestBase {
   @Test
   public void testNotSupported() {
     final DefaultAttributeConverter converter = new DefaultAttributeConverter(List.of(
-        AttributeTemplatePair.of(EidasAttributeTemplateConstants.PERSON_IDENTIFIER_TEMPLATE,
+        new AttributeTemplatePair(EidasAttributeTemplateConstants.PERSON_IDENTIFIER_TEMPLATE,
             AttributeConstants.ATTRIBUTE_TEMPLATE_EIDAS_PERSON_IDENTIFIER),
-        AttributeTemplatePair.of(EidasAttributeTemplateConstants.CURRENT_FAMILY_NAME_TEMPLATE,
+        new AttributeTemplatePair(EidasAttributeTemplateConstants.CURRENT_FAMILY_NAME_TEMPLATE,
             AttributeConstants.ATTRIBUTE_TEMPLATE_SN)));
 
     final Attribute swAttr = AttributeConstants.ATTRIBUTE_TEMPLATE_GIVEN_NAME.createBuilder().value("Kalle").build();

@@ -17,7 +17,11 @@ package se.swedenconnect.eidas.attributes;
 
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Attribute;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.swedenconnect.eidas.attributes.conversion.AttributeConverter;
+import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
+import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.saml.idp.attributes.ImplicitRequestedAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
@@ -26,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Default implementation of the {@link AttributeMappingService} interface.
@@ -33,6 +38,9 @@ import java.util.Objects;
  * @author Martin Lindström
  */
 public class DefaultAttributeMappingService implements AttributeMappingService {
+
+  /** Logging instance. */
+  private final static Logger log = LoggerFactory.getLogger(DefaultAttributeMappingService.class);
 
   /** The converters used by the service. */
   private final List<AttributeConverter> converters;
@@ -61,16 +69,31 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
   public se.swedenconnect.opensaml.eidas.ext.RequestedAttribute toEidasRequestedAttribute(
       final RequestedAttribute requestedBySwedishSp) {
 
-    final EidasAttributeTemplate template = this.converters.stream()
+    EidasAttributeTemplate template = this.converters.stream()
         .filter(c -> c.supportsConversionToEidas(requestedBySwedishSp.getId()))
         .map(c -> c.getEidasAttributeTemplate(requestedBySwedishSp.getId()))
         .findFirst()
         .orElse(null);
 
+    // Special handling for TownOfBirth and CountryOfBirth that does not have a Swedish counterpart.
+    // So, we allow a Swedish SP to require these eIDAS attributes directly ...
+    //
+    if (template == null) {
+      if (se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_COUNTRY_OF_BIRTH_ATTRIBUTE_NAME
+          .equals(requestedBySwedishSp.getId())) {
+        template = EidasAttributeTemplateConstants.COUNTRY_OF_BIRTH_TEMPLATE;
+      }
+      else if (se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_TOWN_OF_BIRTH_ATTRIBUTE_NAME
+          .equals(requestedBySwedishSp.getId())) {
+        template = EidasAttributeTemplateConstants.TOWN_OF_BIRTH_TEMPLATE;
+      }
+    }
+
     if (template == null) {
       return null;
     }
-    se.swedenconnect.opensaml.eidas.ext.RequestedAttribute requestedAttribute = this.createRequestedAttribute(template);
+    final se.swedenconnect.opensaml.eidas.ext.RequestedAttribute requestedAttribute =
+        this.createRequestedAttribute(template);
 
     // Check if the attribute is part of the minimum data set. If so, set isRequired.
     requestedAttribute.setIsRequired(
@@ -98,7 +121,7 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
     final List<se.swedenconnect.opensaml.eidas.ext.RequestedAttribute> requestedAttributes = new ArrayList<>();
     requestedBySwedishSp.stream()
         .filter(ra -> {
-          if (ra instanceof ImplicitRequestedAttribute impl) {
+          if (ra instanceof final ImplicitRequestedAttribute impl) {
             // Don't include implicitly required attributes that are not required ...
             return impl.isRequired();
           }
@@ -116,7 +139,8 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
               .findFirst()
               .orElseThrow(() -> new IllegalArgumentException("eIDAS minimum data set config error"));
 
-          final se.swedenconnect.opensaml.eidas.ext.RequestedAttribute requestedAttribute = this.createRequestedAttribute(template);
+          final se.swedenconnect.opensaml.eidas.ext.RequestedAttribute requestedAttribute =
+              this.createRequestedAttribute(template);
           requestedAttribute.setIsRequired(true);
           requestedAttributes.add(requestedAttribute);
         }
@@ -136,14 +160,139 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
         .orElse(null);
   }
 
+  /**
+   * Implements special handling for PlaceOfBirth, CountryOfBirth and TownOfBirth ...
+   */
+  @Override
+  public List<Attribute> toSwedishEidAttributes(final Collection<Attribute> eidasAttributes) {
+    final List<Attribute> swedishEidAttributes = new ArrayList<>();
+    boolean eidasPlaceOfBirth = false;
+    String townOfBirth = null;
+    String countryOfBirth = null;
+
+    for (final Attribute eidasAttribute : eidasAttributes) {
+      if (se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_PLACE_OF_BIRTH_ATTRIBUTE_NAME
+          .equals(eidasAttribute.getName())) {
+        eidasPlaceOfBirth = true;
+      }
+
+      if (se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_TOWN_OF_BIRTH_ATTRIBUTE_NAME
+          .equals(eidasAttribute.getName())) {
+        if (!eidasPlaceOfBirth) {
+          townOfBirth = Optional.ofNullable(this.toSwedishEidAttribute(eidasAttribute))
+              .map(AttributeUtils::getAttributeStringValue)
+              .orElse(null);
+        }
+        else {
+          log.info("Ignoring '{}' - {} appears and have precedence", eidasAttribute.getName(),
+              se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_PLACE_OF_BIRTH_ATTRIBUTE_NAME);
+        }
+      }
+      else if (se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_COUNTRY_OF_BIRTH_ATTRIBUTE_NAME
+          .equals(eidasAttribute.getName())) {
+        if (!eidasPlaceOfBirth) {
+          countryOfBirth = Optional.ofNullable(this.toSwedishEidAttribute(eidasAttribute))
+              .map(AttributeUtils::getAttributeStringValue)
+              .orElse(null);
+        }
+        else {
+          log.info("Ignoring '{}' - {} appears and have precedence", eidasAttribute.getName(),
+              se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_PLACE_OF_BIRTH_ATTRIBUTE_NAME);
+        }
+      }
+      else {
+        Optional.ofNullable(this.toSwedishEidAttribute(eidasAttribute)).ifPresent(swedishEidAttributes::add);
+      }
+    }
+    if (!eidasPlaceOfBirth && (townOfBirth != null || countryOfBirth != null)) {
+      final StringBuilder sb = new StringBuilder();
+      Optional.ofNullable(townOfBirth).ifPresent(sb::append);
+      if (countryOfBirth != null) {
+        if (!sb.isEmpty()) {
+          sb.append(", ");
+        }
+        sb.append(countryOfBirth);
+      }
+      swedishEidAttributes.add(AttributeConstants.ATTRIBUTE_TEMPLATE_PLACE_OF_BIRTH.createBuilder()
+          .value(sb.toString())
+          .build());
+    }
+
+    return swedishEidAttributes;
+  }
+
   /** {@inheritDoc} */
   @Override
-  public UserAttribute toSwedishEidAttribute(final UserAttribute eidasAttribute) {
+  public UserAttribute toSwedishUserAttribute(final UserAttribute eidasAttribute) {
     return this.converters.stream()
         .filter(c -> c.supportsConversionToSwedishAttribute(eidasAttribute.getId()))
         .findFirst()
         .map(c -> c.toSwedishEidAttribute(eidasAttribute))
         .orElse(null);
+  }
+
+  /**
+   * Implements special handling for PlaceOfBirth, CountryOfBirth and TownOfBirth ...
+   */
+  @Override
+  public List<UserAttribute> toSwedishUserAttributes(final Collection<UserAttribute> eidasAttributes) {
+    final List<UserAttribute> swedishEidAttributes = new ArrayList<>();
+    boolean eidasPlaceOfBirth = false;
+    String townOfBirth = null;
+    String countryOfBirth = null;
+
+    for (final UserAttribute eidasAttribute : eidasAttributes) {
+      if (se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_PLACE_OF_BIRTH_ATTRIBUTE_NAME
+          .equals(eidasAttribute.getId())) {
+        eidasPlaceOfBirth = true;
+      }
+
+      if (se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_TOWN_OF_BIRTH_ATTRIBUTE_NAME
+          .equals(eidasAttribute.getId())) {
+        if (!eidasPlaceOfBirth) {
+          townOfBirth = Optional.ofNullable(this.toSwedishUserAttribute(eidasAttribute))
+              .map(UserAttribute::getStringValues)
+              .filter(v -> !v.isEmpty())
+              .map(v -> v.get(0))
+              .orElse(null);
+        }
+        else {
+          log.info("Ignoring '{}' - {} appears and have precedence", eidasAttribute.getId(),
+              se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_PLACE_OF_BIRTH_ATTRIBUTE_NAME);
+        }
+      }
+      else if (se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_COUNTRY_OF_BIRTH_ATTRIBUTE_NAME
+          .equals(eidasAttribute.getId())) {
+        if (!eidasPlaceOfBirth) {
+          countryOfBirth = Optional.ofNullable(this.toSwedishUserAttribute(eidasAttribute))
+              .map(UserAttribute::getStringValues)
+              .filter(v -> !v.isEmpty())
+              .map(v -> v.get(0))
+              .orElse(null);
+        }
+        else {
+          log.info("Ignoring '{}' - {} appears and have precedence", eidasAttribute.getId(),
+              se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_PLACE_OF_BIRTH_ATTRIBUTE_NAME);
+        }
+      }
+      else {
+        Optional.ofNullable(this.toSwedishUserAttribute(eidasAttribute)).ifPresent(swedishEidAttributes::add);
+      }
+    }
+    if (!eidasPlaceOfBirth && (townOfBirth != null || countryOfBirth != null)) {
+      final StringBuilder sb = new StringBuilder();
+      Optional.ofNullable(townOfBirth).ifPresent(sb::append);
+      if (countryOfBirth != null) {
+        if (!sb.isEmpty()) {
+          sb.append(", ");
+        }
+        sb.append(countryOfBirth);
+      }
+      swedishEidAttributes.add(new UserAttribute(AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH,
+          AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PLACE_OF_BIRTH, sb.toString()));
+    }
+
+    return swedishEidAttributes;
   }
 
 }

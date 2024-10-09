@@ -15,17 +15,21 @@
  */
 package se.swedenconnect.eidas.attributes;
 
-import java.util.List;
-
+import org.opensaml.core.xml.schema.XSString;
 import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
 import se.swedenconnect.opensaml.eidas.ext.attributes.BirthNameType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.CountryOfBirthType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.CountryOfResidenceType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentAddressType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentFamilyNameType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentGivenNameType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.DateOfBirthType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.GenderType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.NationalityType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.PersonIdentifierType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.PlaceOfBirthType;
+
+import java.util.List;
 
 /**
  * Attribute templates for all known (supported) eIDAS attributes.
@@ -73,6 +77,36 @@ public class EidasAttributeTemplateConstants {
   public static final EidasAttributeTemplate PLACE_OF_BIRTH_TEMPLATE = new EidasAttributeTemplate(
       PlaceOfBirthType.class, AttributeConstants.EIDAS_PLACE_OF_BIRTH_ATTRIBUTE_NAME,
       AttributeConstants.EIDAS_PLACE_OF_BIRTH_ATTRIBUTE_FRIENDLY_NAME);
+
+  /** Attribute template for the "Nationality" attribute. */
+  public static final EidasAttributeTemplate NATIONALITY_TEMPLATE = new EidasAttributeTemplate(
+      NationalityType.class, AttributeConstants.EIDAS_NATIONALITY_ATTRIBUTE_NAME,
+      AttributeConstants.EIDAS_NATIONALITY_ATTRIBUTE_FRIENDLY_NAME);
+
+  /** Attribute template for the "CountryOfBirth" attribute. */
+  public static final EidasAttributeTemplate COUNTRY_OF_BIRTH_TEMPLATE = new EidasAttributeTemplate(
+      CountryOfBirthType.class, AttributeConstants.EIDAS_COUNTRY_OF_BIRTH_ATTRIBUTE_NAME,
+      AttributeConstants.EIDAS_COUNTRY_OF_BIRTH_ATTRIBUTE_FRIENDLY_NAME);
+
+  /** Attribute template for the "TownOfBirth" attribute. */
+  public static final EidasAttributeTemplate TOWN_OF_BIRTH_TEMPLATE = new EidasAttributeTemplate(
+      XSString.class, AttributeConstants.EIDAS_TOWN_OF_BIRTH_ATTRIBUTE_NAME,
+      AttributeConstants.EIDAS_TOWN_OF_BIRTH_ATTRIBUTE_FRIENDLY_NAME);
+
+  /** Attribute template for the "CountryOfResidence" attribute. */
+  public static final EidasAttributeTemplate COUNTRY_OF_RESIDENCE_TEMPLATE = new EidasAttributeTemplate(
+      CountryOfResidenceType.class, AttributeConstants.EIDAS_COUNTRY_OF_RESIDENCE_ATTRIBUTE_NAME,
+      AttributeConstants.EIDAS_COUNTRY_OF_RESIDENCE_ATTRIBUTE_FRIENDLY_NAME);
+
+  /** Attribute template for the "PhoneNumber" attribute. */
+  public static final EidasAttributeTemplate PHONE_NUMBER_TEMPLATE = new EidasAttributeTemplate(
+      XSString.class, AttributeConstants.EIDAS_PHONE_NUMBER_ATTRIBUTE_NAME,
+      AttributeConstants.EIDAS_PHONE_NUMBER_ATTRIBUTE_FRIENDLY_NAME);
+
+  /** Attribute template for the "EmailAddress" attribute. */
+  public static final EidasAttributeTemplate EMAIL_ADDRESS_TEMPLATE = new EidasAttributeTemplate(
+      XSString.class, AttributeConstants.EIDAS_EMAIL_ADDRESS_ATTRIBUTE_NAME,
+      AttributeConstants.EIDAS_EMAIL_ADDRESS_ATTRIBUTE_FRIENDLY_NAME);
 
   /** Templates for the eIDAS minimum data set. */
   public static final List<EidasAttributeTemplate> MINIMUM_DATASET_TEMPLATES = List.of(

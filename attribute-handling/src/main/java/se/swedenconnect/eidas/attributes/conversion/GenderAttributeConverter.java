@@ -41,7 +41,7 @@ import java.util.List;
 public class GenderAttributeConverter extends DefaultAttributeConverter {
 
   /** Logging instance. */
-  private final Logger log = LoggerFactory.getLogger(GenderAttributeConverter.class);
+  private final static Logger log = LoggerFactory.getLogger(GenderAttributeConverter.class);
 
   /**
    * Default constructor.

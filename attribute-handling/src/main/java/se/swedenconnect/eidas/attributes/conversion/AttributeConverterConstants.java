@@ -15,10 +15,10 @@
  */
 package se.swedenconnect.eidas.attributes.conversion;
 
-import java.util.List;
-
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplateConstants;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
+
+import java.util.List;
 
 /**
  * Constants for attribute conversion.
@@ -34,17 +34,30 @@ public class AttributeConverterConstants {
    */
   public static final List<AttributeConverter> DEFAULT_CONVERTERS = List.of(
       new DefaultAttributeConverter(List.of(
-          AttributeTemplatePair.of(EidasAttributeTemplateConstants.PERSON_IDENTIFIER_TEMPLATE,
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.PERSON_IDENTIFIER_TEMPLATE,
               AttributeConstants.ATTRIBUTE_TEMPLATE_EIDAS_PERSON_IDENTIFIER),
-          AttributeTemplatePair.of(EidasAttributeTemplateConstants.CURRENT_FAMILY_NAME_TEMPLATE,
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.CURRENT_FAMILY_NAME_TEMPLATE,
               AttributeConstants.ATTRIBUTE_TEMPLATE_SN),
-          AttributeTemplatePair.of(EidasAttributeTemplateConstants.CURRENT_GIVEN_NAME_TEMPLATE,
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.CURRENT_GIVEN_NAME_TEMPLATE,
               AttributeConstants.ATTRIBUTE_TEMPLATE_GIVEN_NAME),
-          AttributeTemplatePair.of(EidasAttributeTemplateConstants.DATE_OF_BIRTH_TEMPLATE,
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.DATE_OF_BIRTH_TEMPLATE,
               AttributeConstants.ATTRIBUTE_TEMPLATE_DATE_OF_BIRTH),
-          AttributeTemplatePair.of(EidasAttributeTemplateConstants.BIRTH_NAME_TEMPLATE,
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.BIRTH_NAME_TEMPLATE,
               AttributeConstants.ATTRIBUTE_TEMPLATE_BIRTH_NAME),
-          AttributeTemplatePair.of(EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE,
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE,
+              AttributeConstants.ATTRIBUTE_TEMPLATE_PLACE_OF_BIRTH),
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.NATIONALITY_TEMPLATE,
+              AttributeConstants.ATTRIBUTE_TEMPLATE_COUNTRY_OF_CITIZENSHIP),
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.COUNTRY_OF_RESIDENCE_TEMPLATE,
+              AttributeConstants.ATTRIBUTE_TEMPLATE_COUNTRY_OF_RESIDENCE),
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.PHONE_NUMBER_TEMPLATE,
+              AttributeConstants.ATTRIBUTE_TEMPLATE_TELEPHONE_NUMBER),
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.EMAIL_ADDRESS_TEMPLATE,
+              AttributeConstants.ATTRIBUTE_TEMPLATE_MAIL))),
+      new BirthDetailsAttributeConverter(List.of(
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.COUNTRY_OF_BIRTH_TEMPLATE,
+              AttributeConstants.ATTRIBUTE_TEMPLATE_PLACE_OF_BIRTH),
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.TOWN_OF_BIRTH_TEMPLATE,
               AttributeConstants.ATTRIBUTE_TEMPLATE_PLACE_OF_BIRTH))),
       new CurrentAddressAttributeConverter(),
       new GenderAttributeConverter());

@@ -48,7 +48,7 @@ import java.util.function.Function;
 public class DefaultAttributeConverter implements AttributeConverter {
 
   /** A list of the attributes that this converter handles. */
-  private final List<AttributeTemplatePair> templates;
+  protected final List<AttributeTemplatePair> templates;
 
   /**
    * Constructor assigning support for one attribute mapping.
@@ -58,7 +58,7 @@ public class DefaultAttributeConverter implements AttributeConverter {
    */
   public DefaultAttributeConverter(
       final EidasAttributeTemplate eidasTemplate, final AttributeTemplate swedishEidTemplate) {
-    this.templates = List.of(AttributeTemplatePair.of(eidasTemplate, swedishEidTemplate));
+    this.templates = List.of(new AttributeTemplatePair(eidasTemplate, swedishEidTemplate));
   }
 
   /**
@@ -99,7 +99,7 @@ public class DefaultAttributeConverter implements AttributeConverter {
       }
       // This is how we hope eIDAS attributes will turn out, so we'll add support for it.
       else if (eidasAttributeValue instanceof XSString) {
-        return template.createBuilder().value(eidasAttributeValue).build();
+        return template.createBuilder().value(value).build();
       }
       else {
         log.info("Unknown type for eIDAS attribute value ({}) - can not convert Swedish eID attribute '{}'",

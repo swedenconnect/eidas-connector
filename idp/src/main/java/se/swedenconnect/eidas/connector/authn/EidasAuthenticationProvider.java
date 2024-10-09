@@ -71,7 +71,6 @@ import se.swedenconnect.spring.saml.idp.error.UnrecoverableSaml2IdpException;
 
 import java.security.cert.X509Certificate;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -273,14 +272,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
       // Map eIDAS attributes to Swedish eID attributes ...
       //
-      {
-        final Collection<UserAttribute> mappedAttributes = new ArrayList<>();
-        eidasToken.getAttributes().stream()
-            .map(this.attributeMappingService::toSwedishEidAttribute)
-            .filter(Objects::nonNull)
-            .forEach(mappedAttributes::add);
-        mappedAttributes.forEach(eidasToken::addAttribute);
-      }
+      this.attributeMappingService.toSwedishUserAttributes(eidasToken.getAttributes())
+          .forEach(eidasToken::addAttribute);
 
       // Add country attribute ...
       //
@@ -520,8 +513,9 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   }
 
   /**
-   * Gets the Identity Matching record for the given user and updates the supplied {@link EidasAuthenticationToken}
-   * with the attributes found in the IdM record.
+   * Gets the Identity Matching record for the given user and updates the supplied {@link EidasAuthenticationToken} with
+   * the attributes found in the IdM record.
+   *
    * @param token the token to update
    * @param inputToken the SAML input token
    */

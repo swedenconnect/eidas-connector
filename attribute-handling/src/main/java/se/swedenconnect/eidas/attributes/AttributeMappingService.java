@@ -47,28 +47,31 @@ public interface AttributeMappingService {
   Attribute toEidasAttribute(final Attribute swedishAttribute);
 
   /**
-   * Given a {@link se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute
-   * se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute}  calculated by the SAML IdP base, the method builds
-   * an eIDAS {@link se.swedenconnect.opensaml.eidas.ext.RequestedAttribute} element to be used in an eIDAS AuthnRequest.
+   * Given a
+   * {@link se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute
+   * se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute} calculated by the SAML IdP base, the method builds
+   * an eIDAS {@link se.swedenconnect.opensaml.eidas.ext.RequestedAttribute} element to be used in an eIDAS
+   * AuthnRequest.
    * <p>
-   * Note: The implementation may not assign the {@code isRequired} attribute to the resulting object even if it is set
+   * Note: The implementation may not assign the {@code isRequired} attribute to the resulting object even if it is set
    * in the supplied metadata requested attribute. For interoperability reasons only attributes part of the eIDAS
    * minimum data set should be assigned the {@code isRequired} attribute.
    * </p>
    *
    * @param requestedBySwedishSp the requested attribute from the Swedish SP
-   * @return an eIDAS {@code RequestedAttribute} object or {@code null}
+   * @return an eIDAS {@code RequestedAttribute} object or {@code null}
    */
   se.swedenconnect.opensaml.eidas.ext.RequestedAttribute toEidasRequestedAttribute(
       final RequestedAttribute requestedBySwedishSp);
 
   /**
-   * Gets a list of eIDAS {@link se.swedenconnect.opensaml.eidas.ext.RequestedAttribute}s based on the requested attributes set
-   * by the Swedish SP. If the {@code includeMinimumDataSet} is set, the minimum data set is always returned.
+   * Gets a list of eIDAS {@link se.swedenconnect.opensaml.eidas.ext.RequestedAttribute}s based on the requested
+   * attributes set by the Swedish SP. If the {@code includeMinimumDataSet} is set, the minimum data set is always
+   * returned.
    *
    * @param requestedBySwedishSp the requested attributes from the Swedish SP
    * @param includeMinimumDataSet whether the minimum data set should be included (independently of what is passed)
-   * @return a list of eIDAS {@link se.swedenconnect.opensaml.eidas.ext.RequestedAttribute RequestedAttribute} objects
+   * @return a list of eIDAS {@link se.swedenconnect.opensaml.eidas.ext.RequestedAttribute RequestedAttribute} objects
    */
   List<se.swedenconnect.opensaml.eidas.ext.RequestedAttribute> toEidasRequestedAttributes(
       final Collection<RequestedAttribute> requestedBySwedishSp, final boolean includeMinimumDataSet);
@@ -82,11 +85,27 @@ public interface AttributeMappingService {
   Attribute toSwedishEidAttribute(final Attribute eidasAttribute);
 
   /**
+   * Maps the supplied eIDAS attributes to corresponding Swedish eID attributes.
+   *
+   * @param eidasAttributes the eIDAS attributes
+   * @return a list of corresponding Swedish eID attributes
+   */
+  List<Attribute> toSwedishEidAttributes(final Collection<Attribute> eidasAttributes);
+
+  /**
    * See {@link #toSwedishEidAttribute(Attribute)}.
    *
    * @param eidasAttribute an eIDAS attribute
    * @return a Swedish eID attribute or {@code null}
    */
-  UserAttribute toSwedishEidAttribute(final UserAttribute eidasAttribute);
+  UserAttribute toSwedishUserAttribute(final UserAttribute eidasAttribute);
+
+  /**
+   * See {@link #toSwedishEidAttributes(Collection)}.
+   *
+   * @param eidasAttributes the eIDAS attributes
+   * @return a list of corresponding Swedish eID attributes
+   */
+  List<UserAttribute> toSwedishUserAttributes(final Collection<UserAttribute> eidasAttributes);
 
 }

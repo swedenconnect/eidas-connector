@@ -17,15 +17,24 @@ package se.swedenconnect.eidas.attributes;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Attribute;
 import se.swedenconnect.eidas.attributes.conversion.AttributeConverterConstants;
-import se.swedenconnect.opensaml.eidas.ext.attributes.*;
+import se.swedenconnect.opensaml.eidas.ext.attributes.BirthNameType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.CountryOfBirthType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentFamilyNameType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentGivenNameType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.DateOfBirthType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.PersonIdentifierType;
+import se.swedenconnect.opensaml.eidas.ext.attributes.PlaceOfBirthType;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute;
+import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Test cases for DefaultAttributeMappingService.
@@ -35,7 +44,7 @@ import java.util.Objects;
 public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
 
   @Test
-  public void testConvert() {
+  void testConvert() {
 
     final DefaultAttributeMappingService service =
         new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
@@ -138,13 +147,168 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
     Assertions.assertEquals(AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH, swAttr2.getName());
     Assertions.assertEquals("Enköping", AttributeUtils.getAttributeStringValue(swAttr2));
 
+    // Phone number
+    //
+    swAttr = AttributeConstants.ATTRIBUTE_TEMPLATE_TELEPHONE_NUMBER.createBuilder().value("+46 111111").build();
+
+    eidasAttr = service.toEidasAttribute(swAttr);
+    Assertions.assertNotNull(eidasAttr, "Expected eIDAS PhoneNumber attribute");
+    Assertions.assertEquals(EidasAttributeTemplateConstants.PHONE_NUMBER_TEMPLATE.getName(), eidasAttr.getName());
+    final String number = AttributeUtils.getAttributeStringValue(eidasAttr);
+    Assertions.assertEquals("+46 111111", number);
+
+    swAttr2 = service.toSwedishEidAttribute(eidasAttr);
+    Assertions.assertNotNull(swAttr2, "Expected Swedish TelephoneNumber attribute");
+    Assertions.assertEquals(AttributeConstants.ATTRIBUTE_NAME_TELEPHONE_NUMBER, swAttr2.getName());
+    Assertions.assertEquals("+46 111111", AttributeUtils.getAttributeStringValue(swAttr2));
+
+    // Email address
+    //
+    swAttr = AttributeConstants.ATTRIBUTE_TEMPLATE_MAIL.createBuilder().value("user@example.com").build();
+
+    eidasAttr = service.toEidasAttribute(swAttr);
+    Assertions.assertNotNull(eidasAttr, "Expected eIDAS EmailAddress attribute");
+    Assertions.assertEquals(EidasAttributeTemplateConstants.EMAIL_ADDRESS_TEMPLATE.getName(), eidasAttr.getName());
+    final String mail = AttributeUtils.getAttributeStringValue(eidasAttr);
+    Assertions.assertEquals("user@example.com", mail);
+
+    swAttr2 = service.toSwedishEidAttribute(eidasAttr);
+    Assertions.assertNotNull(swAttr2, "Expected Swedish Mail attribute");
+    Assertions.assertEquals(AttributeConstants.ATTRIBUTE_NAME_MAIL, swAttr2.getName());
+    Assertions.assertEquals("user@example.com", AttributeUtils.getAttributeStringValue(swAttr2));
+
     // Not supported
     swAttr = AttributeConstants.ATTRIBUTE_TEMPLATE_C.createBuilder().value("SE").build();
     Assertions.assertNull(service.toEidasAttribute(swAttr));
   }
 
   @Test
-  public void testToEidasRequestedAttribute() {
+  void testConvertSpecial() {
+
+    final DefaultAttributeMappingService service =
+        new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
+
+    // Person identifier
+    //
+    final PersonIdentifierType eidasPersonIdentifierValue =
+        (PersonIdentifierType) XMLObjectSupport.buildXMLObject(PersonIdentifierType.TYPE_NAME);
+    eidasPersonIdentifierValue.setValue("ES/AT/02635542Y");
+    final Attribute eidasPersonIdentifier = EidasAttributeTemplateConstants.PERSON_IDENTIFIER_TEMPLATE.createBuilder()
+        .value(eidasPersonIdentifierValue)
+        .build();
+
+    // Place of birth
+    //
+    final PlaceOfBirthType eidasPlaceOfBirthValue =
+        (PlaceOfBirthType) XMLObjectSupport.buildXMLObject(PlaceOfBirthType.TYPE_NAME);
+    eidasPlaceOfBirthValue.setValue("Enköping");
+    final Attribute eidasPlaceOfBirth = EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE.createBuilder()
+        .value(eidasPlaceOfBirthValue)
+        .build();
+
+    // Country of birth
+    //
+    final CountryOfBirthType eidasCountryOfBirthValue =
+        (CountryOfBirthType) XMLObjectSupport.buildXMLObject(CountryOfBirthType.TYPE_NAME);
+    eidasCountryOfBirthValue.setValue("SE");
+    final Attribute eidasCountryOfBirth = EidasAttributeTemplateConstants.COUNTRY_OF_BIRTH_TEMPLATE.createBuilder()
+        .value(eidasCountryOfBirthValue)
+        .build();
+
+    // Town of birth
+    //
+    final Attribute eidasTownOfBirth = EidasAttributeTemplateConstants.TOWN_OF_BIRTH_TEMPLATE.createBuilder()
+        .value("Enköping")
+        .build();
+
+    // Test 1: Assert that CountryOfBirth and TownOfBirth are ignored if PlaceOfBirth is set.
+    //
+    final List<Attribute> res1 = service.toSwedishEidAttributes(
+        List.of(eidasPersonIdentifier, eidasPlaceOfBirth, eidasCountryOfBirth, eidasTownOfBirth));
+
+    Assertions.assertEquals(2, res1.size());
+    Assertions.assertTrue(
+        res1.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER.equals(a.getName())));
+    Assertions.assertTrue(
+        res1.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH.equals(a.getName())));
+
+    // 1b. The same with UserAttribute:s ...
+    //
+    final List<UserAttribute> res1b = service.toSwedishUserAttributes(
+        Stream.of(eidasPersonIdentifier, eidasPlaceOfBirth, eidasCountryOfBirth, eidasTownOfBirth)
+            .map(UserAttribute::new).toList());
+
+    Assertions.assertEquals(2, res1b.size());
+    Assertions.assertTrue(
+        res1b.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER.equals(a.getId())));
+    Assertions.assertTrue(
+        res1b.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH.equals(a.getId())));
+
+    // Test 2. If PlaceOfBirth is not set, we combine the values from CountryOfBirth and TownOfBirth.
+    //
+    final List<Attribute> res2 = service.toSwedishEidAttributes(
+        List.of(eidasPersonIdentifier, eidasCountryOfBirth, eidasTownOfBirth));
+
+    Assertions.assertEquals(2, res2.size());
+    Assertions.assertTrue(
+        res2.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER.equals(a.getName())));
+    Assertions.assertTrue(
+        res2.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH.equals(a.getName())));
+    Assertions.assertEquals("Enköping, SE", res2.stream()
+        .filter(a -> AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH.equals(a.getName()))
+        .map(AttributeUtils::getAttributeStringValue)
+        .findFirst()
+        .orElse(null));
+
+    // 2b. The same with UserAttribute:s ...
+    //
+    final List<UserAttribute> res2b = service.toSwedishUserAttributes(
+        Stream.of(eidasPersonIdentifier, eidasCountryOfBirth, eidasTownOfBirth).map(UserAttribute::new).toList());
+
+    Assertions.assertEquals(2, res2b.size());
+    Assertions.assertTrue(
+        res2b.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER.equals(a.getId())));
+    Assertions.assertTrue(
+        res2b.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH.equals(a.getId())));
+    Assertions.assertEquals(List.of("Enköping, SE"), res2b.stream()
+        .filter(a -> AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH.equals(a.getId()))
+        .map(UserAttribute::getStringValues)
+        .findFirst()
+        .orElse(null));
+
+    // 3 and 4. PlaceOfBirth is not set, one of CountryOfBirth and TownOfBirth is set
+    //
+    final List<Attribute> res3 = service.toSwedishEidAttributes(
+        List.of(eidasPersonIdentifier, eidasTownOfBirth));
+
+    Assertions.assertEquals(2, res3.size());
+    Assertions.assertTrue(
+        res3.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER.equals(a.getName())));
+    Assertions.assertTrue(
+        res3.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH.equals(a.getName())));
+    Assertions.assertEquals("Enköping", res3.stream()
+        .filter(a -> AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH.equals(a.getName()))
+        .map(AttributeUtils::getAttributeStringValue)
+        .findFirst()
+        .orElse(null));
+
+    final List<Attribute> res4 = service.toSwedishEidAttributes(
+        List.of(eidasPersonIdentifier, eidasCountryOfBirth));
+
+    Assertions.assertEquals(2, res4.size());
+    Assertions.assertTrue(
+        res4.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_EIDAS_PERSON_IDENTIFIER.equals(a.getName())));
+    Assertions.assertTrue(
+        res4.stream().anyMatch(a -> AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH.equals(a.getName())));
+    Assertions.assertEquals("SE", res4.stream()
+        .filter(a -> AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH.equals(a.getName()))
+        .map(AttributeUtils::getAttributeStringValue)
+        .findFirst()
+        .orElse(null));
+  }
+
+  @Test
+  void testToEidasRequestedAttribute() {
     final DefaultAttributeMappingService service =
         new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
 
@@ -186,7 +350,7 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
     final DefaultAttributeMappingService service =
         new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
 
-    List<RequestedAttribute> ras = List.of(
+    final List<RequestedAttribute> ras = List.of(
         new RequestedAttribute(
             AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH,
             AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PLACE_OF_BIRTH,
@@ -203,6 +367,17 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
             AttributeConstants.ATTRIBUTE_NAME_SN,
             AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_SN,
             true),
+
+        // Special handling ...
+        new RequestedAttribute(
+            se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_COUNTRY_OF_BIRTH_ATTRIBUTE_NAME,
+            se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_COUNTRY_OF_BIRTH_ATTRIBUTE_FRIENDLY_NAME,
+            false),
+        new RequestedAttribute(
+            se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_TOWN_OF_BIRTH_ATTRIBUTE_NAME,
+            se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_TOWN_OF_BIRTH_ATTRIBUTE_FRIENDLY_NAME,
+            false),
+
         // No mapping
         new RequestedAttribute(
             AttributeConstants.ATTRIBUTE_NAME_C,
@@ -210,7 +385,7 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
             true));
 
     List<se.swedenconnect.opensaml.eidas.ext.RequestedAttribute> eidas = service.toEidasRequestedAttributes(ras, true);
-    Assertions.assertEquals(5, eidas.size());
+    Assertions.assertEquals(7, eidas.size());
 
     Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.DATE_OF_BIRTH_TEMPLATE.getName())));
@@ -223,9 +398,13 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
         EidasAttributeTemplateConstants.PERSON_IDENTIFIER_TEMPLATE.getName())));
     Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE.getName())));
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
+        EidasAttributeTemplateConstants.COUNTRY_OF_BIRTH_TEMPLATE.getName())));
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
+        EidasAttributeTemplateConstants.TOWN_OF_BIRTH_TEMPLATE.getName())));
 
     eidas = service.toEidasRequestedAttributes(ras, false);
-    Assertions.assertEquals(4, eidas.size());
+    Assertions.assertEquals(6, eidas.size());
 
     Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.CURRENT_FAMILY_NAME_TEMPLATE.getName())));
@@ -235,6 +414,10 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
         EidasAttributeTemplateConstants.PERSON_IDENTIFIER_TEMPLATE.getName())));
     Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
         EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE.getName())));
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
+        EidasAttributeTemplateConstants.COUNTRY_OF_BIRTH_TEMPLATE.getName())));
+    Assertions.assertTrue(eidas.stream().anyMatch(a -> Objects.equals(a.getName(),
+        EidasAttributeTemplateConstants.TOWN_OF_BIRTH_TEMPLATE.getName())));
   }
 
 }
