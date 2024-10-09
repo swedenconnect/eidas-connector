@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 Sweden Connect
+ * Copyright 2017-2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class UiCountry implements Comparable<UiCountry> {
     this.name = name;
     this.realCountry = realCountry;
   }
-  
+
   public String getFlag() {
     if (this.realCountry) {
       return this.code.toLowerCase();
