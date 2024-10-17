@@ -65,8 +65,7 @@ public class PridService implements InitializingBean {
    * @param policyConfiguration the resource holding the PRID policy configuration
    * @param pridGenerators the installed PRID-generators. Used to validate algorithms from config
    */
-  public PridService(final Resource policyConfiguration,
-      final List<PridGenerator> pridGenerators) {
+  public PridService(final Resource policyConfiguration, final List<PridGenerator> pridGenerators) {
     this.policyResource = Objects.requireNonNull(policyConfiguration, "policyConfiguration must not be null");
     this.pridGenerators = Objects.requireNonNull(pridGenerators, "pridGenerators must not be null");
   }

@@ -15,10 +15,11 @@
  */
 package se.swedenconnect.eidas.connector.config.tomcat;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.util.Assert;
 
 /**
  * Configuration properties for Tomcat AJP.
@@ -28,19 +29,35 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-@ConfigurationProperties("tomcat.ajp")
-public class TomcatAjpConfigurationProperties {
+@ConfigurationProperties("server.tomcat.ajp")
+public class TomcatAjpConfigurationProperties implements InitializingBean {
 
-  /** Is AJP enabled? */
+  /**
+   * Is AJP enabled?
+   */
   private boolean enabled = false;
 
-  /** The Tomcat AJP port. */
+  /**
+   * The Tomcat AJP port.
+   */
   private int port = 8009;
 
-  /** AJP secret. */
+  /**
+   * AJP secret.
+   */
   private String secret;
 
-  /** Is AJP secret required? */
+  /**
+   * Is AJP secret required?
+   */
   private boolean secretRequired = false;
+
+  /** {@inheritDoc} */
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    if (this.enabled && !this.secretRequired) {
+      Assert.hasText(this.secret, "server.tomcat.ajp.secret must be assigned since secret-required is set");
+    }
+  }
 
 }

@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.shared.component.ComponentInitializationException;
 import net.shibboleth.shared.httpclient.HttpClientBuilder;
@@ -25,6 +26,8 @@ import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
+import org.springframework.boot.ssl.NoSuchSslBundleException;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.util.StringUtils;
@@ -43,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,10 +62,13 @@ public class MetadataProviderUtils {
    * Based on an {@link EuMetadataProperties} a
    *
    * @param config configuration
+   * @param sslBundles SSL bundles
    * @return a {@link MetadataResolver}
    * @throws Exception for setup errors
    */
-  public static MetadataProvider createMetadataProvider(final EuMetadataProperties config) throws Exception {
+  @Nonnull
+  public static MetadataProvider createMetadataProvider(
+      @Nonnull final EuMetadataProperties config, @Nonnull final SslBundles sslBundles) throws Exception {
 
     final AbstractMetadataProvider provider;
     if (config.getLocation() instanceof final UrlResource urlResource && !urlResource.isFile()) {
@@ -70,7 +77,7 @@ public class MetadataProviderUtils {
             config.getLocation());
       }
       provider = new HTTPMetadataProvider(config.getLocation().getURL().toString(),
-          preProcessBackupFile(config.getBackupLocation()), createHttpClient(config));
+          preProcessBackupFile(config.getBackupLocation()), createHttpClient(config, sslBundles));
 
       if (config.getValidationCertificate() != null) {
         provider.setSignatureVerificationCertificate(config.getValidationCertificate());
@@ -106,11 +113,27 @@ public class MetadataProviderUtils {
    * Creates an HTTP client to use for the {@link MetadataProvider}.
    *
    * @param config the configuration
+   * @param sslBundles SSL bundles
    * @return a HttpClient
    */
-  private static HttpClient createHttpClient(final EuMetadataProperties config) {
+  @Nonnull
+  private static HttpClient createHttpClient(
+      @Nonnull final EuMetadataProperties config, @Nonnull final SslBundles sslBundles) {
     try {
-      final List<TrustManager> managers = List.of(HttpClientSupport.buildNoTrustX509TrustManager());
+      final List<TrustManager> managers;
+
+      if (config.getHttpsTrustBundle() != null) {
+        try {
+          managers = Arrays.asList(sslBundles.getBundle(config.getHttpsTrustBundle()).getManagers().getTrustManagers());
+        }
+        catch (final NoSuchSslBundleException e) {
+          throw new IllegalArgumentException(
+              "SSL bundle %s could not be found".formatted(config.getHttpsTrustBundle()));
+        }
+      }
+      else {
+        managers = List.of(HttpClientSupport.buildNoTrustX509TrustManager());
+      }
       final HostnameVerifier hnv = Optional.ofNullable(config.getSkipHostnameVerification())
           .map(b -> b ? NoopHostnameVerifier.INSTANCE : new DefaultHostnameVerifier())
           .orElseGet(DefaultHostnameVerifier::new);

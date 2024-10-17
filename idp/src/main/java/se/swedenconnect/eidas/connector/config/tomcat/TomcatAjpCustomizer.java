@@ -15,8 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.config.tomcat;
 
-import java.util.Objects;
-
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.ajp.AbstractAjpProtocol;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,13 +23,15 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 /**
  * Configuration settings for Tomcat AJP.
  *
  * @author Martin Lindström
  */
 @Component
-@ConditionalOnProperty(name = "tomcat.ajp.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "server.tomcat.ajp.enabled", havingValue = "true")
 @EnableConfigurationProperties(TomcatAjpConfigurationProperties.class)
 public class TomcatAjpCustomizer implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
 

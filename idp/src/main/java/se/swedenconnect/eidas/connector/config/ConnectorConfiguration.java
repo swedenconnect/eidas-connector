@@ -15,8 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
@@ -71,8 +72,9 @@ import java.util.Optional;
 @Configuration
 @EnableConfigurationProperties({ ConnectorConfigurationProperties.class })
 @DependsOn("openSAML")
-@Slf4j
 public class ConnectorConfiguration {
+
+  private static final Logger log = LoggerFactory.getLogger(ConnectorConfiguration.class);
 
   private final ConnectorConfigurationProperties connectorProperties;
 
@@ -156,8 +158,8 @@ public class ConnectorConfiguration {
    * @throws Exception for config errors
    */
   @Bean(initMethod = "initialize", destroyMethod = "destroy")
-  MetadataProvider metadataProvider() throws Exception {
-    return MetadataProviderUtils.createMetadataProvider(this.connectorProperties.getEuMetadata());
+  MetadataProvider metadataProvider(final SslBundles sslBundles) throws Exception {
+    return MetadataProviderUtils.createMetadataProvider(this.connectorProperties.getEuMetadata(), sslBundles);
   }
 
   /**

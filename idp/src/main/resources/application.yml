@@ -2,6 +2,8 @@
 # Base configuration for the Swedish eIDAS Connector.
 #
 spring:
+  application:
+    name: eidas-connector
   messages:
     basename: messages,idp-errors/idp-error-messages,custom-saml-errors
   ssl:
@@ -21,6 +23,9 @@ server:
   servlet:
     context-path: /idp
     session:
+      timeout: 60m
+      tracking-modes:
+        - cookie
       cookie:
         name: EIDASSESSION
         domain: ${connector.domain}
@@ -34,7 +39,7 @@ server:
   error:
     include-message: always
     include-exception: true
-    include-stacktrace: always
+    include-stacktrace: never
 
 #
 # Management/Actuator configuration
@@ -60,6 +65,12 @@ management:
     web:
       exposure:
         include: info, health, metrics, loggers, refresh-prid, logfile, auditevents
+
+logging:
+  include-application-name: false
+  level:
+    root: warn
+    se.swedenconnect: info
 
 ui:
   languages:
@@ -139,7 +150,6 @@ connector:
 
 saml:
   idp:
-    entity-id: https://connector.eidas.swedenconnect.se/eidas
     base-url: ${connector.base-url}
     audit:
       in-memory:
@@ -147,22 +157,6 @@ saml:
       exclude-events:
         - AUTHENTICATION_SUCCESS
         - AUTHORIZATION_FAILURE
-    credentials:
-      sign:
-        resource: classpath:idp-credentials.jks
-        alias: sign
-        password: secret
-        type: JKS
-      encrypt:
-        resource: classpath:idp-credentials.jks
-        alias: encrypt
-        password: secret
-        type: JKS
-      metadata-sign:
-        resource: classpath:idp-credentials.jks
-        alias: metadata
-        password: secret
-        type: JKS
     endpoints:
       metadata: /metadata/idp.xml
       post-authn: /profile/SAML2/POST/SSO
@@ -247,12 +241,6 @@ saml:
           email-addresses:
             - operations@swedenconnect.se
 
-logging:
-  level:
-    se:
-      swedenconnect:
-        eidas: DEBUG
-
 ---
 
 spring:
@@ -327,7 +315,7 @@ connector:
   base-url: https://${connector.domain}:${server.port}/${server.servlet.context-path}
   eu-metadata:
     location: file:${LOCAL_ENV_PATH}/eidas/eu-metadata/metadata.xml
-    #validation-certificate: classpath:env/qa/eu-metadata-signing-qa.crt  
+    #validation-certificate: classpath:env/qa/eu-metadata-signing-qa.crt
   #  eu-metadata:
   #    location: https://mdsl.sandbox.swedenconnect.se/nodeconfig/metadata
   #    validation-certificate: classpath:env/sandbox/eu-metadata-signing-sandbox.crt
@@ -394,5 +382,4 @@ logging:
     org:
       opensaml:
         core:
-          config: DEBUG      
-      
+          config: DEBUG
