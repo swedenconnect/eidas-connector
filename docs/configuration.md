@@ -30,11 +30,13 @@
 
     2.3.2. [Enabling TLS](#enabling-tls)
 
-    2.3.3. [Tomcat Settings](#tomcat-settings)
+    2.3.3. [Tomcat Settings](#tomcat-settings)    
 
     2.4. [Redis Configuration](#redis-configuration)
     
     2.5. [Logging Configuration](#logging-configuration)
+    
+    2.6. [The Management Endpoints](#the-management-endpoints)
     
 3. [**SAML Identity Provider Configuration**](#saml-identity-provider-configuration)
 
@@ -42,9 +44,13 @@
 
     3.1.1. [Sweden Connect Environments](#sweden-connect-environments)
 
-    3.1. [Credentials Configuration](#credentials-configuration)
+    3.2. [Credentials Configuration](#credentials-configuration)
+    
+    3.2.1. [Key Rollover](#key-rollover)
+    
+    3.2.2. [PKCS#11 and HSM:s](#pkcs11-and-hsms)
 
-    3.2. [Audit Logging Configuration](#audit-logging-configuration)
+    3.3. [Audit Logging Configuration](#audit-logging-configuration)
 
 4. [**eIDAS Connector Configuration**](#eidas-connector-configuration)
 
@@ -365,7 +371,7 @@ logging:
 
 To set up file rotation:
 
-```
+```yaml
 logging:
     ...
   file:
@@ -378,6 +384,40 @@ logging:
 
 To make more advances changes to log entries, see the Spring reference page about [Logging](https://docs.spring.io/spring-boot/reference/features/logging.html).
 
+<a name="the-management-endpoints"></a>
+### 2.6. The Management Endpoints
+
+The Spring resource [Monitoring and Management Over HTTP](https://docs.spring.io/spring-boot/reference/actuator/monitoring.html) contains a reference how the Spring Boot Actuator should be configured.
+
+The default settings for the eIDAS Connector are as follows:
+
+```yaml
+management:
+  server:
+    port: 8444
+  endpoint:
+    health:
+      status:
+        order:
+          - DOWN
+          - OUT_OF_SERVICE
+          - UP
+          - WARNING
+          - UNKNOWN
+        http-mapping:
+          WARNING: 503
+      show-details: always
+    info:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics, loggers, refresh-prid, logfile, auditevents
+```
+
+See the [Management using the Actuator](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html#management-using-the-actuator) section of the [Starting and Running the Swedish eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html) page for a description of each exposed management endpoint.
+
+:exclamation: Make sure not to expose the management endpoints publicly. See [Starting and Running the Swedish eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html) for deployment details.
 
 <a name="saml-identity-provider-configuration"></a>
 ## 3. SAML Identity Provider Configuration
@@ -430,15 +470,210 @@ See the [Metadata Provider Configuration](https://docs.swedenconnect.se/saml-ide
 
 - The web page https://eid.svelegtest.se/mdreg/home contains URL:s and certificates for the Sweden Connect Sandbox environment.
 
-:exclamation: The IdP is only interested in Service Provider metadata, so the URL:s exposing SP metadata only should be used.
+:point_right: The IdP is only interested in Service Provider metadata, so make sure to use the URL:s exposing SP metadata only.
 
 <a name="credentials-configuration"></a>
 ### 3.2. Credentials Configuration
 
+The IdP uses PKI credentials (private keys and certificates) in the following scenarios:
+
+- To sign SAML responses, and possibly also SAML assertions.
+
+- To decrypt encrypted data passed from the Service Provider. This happens when the SP passes an encrypted  `SignMessage` extension in an authentication request.
+
+- To sign the SAML metadata that it exposes.
+
+See the [Metadata Provider Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#metadata-provider-configuration) section of the [Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html) page for details on how to configure each credential.
+
+:point_right: It is possible to use the same credential for several purposes, and by assigning the `saml.idp.credentials.default-credential.*` property, this will be used if a specific purpose is not assigned.
+
+Example where each usage is configured by giving a Java KeyStore with associated alias and passwords:
+
+```yaml
+saml:
+  idp:
+    ...
+    credentials:
+      sign:
+        name: "IdP Signing"
+        resource: file:/etc/config/keys/connector.jks
+        alias: sign
+        password: secret
+        type: JKS
+      encrypt:
+        name: "IdP Decryption"
+        resource: file:/etc/config/keys/connector.jks
+        alias: encrypt
+        password: secret
+        type: JKS
+      metadata-sign:
+        name: "IdP Metadata signing"
+        resource: file:/etc/config/keys/md.jks
+        alias: md
+        password: secret
+        type: JKS
+```
+
+*The `name` parameter is only used in logs to point out which credential that is being used. This field is optional.*
+
+It is also possible to use PEM-files to configure credentials:
+
+```yaml
+saml:
+  idp:
+    ...
+    credentials:
+      sign:
+        certificate: file:/etc/config/keys/sign.crt
+        private-key: file:/etc/config/keys/sign.key
+        key-password: <password>
+      encrypt:
+        certificate: file:/etc/config/keys/encrypt.crt
+        private-key: file:/etc/config/keys/encrypt.key
+```
+
+The example above also illustrates that an encrypted key is used for the signing key, and therefore the password to unlock this file needs to be supplied.
+
+<a name="key-rollover"></a>
+#### 3.2.1. Key Rollover
+
+Periodically, an IdP's keys need to changed, and in order for such a "key rollover" to cause minimal disturbance within the federation it is essential that the IdP plans ahead.
+
+When the IdP is about to change its signing key, it should make sure that the new certificate for the new key is published in its metadata several weeks before the actual change is made. This is so that the SAML Service Providers of the federation is given enough time to download updated metadata (containing both the present and the future certificate for signing).
+
+In order for the eIDAS connector to produce SAML metadata containing the new signing certificate the following needs to be configured:
+
+```yaml
+saml:
+  idp:
+    ...
+    credentials:
+      sign:
+        certificate: file:/etc/config/keys/sign.crt
+        private-key: file:/etc/config/keys/sign.key
+      ...
+      future-sign: file:/etc/config/keys/sign-new.crt
+      ...
+```
+
+In the example above, the `future-sign` property points at the certificate resource that is the certificate for the new signing certificate. After the actual change has been made, change to configuration to:
+
+```yaml
+saml:
+  idp:
+    ...
+    credentials:
+      sign:
+        certificate: file:/etc/config/keys/sign-new.crt
+        private-key: file:/etc/config/keys/sign-new.key
+```
+
+When the IdP changes its encryption key (actually, decryption key would be a better name), we don't have to advertise anything in advance, but instead allow the "old" key to be used for a period (until all SP:s have downloaded the new metadata and have access to the updated certificate).
+
+:point_right: The above examples illustrates how PEM-files are used. Of course, the same is possible using key stores (JKS or PKCS#12).
+
+Therefore, when changing the encryption key, the following needs to be configured:
+
+```yaml
+saml:
+  idp:
+    ...
+    credentials:
+      ...
+      encrypt:
+        name: "IdP Decryption (2)"
+        resource: file:/etc/config/keys/new-key.jks
+        alias: encrypt
+        password: secret
+        type: JKS
+      previous-encrypt:
+        name: "IdP Decryption"
+        resource: file:/etc/config/keys/connector.jks
+        alias: encrypt
+        password: secret
+        type: JKS
+```
+
+When enough time has passed (i.e., until all SP:s have access to the new key), the `previous-encrypt` property may be removed from the configuration.
+
+:point_right: The above examples illustrates how JKS-files are used. Of course, the same is possible using PEM-files.
+
+<a name="pkcs11-and-hsms"></a>
+#### 3.2.2. PKCS#11 and HSM:s
+
+A credential being used by the IdP may also reside on a Hardware Security Module (HSM) and be accessed using the PKCS#11 protocol. The [Credentials Support](https://github.com/swedenconnect/credentials-support) library explains in detail how this works.
+
+Below is an example of where we configure the IdP signing key to use a key residing on an HSM:
+
+```yaml
+saml:
+  idp:
+    ...
+    credentials:
+      sign:
+        pkcs11-configuration: file:/etc/config/keys/p11.conf
+        alias: SLOT1
+        pin: 1234
+        certificate: file:/etc/config/keys/sign.crt
+        type: PKCS11
+``` 
+
+The references PKCS#11 configuration file should be formatted according to [PKCS#11 Reference Guide](https://docs.oracle.com/en/java/javase/17/security/pkcs11-reference-guide1.html).
+
+:point_right: If the certificate is accessible from the HSM, it does not need to be configured.
+
 <a name="audit-logging-configuration"></a>
 ### 3.3. Audit Logging Configuration
 
-The default is to only hold audit entries in memory and expose them via the [Spring Boot Actuator](https://www.baeldung.com/spring-boot-actuators) endpoint for audit. In a production environment we may want to XXX
+The default is to only hold audit entries in memory and expose them via the [Spring Boot Actuator](https://www.baeldung.com/spring-boot-actuators) endpoint for audit (see [Accessing Audit Logs](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html#accessing-audit-logs)). In a production environment we probably want to persist audit entries.
+
+Section [Audit Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#audit-configuration) for the [Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html) contains a full configuration reference.
+
+By default, the IdP audit configuration looks like:
+
+```yaml
+saml:
+  idp:
+    ...
+    audit:
+      in-memory:
+        capacity: 1000
+```
+
+So, for audit logging to file, add the following:
+
+```yaml
+saml:
+  idp:
+    ...
+    audit:
+      in-memory:
+        capacity: 1000
+      file:
+        log-file: file:/etc/var/logging/connector-audit.log
+```
+
+The audit logger will now also write to the `connector-audit.log` file. It uses a rolling file appender that creates a new log file every day, and saves the old ones as `<file-name>-<date>.<ext>`.
+
+In the example above we keep the in-memory logging which can be a good idea to allow for the management endpoints to view log files, see [Accessing Audit Logs](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html#accessing-audit-logs).
+
+It is also possible to persist audit entries to Redis:
+
+```yaml
+saml:
+  idp:
+    ...
+    audit:
+      in-memory:
+        capacity: 1000
+      redis:
+        name: "connector-audit"
+        type: list
+```
+
+When using Redis for audit logging, Redis must also be configured, see section [2.4](#redis-configuration), [Redis Configuration](#redis-configuration).
+
+:grey_exclamation: See also the page [Swedish eIDAS Connector Audit Logging](https://docs.swedenconnect.se/eidas-connector/audit.html) for a full reference for all audit events produced by the eIDAS Connector.
 
 <a name="eidas-connector-configuration"></a>
 ## 4. eIDAS Connector Configuration
