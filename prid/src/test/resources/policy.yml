@@ -1,0 +1,13 @@
+policy:
+  SE:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  NO:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  DE:
+    algorithm: default-eIDAS
+    persistenceClass: B
+  XA:
+    algorithm: test-eIDAS
+    persistenceClass: A

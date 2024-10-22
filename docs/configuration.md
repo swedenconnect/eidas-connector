@@ -671,7 +671,7 @@ saml:
         type: list
 ```
 
-When using Redis for audit logging, Redis must also be configured, see section [2.4](#redis-configuration), [Redis Configuration](#redis-configuration).
+When using Redis for audit logging, Spring's Redis support must also be configured, see section [2.4](#redis-configuration), [Redis Configuration](#redis-configuration).
 
 :grey_exclamation: See also the page [Swedish eIDAS Connector Audit Logging](https://docs.swedenconnect.se/eidas-connector/audit.html) for a full reference for all audit events produced by the eIDAS Connector.
 

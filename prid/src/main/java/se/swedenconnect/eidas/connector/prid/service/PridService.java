@@ -17,29 +17,28 @@ package se.swedenconnect.eidas.connector.prid.service;
 
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
+import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.boot.context.properties.bind.BindException;
 import org.springframework.boot.context.properties.bind.BindResult;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.boot.context.properties.source.ConfigurationPropertySource;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Scheduled;
 import se.swedenconnect.eidas.connector.prid.generator.PridGenerator;
 import se.swedenconnect.eidas.connector.prid.generator.PridGeneratorException;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * The PRID service that knows how to generate PRID attributes based on the PRID policy configuration.
@@ -49,6 +48,9 @@ public class PridService implements InitializingBean {
 
   /** The resource holding the PRID policy configuration. */
   private final Resource policyResource;
+
+  /** Whether the policy resource is a YAML file (or a properties file). */
+  private final boolean isYamlResource;
 
   /** The installed PRID-generators. */
   private final List<PridGenerator> pridGenerators;
@@ -68,6 +70,10 @@ public class PridService implements InitializingBean {
   public PridService(final Resource policyConfiguration, final List<PridGenerator> pridGenerators) {
     this.policyResource = Objects.requireNonNull(policyConfiguration, "policyConfiguration must not be null");
     this.pridGenerators = Objects.requireNonNull(pridGenerators, "pridGenerators must not be null");
+
+    this.isYamlResource = Optional.ofNullable(this.policyResource.getFilename())
+        .filter(f -> f.endsWith(".yml") || f.endsWith(".yaml") || f.endsWith(".YML") || f.endsWith(".YAML"))
+        .isPresent();
   }
 
   /**
@@ -158,7 +164,7 @@ public class PridService implements InitializingBean {
       validation.addError(msg);
       this.latestValidationResult = validation;
     }
-    catch (final IOException e) {
+    catch (final Exception e) {
       final String msg = "Failed to read PRID policy file - " + e.getMessage();
       log.error(msg, e);
       validation.addError(msg);
@@ -171,23 +177,48 @@ public class PridService implements InitializingBean {
    * Loads the PRID policy from the policy resource file.
    *
    * @return a {@link PridPolicy} element
-   * @throws IOException for errors reading the policy file
    * @throws BindException for format errors when creating a policy object
+   * @throws Exception for errors reading the policy file
    */
-  protected PridPolicy loadPolicy() throws IOException, BindException {
+  protected PridPolicy loadPolicy() throws Exception, BindException {
 
-    // Get hold of the properties file holding the config ...
+    // Get hold of the properties/YAML file holding the config ...
     //
     log.debug("Loading policy file '{}' ...", this.policyResource);
-    final PropertiesFactoryBean pfactory = new PropertiesFactoryBean();
-    pfactory.setSingleton(true);
-    pfactory.setLocation(this.policyResource);
-    pfactory.afterPropertiesSet();
+    final FactoryBean<Properties> factory;
+    if (this.isYamlResource) {
+      final YamlPropertiesFactoryBean yamlFactory = new YamlPropertiesFactoryBean();
+      yamlFactory.setResources(this.policyResource);
+      yamlFactory.setSingleton(true);
+      yamlFactory.afterPropertiesSet();
+      factory = yamlFactory;
+    }
+    else {
+      final PropertiesFactoryBean pfactory = new PropertiesFactoryBean();
+      pfactory.setSingleton(true);
+      pfactory.setLocation(this.policyResource);
+      pfactory.afterPropertiesSet();
+      factory = pfactory;
+    }
 
-    final ConfigurationPropertySource propertySource = new MapConfigurationPropertySource(
-        Optional.ofNullable(pfactory.getObject())
-            .map(p -> p.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-            .orElseGet(Collections::emptyMap));
+    final Properties properties = factory.getObject();
+    final MapConfigurationPropertySource propertySource = new MapConfigurationPropertySource();
+    for (final Map.Entry<Object, Object> entry : properties.entrySet()) {
+      final String key = (String) entry.getKey();
+      final String value = (String) entry.getValue();
+
+      // Workaround to handle the case when country is NO. Yaml processing maps this to false!
+      //
+      if (key.equalsIgnoreCase("policy[false].algorithm")) {
+        propertySource.put("policy.NO.algorithm", value);
+      }
+      else if (key.equalsIgnoreCase("policy[false].persistenceClass")) {
+        propertySource.put("policy.NO.persistenceClass", value);
+      }
+      else {
+        propertySource.put(key, value);
+      }
+    }
 
     final Binder binder = new Binder(propertySource);
     final BindResult<PridPolicy> result = binder.bind("", Bindable.of(PridPolicy.class));

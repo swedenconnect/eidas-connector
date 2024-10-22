@@ -17,6 +17,9 @@ package se.swedenconnect.eidas.connector.prid.service;
 
 /**
  * Represents a PRID request result.
+ *
+ * @param prid the Provisional ID
+ * @param pridPersistence the persistence class
  */
 public record PridResult(String prid, String pridPersistence) {
 }

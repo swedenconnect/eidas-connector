@@ -15,15 +15,14 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import org.springframework.boot.actuate.info.Info.Builder;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
-
 import se.swedenconnect.eidas.connector.prid.service.PridPolicy;
 import se.swedenconnect.eidas.connector.prid.service.PridService;
+
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Info contributor displaying the PRID policy configuration.
@@ -39,7 +38,7 @@ public class PridPolicyInfoContributor implements InfoContributor {
   /**
    * Constructor.
    *
-   * @param pridPolicyConfiguration the policy configuration
+   * @param pridService the PRID service
    */
   public PridPolicyInfoContributor(final PridService pridService) {
     this.pridService =
