@@ -15,20 +15,19 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
-
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.eidas.connector.prid.service.PridPolicy;
 import se.swedenconnect.eidas.connector.prid.service.PridService;
 import se.swedenconnect.eidas.connector.prid.service.PridService.PridPolicyValidation;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * PRID service health indicator bean.
@@ -80,8 +79,8 @@ public class PridHealthIndicator implements HealthIndicator {
     //
     final List<CountryMetadata> countries = this.euMetadata.getAllCountries();
     final List<String> noPridConfig = countries.stream()
-        .filter(c -> this.pridService.getPolicy(c.getCountryCode()) == null)
         .map(CountryMetadata::getCountryCode)
+        .filter(countryCode -> this.pridService.getPolicy(countryCode) == null)
         .toList();
     if (noPridConfig.isEmpty()) {
       builder.withDetail("prid-policy-status", "ok");

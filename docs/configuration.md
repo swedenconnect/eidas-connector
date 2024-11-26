@@ -412,8 +412,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: info, health, metrics, loggers, refresh-prid, logfile, auditevents
+        include: info, health, metrics, loggers, refreshprid, logfile, auditevents
 ```
+
+By default, the management endpoints are exposed under `/actuator/<endpoint>`. This can be changed using the `management.endpoints.web.base-path` setting.
 
 See the [Management using the Actuator](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html#management-using-the-actuator) section of the [Starting and Running the Swedish eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html) page for a description of each exposed management endpoint.
 

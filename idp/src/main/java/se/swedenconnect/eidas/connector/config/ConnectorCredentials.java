@@ -15,20 +15,18 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import jakarta.annotation.Nullable;
 import org.opensaml.saml.ext.saml2alg.DigestMethod;
 import org.opensaml.saml.saml2.metadata.EncryptionMethod;
 import org.opensaml.saml.saml2.metadata.KeyDescriptor;
 import org.opensaml.security.credential.UsageType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import se.swedenconnect.opensaml.saml2.metadata.build.DigestMethodBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.EncryptionMethodBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.KeyDescriptorBuilder;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.ReloadablePkiCredential;
-import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataConfigurationProperties;
+import se.swedenconnect.spring.saml.idp.autoconfigure.settings.IdentityProviderConfigurationProperties;
 
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -41,7 +39,6 @@ import java.util.Objects;
  *
  * @author Martin Lindström
  */
-@Component
 public class ConnectorCredentials {
 
   private final PkiCredential defaultCredential;
@@ -88,19 +85,19 @@ public class ConnectorCredentials {
    * @param oauth2Credential the PKI credential for OAuth2 use
    */
   public ConnectorCredentials(
-      final @Qualifier("saml.idp.credentials.Default") @Autowired(required = false) PkiCredential defaultCredential,
-      final @Qualifier("saml.idp.credentials.Sign") @Autowired(required = false) PkiCredential signCredential,
-      final @Qualifier("saml.idp.credentials.FutureSign") @Autowired(required = false) X509Certificate futureSignCertificate,
-      final @Qualifier("saml.idp.credentials.Encrypt") @Autowired(required = false) PkiCredential encryptCredential,
-      final @Qualifier("saml.idp.credentials.PreviousEncrypt") @Autowired(required = false) PkiCredential previousEncryptCredential,
-      final @Qualifier("connector.sp.credentials.Default") @Autowired(required = false) PkiCredential spDefaultCredential,
-      final @Qualifier("connector.sp.credentials.Sign") @Autowired(required = false) PkiCredential spSignCredential,
-      final @Qualifier("connector.sp.credentials.FutureSign") @Autowired(required = false) X509Certificate spFutureSignCertificate,
-      final @Qualifier("connector.sp.credentials.Encrypt") @Autowired(required = false) PkiCredential spEncryptCredential,
-      final @Qualifier("connector.sp.credentials.PreviousEncrypt") @Autowired(required = false) PkiCredential spPreviousEncryptCredential,
-      final @Qualifier("saml.idp.credentials.MetadataSign") @Autowired(required = false) PkiCredential metadataSignCredential,
-      final @Qualifier("connector.sp.credentials.MetadataSign") @Autowired(required = false) PkiCredential spMetadataSignCredential,
-      final @Qualifier("connector.idm.oauth2.Credential") @Autowired(required = false) PkiCredential oauth2Credential) {
+      @Nullable final PkiCredential defaultCredential,
+      @Nullable final PkiCredential signCredential,
+      @Nullable final X509Certificate futureSignCertificate,
+      @Nullable final PkiCredential encryptCredential,
+      @Nullable final PkiCredential previousEncryptCredential,
+      @Nullable final PkiCredential spDefaultCredential,
+      @Nullable final PkiCredential spSignCredential,
+      @Nullable final X509Certificate spFutureSignCertificate,
+      @Nullable final PkiCredential spEncryptCredential,
+      @Nullable final PkiCredential spPreviousEncryptCredential,
+      @Nullable final PkiCredential metadataSignCredential,
+      @Nullable final PkiCredential spMetadataSignCredential,
+      @Nullable final PkiCredential oauth2Credential) {
     this.defaultCredential = defaultCredential;
     this.signCredential = signCredential;
     this.futureSignCertificate = futureSignCertificate;
@@ -140,7 +137,7 @@ public class ConnectorCredentials {
    * @throws IllegalArgumentException if no credential is found
    */
   public List<PkiCredential> getSpEncryptCredentials() {
-    List<PkiCredential> creds = new ArrayList<>();
+    final List<PkiCredential> creds = new ArrayList<>();
     if (this.spEncryptCredential != null) {
       creds.add(this.spEncryptCredential);
       if (this.spPreviousEncryptCredential != null) {
@@ -184,7 +181,7 @@ public class ConnectorCredentials {
    * @return a list of {@link KeyDescriptor} elements
    */
   public List<KeyDescriptor> getSpKeyDescriptors(
-      final List<MetadataConfigurationProperties.EncryptionMethod> encryptionMethods) {
+      final List<IdentityProviderConfigurationProperties.MetadataConfigurationProperties.EncryptionMethod> encryptionMethods) {
 
     final List<KeyDescriptor> keyDescriptors = new ArrayList<>();
     KeyDescriptorBuilder unspecifiedBuilder = null;
@@ -276,7 +273,7 @@ public class ConnectorCredentials {
   }
 
   private List<EncryptionMethod> createEncryptionMethods(
-      final List<MetadataConfigurationProperties.EncryptionMethod> encryptionMethods) {
+      final List<IdentityProviderConfigurationProperties.MetadataConfigurationProperties.EncryptionMethod> encryptionMethods) {
 
     if (encryptionMethods != null && !encryptionMethods.isEmpty()) {
       return encryptionMethods.stream()

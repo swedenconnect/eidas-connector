@@ -26,7 +26,9 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import se.swedenconnect.security.credential.PkiCredential;
+import se.swedenconnect.security.credential.nimbus.JwkTransformerFunction;
 
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 import java.util.Objects;
@@ -71,10 +73,7 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
    * @param getScopes the OAuth2 scope(s) to use when making GET requests
    * @param oauth2Credential the credential used to sign the OAuth2 items
    */
-  public AbstractOAuth2Handler(
-      final String clientId,
-      final List<String> checkScopes,
-      final List<String> getScopes,
+  public AbstractOAuth2Handler(final String clientId, final List<String> checkScopes, final List<String> getScopes,
       final PkiCredential oauth2Credential) {
     this.clientId = new ClientID(Objects.requireNonNull(clientId, "clientId must not be null"));
     this.checkScope = Optional.ofNullable(Scope.parse(checkScopes))
@@ -125,17 +124,17 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
    * @return the client ID
    */
   //protected ClientID getClientId() {
-//    return this.clientId;
-//  }
+  //    return this.clientId;
+  //  }
 
   /**
    * Gets the OAuth2 scope(s) to use.
    *
    * @return the scope(s)
    */
-//  protected Scope getScope() {
-//    return this.scope;
-//  }
+  //  protected Scope getScope() {
+  //    return this.scope;
+  //  }
 
   /**
    * Gets the OAuth2 credential - used to sign OAuth2 items.
@@ -163,21 +162,25 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
    */
   protected JwkInfo createJwk(final PkiCredential credential) {
     try {
-      if ("RSA".equals(credential.getPublicKey().getAlgorithm())) {
-        final RSAKey jwk = new RSAKey.Builder((RSAPublicKey) credential.getPublicKey())
-            .privateKey(credential.getPrivateKey())
-            .keyIDFromThumbprint()
-            .algorithm(JWSAlgorithm.RS256)
-            .build();
-        return new JwkInfo(jwk, new RSASSASigner(jwk), JWSAlgorithm.RS256);
+      final JwkTransformerFunction transformer = new JwkTransformerFunction();
+      transformer.setAlgorithmFunction(c -> {
+        if (c.getPublicKey() instanceof RSAPublicKey) {
+          return JWSAlgorithm.RS256;
+        }
+        else if (c.getPublicKey() instanceof ECPublicKey) {
+          return JWSAlgorithm.ES256;
+        }
+        else {
+          return null;
+        }
+      });
+      final JWK jwk = credential.transform(transformer);
+
+      if (jwk instanceof final RSAKey rsaKey) {
+        return new JwkInfo(jwk, new RSASSASigner(rsaKey), (JWSAlgorithm) jwk.getAlgorithm());
       }
-      else if ("EC".equals(credential.getPublicKey().getAlgorithm())) {
-        final ECKey jwk = new ECKey.Builder(ECKey.parse(credential.getCertificate()))
-            .privateKey(credential.getPrivateKey())
-            .keyIDFromThumbprint()
-            .algorithm(JWSAlgorithm.ES256)
-            .build();
-        return new JwkInfo(jwk, new ECDSASigner(jwk), JWSAlgorithm.ES256);
+      else if (jwk instanceof final ECKey ecKey) {
+        return new JwkInfo(jwk, new ECDSASigner(ecKey), (JWSAlgorithm) jwk.getAlgorithm());
       }
       else {
         throw new SecurityException("Unsupported key type - " + credential.getPublicKey().getAlgorithm());

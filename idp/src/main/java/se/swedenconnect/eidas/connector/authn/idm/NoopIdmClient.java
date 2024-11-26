@@ -32,6 +32,13 @@ public class NoopIdmClient implements IdmClient {
     return false;
   }
 
+  /**
+   * No-op.
+   */
+  @Override
+  public void ping() throws IdmException {
+  }
+
   @Override
   public boolean hasRecord(final EidasAuthenticationToken token) {
     return false;

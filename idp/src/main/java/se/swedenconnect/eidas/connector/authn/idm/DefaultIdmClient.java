@@ -57,8 +57,14 @@ import java.util.Optional;
 @Slf4j
 public class DefaultIdmClient implements IdmClient {
 
+  /** The base path to IdM. */
+  public static final String IDM_BASE_PATH = "/api/v1/mrecord";
+
   /** The API path. */
-  public static final String IDM_API_PATH = "/api/v1/mrecord/{prid}";
+  public static final String IDM_API_PATH = IDM_BASE_PATH + "/{prid}";
+
+  /** The PING path. */
+  public static final String IDM_PING_PATH = IDM_BASE_PATH + "/ping";
 
   /** The OAuth2 handler. */
   private final OAuth2Handler oauth2;
@@ -104,6 +110,27 @@ public class DefaultIdmClient implements IdmClient {
     return true;
   }
 
+  @Override
+  public void ping() throws IdmException {
+
+    log.debug("Calling Ping-method at Identity Matching API ...");
+
+    final String accessToken = this.oauth2.getCheckAccessToken();
+
+    try {
+      this.restClient.get()
+          .uri(IDM_PING_PATH)
+          .header(HttpHeaders.AUTHORIZATION, accessToken)
+          .retrieve()
+          .toBodilessEntity();
+      log.debug("Ping against Identity Matching API was successful...");
+    }
+    catch (final Exception e) {
+      log.warn("Ping against Identity Matching API failed", e);
+      throw new IdmException("IdM Ping failure - %s".formatted(e.getMessage()), e);
+    }
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean hasRecord(final EidasAuthenticationToken token) throws IdmException {
@@ -135,6 +162,10 @@ public class DefaultIdmClient implements IdmClient {
     }
     catch (final RestClientResponseException e) {
       log.info("Failed to query IdM service", e);
+      throw new IdmException("Failure querying for IdM record - " + e.getMessage(), e);
+    }
+    catch (final Exception e) {
+      log.warn("Failed to query IdM service", e);
       throw new IdmException("Failure querying for IdM record - " + e.getMessage(), e);
     }
   }

@@ -32,6 +32,13 @@ public interface IdmClient {
   boolean isActive();
 
   /**
+   * Tests connectivity to the IdM-service.
+   *
+   * @throws IdmException if we can not connect to the IdM-service
+   */
+  void ping() throws IdmException;
+
+  /**
    * Tells whether the user identified by {@code token} has a record at the Identity Matching service.
    *
    * @param token the user authentication token

@@ -113,13 +113,13 @@ Below follows the settings that extend the above configuration.
 <a name="prid-configuration"></a>
 ### PRID Configuration
 
-**Description:** Configuration for the PRID (Provisional Identifier) service.
+**Description:** Configuration for the PRID (Provisional Identifier) calculation.
 
 **Java class:** [PridServiceProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/ConnectorConfigurationProperties.java)
 
 | Property | Description | Type | Default value |
 | :--- | :--- | :--- | :--- |
-| `policy-resource` | A [Resource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html) pointing at the file containing the PRID configuration, see [The PRID Service](prid.html). | [Resource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html) | - |
+| `policy-resource` | A [Resource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html) pointing at the file containing the PRID configuration, see [eIDAS Connector Provisional Identifier (PRID) Calculation](https://docs.swedenconnect.se/eidas-connector/prid.html). | [Resource](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html) | - |
 | `update-interval` | Indicates how often the policy should be re-loaded (value is given in seconds). | Integer | `600` (10 minutes) |
 
 <a name="idm-configuration"></a>

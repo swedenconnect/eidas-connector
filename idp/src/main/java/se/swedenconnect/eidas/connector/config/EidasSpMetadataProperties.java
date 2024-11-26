@@ -19,7 +19,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.StringUtils;
-import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataConfigurationProperties;
+import se.swedenconnect.spring.saml.idp.autoconfigure.settings.IdentityProviderConfigurationProperties;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -30,12 +30,13 @@ import java.util.List;
  *
  * @author Martin Lindström
  */
-public class EidasSpMetadataProperties extends MetadataConfigurationProperties implements InitializingBean {
+public class EidasSpMetadataProperties extends IdentityProviderConfigurationProperties.MetadataConfigurationProperties
+    implements InitializingBean {
 
   /**
    * The value to insert for the eIDAS entity category
-   * {@code http://eidas.europa.eu/entity-attributes/application-identifier}. The current version of the
-   * connector will always be appended to this value.
+   * {@code http://eidas.europa.eu/entity-attributes/application-identifier}. The current version of the connector will
+   * always be appended to this value.
    */
   @Getter
   @Setter

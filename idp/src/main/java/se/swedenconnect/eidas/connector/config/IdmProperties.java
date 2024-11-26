@@ -18,8 +18,9 @@ package se.swedenconnect.eidas.connector.config;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.util.Assert;
-import se.swedenconnect.security.credential.factory.PkiCredentialConfigurationProperties;
+import se.swedenconnect.security.credential.config.properties.PkiCredentialConfigurationProperties;
 
 import java.time.Duration;
 import java.util.List;
@@ -129,6 +130,7 @@ public class IdmProperties implements InitializingBean {
      */
     @Getter
     @Setter
+    @NestedConfigurationProperty
     private PkiCredentialConfigurationProperties credential;
 
     /**

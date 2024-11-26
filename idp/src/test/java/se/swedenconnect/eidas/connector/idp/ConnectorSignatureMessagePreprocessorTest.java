@@ -32,25 +32,25 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public final class ConnectorSignatureMessagePreprocessorTest {
 
-    private final ConnectorSignatureMessagePreprocessor preprocessor = new ConnectorSignatureMessagePreprocessor();
+  private final ConnectorSignatureMessagePreprocessor preprocessor = new ConnectorSignatureMessagePreprocessor();
 
-    @Test
-    public void testProcessSignMessage_HtmlTypeNotAllowed() {
-        final String message = "Hello world!";
-        final String base64Message = Base64.getEncoder().encodeToString(message.getBytes(StandardCharsets.UTF_8));
+  @Test
+  public void testProcessSignMessage_HtmlTypeNotAllowed() {
+    final String message = "Hello world!";
+    final String base64Message = Base64.getEncoder().encodeToString(message.getBytes(StandardCharsets.UTF_8));
 
-        assertThrows(Saml2ErrorStatusException.class, () ->
-            preprocessor.processSignMessage(base64Message, SignMessageMimeTypeEnum.TEXT_HTML));
-    }
+    assertThrows(Saml2ErrorStatusException.class, () ->
+        preprocessor.processSignMessage(base64Message, SignMessageMimeTypeEnum.TEXT_HTML));
+  }
 
-    @Test
-    public void testProcessSignMessage_SuccessfulProcessing() {
-        final String message = "Hello\nworld!";
-        final String expectedMessage = "Hello<br />world!";
-        final String base64Message = Base64.getEncoder().encodeToString(message.getBytes(StandardCharsets.UTF_8));
+  @Test
+  public void testProcessSignMessage_SuccessfulProcessing() {
+    final String message = "Hello\nworld!";
+    final String expectedMessage = "Hello<br />world!";
+    final String base64Message = Base64.getEncoder().encodeToString(message.getBytes(StandardCharsets.UTF_8));
 
-        final String processedMessage = preprocessor.processSignMessage(base64Message, SignMessageMimeTypeEnum.TEXT);
+    final String processedMessage = preprocessor.processSignMessage(base64Message, SignMessageMimeTypeEnum.TEXT);
 
-        assertEquals(expectedMessage, processedMessage);
-    }
+    assertEquals(expectedMessage, processedMessage);
+  }
 }

@@ -29,7 +29,7 @@ public final class ApplicationVersion {
   /**
    * Global serialization value for classes.
    */
-  public static final long SERIAL_VERSION_UID = getVersion().hashCode();
+  public static final long SERIAL_VERSION_UID = (MAJOR + "." + MINOR).hashCode();
 
   /**
    * Gets the version string.
@@ -38,6 +38,9 @@ public final class ApplicationVersion {
    */
   public static String getVersion() {
     return MAJOR + "." + MINOR + "." + PATCH;
+  }
+
+  private ApplicationVersion() {
   }
 
 }

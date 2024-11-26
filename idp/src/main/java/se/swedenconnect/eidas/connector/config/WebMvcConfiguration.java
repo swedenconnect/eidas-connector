@@ -99,7 +99,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
   @Bean("localeResolver")
   LocaleResolver localeResolver(@Value("${server.servlet.context-path}") final String contextPath) {
     final CookieLocaleResolver resolver = new CookieLocaleResolver();
-    resolver.setDefaultLocale(new Locale("en"));
+    resolver.setDefaultLocale(Locale.of("en"));
     resolver.setCookiePath(contextPath);
     resolver.setCookieMaxAge(Duration.ofDays(365));
     resolver.setCookieHttpOnly(true);

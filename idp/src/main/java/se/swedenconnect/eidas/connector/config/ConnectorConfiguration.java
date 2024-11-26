@@ -55,12 +55,18 @@ import se.swedenconnect.eidas.connector.prid.generator.PridGenTestEidas;
 import se.swedenconnect.eidas.connector.prid.service.PridService;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryRegistry;
+import se.swedenconnect.security.credential.PkiCredential;
+import se.swedenconnect.security.credential.bundle.CredentialBundles;
+import se.swedenconnect.security.credential.config.ConfigurationResourceLoader;
+import se.swedenconnect.security.credential.config.properties.PkiCredentialConfigurationProperties;
+import se.swedenconnect.security.credential.factory.PkiCredentialFactory;
 import se.swedenconnect.spring.saml.idp.config.configurers.Saml2IdpConfigurerAdapter;
 import se.swedenconnect.spring.saml.idp.extensions.SignatureMessagePreprocessor;
 import se.swedenconnect.spring.saml.idp.metadata.EntityCategoryHelper;
 import se.swedenconnect.spring.saml.idp.response.ThymeleafResponsePage;
 import se.swedenconnect.spring.saml.idp.settings.IdentityProviderSettings;
 
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,7 +76,7 @@ import java.util.Optional;
  * @author Martin Lindström
  */
 @Configuration
-@EnableConfigurationProperties({ ConnectorConfigurationProperties.class })
+@EnableConfigurationProperties(ConnectorConfigurationProperties.class)
 @DependsOn("openSAML")
 public class ConnectorConfiguration {
 
@@ -82,18 +88,27 @@ public class ConnectorConfiguration {
 
   private final SslBundles sslBundles;
 
+  private final CredentialBundles credentialBundles;
+
+  private final ConfigurationResourceLoader resourceLoader;
+
   /**
    * Connector.
    *
    * @param connectorProperties the configuration properties
    * @param idpSettings the IdP configuration
    * @param sslBundles the SSL bundles
+   * @param credentialBundles the credential bundles
+   * @param resourceLoader for loading credential configuration
    */
   public ConnectorConfiguration(final ConnectorConfigurationProperties connectorProperties,
-      final IdentityProviderSettings idpSettings, final SslBundles sslBundles) {
+      final IdentityProviderSettings idpSettings, final SslBundles sslBundles,
+      final CredentialBundles credentialBundles, final ConfigurationResourceLoader resourceLoader) {
     this.connectorProperties = connectorProperties;
     this.idpSettings = idpSettings;
     this.sslBundles = sslBundles;
+    this.credentialBundles = credentialBundles;
+    this.resourceLoader = resourceLoader;
   }
 
   /**
@@ -149,6 +164,52 @@ public class ConnectorConfiguration {
   @Bean
   ThymeleafResponsePage responsePage(final SpringTemplateEngine templateEngine) {
     return new ThymeleafResponsePage(templateEngine, "post-response.html");
+  }
+
+  /**
+   * Creates the {@link ConnectorCredentials} bean.
+   *
+   * @param defaultCredential the default credential for the SAML IdP
+   * @param signCredential the signing credential for the SAML IdP
+   * @param futureSignCertificate the future signing certificate for the SAML IdP
+   * @param encryptCredential the encryption credential for the SAML IdP
+   * @param previousEncryptCredential the previous encryption credential for the SAML IdP
+   * @param metadataSignCredential the metadata signing credential for the SAML IdP
+   * @return a {@link ConnectorCredentials} bean
+   * @throws Exception for credential loading errors
+   */
+  @Bean
+  ConnectorCredentials connectorCredentials(
+      final @Qualifier("saml.idp.credentials.Default") @Autowired(required = false) PkiCredential defaultCredential,
+      final @Qualifier("saml.idp.credentials.Sign") @Autowired(required = false) PkiCredential signCredential,
+      final @Qualifier("saml.idp.credentials.FutureSign") @Autowired(required = false) X509Certificate futureSignCertificate,
+      final @Qualifier("saml.idp.credentials.Encrypt") @Autowired(required = false) PkiCredential encryptCredential,
+      final @Qualifier("saml.idp.credentials.PreviousEncrypt") @Autowired(required = false) PkiCredential previousEncryptCredential,
+      final @Qualifier("saml.idp.credentials.MetadataSign") @Autowired(required = false) PkiCredential metadataSignCredential)
+      throws Exception {
+
+    return new ConnectorCredentials(defaultCredential, signCredential, futureSignCertificate, encryptCredential,
+        previousEncryptCredential,
+        this.loadCredential(this.connectorProperties.getEidas().getCredentials().getDefaultCredential()),
+        this.loadCredential(this.connectorProperties.getEidas().getCredentials().getSign()),
+        this.connectorProperties.getEidas().getCredentials().getFutureSign(),
+        this.loadCredential(this.connectorProperties.getEidas().getCredentials().getEncrypt()),
+        this.loadCredential(this.connectorProperties.getEidas().getCredentials().getPreviousEncrypt()),
+        metadataSignCredential,
+        this.loadCredential(this.connectorProperties.getEidas().getCredentials().getMetadataSign()),
+        this.loadCredential(Optional.ofNullable(this.connectorProperties.getIdm())
+            .map(IdmProperties::getOauth2)
+            .map(IdmProperties.OAuth2Properties::getCredential)
+            .orElse(null)));
+  }
+
+  private PkiCredential loadCredential(final PkiCredentialConfigurationProperties props) throws Exception {
+    if (props == null) {
+      return null;
+    }
+    return PkiCredentialFactory.createCredential(props, this.resourceLoader,
+        this.credentialBundles.getCredentialProvider(), this.credentialBundles.getKeyStoreProvider(), null);
+
   }
 
   /**

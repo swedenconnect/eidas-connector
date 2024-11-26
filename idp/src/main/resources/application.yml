@@ -33,6 +33,7 @@ server:
         same-site: NONE
         http-only: true
         secure: true
+      persistent: false
   ssl:
     enabled: true
     bundle: localhost
@@ -60,11 +61,11 @@ management:
           WARNING: 503
       show-details: always
     info:
-      enabled: true
+      access: read_only
   endpoints:
     web:
       exposure:
-        include: info, health, metrics, loggers, refresh-prid, logfile, auditevents
+        include: info, health, metrics, loggers, refreshprid, auditevents
 
 logging:
   include-application-name: false
@@ -326,15 +327,19 @@ connector:
     entity-id: https://localhost:9200/idp/metadata/sp
     credentials:
       sign:
-        resource: classpath:env/localhost/sp-keys.jks
-        alias: sign
-        password: secret
-        type: JKS
+        jks:
+          store:
+            location: classpath:env/localhost/sp-keys.jks
+            password: secret
+          key:
+            alias: sign
       encrypt:
-        resource: classpath:env/localhost/sp-keys.jks
-        alias: encrypt
-        password: secret
-        type: JKS
+        jks:
+          store:
+            location: classpath:env/localhost/sp-keys.jks
+            password: secret
+          key:
+            alias: encrypt
 
 saml:
   idp:
@@ -345,20 +350,26 @@ saml:
         validation-certificate: classpath:env/sandbox/sc-metadata-signing-sandbox.crt
     credentials:
       sign:
-        resource: classpath:env/localhost/idp-keys.jks
-        alias: sign
-        password: secret
-        type: JKS
+        jks:
+          store:
+            location: classpath:env/localhost/idp-keys.jks
+            password: secret
+          key:
+            alias: sign
       encrypt:
-        resource: classpath:env/localhost/idp-keys.jks
-        alias: encrypt
-        password: secret
-        type: JKS
+        jks:
+          store:
+            location: classpath:env/localhost/idp-keys.jks
+            password: encrypt
+          key:
+            alias: sign
       metadata-sign:
-        resource: classpath:env/localhost/idp-keys.jks
-        alias: metadata
-        password: secret
-        type: JKS
+        jks:
+          store:
+            location: classpath:env/localhost/idp-keys.jks
+            password: encrypt
+          key:
+            alias: metadata
     metadata:
       ui-info:
         display-names:

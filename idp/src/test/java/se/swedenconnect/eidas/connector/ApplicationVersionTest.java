@@ -15,10 +15,10 @@
  */
 package se.swedenconnect.eidas.connector;
 
-import java.util.Properties;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Properties;
 
 /**
  * Test cases for ApplicationVersion.
@@ -35,19 +35,21 @@ public class ApplicationVersionTest {
 
     this.version = properties.getProperty("connector.version");
     if (this.version.endsWith("-SNAPSHOT")) {
-      this.version = this.version.substring(0, version.length() - 9);
+      this.version = this.version.substring(0, this.version.length() - 9);
     }
   }
 
   @Test
   public void testUid() {
-    Assertions.assertEquals(this.version.hashCode(), ApplicationVersion.SERIAL_VERSION_UID);
+    final String[] parts = this.version.split("\\.");
+    final String majorAndMinor = parts[0] + "." + parts[1];
+    Assertions.assertEquals(majorAndMinor.hashCode(), ApplicationVersion.SERIAL_VERSION_UID);
   }
 
   @Test
   public void testVersion() throws Exception {
     Assertions.assertEquals(this.version, ApplicationVersion.getVersion(),
-        "Expected ApplicationVersion.getVersion() to return " + version);
+        "Expected ApplicationVersion.getVersion() to return " + this.version);
   }
 
 }

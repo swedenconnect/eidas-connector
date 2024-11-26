@@ -6,17 +6,30 @@
 
 ---
 
-<a name="Country Policy Configuration"></a>
+<a name="country-policy-configuration"></a>
 ## Country Policy Configuration
 
-The PRID-feature of the eIDAS Connector uses a PRID policy where each supported country points to an algorithm and a persistence level. The format is as follows:
+The PRID-feature of the eIDAS Connector uses a PRID policy where each supported country points to an algorithm and a persistence level. Algorithms and persistence levels are described in detail in the [eIDAS Constructed Attributes Specification for the Swedish eID Framework](https://docs.swedenconnect.se/technical-framework/latest/11_-_eIDAS_Constructed_Attributes_Specification_for_the_Swedish_eID_Framework.html) document.
+
+The PRID policy file must be either a Java Properties file (`.properties`) or a YAML file (`.yml` or `.yaml`).
+
+For Properties files the format is as follows:
 
 ```
 policy.<Country code>.algorithm=default-eIDAS|colresist-eIDAS|special-characters-eIDAS
 policy.<Country code>.persistenceClass=A|B|C
 ```
 
-Below is an example of the policy configuration file:
+For YAML-file the format is thus:
+
+```
+policy:
+  <Country code>:
+    algorithm: default-eIDAS|colresist-eIDAS|special-characters-eIDAS
+    persistenceClass: A|B|C
+  <Country code>: ...```
+
+Below is an example of the policy configuration file in Properties format:
 
 ```
 policy.SE.algorithm=default-eIDAS
@@ -32,13 +45,37 @@ policy.AT.algorithm=special-characters-eIDAS
 policy.AT.persistenceClass=A
 
 policy.FR.algorithm=colresist-eIDAS
-policy.FR.persistenceClass=A
+policy.FR.persistenceClass=B
 
 policy.IS.algorithm=default-eIDAS
 policy.IS.persistenceClass=A
 ```
 
-See `config/policy.properties`.
+And the same in YAML-format:
+
+```yaml
+policy:
+  SE:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  DK:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  NO:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  AT:
+    algorithm: special-characters-eIDAS
+    persistenceClass: A
+  FR:
+    algorithm: colresist-eIDAS
+    persistenceClass: B
+  IS:
+    algorithm: default-eIDAS
+    persistenceClass: A
+```
+
+## Updating the PRID Policy Configuration
 
 The PRID service will reload the PRID policy file every 10 minutes. It is also possible to force a reload and verify that the update was correct. See "**Refresh of policy configuration - /manage/refresh**" below.
 

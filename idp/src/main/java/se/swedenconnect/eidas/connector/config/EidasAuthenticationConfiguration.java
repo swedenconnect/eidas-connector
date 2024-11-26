@@ -37,6 +37,7 @@ import org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -84,6 +85,7 @@ import java.util.Optional;
  * @author Martin Lindström
  */
 @Configuration
+@EnableConfigurationProperties(ConnectorConfigurationProperties.class)
 public class EidasAuthenticationConfiguration {
 
   /** eIDAS application identifier attribute name. */

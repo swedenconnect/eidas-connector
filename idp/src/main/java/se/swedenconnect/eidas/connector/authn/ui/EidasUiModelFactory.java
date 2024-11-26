@@ -117,7 +117,7 @@ public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
         for (final Language lang : this.getUiLanguageHandler().getOtherLanguages()) {
           try {
             displayName =
-                this.messageSource.getMessage("connector.ui.country." + c.country(), null, new Locale(lang.getTag()));
+                this.messageSource.getMessage("connector.ui.country." + c.country(), null, Locale.of(lang.getTag()));
             break;
           }
           catch (final NoSuchMessageException ignored) {
@@ -125,7 +125,7 @@ public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
         }
       }
 
-      UiCountry uiCountry;
+      final UiCountry uiCountry;
       if (displayName != null) {
         uiCountry = new UiCountry(c.country(), displayName);
       }

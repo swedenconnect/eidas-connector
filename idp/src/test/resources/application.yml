@@ -1,32 +1,56 @@
 #
 # Test configuration for the Swedish eIDAS Connector.
 #
-
-
 ui:
   languages:
-  - tag: sv
-    text: Svenska
-  - tag: en
-    text: English
+    - tag: sv
+      text: Svenska
+    - tag: en
+      text: English
   selected-country-cookie:
     path: ${server.servlet.context-path}
     domain: ${connector.domain}
   selected-country-session-cookie:
     path: ${server.servlet.context-path}
     domain: ${connector.domain}
-  accessibility-url: https://www.swedenconnect.se/om/om-webbplatsen/tillganglighet/svenska-eidas-noden       
+  accessibility-url: https://www.swedenconnect.se/om/om-webbplatsen/tillganglighet/svenska-eidas-noden
+
+credential:
+  bundles:
+    keystore:
+      connector-keys:
+        location: classpath:idp-credentials.jks
+        password: secret
+        type: JKS
+    jks:
+      idp-sign:
+        store-reference: connector-keys
+        key:
+          alias: sign
+          key-password: secret
+        name: "IdP Signing"
+      idp-encrypt:
+        store-reference: connector-keys
+        key:
+          alias: encrypt
+          key-password: secret
+        name: "IdP Encryption"
+      idp-metadata:
+        store-reference: connector-keys
+        key:
+          alias: metadata
+          key-password: secret
 
 connector:
   domain: www.example.com
   backup-directory: target
   base-url: https://${connector.domain}/idp
-  country: SE  
+  country: SE
   idp:
     entity-categories:
-    - http://id.elegnamnden.se/ec/1.0/eidas-naturalperson
-    - http://id.elegnamnden.se/sprop/1.0/scal2
-    - http://id.elegnamnden.se/sprop/1.0/mobile-auth
+      - http://id.elegnamnden.se/ec/1.0/eidas-naturalperson
+      - http://id.elegnamnden.se/sprop/1.0/scal2
+      - http://id.elegnamnden.se/sprop/1.0/mobile-auth
   eu-metadata:
     backup-location: ${connector.backup-directory}/metadata/eu-cache.xml
   eidas:
@@ -34,15 +58,15 @@ connector:
     requires-signed-assertions: false
     preferred-binding: urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
     skip-scoping-for:
-    - DK
+      - DK
     metadata:
       application-identifier-prefix: "SE:connector:"
       protocol-versions:
-      - 1.0
-      - 1.1
-      - 1.2
+        - 1.0
+        - 1.1
+        - 1.2
       organization:
-        names: 
+        names:
           en: Sweden Connect
         display-names:
           en: "Swedish eIDAS node"
@@ -53,116 +77,107 @@ connector:
           company: "Sweden Connect"
           given-name: "Technical support"
           email-addresses:
-          - operations@swedenconnect.se
+            - operations@swedenconnect.se
         support:
           company: "Sweden Connect"
           given-name: "Customer support"
           email-addresses:
-          - operations@swedenconnect.se
+            - operations@swedenconnect.se
       digest-methods:
-      - http://www.w3.org/2001/04/xmlenc#sha256
-      - http://www.w3.org/2001/04/xmldsig-more#sha384
-      - http://www.w3.org/2001/04/xmlenc#sha512
+        - http://www.w3.org/2001/04/xmlenc#sha256
+        - http://www.w3.org/2001/04/xmldsig-more#sha384
+        - http://www.w3.org/2001/04/xmlenc#sha512
       include-digest-methods-under-role: true
       signing-methods:
-      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1
-        min-key-size: 3072
-      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1
-        min-key-size: 3072
-      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1
-        min-key-size: 3072
-      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256
-        min-key-size: 256
-      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384
-        min-key-size: 256
-      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512
-        min-key-size: 256
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1
+          min-key-size: 3072
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1
+          min-key-size: 3072
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1
+          min-key-size: 3072
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256
+          min-key-size: 256
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384
+          min-key-size: 256
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512
+          min-key-size: 256
       include-signing-methods-under-role: true
       encryption-methods:
-      - algorithm: http://www.w3.org/2009/xmlenc11#aes256-gcm
-      - algorithm: http://www.w3.org/2009/xmlenc11#aes192-gcm
-      - algorithm: http://www.w3.org/2009/xmlenc11#aes128-gcm
-      - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
-      - algorithm: http://www.w3.org/2009/xmlenc11#rsa-oaep
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes256-gcm
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes192-gcm
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes128-gcm
+        - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
+        - algorithm: http://www.w3.org/2009/xmlenc11#rsa-oaep
 
 saml:
   idp:
     entity-id: https://connector.eidas.swedenconnect.se/eidas
-    base-url: ${connector.base-url}  
+    base-url: ${connector.base-url}
     audit:
       in-memory:
         capacity: 1000
       exclude-events:
-      - AUTHENTICATION_SUCCESS
-      - AUTHORIZATION_FAILURE  
+        - AUTHENTICATION_SUCCESS
+        - AUTHORIZATION_FAILURE
     credentials:
       sign:
-        resource: classpath:idp-credentials.jks
-        alias: sign
-        password: secret
-        type: JKS
+        bundle: idp-sign
       encrypt:
-        resource: classpath:idp-credentials.jks
-        alias: encrypt
-        password: secret
-        type: JKS
+        bundle: idp-encrypt
       metadata-sign:
-        resource: classpath:idp-credentials.jks
-        alias: metadata
-        password: secret
-        type: JKS
+        bundle: idp-metadata
     endpoints:
       metadata: /metadata/idp.xml
       post-authn: /profile/SAML2/POST/SSO
       redirect-authn: /profile/SAML2/Redirect/SSO
-    requires-signed-requests: true  
+    requires-signed-requests: true
     metadata:
       digest-methods:
-      - http://www.w3.org/2001/04/xmlenc#sha256
-      - http://www.w3.org/2001/04/xmldsig-more#sha384
-      - http://www.w3.org/2001/04/xmlenc#sha512
+        - http://www.w3.org/2001/04/xmlenc#sha256
+        - http://www.w3.org/2001/04/xmldsig-more#sha384
+        - http://www.w3.org/2001/04/xmlenc#sha512
       include-digest-methods-under-role: true
       signing-methods:
-      - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha256
-        min-key-size: 2048
-      - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha384
-        min-key-size: 2048
-      - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha512
-        min-key-size: 2048      
-      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1
-        min-key-size: 2048
-      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1
-        min-key-size: 2048
-      - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1
-        min-key-size: 2048
-      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256
-        min-key-size: 256
-      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384
-        min-key-size: 256
-      - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512
-        min-key-size: 256
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha256
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha384
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha512
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256
+          min-key-size: 256
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384
+          min-key-size: 256
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512
+          min-key-size: 256
       include-signing-methods-under-role: true
       encryption-methods:
-      - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
-      - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
-        digest-method: http://www.w3.org/2001/04/xmlenc#sha256
-      - algorithm: http://www.w3.org/2009/xmlenc11#aes256-gcm
-      - algorithm: http://www.w3.org/2009/xmlenc11#aes192-gcm
-      - algorithm: http://www.w3.org/2009/xmlenc11#aes128-gcm
-      - algorithm: http://www.w3.org/2001/04/xmlenc#aes256-cbc
-      - algorithm: http://www.w3.org/2001/04/xmlenc#aes192-cbc
-      - algorithm: http://www.w3.org/2001/04/xmlenc#aes128-cbc
+        - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
+        - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
+          digest-method: http://www.w3.org/2001/04/xmlenc#sha256
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes256-gcm
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes192-gcm
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes128-gcm
+        - algorithm: http://www.w3.org/2001/04/xmlenc#aes256-cbc
+        - algorithm: http://www.w3.org/2001/04/xmlenc#aes192-cbc
+        - algorithm: http://www.w3.org/2001/04/xmlenc#aes128-cbc
       requested-principal-selection:
-      # prid
-      - "urn:oid:1.2.752.201.3.4"
-      # eidasPersonIdentifier
-      - "urn:oid:1.2.752.201.3.7"
-      # personalIdentityNumber
-      - "urn:oid:1.2.752.29.4.13"
-      # mappedPersonalIdentityNumber
-      - "urn:oid:1.2.752.201.3.16"
-      # c
-      - "urn:oid:2.5.4.6"
+        # prid
+        - "urn:oid:1.2.752.201.3.4"
+        # eidasPersonIdentifier
+        - "urn:oid:1.2.752.201.3.7"
+        # personalIdentityNumber
+        - "urn:oid:1.2.752.29.4.13"
+        # mappedPersonalIdentityNumber
+        - "urn:oid:1.2.752.201.3.16"
+        # c
+        - "urn:oid:2.5.4.6"
       ui-info:
         display-names:
           en: "Foreign eID"
@@ -171,12 +186,12 @@ saml:
           en: "Identity Provider for foreign eID:s"
           sv: "Legitimeringstjänst för utländsk legitimering"
         logotypes:
-        - path: /images/idp-logo-notext.svg
-          height: 256
-          width: 256
-        - path: /images/idp-logo.svg
-          height: 56
-          width: 280      
+          - path: /images/idp-logo-notext.svg
+            height: 256
+            width: 256
+          - path: /images/idp-logo.svg
+            height: 56
+            width: 280
       organization:
         names:
           en: Sweden Connect
@@ -191,11 +206,11 @@ saml:
         technical:
           company: Sweden Connect
           email-addresses:
-          - operations@swedenconnect.se
+            - operations@swedenconnect.se
         support:
           company: Sweden Connect
           email-addresses:
-          - operations@swedenconnect.se
+            - operations@swedenconnect.se
 
 logging:
   level:
@@ -209,27 +224,27 @@ spring:
   config:
     activate:
       on-profile: production
-      
+
 connector:
   domain: connector.eidas.swedenconnect.se
   eu-metadata:
     location: https://md.eidas.swedenconnect.se/role/idp.xml
     validation-certificate: classpath:env/production/eu-metadata-signing-prod.crt
-    
+
 saml:
   idp:
     entity-id: https://connector.eidas.swedenconnect.se/eidas
     base-url: https://connector.eidas.swedenconnect.se/idp
     metadata-providers:
-    - location: https://md.swedenconnect.se/role/sp.xml
-      backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
-      validation-certificate: classpath:env/production/sc-metadata-signing-prod.crt
+      - location: https://md.swedenconnect.se/role/sp.xml
+        backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
+        validation-certificate: classpath:env/production/sc-metadata-signing-prod.crt
 
 logging:
   level:
     se:
       swedenconnect:
-        eidas: INFO      
+        eidas: INFO
 
 ---
 
@@ -245,16 +260,16 @@ connector:
     validation-certificate: classpath:env/qa/eu-metadata-signing-qa.crt
   idp:
     ping-whitelist:
-    - https://qa.test.swedenconnect.se/sp
+      - https://qa.test.swedenconnect.se/sp
 
 saml:
   idp:
     entity-id: https://qa.connector.eidas.swedenconnect.se/eidas
-    base-url: https://qa.connector.eidas.swedenconnect.se/idp  
+    base-url: https://qa.connector.eidas.swedenconnect.se/idp
     metadata-providers:
-    - location: https://qa.md.swedenconnect.se/role/sp.xml
-      backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
-      validation-certificate: classpath:env/qa/sc-metadata-signing-qa.crt
+      - location: https://qa.md.swedenconnect.se/role/sp.xml
+        backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
+        validation-certificate: classpath:env/qa/sc-metadata-signing-qa.crt
 
 logging:
   level:
@@ -268,7 +283,7 @@ spring:
   config:
     activate:
       on-profile: sandbox
-      
+
 connector:
   domain: con.sandbox.swedenconnect.se
   eu-metadata:
@@ -276,39 +291,46 @@ connector:
     validation-certificate: classpath:env/sandbox/eu-metadata-signing-sandbox.crt
   idp:
     ping-whitelist:
-    - http://sandbox.swedenconnect.se/testmyeid
+      - http://sandbox.swedenconnect.se/testmyeid
 
 saml:
   idp:
     entity-id: https://dev.connector.swedenconnect.se/eidas
-    base-url: https://con.sandbox.swedenconnect.se/idp  
+    base-url: https://con.sandbox.swedenconnect.se/idp
     metadata-providers:
-    - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
-      backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
-      validation-certificate: classpath:env/sandbox/sc-metadata-signing-sandbox.crt
+      - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
+        backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
+        validation-certificate: classpath:env/sandbox/sc-metadata-signing-sandbox.crt
     credentials:
       sign:
-        resource: classpath:env/sandbox/idp-keys.jks
-        alias: old-signing
-        password: secret
-        type: JKS
+        jks:
+          store:
+            location: classpath:env/sandbox/idp-keys.jks
+            password: secret
+          key:
+            alias: old-signing
       encrypt:
-        resource: classpath:env/sandbox/idp-keys.jks
-        alias: encrypt
-        password: secret
-        type: JKS
+        jks:
+          store:
+            location: classpath:env/sandbox/idp-keys.jks
+            password: secret
+          key:
+            alias: encrypt
       metadata-sign:
-        resource: classpath:env/sandbox/idp-keys.jks
-        alias: metadata
-        password: secret
-        type: JKS
+        jks:
+          store:
+            location: classpath:env/sandbox/idp-keys.jks
+            password: secret
+          key:
+            alias: metadata
       future-sign: classpath:env/sandbox/idp-signing.crt
       previous-encrypt:
-        resource: classpath:env/sandbox/idp-keys.jks
-        alias: old-encrypt
-        password: secret
-        type: JKS
-        
+        jks:
+          store:
+            location: classpath:env/sandbox/idp-keys.jks
+            password: secret
+          key:
+            alias: old-encrypt
 
 logging:
   level:
@@ -322,59 +344,69 @@ spring:
   config:
     activate:
       on-profile: localhost
-      
+
 server:
-  port: 9200      
-      
+  port: 9200
+
 connector:
   domain: localhost
   base-url: https://${connector.domain}:${server.port}/${server.servlet.context-path}
   eu-metadata:
     location: file:${LOCAL_ENV_PATH}/eidas/eu-metadata/metadata.xml
-    #validation-certificate: classpath:env/qa/eu-metadata-signing-qa.crt  
-#  eu-metadata:
-#    location: https://mdsl.sandbox.swedenconnect.se/nodeconfig/metadata
-#    validation-certificate: classpath:env/sandbox/eu-metadata-signing-sandbox.crt
+    #validation-certificate: classpath:env/qa/eu-metadata-signing-qa.crt
+  #  eu-metadata:
+  #    location: https://mdsl.sandbox.swedenconnect.se/nodeconfig/metadata
+  #    validation-certificate: classpath:env/sandbox/eu-metadata-signing-sandbox.crt
   idp:
     ping-whitelist:
-    - http://sandbox.swedenconnect.se/testmyeid
+      - http://sandbox.swedenconnect.se/testmyeid
   eidas:
-    entity-id: https://localhost:9200/idp/metadata/sp    
+    entity-id: https://localhost:9200/idp/metadata/sp
     credentials:
       sign:
-        resource: classpath:env/localhost/sp-keys.jks
-        alias: sign
-        password: secret
-        type: JKS
+        jks:
+          store:
+            location: classpath:env/localhost/sp-keys.jks
+            password: secret
+          key:
+            alias: sign
       encrypt:
-        resource: classpath:env/localhost/sp-keys.jks
-        alias: encrypt
-        password: secret
-        type: JKS
-  
+        jks:
+          store:
+            location: classpath:env/localhost/sp-keys.jks
+            password: secret
+          key:
+            alias: encrypt
+
 saml:
   idp:
     entity-id: https://eunode.eidastest.se/idp2
     metadata-providers:
-    - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
-      backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
-      validation-certificate: classpath:env/sandbox/sc-metadata-signing-sandbox.crt
+      - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
+        backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
+        validation-certificate: classpath:env/sandbox/sc-metadata-signing-sandbox.crt
     credentials:
       sign:
-        resource: classpath:env/localhost/idp-keys.jks
-        alias: sign
-        password: secret
-        type: JKS
+        jks:
+          store:
+            location: classpath:env/localhost/idp-keys.jks
+            password: secret
+          key:
+            alias: sign
       encrypt:
-        resource: classpath:env/localhost/idp-keys.jks
-        alias: encrypt
-        password: secret
-        type: JKS
+        jks:
+          store:
+            location: classpath:env/localhost/idp-keys.jks
+            password: secret
+          key:
+            alias: encrypt
       metadata-sign:
-        resource: classpath:env/localhost/idp-keys.jks
-        alias: metadata
-        password: secret
-        type: JKS        
+        jks:
+          store:
+            location: classpath:env/localhost/idp-keys.jks
+            password: secret
+          key:
+            alias: metadata
     metadata:
       ui-info:
         display-names:
@@ -384,13 +416,13 @@ saml:
           en: Local Sweden Connect Reference Identity Provider
           sv: Local Sweden Connect referens-legitimeringstjänst
         logotypes:
-        - path: /images/logo-notext.svg
-          height: 256
-          width: 256
-        - path: /images/logo.svg
-          height: 56
-          width: 280
-          
+          - path: /images/logo-notext.svg
+            height: 256
+            width: 256
+          - path: /images/logo.svg
+            height: 56
+            width: 280
+
 logging:
   level:
     se:
@@ -398,5 +430,4 @@ logging:
     org:
       opensaml:
         core:
-          config: DEBUG      
-      
+          config: DEBUG

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,6 +47,9 @@ import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationIn
 import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractAuthenticationController;
 import se.swedenconnect.spring.saml.idp.authnrequest.Saml2AuthnRequestAuthenticationToken;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
+import se.swedenconnect.spring.saml.idp.error.UnrecoverableSaml2IdpError;
+import se.swedenconnect.spring.saml.idp.error.UnrecoverableSaml2IdpException;
+import se.swedenconnect.spring.saml.idp.events.Saml2UnrecoverableErrorEvent;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -330,6 +334,13 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     catch (final Saml2ErrorStatusException e) {
       return this.complete(httpRequest, e);
     }
+    /*
+    catch (final Exception e) {
+      final ModelAndView modelAndView = new ModelAndView("error");
+      modelAndView.addObject("message", "An internal error occurred");
+      return modelAndView;
+    }
+     */
   }
 
   /**
@@ -569,6 +580,35 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   protected ModelAndView cancel(final HttpServletRequest request) {
     this.getProvider().removeEidasAuthenticationToken(request);
     return super.cancel(request);
+  }
+
+  /**
+   * Handles unexpected exceptions.
+   *
+   * @param e the exception
+   * @return a {@link ModelAndView}
+   */
+  @ExceptionHandler(Exception.class)
+  public ModelAndView handleException(final Exception e) {
+    log.error("Caught unexpected exception - {}", e.getMessage(), e);
+
+    if (e instanceof final UnrecoverableSaml2IdpException unrecoverable) {
+      this.eventPublisher.publishEvent(new Saml2UnrecoverableErrorEvent(unrecoverable));
+
+      final ModelAndView modelAndView = new ModelAndView("idp/error");
+      modelAndView.addObject("idpErrorMessageCode", Optional.ofNullable(unrecoverable.getError())
+          .map(UnrecoverableSaml2IdpError::getMessageCode)
+          .orElse(UnrecoverableSaml2IdpError.INTERNAL.getMessageCode()));
+      return modelAndView;
+    }
+    else {
+      this.eventPublisher.publishEvent(new Saml2UnrecoverableErrorEvent(
+          new UnrecoverableSaml2IdpException(UnrecoverableSaml2IdpError.INTERNAL, e.getMessage(), e, null)));
+
+      final ModelAndView modelAndView = new ModelAndView("error");
+      modelAndView.addObject("message", UnrecoverableSaml2IdpError.INTERNAL.getDescription());
+      return modelAndView;
+    }
   }
 
   /**

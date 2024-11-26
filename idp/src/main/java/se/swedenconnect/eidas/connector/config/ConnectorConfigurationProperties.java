@@ -27,7 +27,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import se.swedenconnect.eidas.connector.authn.sp.EidasSpMetadataController;
-import se.swedenconnect.spring.saml.idp.autoconfigure.settings.MetadataProviderConfigurationProperties;
+import se.swedenconnect.spring.saml.idp.autoconfigure.settings.IdentityProviderConfigurationProperties;
 
 import java.io.File;
 import java.security.cert.X509Certificate;
@@ -97,14 +97,12 @@ public class ConnectorConfigurationProperties implements InitializingBean {
   /**
    * The configuration for retrieval of aggregated EU metadata.
    */
-  @NestedConfigurationProperty
   @Getter
   private final EuMetadataProperties euMetadata = new EuMetadataProperties();
 
   /**
    * The PRID service configuration.
    */
-  @NestedConfigurationProperty
   @Getter
   private final PridServiceProperties prid = new PridServiceProperties();
 
@@ -184,7 +182,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
     /**
      * If the {@code location} setting is a URL and an HTTP proxy is required this setting configures this proxy.
      */
-    private MetadataProviderConfigurationProperties.HttpProxy httpProxy;
+    private IdentityProviderConfigurationProperties.MetadataProviderConfigurationProperties.HttpProxy httpProxy;
 
     /** {@inheritDoc} */
     @Override

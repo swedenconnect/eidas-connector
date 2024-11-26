@@ -20,10 +20,12 @@ import lombok.Setter;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.NameID;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import se.swedenconnect.spring.saml.idp.autoconfigure.settings.CredentialConfigurationProperties;
+import se.swedenconnect.security.credential.config.properties.PkiCredentialConfigurationProperties;
 
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,14 +47,6 @@ public class EidasAuthenticationProperties implements InitializingBean {
   @Getter
   @Setter
   private String entityId;
-
-  /**
-   * The credentials for the SP part of the eIDAS Connector. If not assigned, the keys configured for the SAML IdP will
-   * be used also for the SP.
-   */
-  @Getter
-  @Setter
-  private CredentialConfigurationProperties credentials;
 
   /**
    * The "provider name" to use in our AuthnRequest:s sent.
@@ -91,10 +85,18 @@ public class EidasAuthenticationProperties implements InitializingBean {
   private final List<String> skipScopingFor = new ArrayList<>();
 
   /**
+   * The credentials for the SP part of the eIDAS Connector. If not assigned, the keys configured for the SAML IdP will
+   * be used also for the SP.
+   */
+  @Getter
+  private final SpCredentialProperties credentials = new SpCredentialProperties();
+
+  /**
    * Metadata configuration for the eIDAS SP.
    */
   @Getter
   @Setter
+  @NestedConfigurationProperty
   private EidasSpMetadataProperties metadata;
 
   /** {@inheritDoc} */
@@ -122,6 +124,54 @@ public class EidasAuthenticationProperties implements InitializingBean {
     }
     Assert.notNull(this.metadata, "connector.eidas.metadata.* must be set");
     this.metadata.afterPropertiesSet();
+  }
+
+  /**
+   * Connector SP credentials.
+   */
+  public static class SpCredentialProperties {
+
+    /**
+     * The SP default credential.
+     */
+    @Setter
+    @Getter
+    private PkiCredentialConfigurationProperties defaultCredential;
+
+    /**
+     * The SP signing credential.
+     */
+    @Setter
+    @Getter
+    private PkiCredentialConfigurationProperties sign;
+
+    /**
+     * A certificate that will be the future SP signing certificate. Is set before a key-rollover is performed.
+     */
+    @Setter
+    @Getter
+    private X509Certificate futureSign;
+
+    /**
+     * The SP encryption credential.
+     */
+    @Setter
+    @Getter
+    private PkiCredentialConfigurationProperties encrypt;
+
+    /**
+     * The previous SP encryption credential. Assigned after a key-rollover.
+     */
+    @Setter
+    @Getter
+    private PkiCredentialConfigurationProperties previousEncrypt;
+
+    /**
+     * The SP SAML metadata signing credential.
+     */
+    @Setter
+    @Getter
+    private PkiCredentialConfigurationProperties metadataSign;
   }
 
 }
