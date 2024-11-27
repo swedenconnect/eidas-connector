@@ -51,7 +51,7 @@
     <shibboleth-base.version>1.8.1</shibboleth-base.version>
     <shibboleth-base-deps.version>1.8.1</shibboleth-base-deps.version>
 
-    <opensaml.eidas.version>1.4.4</opensaml.eidas.version>
+    <opensaml.eidas.version>1.4.5</opensaml.eidas.version>
     <eidas-mappings.version>1.3.0</eidas-mappings.version>
 
     <lombok.version>1.18.2</lombok.version>
