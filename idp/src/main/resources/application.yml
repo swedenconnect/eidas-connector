@@ -9,6 +9,7 @@ spring:
   ssl:
     bundle:
       jks:
+        # For localhost testing ...
         localhost:
           keystore:
             location: classpath:localhost.jks
@@ -62,6 +63,10 @@ management:
       show-details: always
     info:
       access: read_only
+  health:
+    redis:
+      ## If Redis is configured to be used, change this to true
+      enabled: false
   endpoints:
     web:
       exposure:
@@ -96,8 +101,6 @@ connector:
     entity-id: ${saml.idp.base-url}/metadata/sp
     requires-signed-assertions: false
     preferred-binding: urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
-    skip-scoping-for:
-      - DK
     metadata:
       application-identifier-prefix: "SE:connector:"
       protocol-versions:

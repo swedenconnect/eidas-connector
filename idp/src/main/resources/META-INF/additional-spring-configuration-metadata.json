@@ -149,6 +149,36 @@
       "name": "connector.eidas.credentials.metadata-sign.jks.store.pkcs11.settings",
       "type": "se.swedenconnect.security.credential.config.properties.StoreConfigurationProperties$Pkcs11ConfigurationProperties$Pkcs11SettingsProperties",
       "description": "Custom PKCS#11 settings."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.pem",
+      "type": "se.swedenconnect.security.credential.config.properties.PemCredentialConfigurationProperties",
+      "description": "Configuration for a PEM-based credential."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks",
+      "type": "se.swedenconnect.security.credential.config.properties.StoreCredentialConfigurationProperties",
+      "description": "Configuration for a JKS (Java KeyStore) based credential."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store",
+      "type": "se.swedenconnect.security.credential.config.properties.StoreConfigurationProperties",
+      "description": "Configuration for the KeyStore holding the key pair entry."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.key",
+      "type": "se.swedenconnect.security.credential.config.properties.StoreCredentialConfigurationProperties$KeyConfigurationProperties",
+      "description": "Configuration for the key pair entry of the store."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store.pkcs11",
+      "type": "se.swedenconnect.security.credential.config.properties.StoreConfigurationProperties$Pkcs11ConfigurationProperties",
+      "description": "If the type is \"PKCS11\" and a provider that is not statically configured for PKCS#11, additional PKCS#11 configuration needs to be supplied. Note that the security provider used must support PKCS#11 via the KeyStoreSpi interface. The \"SunPKCS11\" is such a provider."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store.pkcs11.settings",
+      "type": "se.swedenconnect.security.credential.config.properties.StoreConfigurationProperties$Pkcs11ConfigurationProperties$Pkcs11SettingsProperties",
+      "description": "Custom PKCS#11 settings."
     }
   ],
   "properties": [
@@ -874,6 +904,151 @@
     },
     {
       "name": "connector.eidas.credentials.metadata-sign.pem.metadata",
+      "type": "java.util.Map<java.lang.String, java.lang.String>",
+      "description": "Metadata properties."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.bundle",
+      "type": "java.lang.String",
+      "description": "Pointer to a pre-registered credential."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.name",
+      "type": "java.lang.String",
+      "description": "The name of the credential."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.key-id",
+      "type": "java.lang.String",
+      "description": "Key identifier metadata property."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.issued-at",
+      "type": "java.time.Instant",
+      "description": "Issued-at metadata property."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.expires-at",
+      "type": "java.time.Instant",
+      "description": "Expires-at metadata property."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.metadata",
+      "type": "java.util.Map<java.lang.String, java.lang.String>",
+      "description": "Metadata properties."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store-reference",
+      "type": "java.lang.String",
+      "description": "A store reference. As an alternative to giving the key store configuration, a reference to a key store configuration may be given. This feature may be used when one key store holds several keys."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store.location",
+      "type": "java.lang.String",
+      "description": "Location of the resource containing the store content."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store.password",
+      "type": "java.lang.String",
+      "description": "Password used to access the store."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store.type",
+      "type": "java.lang.String",
+      "description": "Type of the store to create, e.g., JKS, PKCS12 or PKCS11."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store.provider",
+      "type": "java.lang.String",
+      "description": "Security provider for the store."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store.pkcs11.configuration-file",
+      "type": "java.lang.String",
+      "description": "The complete path of the PKCS#11 configuration file with which the PKCS#11 device is configured."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store.pkcs11.settings.library",
+      "type": "java.lang.String",
+      "description": "The PKCS#11 library path."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store.pkcs11.settings.name",
+      "type": "java.lang.String",
+      "description": "The name of the PKCS#11 slot."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store.pkcs11.settings.slot",
+      "type": "java.lang.String",
+      "description": "The slot number/id to use."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.store.pkcs11.settings.slot-list-index",
+      "type": "java.lang.Integer",
+      "description": "The slot index to use."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.monitor",
+      "type": "java.lang.Boolean",
+      "description": "Whether the credential should be prepared for monitoring. If set, a test function and a KeyStoreReloader will be assigned."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.key.alias",
+      "type": "java.lang.String",
+      "description": "The alias that identifies the key pair in the key store."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.key.certificates",
+      "type": "java.lang.String",
+      "description": "For some credentials where an underlying KeyStore is being used, an external certificate should be used. The most typical example would be a PKCS#11 key store where the certificate of the key pair resides outside the HSM device. This setting holds the location or content of the certificate or certificate chain in PEM format."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.jks.key.key-password",
+      "type": "java.lang.String",
+      "description": "The password to unlock the key entry identified by the given alias. If not given, the store password will be used\n     * (in these cases, using a store reference will not function)."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.pem.public-key",
+      "type": "java.lang.String",
+      "description": "Location or content of the public key in PEM format. This setting is mutually exclusive with the certificates setting."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.pem.certificates",
+      "type": "java.lang.String",
+      "description": "Location or content of the certificate or certificate chain in PEM format. If more than one certificate is supplied, the entity certificate, i.e., the certificate holding the public key of the key pair, must be placed first. This setting is mutually exclusive with the public-key setting."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.pem.private-key",
+      "type": "java.lang.String",
+      "description": "Location or content of the private key in PEM format."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.pem.key-password",
+      "type": "java.lang.String",
+      "description": "Password used to decrypt an encrypted private key."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.pem.name",
+      "type": "java.lang.String",
+      "description": "The name of the credential."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.pem.key-id",
+      "type": "java.lang.String",
+      "description": "Key identifier metadata property."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.pem.issued-at",
+      "type": "java.time.Instant",
+      "description": "Issued-at metadata property."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.pem.expires-at",
+      "type": "java.time.Instant",
+      "description": "Expires-at metadata property."
+    },
+    {
+      "name": "connector.idm.oauth2.credential.pem.metadata",
       "type": "java.util.Map<java.lang.String, java.lang.String>",
       "description": "Metadata properties."
     }

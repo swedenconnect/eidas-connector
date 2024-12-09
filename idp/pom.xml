@@ -138,6 +138,23 @@
     </dependency>
 
     <dependency>
+      <groupId>org.redisson</groupId>
+      <artifactId>redisson-spring-boot-starter</artifactId>
+      <version>3.40.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.session</groupId>
+      <artifactId>spring-session-data-redis</artifactId>
+    </dependency>
+    <!--
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+    -->
+
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
@@ -181,31 +198,7 @@
       <artifactId>jquery</artifactId>
       <version>3.6.1</version>
     </dependency>
-    <!--
-        <dependency>
-          <groupId>org.redisson</groupId>
-          <artifactId>redisson-spring-boot-starter</artifactId>
-          <version>3.20.1</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.redisson</groupId>
-              <artifactId>redisson-spring-data-30</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
 
-        <dependency>
-          <groupId>org.redisson</groupId>
-          <artifactId>redisson-spring-data-27</artifactId>
-          <version>3.20.1</version>
-        </dependency>
-
-        <dependency>
-          <groupId>org.springframework.session</groupId>
-          <artifactId>spring-session-data-redis</artifactId>
-        </dependency>
-    -->
-    <!-- Test -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -252,7 +245,7 @@
       <plugin>
         <groupId>com.google.cloud.tools</groupId>
         <artifactId>jib-maven-plugin</artifactId>
-        <version>3.4.3</version>
+        <version>3.4.4</version>
         <configuration>
           <from>
             <image>openjdk:21-jdk-slim</image>
