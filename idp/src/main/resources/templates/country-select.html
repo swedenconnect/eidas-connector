@@ -91,10 +91,9 @@
                   th:value="${country.getCode()}"
                   th:disabled="${country.isDisabled()}"
               >
-                <img class="col-sm country-flag float-left"
+                <img class="country-flag"
                      th:src="@{/images/flags/{flag}.png(flag=${country.getFlag()})}" alt=""/>
-                <span class="w-100"></span>
-                <span class="col-sm country-name float-left" th:utext="${country.getName()}">Country name</span>
+                <p class="country-name" th:utext="${country.getName()}">Country name</p>
               </button>
             </div>
 
