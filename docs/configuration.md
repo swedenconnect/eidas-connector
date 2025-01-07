@@ -24,19 +24,21 @@
 
     2.2. [Configuring Certificate Trust](#configuring-certificate-trust)
 
-    2.3. [Web Server Settings](#web-server-settings)
-    
-    2.3.1. [Base Settings](#base-settings)
+    2.3. [Credential Bundles](#credential-bundles)
 
-    2.3.2. [Enabling TLS](#enabling-tls)
-
-    2.3.3. [Tomcat Settings](#tomcat-settings)    
-
-    2.4. [Redis Configuration](#redis-configuration)
+    2.4. [Web Server Settings](#web-server-settings)
     
-    2.5. [Logging Configuration](#logging-configuration)
+    2.4.1. [Base Settings](#base-settings)
+
+    2.4.2. [Enabling TLS](#enabling-tls)
+
+    2.4.3. [Tomcat Settings](#tomcat-settings)
+
+    2.5. [Redis Configuration](#redis-configuration)
     
-    2.6. [The Management Endpoints](#the-management-endpoints)
+    2.6. [Logging Configuration](#logging-configuration)
+    
+    2.7. [The Management Endpoints](#the-management-endpoints)
     
 3. [**SAML Identity Provider Configuration**](#saml-identity-provider-configuration)
 
@@ -66,9 +68,9 @@
     
     4.3.3. [EU Metadata Configuration](#eu-metadata-configuration)
 
+    4.3.4. [PRID Configuration](#prid-configuration)
+
     4.4. [Identity Matching Configuration](#identity-matching-configuration)
-    
-    4.5. [UI and Cookie Configuration](#ui-and-cookie-configuration)
 
 ---
 
@@ -79,7 +81,7 @@ The Swedish eIDAS Connector is a Spring Boot application and its configuration i
 
 The application contains a base [application.yml](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/resources/application.yml) file containing base configuration for settings that are common for all deployments and are unlikely to change.
 
-When deploying the connector for a specific environment, a Spring profile is used, and a corresponding `application-<profile-name>.yml` file is created. This file extends, and overrides, the settings from the base `application.yml` file. Later, when the application this profile is referenced, see [Starting and Running the Swedish eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html).
+When deploying the connector for a specific environment, a Spring profile is used, and a corresponding `application-<profile-name>.yml` file is created. This file extends, and overrides, the settings from the base `application.yml` file. 
 
 <a name="configuration-references"></a>
 ### 1.1. Configuration References
@@ -135,7 +137,7 @@ For configuring a server TLS credential (private key and certificate), the follo
 - supplying a PKCS#12 file containing a key pair (and certificate path),
 - supplying PEM-encoded certificates and private keys.
 
-See section [2.3.2](#enabling-tls), [Enabling TLS](#enabling-tls), below, for how to configure the built in Tomcat container to using the configured TLS credentials.
+See section [2.4.2](#enabling-tls), [Enabling TLS](#enabling-tls), below, for how to configure the built in Tomcat container to using the configured TLS credentials.
 
 <a name="configuring-using-keystore-or-pkcs12-files"></a>
 #### 2.1.1. Configuring using KeyStore or PKCS#12 Files
@@ -225,13 +227,54 @@ Example of how a JKS containing trusted certificates are configured.
 
 :point_right: If no certificate trust is specified, the default trust list from the Java environment will be used.
 
+<a name="credential-bundles"></a>
+### 2.3. Credential Bundles
+
+Section [2.1](#tls-server-credentials), [TLS Server Credentials](#tls-server-credentials), described how Spring's [SSL Bundles](https://docs.spring.io/spring-boot/reference/features/ssl.html) is used to configure credentials for TLS. Apart from TLS credentials, the connector uses credentials since it acts both as a SAML IdP and a SAML SP. These credentials are configured using [Credential Bundles](https://docs.swedenconnect.se/credentials-support/#credential-bundles-and-configuration-support).
+
+A typical configuration of a credential bundle may look something like:
+
+```yaml
+credential:
+  bundles:
+    keystore:
+      idp-keystore:
+        location: file:/opt/keys/idp.p12
+        password: secret
+        type: PKCS12
+    jks:
+      sign:
+        store-reference: idp-keystore
+        name: "IdP Signing"
+        key:
+          alias: sign
+          key-password: secret
+      oauth2:
+        store-reference: idp-keystore
+        name: "IdP OAuth2 Credential"
+        key:
+          alias: oauth2
+          key-password: secret
+    pem:
+      encrypt:
+        certificates: file:/opt/keys/idp-encrypt.crt
+        private-key: file:/opt/keys/idp-encrypt.key
+        name: "IdP Encryption"
+```
+
+The above example illustrates how we can configure credentials both from key stores (JKS, PKCS#12 or PKCS#11) and from PEM-encoded files.
+
+The bundle can later be referenced in the configuration where a specific credential is needed.
+
+:raised_hand: Go to the [Credentials Support](https://docs.swedenconnect.se/credentials-support/#credential-bundles-and-configuration-support) pages to read more about the configuration of credentials bundles and how a PKCS#11 credential is set up. This resource also describes "credential monitoring" which is important when HSM:s are being used.
+
 <a name="web-server-settings"></a>
-### 2.3. Web Server Settings
+### 2.4. Web Server Settings
 
 The eIDAS Connector application is running as a web application, and under Spring's `server` key, general settings for the web server is configured.
 
 <a name="base-settings"></a>
-#### 2.3.1. Base Settings
+#### 2.4.1. Base Settings
 
 The default Spring server settings are as follows:
 
@@ -258,7 +301,7 @@ The `server.port` property is set to 8443 as default, since we expect the applic
 See [Spring Boot Common Application Properties - Server Settings](https://docs.spring.io/spring-boot/appendix/application-properties/index.html#appendix.application-properties.server) for additional server settings.
 
 <a name="enabling-tls"></a>
-#### 2.3.2. Enabling TLS
+#### 2.4.2. Enabling TLS
 
 In order to enable server TLS the following needs to be present:
 
@@ -274,7 +317,7 @@ Make sure to reference the bundle configured. See section [2.1](#tls-server-cred
 
 
 <a name="tomcat-settings"></a>
-#### 2.3.3. Tomcat Settings
+#### 2.4.3. Tomcat Settings
 
 The Spring default settings for the embedded Tomcat server is sensible, and should not have to be changed. However, if access logging is required, or if the maximum size of requests sizes are to be changed, or any other detail, check the `server.tomcat.*` settings in [Spring Boot Common Application Properties - Server Settings](https://docs.spring.io/spring-boot/appendix/application-properties/index.html#appendix.application-properties.server).
 
@@ -308,7 +351,7 @@ server:
 ```
 
 <a name="redis-configuration"></a>
-### 2.4. Redis Configuration
+### 2.5. Redis Configuration
 
 If more than one instance of the eIDAS Connector is deployed, it is recommended to use Redis for storing session data. For this purpose, Spring's Redis features need to be configured. 
 
@@ -331,7 +374,7 @@ The above example illustrates how we use a [SSL Trust Bundle](#configuring-certi
 For details about Redis configuration, see the [Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#redis-configuration) documentation.
 
 <a name="logging-configuration"></a>
-### 2.5. Logging Configuration
+### 2.6. Logging Configuration
 
 Section [3.3](#audit-logging-configuration), [Audit Logging Configuration](#audit-logging-configuration)  covers how the audit logging of the eIDAS Connector is configured, but in general, we want an application to produce ordinary logs as well. These logs can be used for error analysis, detailed monitoring and much more.
 
@@ -385,7 +428,7 @@ logging:
 To make more advances changes to log entries, see the Spring reference page about [Logging](https://docs.spring.io/spring-boot/reference/features/logging.html).
 
 <a name="the-management-endpoints"></a>
-### 2.6. The Management Endpoints
+### 2.7. The Management Endpoints
 
 The Spring resource [Monitoring and Management Over HTTP](https://docs.spring.io/spring-boot/reference/actuator/monitoring.html) contains a reference how the Spring Boot Actuator should be configured.
 
@@ -418,6 +461,8 @@ management:
 By default, the management endpoints are exposed under `/actuator/<endpoint>`. This can be changed using the `management.endpoints.web.base-path` setting.
 
 See the [Management using the Actuator](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html#management-using-the-actuator) section of the [Starting and Running the Swedish eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html) page for a description of each exposed management endpoint.
+
+:raised_hand: Redis is available in the classpath, so if you are not using Redis make sure to disable the Redis health check by setting the `management.health.redis.enabled` setting to `false`.
 
 :exclamation: Make sure not to expose the management endpoints publicly. See [Starting and Running the Swedish eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html) for deployment details.
 
@@ -485,11 +530,26 @@ The IdP uses PKI credentials (private keys and certificates) in the following sc
 
 - To sign the SAML metadata that it exposes.
 
-See the [Metadata Provider Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#metadata-provider-configuration) section of the [Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html) page for details on how to configure each credential.
+See the [Credentials Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#credentials-configuration) section of the [Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html) page for details on how to configure each credential.
 
 :point_right: It is possible to use the same credential for several purposes, and by assigning the `saml.idp.credentials.default-credential.*` property, this will be used if a specific purpose is not assigned.
 
-Example where each usage is configured by giving a Java KeyStore with associated alias and passwords:
+Example where the [Credential Bundles](#credential-bundles) are referenced (this is the recommended way of configuring credentials):
+
+```yaml
+saml:
+  idp:
+    ...
+    credentials:
+      sign:
+        bundle: idp-sign
+      encrypt:
+        bundle: idp-encrypt
+      metadata-sign:
+        bundle: md-sign
+```
+
+It is also possible to configure each credential "inline":
 
 ```yaml
 saml:
@@ -498,40 +558,15 @@ saml:
     credentials:
       sign:
         name: "IdP Signing"
-        resource: file:/etc/config/keys/connector.jks
-        alias: sign
-        password: secret
-        type: JKS
+        pem:
+          certificates: file:/etc/config/keys/sign.crt
+          private-key: file:/etc/config/keys/sign.key
+          key-password: <password>
       encrypt:
-        name: "IdP Decryption"
-        resource: file:/etc/config/keys/connector.jks
-        alias: encrypt
-        password: secret
-        type: JKS
-      metadata-sign:
-        name: "IdP Metadata signing"
-        resource: file:/etc/config/keys/md.jks
-        alias: md
-        password: secret
-        type: JKS
-```
-
-*The `name` parameter is only used in logs to point out which credential that is being used. This field is optional.*
-
-It is also possible to use PEM-files to configure credentials:
-
-```yaml
-saml:
-  idp:
-    ...
-    credentials:
-      sign:
-        certificate: file:/etc/config/keys/sign.crt
-        private-key: file:/etc/config/keys/sign.key
-        key-password: <password>
-      encrypt:
-        certificate: file:/etc/config/keys/encrypt.crt
-        private-key: file:/etc/config/keys/encrypt.key
+        name: "IdP Encrypt
+        pem:
+          certificate: file:/etc/config/keys/encrypt.crt
+          private-key: file:/etc/config/keys/encrypt.key
 ```
 
 The example above also illustrates that an encrypted key is used for the signing key, and therefore the password to unlock this file needs to be supplied.
@@ -546,15 +581,27 @@ When the IdP is about to change its signing key, it should make sure that the ne
 In order for the eIDAS connector to produce SAML metadata containing the new signing certificate the following needs to be configured:
 
 ```yaml
+credential:
+  bundles:
+    ...
+    pem:
+      sign:
+        certificates: file:/opt/keys/idp-sign.crt
+        private-key: file:/opt/keys/idp-sign.key
+        name: "IdP Sign"
+      sign2:
+        certificates: file:/opt/keys/idp-sign2.crt
+        private-key: file:/opt/keys/idp-sign2.key
+        name: "IdP Sign 2"
+
 saml:
   idp:
     ...
     credentials:
       sign:
-        certificate: file:/etc/config/keys/sign.crt
-        private-key: file:/etc/config/keys/sign.key
+        bundle: sign
       ...
-      future-sign: file:/etc/config/keys/sign-new.crt
+      future-sign: file:/opt/keys/idp-sign2.crt
       ...
 ```
 
@@ -566,63 +613,88 @@ saml:
     ...
     credentials:
       sign:
-        certificate: file:/etc/config/keys/sign-new.crt
-        private-key: file:/etc/config/keys/sign-new.key
+        bundle: sign2
+      # future-sign no longer needed
 ```
 
 When the IdP changes its encryption key (actually, decryption key would be a better name), we don't have to advertise anything in advance, but instead allow the "old" key to be used for a period (until all SP:s have downloaded the new metadata and have access to the updated certificate).
 
-:point_right: The above examples illustrates how PEM-files are used. Of course, the same is possible using key stores (JKS or PKCS#12).
-
 Therefore, when changing the encryption key, the following needs to be configured:
 
 ```yaml
+credential:
+  bundles:
+    ...
+    pem:
+      encrypt:
+        certificates: file:/opt/keys/idp-encrypt.crt
+        private-key: file:/opt/keys/idp-encrypt.key
+        name: "IdP Encrypt"
+      encrypt2:
+        certificates: file:/opt/keys/idp-encrypt2.crt
+        private-key: file:/opt/keys/idp-encrypt2.key
+        name: "IdP Encrypt 2"
+        
 saml:
   idp:
     ...
     credentials:
       ...
       encrypt:
-        name: "IdP Decryption (2)"
-        resource: file:/etc/config/keys/new-key.jks
-        alias: encrypt
-        password: secret
-        type: JKS
+        bundle: encrypt2
       previous-encrypt:
-        name: "IdP Decryption"
-        resource: file:/etc/config/keys/connector.jks
-        alias: encrypt
-        password: secret
-        type: JKS
+        bundle: encrypt
 ```
 
-When enough time has passed (i.e., until all SP:s have access to the new key), the `previous-encrypt` property may be removed from the configuration.
+When enough time has passed (i.e., until all SP:s have access to the new key), the `previous-encrypt` property may be removed from the configuration (and also the `encrypt` bundle).
 
-:point_right: The above examples illustrates how JKS-files are used. Of course, the same is possible using PEM-files.
 
 <a name="pkcs11-and-hsms"></a>
 #### 3.2.2. PKCS#11 and HSM:s
 
-A credential being used by the IdP may also reside on a Hardware Security Module (HSM) and be accessed using the PKCS#11 protocol. The [Credentials Support](https://github.com/swedenconnect/credentials-support) library explains in detail how this works.
+A credential being used by the IdP may also reside on a Hardware Security Module (HSM) and be accessed using the PKCS#11 protocol. The [Credentials Support](https://docs.swedenconnect.se/credentials-support/) library explains in detail how this works.
 
-Below is an example of where we configure the IdP signing key to use a key residing on an HSM:
+Below is an example of where we configure an IdP key to use a key residing on an HSM:
 
 ```yaml
+credential:
+  bundles:
+    jks:
+      hsm:
+        name: "IdP HSM Key"
+        store:
+          type: PKCS11
+          provider: SunPKCS11
+          password: 1234
+          pkcs11:
+            configuration-file: file:/etc/config/keys/p11.conf
+        key:
+          alias: idp
+          key-password: 1234
+          certificates: file:/etc/config/keys/p11-cert.crt
+        monitor: true
+    ...
+    monitoring:
+      enabled: true
+      test-interval: 10m
+      health-endpoint-enabled: true    
+
 saml:
   idp:
     ...
     credentials:
       sign:
-        pkcs11-configuration: file:/etc/config/keys/p11.conf
-        alias: SLOT1
-        pin: 1234
-        certificate: file:/etc/config/keys/sign.crt
-        type: PKCS11
+        bundle: hsm
+      encrypt:
+        bundle: hsm
 ``` 
 
 The references PKCS#11 configuration file should be formatted according to [PKCS#11 Reference Guide](https://docs.oracle.com/en/java/javase/17/security/pkcs11-reference-guide1.html).
 
 :point_right: If the certificate is accessible from the HSM, it does not need to be configured.
+
+:raised_hand: Also note how we configure monitoring of the HSM credential. This will periodically test, and if connection against the HSM has been lost, reload the credential. Read more about monitoring of credentials [here](https://docs.swedenconnect.se/credentials-support/#monitoring).
+
 
 <a name="audit-logging-configuration"></a>
 ### 3.3. Audit Logging Configuration
@@ -673,39 +745,135 @@ saml:
         type: list
 ```
 
-When using Redis for audit logging, Spring's Redis support must also be configured, see section [2.4](#redis-configuration), [Redis Configuration](#redis-configuration).
+When using Redis for audit logging, Spring's Redis support must also be configured, see section [2.5](#redis-configuration), [Redis Configuration](#redis-configuration).
+
+The Swedish eIDAS Connector uses [Logback](https://logback.qos.ch) as the underlying log framework, and it is possible to configure audit logging to be directed to this log system.
+
+```yaml
+saml:
+  idp:
+    ...
+    audit:
+      in-memory:
+        capacity: 1000
+      log-system:
+        logger-name: "AUDIT"
+
+...
+
+logging:
+  level:
+    ...       
+  config: file:/opt/logs/logback.xml
+
+```
+
+By providing a `logback.xml` file placed according to the `logging.config` property, an specific appender can be added, for example for Syslog - see [Logback Syslog Appender](https://logback.qos.ch/manual/appenders.html#SyslogAppender).
 
 :grey_exclamation: See also the page [Swedish eIDAS Connector Audit Logging](https://docs.swedenconnect.se/eidas-connector/audit.html) for a full reference for all audit events produced by the eIDAS Connector.
 
 <a name="eidas-connector-configuration"></a>
 ## 4. eIDAS Connector Configuration
 
-> TODO: Include pointer to PRID resource
+The previous chapter describes how the SAML Identity Provider-part of the eIDAS Connector is configured. This section will describe how the application's parts that integrate against the eIDAS framework is configured, and how we handle identities received from the foreign country's IdP.
 
 <a name="base-settings-for-the-connector"></a>
 ### 4.1. Base Settings for the Connector
 
+The base settings for the connector are:
+
+- `connector.domain` - The domain for the service, for example `connector.eidas.swedenconnect.se`.
+
+- `connector.country` - The country code for the connector. The default is `SE`.
+
+- `connector.base-url` - The base URL of the Connector, including protocol, domain and context path. The default which is `https://${connector.domain}${server.servlet.context-path}` should be correct for all deployments except for local installations.
+
+- `connector.backup-directory` - Directory where caches and backup files are stored during execution.
+
+See the [eIDAS Connector Configuration](configuration-reference.html#eidas-connector-configuration) section of the [Configuration Reference for the Swedish eIDAS Connector](configuration-reference.html) for details.
+
 <a name="additional-identity-provider-settings"></a>
 ### 4.2. Additional Identity Provider Settings
+
+The configuration properties under `saml.idp` are extended with some additional configuration settings for the Identity Provider part of the Connector. See the [Connector IdP Configuration](configuration-reference.html#connector-idp-configuration) of the [Configuration Reference for the Swedish eIDAS Connector](configuration-reference.html).
 
 <a name="eidas-authentication-configuration"></a>
 ### 4.3. eIDAS Authentication Configuration
 
+The [eIDAS Authentication Configuration](configuration-reference.html#eidas-authentication-configuration) section of the [Configuration Reference for the Swedish eIDAS Connector](configuration-reference.html) documents the configuration settings for how eIDAS authentication is performed, i.e., how the SAML Service Provider part of the Connector is set up.
+
+The `connector.eidas.entity-id` setting is assigned the SAML entityID of the SAML Service Provider entityID used by the Connector in eIDAS authentications. Care should be taken if changing this value from its defaults since many eIDAS countries expect the entityID to be the same as the metadata location (which is fixed). Thus, keep the default which is `${connector.base-url}/metadata/sp`.
+
 <a name="service-provider-credentials-configuration"></a>
 #### 4.3.1. Service Provider Credentials Configuration
+
+Under the `connector.eidas.credentials` key, the credentials that are to be used by the SP part of the eIDAS Connector are configured. If not assigned, the keys configured for the SAML IdP will be used also for the SP (see section [3.2](#credentials-configuration) above). 
+
+If specific credentials for the SP part should be set up, the same type of configuration as for the IdP credentials is used (see section [3.2](#credentials-configuration) above), with the exception that the configuration prefix is `connector.eidas.credentials` instead of `saml.idp.credentials`.
 
 <a name="service-provider-metadata-configuration"></a>
 #### 4.3.2. Service Provider Metadata Configuration
 
+The Service Provider part of the Connector publishes its metadata under `${connector.base-url}/metadata/sp`. The settings under the `connector.eidas.metadata` key configure how the metadata is compiled. The [application.yml](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/resources/application.yml) provides sensible defaults.
+
+See the [eIDAS SP Metadata Configuration](configuration-reference.html#eidas-sp-metadata-configuration) section of the [Configuration Reference for the Swedish eIDAS Connector](configuration-reference.html) for a listing of possible configuration settings.
+
 <a name="eu-metadata-configuration"></a>
 #### 4.3.3. EU Metadata Configuration
+
+Under the `connector.eu-metadata` key, the configuration for how SAML metadata for Identity Providers for the eIDAS countries are accessed is supplied.
+
+The [EU Metadata Configuration](configuration-reference.html#eu-metadata-configuration) section of the [Configuration Reference for the Swedish eIDAS Connector](configuration-reference.html) lists all possible configuration settings. Important settings are:
+
+- `connector.eidas.eu-metadata.location` - The URL for where the aggregated EU metadata is downloaded from. The current locations are:
+
+    - Sweden Connect Sandbox - `https://mdsl.sandbox.swedenconnect.se/nodeconfig/metadata`
+    
+    - Sweden Connect QA - `https://qa.md.eidas.swedenconnect.se/role/idp.xml` 
+    
+    - Sweden Connect Production - `https://md.eidas.swedenconnect.se/role/idp.xml`
+    
+- `connector.eidas.eu-metadata.validation-certificate` - A resource pointing at the certificate used to validate the metadata, for example, `file:/opt/connector/metadata/eu-metadata-signing.crt`.
+
+- `https-trust-bundle` - This setting may be used to specify a [Spring SSL Bundle](https://spring.io/blog/2023/06/07/securing-spring-boot-applications-with-ssl) that specifies the trusted root certificates to be used for TLS server certificate verification. If no bundle is given, the Java trust defaults will be used. See section [2.2](#configuring-certificate-trust) above.
+
+<a name="prid-configuration"></a>
+#### 4.3.4. PRID Configuration
+
+The configuration for the PRID (Provisional Identifier) calculation is supplied under the `connector.prid` key. Two settings are available:
+
+- `connector.prid.policy-resource` - A Resource pointing at the file containing the PRID configuration, see [eIDAS Connector Provisional Identifier (PRID) Calculation](prid.html). Example: `file:/opt/connector/prid/prid-policy.yml`.
+
+- `connector.prid.update-interval` - Setting for how often the service should re-read the above policy file. The default is `600` (600 seconds). 
 
 <a name="identity-matching-configuration"></a>
 ### 4.4. Identity Matching Configuration
 
-<a name="ui-and-cookie-configuration"></a>
-### 4.5. UI and Cookie Configuration
+The Identity Matching feature of the Swedish eIDAS Connector enables the connector to provide a Swedish identity in issued assertions (if there is an existing binding).
+
+The [Identity Matching Configuration](configuration-reference.html#idm-configuration) section of the [Configuration Reference for the Swedish eIDAS Connector](configuration-reference.html) describes how the integration against the Identity Matching service is done.
+
+**Example for the Sandbox environment:**
+
+```yaml
+connector:
+  idm:
+    active: true
+    api-base-url: https://sandbox.swedenconnect.se/idm
+    service-url: https://sandbox.swedenconnect.se/idm
+    oauth2:
+      resource-id: https://sandbox.swedenconnect.se/idm
+      client-id: ${saml.idp.entity-id}
+      check-scopes:
+        - ${connector.idm.oauth2.resource-id}/idrecord_check
+      get-scopes:
+        - ${connector.idm.oauth2.resource-id}/idrecord_get
+      server:
+        issuer: ${saml.idp.entity-id}/as
+      credential:
+        bundle: idp-oauth2
+```
 
 ---
 
-Copyright &copy; 2017-2024, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+Copyright &copy; 2017-2025, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).

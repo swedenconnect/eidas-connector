@@ -17,6 +17,8 @@
     3.1. [SAML Metadata Health](#saml-metadata-health)
 
     3.2. [PRID Health](#prid-health)
+    
+    3.3. [Connector Monitoring](#connector-monitoring)
 
 4. [**The Info Endpoint**](#the-info-endpoint)
 
@@ -25,12 +27,23 @@
 <a name="introduction"></a>
 ## 1. Introduction
 
-> - supervision
+The Spring Boot [Actuator Endpoints](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html) can be used for supervision of the application. It defines a set of endpoints which are described in the sections below.
 
 <a name="accessing-audit-logs"></a>
 ## 2. Accessing Audit Logs
 
-> - audit logs
+
+**Path:** `actuator/auditevents`
+
+**Reference:** https://docs.spring.io/spring-boot/api/rest/actuator/auditevents.html
+
+Displays audit events.
+
+Depending on how Audit logging is configured (see [Audit Logging Configuration](configuration.html#audit-logging-configuration)), the audit endpoint may not display all available events. For example, if Redis is not used to save events, the settings for in-memory logging will be used.
+
+See [Swedish eIDAS Connector Audit Logging](audit.html) for a listing of which audit events that are logged by the Connector.
+
+**Note:** If audit logging has been configured to write audit events to files, of course the audit events may be accessed that was as well.
 
 <a name="the-health-endpoint"></a>
 ## 3. The Health Endpoint
@@ -107,7 +120,38 @@ If the PRID-configuration is correct, the following will be returned:
 
 If there are countries in the EU SAML metadata that do not have a PRID-configuration:
 
+```json
+  ...
+  "prid" : { 
+    "status" : "WARNING",
+    "details" : { 
+      "prid-policy-status" : {
+        "missing-prid-config" : [ "NO" ] 
+      }
+    }
+  },
+  ...
+```
 
+The warning above states that metadata for Norway was found in the EU aggregated metadata, but the connector does not have a PRID configuration for Norway.
+
+The PRID-endpoint also warns for invalid PRID configurations. Suppose that an administrator noted that Norway was missing from the configuration and added an entry, but made a mistake. This will look something like:
+
+```json
+  ...
+  "prid" : {
+    "status" : "WARNING",
+      "details" : { 
+        "prid-policy-status" : {
+          "config-validation" : [ "Invalid algorithm (defaultX-eIDAS) for country NO" ],
+          "missing-prid-config": [ "NO" ]
+    }
+  },
+
+```
+
+<a name="connector-monitoring"></a>
+### 3.3. Connector Monitoring
 
 
 <a name="the-info-endpoint"></a>
@@ -115,4 +159,4 @@ If there are countries in the EU SAML metadata that do not have a PRID-configura
 
 ---
 
-Copyright &copy; 2017-2024, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+Copyright &copy; 2017-2025, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).

@@ -9,11 +9,13 @@
 The Swedish eIDAS Connector is built using the [Spring Security SAML Identity Provider](https://github.com/swedenconnect/saml-identity-provider) libraries. Therefore, all the configuration of the SAML IdP part of
 the Connector is done according to this library's configuration, see below.
 
+<a name="saml-idp-configuration"></a>
 ## SAML IdP Configuration
 
 See the [Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html) for the 
 [Spring Security SAML Identity Provider](https://github.com/swedenconnect/saml-identity-provider).
 
+<a name="eidas-connector-configuration"></a>
 ## eIDAS Connector Configuration
 
 **Description:** Configuration specific for the eIDAS Connector.
@@ -23,7 +25,7 @@ See the [Configuration](https://docs.swedenconnect.se/saml-identity-provider/con
 | Property | Description | Type | Default value |
 | :--- | :--- | :--- | :--- | 
 | `connector.domain` | The domain for the eIDAS connector. | String | - |
-| `connector.base-url` | The base URL of the Connector, including protocol, domain and context path. | String | `https://${connector.domain}/`<br />`${server.servlet.context-path}` |
+| `connector.base-url` | The base URL of the Connector, including protocol, domain and context path. | String | `https://${connector.domain}`<br />`${server.servlet.context-path}` |
 | `connector.backup-directory` | Directory where caches and backup files are stored during execution. | [File](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html) | - |
 | `connector.development-mode` | Tells whether we are running the connector in "development mode". This can mean that we allow any TLS server certificates or that other settings are setup with less security. | Boolean | `false` |
 | `connector.country` | The country code for the eIDAS Connector. | String | `SE` |
@@ -66,7 +68,7 @@ By default the eIDAS Connector IdP will support the following authentication con
 
 | Property | Description | Type | Default value |
 | :--- | :--- | :--- | :--- |
-| `entity-id` | The SAML entityID for the eIDAS SP.<br /><br />**Note:** Care should be taken if changing this value from its defaults since many eIDAS countries expect the entityID to be the same as the metadata location (which is fixed). | String | `${saml.idp.base-url}`<br />`/metadata/sp` |
+| `entity-id` | The SAML entityID for the eIDAS SP.<br /><br />**Note:** Care should be taken if changing this value from its defaults since many eIDAS countries expect the entityID to be the same as the metadata location (which is fixed). | String | `${connector.base-url}`<br />`/metadata/sp` |
 | `credentials.*` | The credentials for the SP part of the eIDAS Connector. If not assigned, the keys configured for the SAML IdP will be used also for the SP. See [Credentials Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#credentials-configuration) for how to configure the different credentials. | [CredentialConfigurationProperties](https://github.com/swedenconnect/saml-identity-provider/blob/main/autoconfigure/src/main/java/se/swedenconnect/spring/saml/idp/autoconfigure/settings/CredentialConfigurationProperties.java) | - |
 | `provider-name` | The "provider name" that we should include in `AuthnRequest` messages being sent to the foreign country. | String | "Swedish eIDAS Connector" |
 | `requires-signed`<br />`-assertions` | Whether we require signed eIDAS assertions. | Boolean | `false` |
@@ -142,8 +144,7 @@ Matching API. Therefore, OAuth2 configuration settings need to be supplied.
 | `oauth2.check-scopes` | The scope(s) to request for making check calls the IdM Query API. | List of strings | - |
 | `oauth2.get-scopes` | The scope(s) to request for making get calls the IdM Query API. | List of strings | - |
 | `oauth2.resource-id` | The OAuth2 ID for the Identity Matching service. | String | - |
-| `oauth2.credential.*` | The credential to use for authentication against the Authorization Server (if the connector acts as an OAuth2 client) OR for use of signing of access tokens (if the connector also acts as an OAuth2 Authorization Server). If not assigned, the connector default credential will be used. | [PkiCredentialConfigurationProperties](https://github.com/swedenconnect/credentials-support/blob/main/src/main/java/se/swedenconnect/security/credential/factory/PkiCredentialConfigurationProperties.java) | The default IdP credential |
-| ~~`oauth2.client.token-endpoint`~~ | ~~The endpoint to the Authorization Server.~~ | ~~String~~ | - |
+| `oauth2.credential.*` | The credential to use for authentication against the Authorization Server (if the connector acts as an OAuth2 client) OR for use of signing of access tokens (if the connector also acts as an OAuth2 Authorization Server). If not assigned, the connector default credential will be used.<br />See [credentials-support](https://docs.swedenconnect.se/credentials-support/) for how to configure credentials. | [PkiCredentialConfigurationProperties](https://github.com/swedenconnect/credentials-support/blob/main/credentials-support/src/main/java/se/swedenconnect/security/credential/config/properties/PkiCredentialConfigurationProperties.java) | The default IdP credential |
 | `oauth2.server.issuer` | Assigned when the connector acts as an OAuth2 AS. The issuer ID to use for the issued access tokens. | String | - |
 | `oauth2.server.lifetime` | The duration (lifetime) for issued access tokens. | [Duration](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html) | 1 hour |
 
@@ -182,4 +183,4 @@ Matching API. Therefore, OAuth2 configuration settings need to be supplied.
 
 ---
 
-Copyright &copy; 2017-2024, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+Copyright &copy; 2017-2025, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).

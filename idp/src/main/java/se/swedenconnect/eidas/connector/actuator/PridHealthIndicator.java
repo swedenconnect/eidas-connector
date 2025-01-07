@@ -25,6 +25,7 @@ import se.swedenconnect.eidas.connector.prid.service.PridPolicy;
 import se.swedenconnect.eidas.connector.prid.service.PridService;
 import se.swedenconnect.eidas.connector.prid.service.PridService.PridPolicyValidation;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -82,21 +83,25 @@ public class PridHealthIndicator implements HealthIndicator {
         .map(CountryMetadata::getCountryCode)
         .filter(countryCode -> this.pridService.getPolicy(countryCode) == null)
         .toList();
-    if (noPridConfig.isEmpty()) {
-      builder.withDetail("prid-policy-status", "ok");
-    }
-    else {
-      log.warn("Health: Missing PRID policy configuration for: {}", noPridConfig);
-      builder.status(CustomStatus.WARNING)
-          .withDetail("prid-policy-status", Map.of("missing-prid-config", noPridConfig));
-    }
 
     // Any warnings from the PRID policy configuration?
     //
     final PridPolicyValidation pridValidation = this.pridService.getLatestValidationResult();
-    if (pridValidation.hasErrors()) {
-      log.warn("Health: PRID policy validation errors: {}", pridValidation.getErrors());
-      builder.status(CustomStatus.WARNING).withDetail("config-validation", pridValidation.getErrors());
+
+    if (noPridConfig.isEmpty() && !pridValidation.hasErrors()) {
+      builder.withDetail("prid-policy-status", "ok");
+    }
+    else {
+      final Map<String, Object> details = new HashMap<>();
+      if (!noPridConfig.isEmpty()) {
+        log.warn("Health: Missing PRID policy configuration for: {}", noPridConfig);
+        details.put("missing-prid-config", noPridConfig);
+      }
+      if (pridValidation.hasErrors()) {
+        log.warn("Health: PRID policy validation errors: {}", pridValidation.getErrors());
+        details.put("config-validation", pridValidation.getErrors());
+      }
+      builder.status(CustomStatus.WARNING).withDetail("prid-policy-status", details);
     }
 
     return builder.build();

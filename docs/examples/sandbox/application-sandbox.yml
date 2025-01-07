@@ -1,0 +1,138 @@
+#
+# Connector overrides for the Sandbox deployment
+#
+server:
+  error:
+    include-stacktrace: never
+  tomcat:
+    ajp:
+      enabled: true
+      port: 8009
+      secret-required: false
+
+management:
+  health:
+    redis:
+      enabled: false
+
+credential:
+  bundles:
+    keystore:
+      idp-jks:
+        location: file:${CONNECTOR_DIRECTORY}/credentials/idp-keys.jks
+        password: <hidden>
+        type: JKS
+      sp-jks:
+        location: file:${CONNECTOR_DIRECTORY}/credentials/sp-keys.jks
+        password: <hidden>
+        type: JKS
+    jks:
+      idp-sign:
+        store-reference: idp-jks
+        name: "IdP Signing"
+        key:
+          alias: old-signing
+          key-password: <hidden>
+      idp-encrypt:
+        store-reference: idp-jks
+        name: "IdP Encrypt/decrypt"
+        key:
+          alias: encrypt
+          key-password: <hidden>
+      idp-metadata:
+        store-reference: idp-jks
+        name: "IdP Metadata Signing"
+        key:
+          alias: metadata
+          key-password: <hidden>
+      idp-oauth2:
+        store:
+          location: file:${CONNECTOR_DIRECTORY}/credentials/oauth2.jks
+          password: <hidden>
+          type: JKS
+        name: "IdP OAuth2 Credential"
+        key:
+          alias: oauth2
+          key-password: <hidden>
+      sp-sign:
+        store-reference: sp-jks
+        name: "SP Sign"
+        key:
+          alias: signing
+          key-password: <hidden>
+      sp-encrypt:
+        store-reference: sp-jks
+        name: "SP Encrypt/decrypt"
+        key:
+          alias: encrypt
+          key-password: <hidden>
+
+connector:
+  domain: con.sandbox.swedenconnect.se
+  base-url: https://${connector.domain}${server.servlet.context-path}
+  backup-directory: ${CONNECTOR_DIRECTORY}/backup
+  eu-metadata:
+    location: https://mdsl.sandbox.swedenconnect.se/nodeconfig/metadata
+    validation-certificate: file:${CONNECTOR_DIRECTORY}/metadata/eu-metadata-signing-sandbox.crt
+  eidas:
+    credentials:
+      sign:
+        bundle: sp-sign
+      encrypt:
+        bundle: sp-encrypt
+  prid:
+    policy-resource: file:${CONNECTOR_DIRECTORY}/prid/prid-policy.yml
+  idp:
+    ping-whitelist:
+      - http://sandbox.swedenconnect.se/testmyeid
+      - http://sandbox.swedenconnect.se/testmyeid-sign
+  idm:
+    active: true
+    api-base-url: https://sandbox.swedenconnect.se/idm
+    service-url: https://sandbox.swedenconnect.se/idm
+    oauth2:
+      resource-id: https://sandbox.swedenconnect.se/idm
+      client-id: ${saml.idp.entity-id}
+      check-scopes:
+        - ${connector.idm.oauth2.resource-id}/idrecord_check
+      get-scopes:
+        - ${connector.idm.oauth2.resource-id}/idrecord_get
+      server:
+        issuer: ${saml.idp.entity-id}/as
+      credential:
+        bundle: idp-oauth2
+
+saml:
+  idp:
+    entity-id: https://dev.connector.swedenconnect.se/eidas
+    base-url: ${connector.base-url}
+    metadata-providers:
+      - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
+        backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
+        validation-certificate: file:${CONNECTOR_DIRECTORY}/metadata/sc-metadata-signing-sandbox.crt
+    credentials:
+      sign:
+        bundle: idp-sign
+      encrypt:
+        bundle: idp-encrypt
+      metadata-sign:
+        bundle: idp-metadata
+      future-sign: file:${CONNECTOR_DIRECTORY}/credentials/idp-signing.crt
+      previous-encrypt:
+        jks:
+          name: "Previous IdP Encrypt/decrypt"
+          store-reference: idp-jks
+          key:
+            alias: old-encrypt
+            key-password: secret
+    audit:
+      in-memory:
+        capacity: 1000
+      file:
+        log-file: ${CONNECTOR_DIRECTORY}/logs/audit.log
+
+logging:
+  level:
+    se:
+      swedenconnect:
+        eidas: INFO

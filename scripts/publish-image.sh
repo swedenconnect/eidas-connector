@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+# Simple script for publishing connector image to GitHub packages.
 #
 set -e
 
@@ -21,4 +22,3 @@ echo "Logging in to ${DOCKER_REPO} ..."
 echo $GITHUB_ACCESS_TOKEN | docker login $DOCKER_REPO -u $GITHUB_USER --password-stdin
 
 mvn -f ${SCRIPT_DIR}/../idp/pom.xml clean install jib:build
-

@@ -28,9 +28,7 @@
 
     5.1. [Creating an Application Profile File](#creating-an-application-profile-file)
     
-    5.2. [Configuration Data](#configuration-data)
-
-    5.3. [Connector Start Script](#connector-start-script)
+    5.2. [Connector Start Script](#connector-start-script)
 
 6. [**Post-deployment Steps**](#post-deployment-steps)
 
@@ -94,7 +92,7 @@ The resulting jar-file containing the eIDAS Connector Spring Boot-application (w
 
 As an alternative to building the eIDAS Connector from source, it can be downloaded from [Maven Central](https://central.sonatype.com).
 
-Goto https://repo1.maven.org/maven2/se/swedenconnect/eidas/eidas-connector and download the version you need.
+Go to https://repo1.maven.org/maven2/se/swedenconnect/eidas/eidas-connector and download the version you need.
 
 <a name="building-a-docker-image"></a>
 ## 4. Building a Docker Image
@@ -139,13 +137,12 @@ The example assumes that a Docker image named `swedenconnect/eidas-connector` ha
 <a name="creating-an-application-profile-file"></a>
 ### 5.1. Creating an Application Profile File
 
-> TODO
+See [Configuration of the Swedish eIDAS Connector](configuration.html) for how to create a YML-configuration file. It is wise to use the base settings of the default [application.yml](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/resources/application.yml) and create a profile that extends and changes the default settings.
 
-<a name="configuration-data"></a>
-### 5.2. Configuration Data
+The [examples/sandbox/application-sandbox.yml](examples/sandbox/application-sandbox.yml) file illustrates how the profile `sandbox` is created and where we override default settings for the Sweden Connect Sandbox environment (passwords and credentials are not displayed).
 
 <a name="connector-start-script"></a>
-### 5.3. Connector Start Script
+### 5.2. Connector Start Script
 
 ```
 #!/bin/bash
@@ -154,7 +151,7 @@ The example assumes that a Docker image named `swedenconnect/eidas-connector` ha
 # Start and deploy script for the eIDAS Connector in the Sandbox environment
 #
 echo Pulling swedenconnect/eidas-connector docker image ...
-docker pull docker.eidastest.se:5000/swedenconnect/eidas-connector
+docker pull ghcr.io/swedenconnect/eidas-connector
 
 echo Undeploying eidas-connector container ...
 docker rm eidas-connector --force
@@ -166,12 +163,11 @@ CONNECTOR_AJP_PORT=8014
 
 AJP_SECRET="TODO:insert-secret"
 
-# -p ${CONNECTOR_ACTUATOR_PORT}:8444 \
-
 echo Redeploying docker container eidas-connector ...
 docker run -d --name eidas-connector --restart=always \
   -p ${CONNECTOR_AJP_PORT}:8009 \
   -p ${CONNECTOR_HTTPS_PORT}:8443 \
+  -p ${CONNECTOR_ACTUATOR_PORT}:8444 \
   -e SPRING_CONFIG_ADDITIONAL_LOCATION=${CONNECTOR_HOME}/ \
   -e SPRING_PROFILES_ACTIVE=sandbox \
   -e CONNECTOR_DIRECTORY=${CONNECTOR_HOME} \
@@ -180,10 +176,9 @@ docker run -d --name eidas-connector --restart=always \
   -e "TZ=Europe/Stockholm" \
   -v /etc/localtime:/etc/localtime:ro \
   -v /opt/docker/eidas-connector:${CONNECTOR_HOME} \
-  docker.eidastest.se:5000/swedenconnect/eidas-connector
+  ghcr.io/swedenconnect/eidas-connector
 
 echo Done!
-
 ```
 
 <a name="post-deployment-steps"></a>
@@ -216,4 +211,4 @@ Next, Sweden Connect/Digg operations need to be involved to publish the metadata
 
 ---
 
-Copyright &copy; 2017-2024, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+Copyright &copy; 2017-2025, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
