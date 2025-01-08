@@ -1,4 +1,19 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ Copyright 2017-2025 Sweden Connect
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
 <md:EntitiesDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
   xmlns:mdui="urn:oasis:names:tc:SAML:metadata:ui" xmlns:mdattr="urn:oasis:names:tc:SAML:metadata:attribute"
   xmlns:mdrpi="urn:oasis:names:tc:SAML:metadata:rpi" xmlns:shibmd="urn:mace:shibboleth:metadata:1.0"
@@ -14,11 +29,11 @@
       <mdattr:EntityAttributes>
         <saml:Attribute Name="http://macedir.org/entity-category" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri">
           <saml:AttributeValue>http://refeds.org/category/hide-from-discovery</saml:AttributeValue>
-        </saml:Attribute>        
+        </saml:Attribute>
         <saml:Attribute Name="http://eidas.europa.eu/entity-attributes/protocol-version"
           NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri">
           <saml:AttributeValue>1.2</saml:AttributeValue>
-          <saml:AttributeValue>1.1</saml:AttributeValue>          
+          <saml:AttributeValue>1.1</saml:AttributeValue>
         </saml:Attribute>
         <saml:Attribute Name="http://eidas.europa.eu/entity-attributes/application-identifier"
           NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:uri">
@@ -3106,7 +3121,7 @@
       <md:TelephoneNumber>+351 217231200</md:TelephoneNumber>
     </md:ContactPerson>
   </md:EntityDescriptor>
-  
+
   <!-- Missing country -->
   <md:EntityDescriptor entityID="https://eidas.autenticacao.gov.pt/EidasNode/ServiceMetadata2">
     <md:Extensions>
@@ -3300,6 +3315,6 @@
       <md:EmailAddress>it@ama.pt</md:EmailAddress>
       <md:TelephoneNumber>+351 217231200</md:TelephoneNumber>
     </md:ContactPerson>
-  </md:EntityDescriptor>  
-  
+  </md:EntityDescriptor>
+
 </md:EntitiesDescriptor>

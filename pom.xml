@@ -44,8 +44,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>21</java.version>
 
-    <spring.boot.version>3.4.0</spring.boot.version>
-    <spring.version>6.2.0</spring.version>
+    <spring.boot.version>3.4.1</spring.boot.version>
+    <spring.version>6.2.1</spring.version>
     <bc.version>1.79</bc.version>
     <saml.idp.version>2.3.1</saml.idp.version>
     <credentials-support.version>2.0.1</credentials-support.version>

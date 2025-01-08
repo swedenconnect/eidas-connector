@@ -35,9 +35,9 @@ server:
         http-only: true
         secure: true
       persistent: false
-  ssl:
-    enabled: true
-    bundle: localhost
+  #  ssl:
+  #    enabled: true
+  #    bundle: localhost
   error:
     include-message: always
     include-exception: true
