@@ -1,0 +1,182 @@
+/*
+ * Copyright 2017-2025 Sweden Connect
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+a:focus,
+button:focus,
+img:focus,
+input:focus,
+input[type="radio"]:focus,
+textarea:focus,
+details:focus,
+summary:focus,
+select:focus {
+  outline: 3px dotted #2b2a29 !important;
+  outline-offset: 3px !important;
+  box-shadow: none !important;
+}
+
+.btn-accordion:focus {
+  outline: 3px dotted #2b2a29 !important;
+  outline-offset: -4px !important;
+  box-shadow: none !important;
+}
+
+.sign-message {
+  margin-bottom: 30px;
+}
+
+.sign-message div {
+  margin: 0;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@media (min-width: 576px) {
+  .top-logo-dim {
+    height: 60px;
+    width: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .top-logo-dim {
+    height: 40px;
+    width: auto;
+  }
+}
+
+.copyright {
+  margin-top: 23px;
+  margin-bottom: 23px;
+}
+
+.content-heading-text {
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.btn-link {
+  font-weight: inherit;
+  background-color: transparent;
+
+  color: #000000 !important;
+  text-decoration: underline;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.large-btn-link-text {
+  font-size: 16px;
+  line-height: 14px;
+}
+
+.noscripthide {
+  display: none;
+}
+
+.error .error-text {
+  margin-top: 16px;
+}
+
+.dont-break-out {
+  /* These are technically the same, but use both */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  -ms-word-break: break-all;
+  /* This is the dangerous one in WebKit, as it breaks things wherever */
+  word-break: break-all;
+  /* Instead use this non-standard one: */
+  word-break: break-word;
+
+  /* Adds a hyphen where the word breaks, if supported (No Blink) */
+  -ms-hyphens: auto;
+  -moz-hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+.accordion {
+  margin-top: 55px;
+}
+.accordion .card {
+  margin-bottom: 9px;
+  border-radius: 0.25rem !important;
+  border-bottom: 1px solid #d8d8d8 !important;
+}
+.accordion .card-header {
+  padding: 0;
+  border-bottom: none;
+  background: #f7f7f7;
+  border-radius: 0.25em !important;
+}
+.accordion .card-header .btn-accordion {
+  padding: 15px 20px;
+}
+
+.btn-accordion {
+  white-space: normal;
+  display: flex;
+  align-items: center;
+  background-color: #f7f7f7;
+}
+.btn-accordion[aria-expanded="true"] .btn-accordion-arrow::after {
+  transform: rotate(-180deg);
+}
+
+.show .card-body {
+  border-top: 1px solid #d8d8d8;
+}
+.btn-accordion .btn-accordion-arrow {
+  position: relative;
+  width: 1em;
+  height: 1em;
+  margin-left: auto;
+}
+.btn-accordion-arrow::after {
+  content: "";
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background-image: url(../images/arrow_dropdown.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  transition: all 0.35s ease;
+}
+
+* {
+  min-height: 0.01px;
+}
+
+aside {
+  font-size: 0.875rem;
+}
+
+aside h2 {
+  font-size: 1em;
+  font-weight: bold;
+}
+
+a.external-link,
+a.external-link:hover {
+  text-decoration: none;
+}
+a.external-link span {
+  text-decoration: underline;
+}
+.link-icon {
+  fill: currentColor;
+  width: 1em;
+  height: 1em;
+  margin-top: -2px;
+}

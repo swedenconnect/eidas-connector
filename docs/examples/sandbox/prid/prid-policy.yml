@@ -1,0 +1,16 @@
+policy:
+  SE:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  XA:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  XB:
+    algorithm: special-characters-eIDAS
+    persistenceClass: B
+  DE:
+    algorithm: colresist-eIDAS
+    persistenceClass: B
+  XE:
+    algorithm: default-eIDAS
+    persistenceClass: A

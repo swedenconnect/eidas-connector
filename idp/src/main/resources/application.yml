@@ -1,0 +1,249 @@
+#
+# Base configuration for the Swedish eIDAS Connector.
+#
+spring:
+  application:
+    name: eidas-connector
+  messages:
+    basename: messages,idp-errors/idp-error-messages,custom-saml-errors
+  ssl:
+    bundle:
+      jks:
+        # For localhost testing ...
+        localhost:
+          keystore:
+            location: classpath:localhost.jks
+            password: secret
+            type: JKS
+          key:
+            alias: localhost
+            password: secret
+
+server:
+  port: 8443
+  servlet:
+    context-path: /idp
+    session:
+      timeout: 60m
+      tracking-modes:
+        - cookie
+      cookie:
+        name: EIDASSESSION
+        domain: ${connector.domain}
+        max-age: 60m
+        same-site: NONE
+        http-only: true
+        secure: true
+      persistent: false
+  #  ssl:
+  #    enabled: true
+  #    bundle: localhost
+  error:
+    include-message: always
+    include-exception: true
+    include-stacktrace: never
+
+#
+# Management/Actuator configuration
+#
+management:
+  server:
+    port: 8444
+  endpoint:
+    health:
+      status:
+        order:
+          - DOWN
+          - OUT_OF_SERVICE
+          - WARNING
+          - UP
+          - UNKNOWN
+        http-mapping:
+          down: 500
+          out_of_service: 503
+          warning: 503
+          up: 200
+          unknown: 200
+      show-details: always
+    info:
+      access: read_only
+  health:
+    redis:
+      ## If Redis is configured to be used, change this to true
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics, loggers, refreshprid, auditevents
+
+logging:
+  include-application-name: false
+  level:
+    root: warn
+    se.swedenconnect: info
+
+ui:
+  languages:
+    - tag: sv
+      text: Svenska
+    - tag: en
+      text: English
+  accessibility-url: https://www.swedenconnect.se/om/om-webbplatsen/tillganglighet/svenska-eidas-noden
+
+connector:
+  base-url: https://${connector.domain}${server.servlet.context-path}
+  country: SE
+  idp:
+    entity-categories:
+      - http://id.elegnamnden.se/ec/1.0/eidas-naturalperson
+      - http://id.elegnamnden.se/sprop/1.0/scal2
+      - http://id.elegnamnden.se/sprop/1.0/mobile-auth
+  eu-metadata:
+    backup-location: ${connector.backup-directory}/metadata/eu-cache.xml
+  eidas:
+    entity-id: ${saml.idp.base-url}/metadata/sp
+    requires-signed-assertions: false
+    preferred-binding: urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
+    metadata:
+      application-identifier-prefix: "SE:connector:"
+      protocol-versions:
+        - 1.0
+        - 1.1
+        - 1.2
+        - 1.3
+        - 1.4
+      organization:
+        names:
+          en: Sweden Connect
+        display-names:
+          en: "Swedish eIDAS node"
+        urls:
+          en: https://www.swedenconnect.se/en
+      contact-persons:
+        technical:
+          company: "Sweden Connect"
+          given-name: "Technical support"
+          email-addresses:
+            - operations@swedenconnect.se
+        support:
+          company: "Sweden Connect"
+          given-name: "Customer support"
+          email-addresses:
+            - operations@swedenconnect.se
+      digest-methods:
+        - http://www.w3.org/2001/04/xmlenc#sha256
+        - http://www.w3.org/2001/04/xmldsig-more#sha384
+        - http://www.w3.org/2001/04/xmlenc#sha512
+      include-digest-methods-under-role: true
+      signing-methods:
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1
+          min-key-size: 3072
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1
+          min-key-size: 3072
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1
+          min-key-size: 3072
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256
+          min-key-size: 256
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384
+          min-key-size: 256
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512
+          min-key-size: 256
+      include-signing-methods-under-role: true
+      encryption-methods:
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes256-gcm
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes192-gcm
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes128-gcm
+        - algorithm: http://www.w3.org/2009/xmlenc11#rsa-oaep
+
+saml:
+  idp:
+    base-url: ${connector.base-url}
+    audit:
+      in-memory:
+        capacity: 1000
+      exclude-events:
+        - AUTHENTICATION_SUCCESS
+        - AUTHORIZATION_FAILURE
+    endpoints:
+      metadata: /metadata/idp.xml
+      post-authn: /profile/SAML2/POST/SSO
+      redirect-authn: /profile/SAML2/Redirect/SSO
+    requires-signed-requests: true
+    metadata:
+      digest-methods:
+        - http://www.w3.org/2001/04/xmlenc#sha256
+        - http://www.w3.org/2001/04/xmldsig-more#sha384
+        - http://www.w3.org/2001/04/xmlenc#sha512
+      include-digest-methods-under-role: true
+      signing-methods:
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha256
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha384
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#rsa-sha512
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1
+          min-key-size: 2048
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256
+          min-key-size: 256
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384
+          min-key-size: 256
+        - algorithm: http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512
+          min-key-size: 256
+      include-signing-methods-under-role: true
+      encryption-methods:
+        - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
+        - algorithm: http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p
+          digest-method: http://www.w3.org/2001/04/xmlenc#sha256
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes256-gcm
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes192-gcm
+        - algorithm: http://www.w3.org/2009/xmlenc11#aes128-gcm
+        - algorithm: http://www.w3.org/2001/04/xmlenc#aes256-cbc
+        - algorithm: http://www.w3.org/2001/04/xmlenc#aes192-cbc
+        - algorithm: http://www.w3.org/2001/04/xmlenc#aes128-cbc
+      requested-principal-selection:
+        # prid
+        - "urn:oid:1.2.752.201.3.4"
+        # eidasPersonIdentifier
+        - "urn:oid:1.2.752.201.3.7"
+        # mappedPersonalIdentityNumber
+        - "urn:oid:1.2.752.201.3.16"
+        # c
+        - "urn:oid:2.5.4.6"
+      ui-info:
+        display-names:
+          en: "Foreign eID"
+          sv: "Utländskt eID"
+        descriptions:
+          en: "Identity Provider for foreign eID:s"
+          sv: "Legitimeringstjänst för utländsk legitimering"
+        logotypes:
+          - path: /images/idp-logo-notext.svg
+            height: 256
+            width: 256
+          - path: /images/idp-logo.svg
+            height: 56
+            width: 280
+      organization:
+        names:
+          en: Sweden Connect
+          sv: Sweden Connect
+        display-names:
+          en: Sweden Connect
+          sv: Sweden Connect
+        urls:
+          en: https://www.swedenconnect.se/en
+          sv: https://www.swedenconnect.se
+      contact-persons:
+        technical:
+          company: Sweden Connect
+          email-addresses:
+            - operations@swedenconnect.se
+        support:
+          company: Sweden Connect
+          email-addresses:
+            - operations@swedenconnect.se

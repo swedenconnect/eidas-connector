@@ -1,0 +1,56 @@
+<!--
+  ~ Copyright 2017-2025 Sweden Connect
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}">
+<head th:insert="~{fragments/base :: headerFragment}"></head>
+<body>
+<header th:replace="~{fragments/header :: splogotype(url = ${idmConsent.getSpInfo().getLogoUrl()})}"></header>
+
+<main class="container main" id="main">
+  <div th:replace="~{fragments/header :: language(languages = ${languages}, path='/extauth/idmconsent')}"></div>
+
+  <div class="row" id="mainRow">
+    <div class="col-sm-12 content-container">
+      <div class="content-heading">
+        <h1 th:text="#{connector.ui.idm.consent.subtitle}">Share Swedish identifier?</h1>
+      </div>
+
+      <p th:text="#{connector.ui.idm.consent.initial-text}">
+        You have linked your Swedish personal identity number or coordination number to your european eID.
+      </p>
+
+      <p th:text="#{connector.ui.idm.consent.question(${idmConsent.getSpInfo().getDisplayName()} ?: #{connector.ui.sp-generic-the})}">
+        Do you want to share it with Example organization?
+      </p>
+
+      <form class="form-inline" method="POST" action="#" th:action="@{/extauth/idmresult}" id="consentForm">
+        <button class="btn btn-secondary mr-2" type="submit" name="action" value="cancel" id="denyButton">
+          <span th:text="#{connector.ui.idm.consent.button.deny}">No, do not share</span>
+        </button>
+        <button type="submit" class="btn btn-primary" name="action" value="ok" id="allowButton">
+          <span th:text="#{connector.ui.idm.consent.button.ok}">Yes, share</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${idmConsent.getAccessibilityUrl()})}"></footer>
+
+<th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
+<th:block th:insert="~{fragments/base :: scriptFragment2}"></th:block>
+</body>
+</html>

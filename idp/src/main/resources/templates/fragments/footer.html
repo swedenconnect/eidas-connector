@@ -1,0 +1,53 @@
+<!--
+  ~ Copyright 2017-2025 Sweden Connect
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+<footer class="container copyright" th:fragment="only-copyright">
+  <div class="row">
+    <div class="col-6">
+      <img class="float-left" th:src="@{/images/idp-logo.svg}" src="images/idp-logo.svg" height="40"
+           alt="Sweden Connect"/>
+    </div>
+    <div class="col-6">
+      <p class="float-right" th:text="#{connector.ui.copyright}">Copyright &copy; Service provided by Sweden Connect</p>
+    </div>
+  </div>
+</footer>
+
+<footer class="container copyright" th:fragment="copyright(accessibilityUrl)">
+  <div class="row">
+    <div class="col-6">
+      <img class="float-left" th:src="@{/images/idp-logo.svg}" src="images/idp-logo.svg" height="40"
+           alt="Sweden Connect"/>
+    </div>
+    <div class="col-6">
+      <p class="float-right" th:text="#{connector.ui.copyright}">Copyright &copy; Service provided by Sweden Connect</p>
+    </div>
+  </div>
+  <div class="row mt-4" th:if="${accessibilityUrl != null}">
+    <div class="col-12">
+      <div class="d-flex justify-content-end">
+        <a href="#" th:href="${accessibilityUrl}" id="accesability-report">
+          <span th:text="#{connector.ui.accessibility-link}">Accessibility report</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
