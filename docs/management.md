@@ -18,9 +18,17 @@
 
     3.2. [PRID Health](#prid-health)
     
-    3.3. [Connector Monitoring](#connector-monitoring)
+    3.3. [Credential Monitoring](#credential-monitoring)
+
+    3.4. [Identity Matching Health](#identity-matching-health)
 
 4. [**The Info Endpoint**](#the-info-endpoint)
+
+    4.1. [Country Information](#country-information)
+
+    4.2. [Current PRID Policy Configuration](#current-prid-policy-configuration)
+
+5. [**The PRID Configuration Refresh Endpoint**](#the-prid-configuration-refresh-endpoint)
 
 ---
 
@@ -31,7 +39,6 @@ The Spring Boot [Actuator Endpoints](https://docs.spring.io/spring-boot/referenc
 
 <a name="accessing-audit-logs"></a>
 ## 2. Accessing Audit Logs
-
 
 **Path:** `actuator/auditevents`
 
@@ -62,7 +69,9 @@ The Health-endpoint should be invoked periodically in order to monitor the "heal
 
 :exclamation: Simple monitoring services that can not interpret the body of the health-call, should at least trigger on the HTTP status, where 200 means `UP` and 50X, meaning "not ok".
 
-Apart from Spring's standard health components, the eIDAS Connector delivers health information about the components described below.
+Apart from Spring's standard health components<sup>1</sup>, the eIDAS Connector delivers health information about the components described below.
+
+> **\[1\]:** Standard health components include indicators for disk space, Redis and SSL/TLS.
 
 <a name="saml-metadata-health"></a>
 ### 3.1. SAML Metadata Health
@@ -150,12 +159,96 @@ The PRID-endpoint also warns for invalid PRID configurations. Suppose that an ad
 
 ```
 
-<a name="connector-monitoring"></a>
-### 3.3. Connector Monitoring
+<a name="credential-monitoring"></a>
+### 3.3. Credential Monitoring
 
+**Key:** `credential-monitor`
+
+**Description:** If hardware based credentials are used (i.e., HSM:s), monitoring of their status can be configured (see  [Credentials Monitoring](https://docs.swedenconnect.se/credentials-support/#monitoring)).
+
+See [Credential Monitoring Health Endpoint](https://docs.swedenconnect.se/credentials-support/#credential-monitoring-health-endpoint) for details about the monitored credentials.
+
+<a name="identity-matching-health"></a>
+### 3.4. Identity Matching Health
+
+**Key:** `idm`
+
+**Description:** Health indicator for checking the connectivity against the Identity Matching Service.
 
 <a name="the-info-endpoint"></a>
 ## 4. The Info Endpoint
+
+**Path:** `/actuator/info`
+
+**Reference:** https://docs.spring.io/spring-boot/api/rest/actuator/info.html
+
+The `info` endpoint provides general information about the application, and apart from Spring's standard elements, information about the following will be provided:
+
+<a name="country-information"></a>
+### 4.1. Country Information
+
+**Key:** `countries`
+
+**Description:** Provides information about the countries that are connected to the Swedish eIDAS Connector.
+
+For each country its country code, its SAML entityID and a list of supported assurance levels will be displayed.
+
+Example:
+
+```json
+{
+  ...
+  "countries" : [ { 
+    "country-code" : "NO",
+    "entity-id" : "https://eidas-proxy-service.no/eidas-ps/ServiceMetadata",
+    "assurance-levels" : [
+      "http://eidas.europa.eu/LoA/high",
+      "http://eidas.europa.eu/LoA/substantial",
+      "http://eidas.europa.eu/LoA/low" ]
+  },
+  {
+    "country-code" : "FR",
+    "entity-id" : "https://eidas-cef-xa.fr/EidasNodeProxy/ServiceMetadata",
+    ...
+```
+
+<a name="current-prid-policy-configuration"></a>
+### 4.2. Current PRID Policy Configuration
+
+**Key:** `prid-policy`
+
+**Description:** Displays a the current PRID policy (see [eIDAS Connector Provisional Identifier (PRID) Calculation](prid.html)).
+
+Example:
+
+```json
+{
+  ...
+  "prid-policy" : { 
+    "NO" : {
+      "algorithm" : "default-eIDAS",
+      "persistenceClass" : "A"
+    },"
+    FR": { 
+      "algorithm" : "default-eIDAS",
+      "persistenceClass" : "B"
+    },
+    ...
+  },    
+  ...
+}
+```
+
+<a name="the-prid-configuration-refresh-endpoint"></a>
+## 5. The PRID Configuration Refresh Endpoint
+
+**Path:** `/actuator/refreshprid`
+
+**Description:** The PRID service will reload the PRID policy file every 10 minutes. It is also possible to force a reload and verify that the update was correct. This is done by invoking the `/actuator/refreshprid`.
+
+As its output, the endpoint will respond with a status and a list of the policy configuration, see [4.2](#current-prid-policy-configuration) above.
+
+Make sure to inspect the result of the call, since the endpoint will analyze the newly updated PRID configuration file, and it it detects any errors report these.
 
 ---
 

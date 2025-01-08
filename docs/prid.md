@@ -77,7 +77,7 @@ policy:
 
 ## Updating the PRID Policy Configuration
 
-The PRID service will reload the PRID policy file every 10 minutes. It is also possible to force a reload and verify that the update was correct. See "**Refresh of policy configuration - /manage/refresh**" below.
+The PRID service will reload the PRID policy file every 10 minutes. It is also possible to force a reload and verify that the update was correct. See [The Refresh PRID Configuration Endpoint](management.html#the-refresh-prid-configuration-endpoint) of the [Management using the Actuator](management.html) page.
 
 ---
 
