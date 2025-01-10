@@ -47,7 +47,7 @@
     <spring.boot.version>3.4.1</spring.boot.version>
     <spring.version>6.2.1</spring.version>
     <bc.version>1.79</bc.version>
-    <saml.idp.version>2.3.1</saml.idp.version>
+    <saml.idp.version>2.3.2</saml.idp.version>
     <credentials-support.version>2.0.1</credentials-support.version>
   </properties>
 
@@ -191,7 +191,7 @@
       <dependency>
         <groupId>com.nimbusds</groupId>
         <artifactId>nimbus-jose-jwt</artifactId>
-        <version>9.47</version>
+        <version>9.48</version>
       </dependency>
 
       <dependency>
