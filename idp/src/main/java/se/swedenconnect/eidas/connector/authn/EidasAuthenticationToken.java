@@ -15,9 +15,12 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.shibboleth.shared.xml.SerializeSupport;
+import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.AuthnContext;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
@@ -33,9 +36,11 @@ import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
 import se.swedenconnect.spring.saml.idp.attributes.eidas.EidasAttributeValue;
 import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Serial;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -132,6 +137,27 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   }
 
   /**
+   * Gets the SAML {@link Assertion} in Base64 encoding.
+   *
+   * @return the Base64-encoded {@link Assertion}
+   */
+  @Nullable
+  public String getAssertionBase64() {
+    final Assertion assertion = this.getAssertion();
+    if (assertion == null) {
+      return null;
+    }
+    try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+      SerializeSupport.writeNode(XMLObjectSupport.marshall(assertion), bos);
+      return Base64.getEncoder().encodeToString(bos.toByteArray());
+    }
+    catch (final Exception e) {
+      log.error("Failed to marshall OpenSAML object", e);
+      return null;
+    }
+  }
+
+  /**
    * Returns a read-only list of the attributes received.
    *
    * @return attribute list
@@ -175,7 +201,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
     return Optional.ofNullable(this.assertion.get())
         .map(Assertion::getAuthnStatements)
         .filter(Predicate.not(List::isEmpty))
-        .map(as -> as.get(0))
+        .map(List::getFirst)
         .map(AuthnStatement::getAuthnInstant)
         .orElseGet(() -> this.assertion.get().getIssueInstant());
   }
@@ -189,7 +215,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
     return Optional.ofNullable(this.assertion.get())
         .map(Assertion::getAuthnStatements)
         .filter(Predicate.not(List::isEmpty))
-        .map(as -> as.get(0))
+        .map(List::getFirst)
         .map(AuthnStatement::getAuthnContext)
         .map(AuthnContext::getAuthnContextClassRef)
         .map(AuthnContextClassRef::getURI)
@@ -200,13 +226,14 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   @Override
   public Object getPrincipal() {
     if (this.principalCache == null) {
-      this.principalCache = Optional.ofNullable(this.getAttribute(AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME))
-          .map(UserAttribute::getValues)
-          .filter(Predicate.not(List::isEmpty))
-          .map(v -> v.get(0))
-          .map(EidasAttributeValue.class::cast)
-          .map(EidasAttributeValue::getValueAsString)
-          .orElse("unknown");
+      this.principalCache =
+          Optional.ofNullable(this.getAttribute(AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME))
+              .map(UserAttribute::getValues)
+              .filter(Predicate.not(List::isEmpty))
+              .map(List::getFirst)
+              .map(EidasAttributeValue.class::cast)
+              .map(EidasAttributeValue::getValueAsString)
+              .orElse("unknown");
     }
     return this.principalCache;
   }

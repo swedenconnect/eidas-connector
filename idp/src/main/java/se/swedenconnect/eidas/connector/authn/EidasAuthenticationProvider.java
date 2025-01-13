@@ -289,6 +289,15 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
           AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_TRANSACTION_IDENTIFIER,
           eidasToken.getAssertion().getID()));
 
+      // Add the entire assertion as a Base64 encoded blob to the authServerSignature attribute ...
+      //
+      Optional.ofNullable(eidasToken.getAssertionBase64())
+          .ifPresent(a ->
+              eidasToken.addAttribute(new UserAttribute(
+                  AttributeConstants.ATTRIBUTE_NAME_AUTH_SERVER_SIGNATURE,
+                  AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_AUTH_SERVER_SIGNATURE,
+                  a)));
+
       // Invoke the PRID service to resolve the eIDAS person identifier to a Swedish
       // PRID attribute ...
       //
@@ -387,7 +396,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
       @Override
       public String getReceiveURL() {
-        return samlResponseUrl;
+        return EidasAuthenticationProvider.this.samlResponseUrl;
       }
 
       @Override
@@ -441,7 +450,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
         final String psValue = Optional.of(ps.getValues())
             .filter(Predicate.not(List::isEmpty))
-            .map(v -> v.get(0))
+            .map(List::getFirst)
             .map(String.class::cast)
             .orElse(null);
         if (psValue == null) {
