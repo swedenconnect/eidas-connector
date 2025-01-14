@@ -124,7 +124,7 @@ public class SignUiModel extends BaseUiModel {
     }
 
     private static String getEidasAttributeValue(final List<? extends Serializable> values) {
-      final boolean transliterated = !values.isEmpty() && values.get(0) instanceof TransliterationString;
+      final boolean transliterated = !values.isEmpty() && values.getFirst() instanceof TransliterationString;
       if (transliterated && values.size() > 1) {
         return values.stream()
             .filter(Objects::nonNull)

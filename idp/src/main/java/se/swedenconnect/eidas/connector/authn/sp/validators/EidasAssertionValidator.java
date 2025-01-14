@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp.validators;
 
+import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.common.assertion.ValidationResult;
@@ -96,13 +97,15 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
   private static class OneTimeUseDummyConditionValidator implements ConditionValidator {
 
     @Override
+    @Nonnull
     public QName getServicedCondition() {
       return OneTimeUse.DEFAULT_ELEMENT_NAME;
     }
 
     @Override
-    public ValidationResult validate(final Condition condition, final Assertion assertion,
-        final ValidationContext context) {
+    @Nonnull
+    public ValidationResult validate(@Nonnull final Condition condition, @Nonnull final Assertion assertion,
+        @Nonnull final ValidationContext context) {
       return ValidationResult.VALID;
     }
 

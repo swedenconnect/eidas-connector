@@ -15,22 +15,20 @@
  */
 package se.swedenconnect.eidas.connector.audit;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import org.springframework.boot.actuate.audit.AuditEvent;
+import org.springframework.util.StringUtils;
+import se.swedenconnect.eidas.connector.ApplicationVersion;
+import se.swedenconnect.spring.saml.idp.audit.Saml2AuditEvent;
+import se.swedenconnect.spring.saml.idp.audit.data.Saml2AuditData;
+
 import java.io.Serial;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import org.springframework.boot.actuate.audit.AuditEvent;
-import org.springframework.util.StringUtils;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import se.swedenconnect.eidas.connector.ApplicationVersion;
-import se.swedenconnect.spring.saml.idp.audit.Saml2AuditEvent;
-import se.swedenconnect.spring.saml.idp.audit.data.Saml2AuditData;
 
 /**
  * Audit event for creating event objects for the eIDAS Connector.
@@ -70,7 +68,7 @@ public class ConnectorAuditEvent extends AuditEvent {
   protected ConnectorAuditEvent(
       final String type, final long timestamp, final String principal, final Map<String, Object> data) {
     super(Instant.ofEpochMilli(timestamp),
-        Optional.ofNullable(principal).orElseGet(() -> DEFAULT_PRINCIPAL), type, data);
+        Optional.ofNullable(principal).orElse(DEFAULT_PRINCIPAL), type, data);
   }
 
   /**
@@ -105,7 +103,8 @@ public class ConnectorAuditEvent extends AuditEvent {
     final Map<String, Object> auditData = new HashMap<>();
 
     auditData.put("sp-entity-id", StringUtils.hasText(spEntityId) ? spEntityId : Saml2AuditEvent.UNKNOWN_SP);
-    auditData.put("authn-request-id", StringUtils.hasText(authnRequestId) ? authnRequestId : Saml2AuditEvent.UNKNOWN_AUTHN_REQUEST_ID);
+    auditData.put("authn-request-id",
+        StringUtils.hasText(authnRequestId) ? authnRequestId : Saml2AuditEvent.UNKNOWN_AUTHN_REQUEST_ID);
     if (data != null) {
       for (final Saml2AuditData ad : data) {
         if (ad != null) {

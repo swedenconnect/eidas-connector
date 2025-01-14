@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp.validators;
 
+import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.common.assertion.AssertionValidationException;
 import org.opensaml.saml.common.assertion.ValidationContext;
@@ -49,6 +50,7 @@ public class EidasAttributeStatementValidator extends SwedishEidAttributeStateme
    * attributes.
    */
   @Override
+  @Nonnull
   public ValidationResult validate(final Statement statement, final Assertion assertion,
       final ValidationContext context) throws AssertionValidationException {
 
@@ -71,7 +73,7 @@ public class EidasAttributeStatementValidator extends SwedishEidAttributeStateme
 
   /** {@inheritDoc} */
   @Override
-  protected Collection<String> getRequiredAttributes(ValidationContext context) {
+  protected Collection<String> getRequiredAttributes(final ValidationContext context) {
     return EIDAS_MINIMUM_DATASET;
   }
 

@@ -119,24 +119,6 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
       throws IdmException;
 
   /**
-   * Gets the connector OAuth2 client ID.
-   *
-   * @return the client ID
-   */
-  //protected ClientID getClientId() {
-  //    return this.clientId;
-  //  }
-
-  /**
-   * Gets the OAuth2 scope(s) to use.
-   *
-   * @return the scope(s)
-   */
-  //  protected Scope getScope() {
-  //    return this.scope;
-  //  }
-
-  /**
    * Gets the OAuth2 credential - used to sign OAuth2 items.
    *
    * @return the {@link PkiCredential}

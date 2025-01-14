@@ -24,7 +24,14 @@ import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Default implementation of the {@link EuMetadataProvider} interface.

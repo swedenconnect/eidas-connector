@@ -26,7 +26,11 @@ import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatus;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -97,50 +101,35 @@ public class AuthnContextClassRefMapper {
     }
 
     final SwedishRequestedUris requested = new SwedishRequestedUris(requestedSwedishUris);
-    final List<Function<SwedishRequestedUris, String>> mappings;
-
-    if (EidasConstants.EIDAS_LOA_HIGH.equals(eidasUri)) {
-      mappings = List.of(
-          SwedishRequestedUris::getHighNotified,
-          SwedishRequestedUris::getHighNotifiedAcceptsNn,
-          SwedishRequestedUris::getSubstantialNotified,
-          SwedishRequestedUris::getSubstantialAcceptsNn,
-          SwedishRequestedUris::getLowNotified,
-          SwedishRequestedUris::getLowAcceptsNn);
-    }
-    else if (EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED.equals(eidasUri)
-        || EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED2.equals(eidasUri)) {
-      mappings = List.of(
-          SwedishRequestedUris::getHighNotifiedAcceptsNn,
-          SwedishRequestedUris::getSubstantialAcceptsNn,
-          SwedishRequestedUris::getLowAcceptsNn);
-    }
-    else if (EidasConstants.EIDAS_LOA_SUBSTANTIAL.equals(eidasUri)) {
-      mappings = List.of(
-          SwedishRequestedUris::getSubstantialNotified,
-          SwedishRequestedUris::getSubstantialAcceptsNn,
-          SwedishRequestedUris::getLowNotified,
-          SwedishRequestedUris::getLowAcceptsNn);
-    }
-    else if (EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.equals(eidasUri)
-        || EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2.equals(eidasUri)) {
-      mappings = List.of(
-          SwedishRequestedUris::getSubstantialAcceptsNn,
-          SwedishRequestedUris::getLowAcceptsNn);
-    }
-    else if (EidasConstants.EIDAS_LOA_LOW.equals(eidasUri)) {
-      mappings = List.of(
-          SwedishRequestedUris::getLowNotified,
-          SwedishRequestedUris::getLowAcceptsNn);
-    }
-    else if (EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED.equals(eidasUri)
-        || EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED2.equals(eidasUri)) {
-      mappings = List.of(
-          SwedishRequestedUris::getLowAcceptsNn);
-    }
-    else {
-      mappings = Collections.emptyList();
-    }
+    final List<Function<SwedishRequestedUris, String>> mappings =
+        switch (eidasUri) {
+          case EidasConstants.EIDAS_LOA_HIGH -> List.of(
+              SwedishRequestedUris::getHighNotified,
+              SwedishRequestedUris::getHighNotifiedAcceptsNn,
+              SwedishRequestedUris::getSubstantialNotified,
+              SwedishRequestedUris::getSubstantialAcceptsNn,
+              SwedishRequestedUris::getLowNotified,
+              SwedishRequestedUris::getLowAcceptsNn);
+          case EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED, EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED2 -> List.of(
+              SwedishRequestedUris::getHighNotifiedAcceptsNn,
+              SwedishRequestedUris::getSubstantialAcceptsNn,
+              SwedishRequestedUris::getLowAcceptsNn);
+          case EidasConstants.EIDAS_LOA_SUBSTANTIAL -> List.of(
+              SwedishRequestedUris::getSubstantialNotified,
+              SwedishRequestedUris::getSubstantialAcceptsNn,
+              SwedishRequestedUris::getLowNotified,
+              SwedishRequestedUris::getLowAcceptsNn);
+          case EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED, EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2 ->
+              List.of(
+                  SwedishRequestedUris::getSubstantialAcceptsNn,
+                  SwedishRequestedUris::getLowAcceptsNn);
+          case EidasConstants.EIDAS_LOA_LOW -> List.of(
+              SwedishRequestedUris::getLowNotified,
+              SwedishRequestedUris::getLowAcceptsNn);
+          case EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED, EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED2 -> List.of(
+              SwedishRequestedUris::getLowAcceptsNn);
+          case null, default -> Collections.emptyList();
+        };
 
     return mappings.stream()
         .map(f -> f.apply(requested))
@@ -171,7 +160,7 @@ public class AuthnContextClassRefMapper {
     }
 
     if (requestedContext.getComparison() == AuthnContextComparisonTypeEnumeration.MINIMUM) {
-      final String requested = requestedContext.getAuthnContextClassRefs().get(0).getURI();
+      final String requested = requestedContext.getAuthnContextClassRefs().getFirst().getURI();
       if (EidasConstants.EIDAS_LOA_HIGH.equals(requested)) {
         if (!EidasConstants.EIDAS_LOA_HIGH.equals(eidasUri)) {
           final String msg = String.format("Unexpected AuthnContextClassRef received - requested minimum %s but got %s",
@@ -290,13 +279,13 @@ public class AuthnContextClassRefMapper {
       else {
         for (final String uri : requestedUris) {
           this.requested |= switch (uri) {
-          case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF -> HIGH_NF;
-          case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH -> HIGH_NF_NN;
-          case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF -> SUB_NF;
-          case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL -> SUB_NF_NN;
-          case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW_NF -> LOW_NF;
-          case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW -> LOW_NF_NN;
-          default -> 0b0;
+            case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF -> HIGH_NF;
+            case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH -> HIGH_NF_NN;
+            case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF -> SUB_NF;
+            case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL -> SUB_NF_NN;
+            case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW_NF -> LOW_NF;
+            case LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW -> LOW_NF_NN;
+            default -> 0b0;
           };
         }
       }
@@ -476,19 +465,21 @@ public class AuthnContextClassRefMapper {
 
       for (final String uri : supportedUris) {
         this.supported |= switch (uri) {
-        case EidasConstants.EIDAS_LOA_HIGH -> EIDAS_HIGH;
-        case EidasConstants.EIDAS_LOA_SUBSTANTIAL -> EIDAS_SUB;
-        case EidasConstants.EIDAS_LOA_LOW -> EIDAS_LOW;
-        case EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED, EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED2 -> EIDAS_HIGH_NN;
-        case EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED, EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2 -> EIDAS_SUB_NN;
-        case EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED, EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED2 -> EIDAS_LOW_NN;
-        default -> 0b0;
+          case EidasConstants.EIDAS_LOA_HIGH -> EIDAS_HIGH;
+          case EidasConstants.EIDAS_LOA_SUBSTANTIAL -> EIDAS_SUB;
+          case EidasConstants.EIDAS_LOA_LOW -> EIDAS_LOW;
+          case EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED, EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED2 -> EIDAS_HIGH_NN;
+          case EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED, EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2 ->
+              EIDAS_SUB_NN;
+          case EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED, EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED2 -> EIDAS_LOW_NN;
+          default -> 0b0;
         };
       }
     }
 
     /**
-     * Predicate that tells whether the supplied URI:s match the supported, i.e., whether an authentication is possible.
+     * Predicate that tells whether the supplied URI:s match the supported, i.e., whether an authentication is
+     * possible.
      *
      * @param requested the requested Swedish URI:s
      * @return {@code true} if authentication is possible and {@code false} otherwise
@@ -569,9 +560,9 @@ public class AuthnContextClassRefMapper {
       }
       if (requested.substantialAcceptsNn()) {
         exactMatching |= (byte) ((EIDAS_HIGH & this.supported)
-                    | (EIDAS_HIGH_NN & this.supported)
-                    | (EIDAS_SUB & this.supported)
-                    | (EIDAS_SUB_NN & this.supported));
+            | (EIDAS_HIGH_NN & this.supported)
+            | (EIDAS_SUB & this.supported)
+            | (EIDAS_SUB_NN & this.supported));
         minimumMatching |= (byte) (EIDAS_SUB & this.supported);
       }
       if (requested.lowNotified()) {
@@ -579,11 +570,11 @@ public class AuthnContextClassRefMapper {
       }
       if (requested.lowAcceptsNn()) {
         exactMatching |= (byte) ((EIDAS_HIGH & this.supported)
-                    | (EIDAS_HIGH_NN & this.supported)
-                    | (EIDAS_SUB & this.supported)
-                    | (EIDAS_SUB_NN & this.supported)
-                    | (EIDAS_LOW & this.supported)
-                    | (EIDAS_LOW_NN & this.supported));
+            | (EIDAS_HIGH_NN & this.supported)
+            | (EIDAS_SUB & this.supported)
+            | (EIDAS_SUB_NN & this.supported)
+            | (EIDAS_LOW & this.supported)
+            | (EIDAS_LOW_NN & this.supported));
         minimumMatching |= (byte) (EIDAS_LOW & this.supported);
       }
 
@@ -597,7 +588,7 @@ public class AuthnContextClassRefMapper {
 
     // Represents a mapping between URI:s and their byte values
     private record Uri(String uri, String additionalUri, byte value) {
-      public Uri(String uri, byte value) {
+      public Uri(final String uri, final byte value) {
         this(uri, null, value);
       }
     }

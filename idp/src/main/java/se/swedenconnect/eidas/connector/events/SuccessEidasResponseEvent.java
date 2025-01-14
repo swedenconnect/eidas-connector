@@ -48,7 +48,7 @@ public class SuccessEidasResponseEvent extends AbstractConnectorAuthnEvent {
    * @param assertion the SAML assertion
    */
   public SuccessEidasResponseEvent(
-      Saml2UserAuthenticationInputToken token, final Response response, final Assertion assertion) {
+      final Saml2UserAuthenticationInputToken token, final Response response, final Assertion assertion) {
     super(token);
     this.response = new SerializableOpenSamlObject<>(
         Objects.requireNonNull(response, "response must not be null"));

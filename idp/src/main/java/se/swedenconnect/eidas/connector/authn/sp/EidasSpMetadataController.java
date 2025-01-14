@@ -15,9 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
-import java.io.ByteArrayOutputStream;
-import java.util.Objects;
-
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import net.shibboleth.shared.xml.SerializeSupport;
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,11 +31,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.w3c.dom.Element;
-
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.shared.xml.SerializeSupport;
 import se.swedenconnect.opensaml.saml2.metadata.EntityDescriptorContainer;
+
+import java.io.ByteArrayOutputStream;
+import java.util.Objects;
 
 /**
  * Controller for displaying SP metadata.
@@ -60,8 +59,8 @@ public class EidasSpMetadataController {
    *
    * @param metadataContainer the eIDAS SP metadata container
    */
-  public EidasSpMetadataController(@Qualifier("connector.sp.EntityDescriptorContainer")
-      final EntityDescriptorContainer metadataContainer) {
+  public EidasSpMetadataController(
+      @Qualifier("connector.sp.EntityDescriptorContainer") final EntityDescriptorContainer metadataContainer) {
     this.metadataContainer = Objects.requireNonNull(metadataContainer, "metadataContainer must not be null");
   }
 
@@ -113,7 +112,7 @@ public class EidasSpMetadataController {
       header.setContentLength(documentBody.length);
       return new HttpEntity<>(documentBody, header);
     }
-    catch (SignatureException | MarshallingException e) {
+    catch (final SignatureException | MarshallingException e) {
       log.error("Failed to return valid metadata", e);
       return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
