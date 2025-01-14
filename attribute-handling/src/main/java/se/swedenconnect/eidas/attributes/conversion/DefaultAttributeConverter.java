@@ -229,9 +229,9 @@ public class DefaultAttributeConverter implements AttributeConverter {
         .filter(TransliterationStringType.class::isInstance)
         .filter(v -> ((TransliterationStringType) v).getLatinScript())
         .findFirst()
-        .orElseGet(() -> values.get(0));
+        .orElseGet(values::getFirst);
 
-    final XMLObject eidasValue = values.size() == 1 ? values.get(0) : singleFunc.apply(values);
+    final XMLObject eidasValue = values.size() == 1 ? values.getFirst() : singleFunc.apply(values);
     if (eidasValue instanceof EidasAttributeValueType) {
       final String value = ((EidasAttributeValueType) eidasValue).toStringValue();
       final XSString stringValue = AttributeBuilder.createValueObject(XSString.TYPE_NAME, XSString.class);
@@ -257,7 +257,7 @@ public class DefaultAttributeConverter implements AttributeConverter {
    */
   protected String toSwedishEidAttributeValue(final UserAttribute eidasAttribute) {
     final List<? extends Serializable> values = eidasAttribute.getValues();
-    if (values.get(0) instanceof TransliterationString) {
+    if (values.getFirst() instanceof TransliterationString) {
       final XMLObject attributeValue = this.toSwedishEidAttributeValue(values.stream()
           .map(TransliterationString.class::cast)
           .map(TransliterationString::createXmlObject)
@@ -265,11 +265,11 @@ public class DefaultAttributeConverter implements AttributeConverter {
           .toList());
       return ((XSString) attributeValue).getValue();
     }
-    else if (values.get(0) instanceof EidasAttributeValue) {
-      return ((EidasAttributeValue<?>) values.get(0)).getValueAsString();
+    else if (values.getFirst() instanceof EidasAttributeValue) {
+      return ((EidasAttributeValue<?>) values.getFirst()).getValueAsString();
     }
     else {
-      return values.get(0).toString();
+      return values.getFirst().toString();
     }
   }
 

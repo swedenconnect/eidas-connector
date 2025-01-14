@@ -253,7 +253,7 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
           townOfBirth = Optional.ofNullable(this.toSwedishUserAttribute(eidasAttribute))
               .map(UserAttribute::getStringValues)
               .filter(v -> !v.isEmpty())
-              .map(v -> v.get(0))
+              .map(List::getFirst)
               .orElse(null);
         }
         else {
@@ -267,7 +267,7 @@ public class DefaultAttributeMappingService implements AttributeMappingService {
           countryOfBirth = Optional.ofNullable(this.toSwedishUserAttribute(eidasAttribute))
               .map(UserAttribute::getStringValues)
               .filter(v -> !v.isEmpty())
-              .map(v -> v.get(0))
+              .map(List::getFirst)
               .orElse(null);
         }
         else {

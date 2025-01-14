@@ -90,10 +90,10 @@ public class GenderAttributeConverter extends DefaultAttributeConverter {
     if (values.isEmpty()) {
       return null;
     }
-    if (!(values.get(0) instanceof final GenderType genderValue)) {
+    if (!(values.getFirst() instanceof final GenderType genderValue)) {
       return null;
     }
-    String value;
+    final String value;
     if (genderValue.getGender().equals(GenderTypeEnumeration.MALE)) {
       value = "M";
     }
@@ -114,7 +114,7 @@ public class GenderAttributeConverter extends DefaultAttributeConverter {
     if (eidasAttribute.getValues().isEmpty()) {
       return null;
     }
-    final String gender = ((Gender) eidasAttribute.getValues().get(0)).getValueAsString();
+    final String gender = ((Gender) eidasAttribute.getValues().getFirst()).getValueAsString();
     if (GenderTypeEnumeration.MALE.getValue().equalsIgnoreCase(gender)) {
       return "M";
     }
