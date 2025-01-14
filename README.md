@@ -12,6 +12,8 @@ The Swedish eIDAS Connector is a [Spring Boot](https://spring.io/projects/spring
 
 Go to <https://docs.swedenconnect.se/eidas-connector> for a set of resources for configuration, deployment and maintenance of the service.
 
+Also, see the [Release Notes](https://docs.swedenconnect.se/eidas-connector/release-notes.html).
+
 ---
 
 Copyright &copy; 2017-2025, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).

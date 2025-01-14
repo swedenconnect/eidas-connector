@@ -20,7 +20,11 @@ import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
 import se.swedenconnect.opensaml.eidas.common.EidasConstants;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

@@ -89,7 +89,8 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
     this.providerName =
         Optional.ofNullable(providerName).orElse(EidasAuthenticationProperties.DEFAULT_PROVIDER_NAME);
     this.preferredBinding = Optional.ofNullable(preferredBinding).orElse(SAMLConstants.SAML2_POST_BINDING_URI);
-    this.securityConfiguration = Objects.requireNonNull(securityConfiguration, "securityConfiguration must not be null");
+    this.securityConfiguration =
+        Objects.requireNonNull(securityConfiguration, "securityConfiguration must not be null");
   }
 
   /**

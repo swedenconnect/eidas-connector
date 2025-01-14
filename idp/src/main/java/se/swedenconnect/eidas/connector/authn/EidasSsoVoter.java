@@ -61,7 +61,7 @@ public class EidasSsoVoter implements SsoVoter {
     final String previousCountry = userAuthn.getSaml2UserDetails().getAttributes().stream()
         .filter(a -> AttributeConstants.ATTRIBUTE_NAME_C.equals(a.getId()))
         .filter(a -> !a.getValues().isEmpty())
-        .map(a -> (String) a.getValues().get(0))
+        .map(a -> (String) a.getValues().getFirst())
         .findFirst()
         .orElse(null);
 

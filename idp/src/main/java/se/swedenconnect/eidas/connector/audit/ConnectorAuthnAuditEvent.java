@@ -15,16 +15,15 @@
  */
 package se.swedenconnect.eidas.connector.audit;
 
-import java.io.Serial;
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.spring.saml.idp.audit.Saml2AuditEvent;
 import se.swedenconnect.spring.saml.idp.audit.data.Saml2AuditData;
+
+import java.io.Serial;
+import java.util.Optional;
 
 /**
  * Audit event for events that concern user authentication.
@@ -49,7 +48,7 @@ public class ConnectorAuthnAuditEvent extends ConnectorAuditEvent {
   public ConnectorAuthnAuditEvent(final String type, final long timestamp, final String spEntityId,
       final String authnRequestId, final Saml2AuditData... data) {
     super(type, timestamp,
-        Optional.ofNullable(spEntityId).orElseGet(() -> Saml2AuditEvent.UNKNOWN_SP),
+        Optional.ofNullable(spEntityId).orElse(Saml2AuditEvent.UNKNOWN_SP),
         buildData(spEntityId, authnRequestId, data));
   }
 
@@ -63,7 +62,8 @@ public class ConnectorAuthnAuditEvent extends ConnectorAuditEvent {
   @JsonIgnore
   public String getLogString() {
     return String.format("type='%s', timestamp='%s', sp-entity-id='%s', authn-request-id='%s'",
-        this.getType(), this.getTimestamp(), this.getData().get("sp-entity-id"), this.getData().get("authn-request-id"));
+        this.getType(), this.getTimestamp(), this.getData().get("sp-entity-id"),
+        this.getData().get("authn-request-id"));
   }
 
 }

@@ -110,9 +110,9 @@ public class EidasCountryHandler {
         throw new Saml2ErrorStatusException(StatusCode.REQUESTER, StatusCode.NO_AVAILABLE_IDP, null, msg, msg);
       }
       else if (filteredRequestedCountries.size() == 1 && requestedCountries.size() == 1) {
-        if (!filteredRequestedCountries.get(0).canAuthenticate()) {
+        if (!filteredRequestedCountries.getFirst().canAuthenticate()) {
           final String msg = String.format("Can not send request to %s - it does not support requested authn context",
-              filteredRequestedCountries.get(0).country());
+              filteredRequestedCountries.getFirst().country());
           log.info("{} [{}]", msg, token.getLogString());
           throw new Saml2ErrorStatusException(StatusCode.REQUESTER, StatusCode.NO_AVAILABLE_IDP, null, msg, msg);
         }

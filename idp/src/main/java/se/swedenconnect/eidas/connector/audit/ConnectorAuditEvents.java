@@ -28,7 +28,7 @@ public class ConnectorAuditEvents {
   /** Event logged before a SAML authentication request is sent to a foreign IdP. */
   public static final String CONNECTOR_BEFORE_SAML_REQUEST = "CONNECTOR_BEFORE_SAML_REQUEST";
 
-  /** Event logged when an successful SAML response is received from the foreign IdP. */
+  /** Event logged when a successful SAML response is received from the foreign IdP. */
   public static final String CONNECTOR_SUCCESS_RESPONSE = "CONNECTOR_SUCCESS_RESPONSE";
 
   /** Event logged when an erroneous SAML response is received from the foreign IdP. */

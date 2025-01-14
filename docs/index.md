@@ -10,6 +10,8 @@ The Swedish eIDAS Connector is an Open Source component, and is being used as an
 
 The Swedish eIDAS Connector is a [Spring Boot](https://spring.io/projects/spring-boot) application built on top of the [Spring Security SAML Identity Provider](https://github.com/swedenconnect/saml-identity-provider) library. It acts as a SAML Identity Provider in the [Sweden Connect](https://www.swedenconnect.se) federation, and as a SAML Service Provider against the eIDAS federation.
 
+- [Release Notes](https://docs.swedenconnect.se/eidas-connector/release-notes.html)
+
 The following resources are available for information about configuration, deployment and maintenance of the service:
 
 - [Building and Deploying the eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/installation.html) - How to build and deploy the service.

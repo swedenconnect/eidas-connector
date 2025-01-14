@@ -119,7 +119,7 @@ public class CurrentAddressAttributeConverter extends DefaultAttributeConverter 
     if (values.isEmpty()) {
       return null;
     }
-    if (!(values.get(0) instanceof final CurrentAddressType currentAddress)) {
+    if (!(values.getFirst() instanceof final CurrentAddressType currentAddress)) {
       return null;
     }
 

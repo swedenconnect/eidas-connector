@@ -15,28 +15,28 @@
  */
 package se.swedenconnect.eidas.connector.audit.data;
 
-import java.io.Serial;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.Getter;
-import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.BeforeEidasAuthenticationEvent;
 import se.swedenconnect.opensaml.eidas.ext.RequestedAttribute;
 import se.swedenconnect.opensaml.eidas.ext.RequestedAttributes;
 import se.swedenconnect.opensaml.eidas.ext.SPType;
 import se.swedenconnect.opensaml.eidas.ext.SPTypeEnumeration;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Audit event data representing an authentication request being sent to a foreign IdP.
@@ -123,9 +123,9 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
     data.setRequestedAuthnContext(RequestedAuthnContextData.of(authnRequest));
     data.setEidasSpType(Optional.ofNullable(authnRequest.getExtensions())
         .map(e -> e.getUnknownXMLObjects(SPType.DEFAULT_ELEMENT_NAME))
-        .filter(v -> v != null)
+        .filter(Objects::nonNull)
         .filter(v -> !v.isEmpty())
-        .map(v -> v.get(0))
+        .map(List::getFirst)
         .map(SPType.class::cast)
         .map(SPType::getType)
         .map(SPTypeEnumeration::toString)
@@ -133,12 +133,12 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
     data.setRequestedAttributes(
         Optional.ofNullable(authnRequest.getExtensions())
             .map(e -> e.getUnknownXMLObjects(RequestedAttributes.DEFAULT_ELEMENT_NAME))
-            .filter(v -> v != null)
+            .filter(Objects::nonNull)
             .filter(v -> !v.isEmpty())
-            .map(v -> v.get(0))
+            .map(List::getFirst)
             .map(RequestedAttributes.class::cast)
             .map(ras -> ras.getRequestedAttributes().stream()
-                .map(ra -> RequestedAttributeData.of(ra))
+                .map(RequestedAttributeData::of)
                 .toList())
             .orElse(null));
 
@@ -196,7 +196,10 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    * Represents the {@code RequestedAuthnContext} element.
    */
   @JsonInclude(Include.NON_NULL)
-  public static class RequestedAuthnContextData {
+  public static class RequestedAuthnContextData implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
     /** Comparison flag. */
     @Getter
@@ -231,7 +234,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
               .map(refs -> refs.stream()
                   .map(AuthnContextClassRef::getURI)
                   .toList())
-              .orElseGet(() -> Collections.emptyList());
+              .orElseGet(Collections::emptyList);
       if (!uris.isEmpty()) {
         rac.setAuthnContextClassRefs(uris);
       }

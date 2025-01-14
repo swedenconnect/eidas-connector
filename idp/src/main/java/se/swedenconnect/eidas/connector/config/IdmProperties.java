@@ -70,7 +70,7 @@ public class IdmProperties implements InitializingBean {
 
   /** {@inheritDoc} */
   @Override
-  public void afterPropertiesSet() throws Exception {
+  public void afterPropertiesSet() {
     if (this.active == null) {
       this.active = Boolean.FALSE;
     }
@@ -150,7 +150,7 @@ public class IdmProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
       Assert.hasText(this.clientId, "connector.idm.oauth2.client-id must be assigned");
       Assert.notEmpty(this.checkScopes, "connector.idm.oauth2.check-scopes must contain at least one scope");
       Assert.notEmpty(this.getScopes, "connector.idm.oauth2.get-scopes must contain at least one scope");

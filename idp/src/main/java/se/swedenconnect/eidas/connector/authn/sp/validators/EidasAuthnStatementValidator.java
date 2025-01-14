@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp.validators;
 
+import jakarta.annotation.Nonnull;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.common.assertion.ValidationResult;
 import org.opensaml.saml.saml2.core.Assertion;
@@ -34,8 +35,9 @@ public class EidasAuthnStatementValidator extends SwedishEidAuthnStatementValida
    * Will be checked separately.
    */
   @Override
-  protected ValidationResult validateAuthnContext(AuthnStatement statement, Assertion assertion,
-      ValidationContext context) {
+  @Nonnull
+  protected ValidationResult validateAuthnContext(final AuthnStatement statement, final Assertion assertion,
+      final ValidationContext context) {
 
     return ValidationResult.VALID;
   }

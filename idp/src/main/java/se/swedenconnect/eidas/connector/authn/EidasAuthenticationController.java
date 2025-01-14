@@ -220,12 +220,12 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
         //
         if (signalEvent) {
           log.info("Request contains requested country '{}'. Will not display country selection [{}]",
-              selectableCountries.countries().get(0).country(), token.getLogString());
+              selectableCountries.countries().getFirst().country(), token.getLogString());
           this.eventPublisher.publishEvent(new BeforeCountrySelectionEvent(token,
-              selectableCountries.countries().get(0).country(), NoDisplayReason.FROM_AUTHN_REQUEST));
+              selectableCountries.countries().getFirst().country(), NoDisplayReason.FROM_AUTHN_REQUEST));
         }
 
-        return this.initiateAuthentication(request, response, selectableCountries.countries().get(0).country());
+        return this.initiateAuthentication(request, response, selectableCountries.countries().getFirst().country());
       }
 
       final ModelAndView modelAndView = new ModelAndView("country-select");
@@ -334,13 +334,6 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     catch (final Saml2ErrorStatusException e) {
       return this.complete(httpRequest, e);
     }
-    /*
-    catch (final Exception e) {
-      final ModelAndView modelAndView = new ModelAndView("error");
-      modelAndView.addObject("message", "An internal error occurred");
-      return modelAndView;
-    }
-     */
   }
 
   /**
