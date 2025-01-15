@@ -8,7 +8,7 @@
 
 ### Version 2.0.0
 
-**Release date:** 2025-01-XX
+**Release date:** 2025-01-15
 
 Completely new IdP-base where we use Spring Boot instead of Shibboleth.
 
