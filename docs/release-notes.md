@@ -6,6 +6,13 @@
 
 ---
 
+### Version 2.0.1
+
+**Release date:** 2025-01-28
+
+* Bugfix in RSA-OAEP padding when using PKCS#11.
+* If no session handling is configured, memory will be the default.
+
 ### Version 2.0.0
 
 **Release date:** 2025-01-15
