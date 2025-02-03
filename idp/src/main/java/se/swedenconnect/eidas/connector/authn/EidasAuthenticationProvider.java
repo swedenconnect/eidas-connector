@@ -213,6 +213,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
         eidasToken.getAuthnInstant(),
         token.getServletRequest().getRemoteAddr());
     userDetails.setSignMessageDisplayed(eidasToken.isSignatureConsented());
+    userDetails.setAuthenticatingAuthorities(eidasToken.getAuthenticatingAuthorities());
 
     final Saml2UserAuthentication userAuth = new Saml2UserAuthentication(userDetails);
     userAuth.setReuseAuthentication(!eidasToken.isSignatureConsented());

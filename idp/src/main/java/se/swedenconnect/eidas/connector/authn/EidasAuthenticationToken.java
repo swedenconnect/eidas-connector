@@ -22,9 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.shared.xml.SerializeSupport;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Assertion;
+import org.opensaml.saml.saml2.core.AuthenticatingAuthority;
 import org.opensaml.saml.saml2.core.AuthnContext;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnStatement;
+import org.opensaml.saml.saml2.core.Issuer;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
@@ -220,6 +222,40 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
         .map(AuthnContext::getAuthnContextClassRef)
         .map(AuthnContextClassRef::getURI)
         .orElse(null);
+  }
+
+  /**
+   * Returns a list of "authenticating authorities". This list will always start with the URI for the country, followed
+   * by the IdP entityID.
+   *
+   * @return a list of authenticating authorities
+   */
+  public List<String> getAuthenticatingAuthorities() {
+
+    final List<String> authorities = new ArrayList<>();
+
+    // Always add the country URI first ...
+    authorities.add(EidasCountryHandler.COUNTRY_URI_PREFIX + this.authnRequest.getCountry().toLowerCase());
+
+    // Next, add the IdP from the foreign country ...
+    Optional.ofNullable(this.assertion.get())
+        .map(Assertion::getIssuer)
+        .map(Issuer::getValue)
+        .ifPresent(authorities::add);
+
+    // And, if the assertion contained any Authenticating Authority elements, add those as well.
+    //
+    final List<AuthenticatingAuthority> a = Optional.ofNullable(this.assertion.get())
+        .map(Assertion::getAuthnStatements)
+        .filter(Predicate.not(List::isEmpty))
+        .map(List::getFirst)
+        .map(AuthnStatement::getAuthnContext)
+        .map(AuthnContext::getAuthenticatingAuthorities)
+        .orElse(Collections.emptyList());
+
+    a.stream().map(AuthenticatingAuthority::getURI).forEach(authorities::add);
+
+    return authorities;
   }
 
   /** {@inheritDoc} */
