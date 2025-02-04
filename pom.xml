@@ -47,7 +47,7 @@
     <spring.boot.version>3.4.2</spring.boot.version>
     <spring.version>6.2.2</spring.version>
     <bc.version>1.80</bc.version>
-    <saml.idp.version>2.3.4</saml.idp.version>
+    <saml.idp.version>2.3.5-SNAPSHOT</saml.idp.version>
     <credentials-support.version>2.0.2</credentials-support.version>
   </properties>
 
