@@ -8,7 +8,7 @@
 
 ### Version 2.0.2
 
-**Release date:** -
+**Release date:** 2025-02-04
 
 * Assertions from the connector did not include the `AuthnContext/AuthenticatingAuthority` element. This has been fixed.
 
