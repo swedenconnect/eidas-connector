@@ -306,18 +306,18 @@ public class ConnectorCredentials {
   /**
    * Gets the metadata signing credential.
    *
-   * @return the {@link PkiCredential}
-   * @throws IllegalArgumentException if no credential is found
+   * @return the {@link PkiCredential}, or {@code null} if none is configured
    */
+  @Nullable
   public PkiCredential getSpMetadataSigningCredential() {
     final PkiCredential[] creds = { this.spMetadataSignCredential, this.spDefaultCredential,
-        this.metadataSignCredential, this.defaultCredential, this.spSignCredential, this.signCredential };
+        this.metadataSignCredential, this.defaultCredential };
     for (final PkiCredential c : creds) {
       if (c != null) {
         return c;
       }
     }
-    throw new IllegalArgumentException("No metadata signing credential is available");
+    return null;
   }
 
   /**

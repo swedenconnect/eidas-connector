@@ -263,7 +263,9 @@ public class EidasAuthenticationConfiguration {
       @Qualifier("connector.sp.metadata") final EntityDescriptor metadata) {
 
     final EntityDescriptorContainer container = new EntityDescriptorContainer(
-        metadata, new OpenSamlCredential(this.credentials.getSpMetadataSigningCredential()));
+        metadata, Optional.ofNullable(this.credentials.getSpMetadataSigningCredential())
+        .map(OpenSamlCredential::new)
+        .orElse(null));
     container.setValidity(this.properties.getEidas().getMetadata().getValidityPeriod());
     container.setSigningConfiguration(securityConfiguration.getSignatureSigningConfiguration());
 
