@@ -59,7 +59,7 @@ import java.util.Optional;
 public class MetadataProviderUtils {
 
   /**
-   * Based on an {@link EuMetadataProperties} a
+   * Based on an {@link EuMetadataProperties} a metadata provider is set up.
    *
    * @param config configuration
    * @param sslBundles SSL bundles

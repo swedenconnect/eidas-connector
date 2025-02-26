@@ -56,8 +56,6 @@ import se.swedenconnect.eidas.connector.prid.service.PridService;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryRegistry;
 import se.swedenconnect.security.credential.PkiCredential;
-import se.swedenconnect.security.credential.bundle.CredentialBundles;
-import se.swedenconnect.security.credential.config.ConfigurationResourceLoader;
 import se.swedenconnect.security.credential.config.properties.PkiCredentialConfigurationProperties;
 import se.swedenconnect.security.credential.factory.PkiCredentialFactory;
 import se.swedenconnect.spring.saml.idp.config.configurers.Saml2IdpConfigurerAdapter;
@@ -88,9 +86,7 @@ public class ConnectorConfiguration {
 
   private final SslBundles sslBundles;
 
-  private final CredentialBundles credentialBundles;
-
-  private final ConfigurationResourceLoader resourceLoader;
+  private final PkiCredentialFactory credentialFactory;
 
   /**
    * Connector.
@@ -98,17 +94,15 @@ public class ConnectorConfiguration {
    * @param connectorProperties the configuration properties
    * @param idpSettings the IdP configuration
    * @param sslBundles the SSL bundles
-   * @param credentialBundles the credential bundles
-   * @param resourceLoader for loading credential configuration
+   * @param credentialFactory the credential factory bean
    */
   public ConnectorConfiguration(final ConnectorConfigurationProperties connectorProperties,
       final IdentityProviderSettings idpSettings, final SslBundles sslBundles,
-      final CredentialBundles credentialBundles, final ConfigurationResourceLoader resourceLoader) {
+      final PkiCredentialFactory credentialFactory) {
     this.connectorProperties = connectorProperties;
     this.idpSettings = idpSettings;
     this.sslBundles = sslBundles;
-    this.credentialBundles = credentialBundles;
-    this.resourceLoader = resourceLoader;
+    this.credentialFactory = credentialFactory;
   }
 
   /**
@@ -207,9 +201,7 @@ public class ConnectorConfiguration {
     if (props == null) {
       return null;
     }
-    return PkiCredentialFactory.createCredential(props, this.resourceLoader,
-        this.credentialBundles.getCredentialProvider(), this.credentialBundles.getKeyStoreProvider(), null);
-
+    return this.credentialFactory.createCredential(props);
   }
 
   /**
