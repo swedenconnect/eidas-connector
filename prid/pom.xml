@@ -24,7 +24,7 @@
   <parent>
     <groupId>se.swedenconnect.eidas</groupId>
     <artifactId>eidas-connector-parent</artifactId>
-    <version>2.0.3-SNAPSHOT</version>
+    <version>2.0.3</version>
   </parent>
 
   <name>Sweden Connect :: eIDAS :: Connector :: Provisional ID support</name>

@@ -6,6 +6,14 @@
 
 ---
 
+### Version 2.0.3
+
+**Release date:** 2025-02-27
+
+* Error messages used for non-recoverable errors was not HTML-encoded when the locale is Swedish. This has been fixed.
+
+* Dependency updates - some dependencies had reported vulnerabilities.
+
 ### Version 2.0.2
 
 **Release date:** 2025-02-04
