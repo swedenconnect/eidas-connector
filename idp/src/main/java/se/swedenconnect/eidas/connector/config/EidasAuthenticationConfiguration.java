@@ -38,7 +38,6 @@ import org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKey
 import org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
@@ -110,11 +109,9 @@ public class EidasAuthenticationConfiguration {
    * @param properties the connector properties
    * @param idpSettings the SAML IP settings
    * @param credentials the connector credentials
-   * @param buildProperties the Spring Boot build properties
    */
   public EidasAuthenticationConfiguration(final ConnectorConfigurationProperties properties,
-      final IdentityProviderSettings idpSettings, final ConnectorCredentials credentials,
-      final BuildProperties buildProperties) {
+      final IdentityProviderSettings idpSettings, final ConnectorCredentials credentials) {
     this.properties = properties;
     this.idpSettings = idpSettings;
     this.credentials = credentials;

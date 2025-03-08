@@ -120,7 +120,8 @@ public class ConnectorConfiguration {
   SecurityFilterChain defaultSecurityFilterChain(final HttpSecurity http) throws Exception {
     http
         .securityContext(sc -> sc.requireExplicitSave(false))
-        .csrf(c -> c.ignoringRequestMatchers(EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**"))
+        .csrf(c -> c.ignoringRequestMatchers(EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**",
+            EidasAuthenticationProvider.AUTHN_PATH + "/**", EidasAuthenticationProvider.RESUME_PATH + "/**"))
         .authorizeHttpRequests((authorize) -> authorize
             .requestMatchers(HttpMethod.POST, EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**").permitAll()
             .requestMatchers(EidasAuthenticationProvider.AUTHN_PATH + "/**",

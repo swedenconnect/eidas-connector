@@ -588,7 +588,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     if (e instanceof final UnrecoverableSaml2IdpException unrecoverable) {
       this.eventPublisher.publishEvent(new Saml2UnrecoverableErrorEvent(unrecoverable));
 
-      final ModelAndView modelAndView = new ModelAndView("idp/error");
+      final ModelAndView modelAndView = new ModelAndView("error/idp");
       modelAndView.addObject("idpErrorMessageCode", Optional.ofNullable(unrecoverable.getError())
           .map(UnrecoverableSaml2IdpError::getMessageCode)
           .orElse(UnrecoverableSaml2IdpError.INTERNAL.getMessageCode()));
