@@ -6,6 +6,12 @@
 
 ---
 
+### Version 2.0.4
+
+**Release date:** 2025-03-10
+
+* Error messages were not displayed when no session longer was available. This has been fixed.
+
 ### Version 2.0.3
 
 **Release date:** 2025-02-27
