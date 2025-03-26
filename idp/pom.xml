@@ -24,7 +24,7 @@
   <parent>
     <groupId>se.swedenconnect.eidas</groupId>
     <artifactId>eidas-connector-parent</artifactId>
-    <version>2.0.4</version>
+    <version>2.0.5</version>
   </parent>
 
   <name>Sweden Connect :: eIDAS :: Connector :: IdP</name>
@@ -155,7 +155,7 @@
     <dependency>
       <groupId>org.redisson</groupId>
       <artifactId>redisson-spring-boot-starter</artifactId>
-      <version>3.45.0</version>
+      <version>3.45.1</version>
     </dependency>
 
     <dependency>
@@ -250,7 +250,7 @@
       <plugin>
         <groupId>com.google.cloud.tools</groupId>
         <artifactId>jib-maven-plugin</artifactId>
-        <version>3.4.4</version>
+        <version>3.4.5</version>
         <configuration>
           <from>
             <image>openjdk:21-jdk-slim</image>
