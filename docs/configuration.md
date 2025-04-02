@@ -54,7 +54,7 @@
 
     3.3. [Audit Logging Configuration](#audit-logging-configuration)
     
-    3.1.1. [Audit Logging to Syslog](#audit-logging-to-syslog)
+    3.3.1. [Audit Logging to Syslog](#audit-logging-to-syslog)
 
 4. [**eIDAS Connector Configuration**](#eidas-connector-configuration)
 
@@ -770,12 +770,12 @@ logging:
 
 ```
 
-By providing a `logback.xml` file placed according to the `logging.config` property, an specific appender can be added, for example for Syslog - see [Logback Syslog Appender](https://logback.qos.ch/manual/appenders.html#SyslogAppender). See full details in section [3.1.1](#audit-logging-to-syslog) below.
+By providing a `logback.xml` file placed according to the `logging.config` property, an specific appender can be added, for example for Syslog - see [Logback Syslog Appender](https://logback.qos.ch/manual/appenders.html#SyslogAppender). See full details in section [3.3.1](#audit-logging-to-syslog) below.
 
 :grey_exclamation: See also the page [Swedish eIDAS Connector Audit Logging](https://docs.swedenconnect.se/eidas-connector/audit.html) for a full reference for all audit events produced by the eIDAS Connector.
 
 <a name="audit-logging-to-syslog"></a>
-#### 3.1.1. Audit Logging to Syslog
+#### 3.3.1. Audit Logging to Syslog
 
 In order to audit log to a Syslog server, the following steps need to be taken:
 
