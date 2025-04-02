@@ -53,6 +53,8 @@
     3.2.2. [PKCS#11 and HSM:s](#pkcs11-and-hsms)
 
     3.3. [Audit Logging Configuration](#audit-logging-configuration)
+    
+    3.1.1. [Audit Logging to Syslog](#audit-logging-to-syslog)
 
 4. [**eIDAS Connector Configuration**](#eidas-connector-configuration)
 
@@ -768,9 +770,91 @@ logging:
 
 ```
 
-By providing a `logback.xml` file placed according to the `logging.config` property, an specific appender can be added, for example for Syslog - see [Logback Syslog Appender](https://logback.qos.ch/manual/appenders.html#SyslogAppender).
+By providing a `logback.xml` file placed according to the `logging.config` property, an specific appender can be added, for example for Syslog - see [Logback Syslog Appender](https://logback.qos.ch/manual/appenders.html#SyslogAppender). See full details in section [3.1.1](#audit-logging-to-syslog) below.
 
 :grey_exclamation: See also the page [Swedish eIDAS Connector Audit Logging](https://docs.swedenconnect.se/eidas-connector/audit.html) for a full reference for all audit events produced by the eIDAS Connector.
+
+<a name="audit-logging-to-syslog"></a>
+#### 3.1.1. Audit Logging to Syslog
+
+In order to audit log to a Syslog server, the following steps need to be taken:
+
+Create a `logback.xml` file according to the following:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+  <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+  <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
+
+  <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="eIDAS Connector"/>
+
+  <appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+    <syslogHost>replace-with-your-syslog-host</syslogHost>
+    <port>514</port>
+    <facility>USER</facility>
+    <suffixPattern>%msg</suffixPattern>
+    <throwableExcluded>true</throwableExcluded>
+  </appender>
+
+  <root level="info">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="FILE"/>
+  </root>
+
+  <logger name="AUDIT" level="info" additivity="false">
+    <appender-ref ref="SYSLOG"/>
+  </logger>
+
+</configuration>
+```
+
+The file can also be downloaded [here](logback.xml). Make sure to assign `syslogHost` with the correct hostname.
+
+Should you want several Syslog servers, simply create sevaral appenders, with different names and configurations, and add them under the audit logger.
+
+```xml
+  <appender name="SYSLOG1" class="ch.qos.logback.classic.net.SyslogAppender">
+    ...
+  </appender>
+  
+  <appender name="SYSLOG2" class="ch.qos.logback.classic.net.SyslogAppender">
+    ...
+  </appender>
+
+  ...
+
+  <logger name="AUDIT" level="info" additivity="false">
+    <appender-ref ref="SYSLOG1"/>
+    <appender-ref ref="SYSLOG2"/>
+  </logger>
+```
+
+Next, point at this new `logback.xml` file in your connector configuration:
+
+```yaml
+logging:
+  level:
+    ...       
+  config: file:/opt/logs/logback.xml
+```
+
+Finally, configure the audit logging to use log system logging (as described above):
+
+```yaml
+saml:
+  idp:
+    ...
+    audit:
+      ...
+      log-system:
+        logger-name: "AUDIT"
+```
+
+:grey_exclamation: The `logger-name` must correspond to the Syslog logger name given in the `logback.xml` file.
+
 
 <a name="eidas-connector-configuration"></a>
 ## 4. eIDAS Connector Configuration
