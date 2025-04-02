@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+  <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+  <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
+
+  <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="eIDAS Connector"/>
+
+  <appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+    <syslogHost>replace-with-your-syslog-host</syslogHost>
+    <port>514</port>
+    <facility>USER</facility>
+    <suffixPattern>%msg</suffixPattern>
+    <throwableExcluded>true</throwableExcluded>
+  </appender>
+
+  <root level="info">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="FILE"/>
+  </root>
+
+  <logger name="AUDIT" level="info" additivity="false">
+    <appender-ref ref="SYSLOG"/>
+  </logger>
+
+</configuration>
