@@ -462,11 +462,11 @@ management:
 
 By default, the management endpoints are exposed under `/actuator/<endpoint>`. This can be changed using the `management.endpoints.web.base-path` setting.
 
-See the [Management using the Actuator](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html#management-using-the-actuator) section of the [Starting and Running the Swedish eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html) page for a description of each exposed management endpoint.
+See the [Management using the Actuator](https://docs.swedenconnect.se/eidas-connector/management.html) page for a description of each exposed management endpoint.
 
 :raised_hand: Redis is available in the classpath, so if you are not using Redis make sure to disable the Redis health check by setting the `management.health.redis.enabled` setting to `false`.
 
-:exclamation: Make sure not to expose the management endpoints publicly. See [Starting and Running the Swedish eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html) for deployment details.
+:exclamation: Make sure not to expose the management endpoints publicly. See [Building and Deploying the eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/installation.html) for deployment details.
 
 <a name="saml-identity-provider-configuration"></a>
 ## 3. SAML Identity Provider Configuration
@@ -701,7 +701,7 @@ The references PKCS#11 configuration file should be formatted according to [PKCS
 <a name="audit-logging-configuration"></a>
 ### 3.3. Audit Logging Configuration
 
-The default is to only hold audit entries in memory and expose them via the [Spring Boot Actuator](https://www.baeldung.com/spring-boot-actuators) endpoint for audit (see [Accessing Audit Logs](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html#accessing-audit-logs)). In a production environment we probably want to persist audit entries.
+The default is to only hold audit entries in memory and expose them via the [Spring Boot Actuator](https://www.baeldung.com/spring-boot-actuators) endpoint for audit (see [Accessing Audit Logs](https://docs.swedenconnect.se/eidas-connector/management.html#accessing-audit-logs)). In a production environment we probably want to persist audit entries.
 
 Section [Audit Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#audit-configuration) for the [Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html) contains a full configuration reference.
 
@@ -731,7 +731,7 @@ saml:
 
 The audit logger will now also write to the `connector-audit.log` file. It uses a rolling file appender that creates a new log file every day, and saves the old ones as `<file-name>-<date>.<ext>`.
 
-In the example above we keep the in-memory logging which can be a good idea to allow for the management endpoints to view log files, see [Accessing Audit Logs](https://docs.swedenconnect.se/eidas-connector/starting-and-running.html#accessing-audit-logs).
+In the example above we keep the in-memory logging which can be a good idea to allow for the management endpoints to view log files, see [Accessing Audit Logs](https://docs.swedenconnect.se/eidas-connector/management.html#accessing-audit-logs).
 
 It is also possible to persist audit entries to Redis:
 
