@@ -6,6 +6,12 @@
 
 ---
 
+### Version 2.0.6
+
+**Release date:** 2025-05-08
+
+* Dependency updates only.
+
 ### Version 2.0.5
 
 **Release date:** 2025-03-26
