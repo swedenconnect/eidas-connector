@@ -48,7 +48,7 @@
     <spring.version>6.2.6</spring.version>
     <bc.version>1.80</bc.version>
     <saml.idp.version>2.3.9</saml.idp.version>
-    <credentials-support.version>2.0.6</credentials-support.version>
+    <credentials-support.version>2.0.7</credentials-support.version>
   </properties>
 
   <repositories>
