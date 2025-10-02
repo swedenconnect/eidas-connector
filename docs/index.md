@@ -26,7 +26,8 @@ The following resources are available for information about configuration, deplo
 
 - [eIDAS Connector Provisional Identifier (PRID) Calculation](https://docs.swedenconnect.se/eidas-connector/prid.html) - Description of how to configure the Provisional Identifier Calculation for the different countries that are connected to the Swedish eIDAS Connector. Also, see the [eIDAS Constructed Attributes Specification for the Swedish eID Framework](https://docs.swedenconnect.se/technical-framework/latest/11_-_eIDAS_Constructed_Attributes_Specification_for_the_Swedish_eID_Framework.html).
 
-
+<img align="right" src="images/eu-funded.png"/>
+<br />
 ---
 
 Copyright &copy; 2017-2025, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
