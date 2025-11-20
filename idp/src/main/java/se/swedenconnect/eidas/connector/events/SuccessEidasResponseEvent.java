@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import jakarta.annotation.Nonnull;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Response;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
@@ -40,6 +41,9 @@ public class SuccessEidasResponseEvent extends AbstractConnectorAuthnEvent {
   /** The SAML assertion. */
   private final SerializableOpenSamlObject<Assertion> assertion;
 
+  /** The country. */
+  private final String country;
+
   /**
    * Constructor.
    *
@@ -47,13 +51,14 @@ public class SuccessEidasResponseEvent extends AbstractConnectorAuthnEvent {
    * @param response the SAML response
    * @param assertion the SAML assertion
    */
-  public SuccessEidasResponseEvent(
-      final Saml2UserAuthenticationInputToken token, final Response response, final Assertion assertion) {
+  public SuccessEidasResponseEvent(@Nonnull final Saml2UserAuthenticationInputToken token,
+      @Nonnull final Response response, @Nonnull final Assertion assertion, @Nonnull final String country) {
     super(token);
     this.response = new SerializableOpenSamlObject<>(
         Objects.requireNonNull(response, "response must not be null"));
     this.assertion = new SerializableOpenSamlObject<>(
         Objects.requireNonNull(assertion, "assertion must not be null"));
+    this.country = Objects.requireNonNull(country, "country must not be null");
   }
 
   /**
@@ -61,6 +66,7 @@ public class SuccessEidasResponseEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the {@link Response}
    */
+  @Nonnull
   public Response getResponse() {
     return this.response.get();
   }
@@ -70,8 +76,19 @@ public class SuccessEidasResponseEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the {@link Assertion}
    */
+  @Nonnull
   public Assertion getAssertion() {
     return this.assertion.get();
+  }
+
+  /**
+   * Gets the country code.
+   *
+   * @return the country code
+   */
+  @Nonnull
+  public String getCountry() {
+    return this.country;
   }
 
 }

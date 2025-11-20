@@ -15,14 +15,13 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
-import java.io.Serial;
-import java.util.Objects;
-
 import org.opensaml.saml.saml2.core.Response;
-
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.saml2.response.validation.ResponseValidationException;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
+
+import java.io.Serial;
+import java.util.Objects;
 
 /**
  * Exception class that represents errors from validating the eIDAS response.
@@ -42,7 +41,7 @@ public class EidasResponseValidationException extends ResponseValidationExceptio
    * @param error the error to report back to the Swedish SP
    */
   public EidasResponseValidationException(final Saml2ErrorStatusException error, final Response response) {
-    super(Objects.requireNonNull(error, "error must not be null").getMessage(), error.getCause(), response);
+    super(Objects.requireNonNull(error, "error must not be null").getMessage(), error.getCause(), response, null);
     this.error = error;
   }
 

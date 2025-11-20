@@ -37,6 +37,9 @@ public class ConnectorAuditEvents {
   /** Event logged for processing errors. */
   public static final String CONNECTOR_PROCESSING_ERROR = "CONNECTOR_PROCESSING_ERROR";
 
+  /** A mapping of the SAML_SUCCESS_RESPONSE event where country is added. */
+  public static final String EIDAS_AUDIT_SUCCESSFUL_RESPONSE = "EIDAS_SUCCESS_RESPONSE";
+
   /** Event logged when the user has consented/rejected a signature. */
   public static final String CONNECTOR_SIGNATURE_CONSENT_RESULT = "CONNECTOR_SIGNATURE_CONSENT_RESULT";
 

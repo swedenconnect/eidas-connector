@@ -144,18 +144,18 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
    */
   protected JwkInfo createJwk(final PkiCredential credential) {
     try {
-      final JwkTransformerFunction transformer = new JwkTransformerFunction();
-      transformer.setAlgorithmFunction(c -> {
-        if (c.getPublicKey() instanceof RSAPublicKey) {
-          return JWSAlgorithm.RS256;
-        }
-        else if (c.getPublicKey() instanceof ECPublicKey) {
-          return JWSAlgorithm.ES256;
-        }
-        else {
-          return null;
-        }
-      });
+      final JwkTransformerFunction transformer = JwkTransformerFunction.function()
+          .withAlgorithmFunction(c -> {
+            if (c.getPublicKey() instanceof RSAPublicKey) {
+              return JWSAlgorithm.RS256;
+            }
+            else if (c.getPublicKey() instanceof ECPublicKey) {
+              return JWSAlgorithm.ES256;
+            }
+            else {
+              return null;
+            }
+          });
       final JWK jwk = credential.transform(transformer);
 
       if (jwk instanceof final RSAKey rsaKey) {

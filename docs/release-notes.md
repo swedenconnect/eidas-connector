@@ -6,6 +6,13 @@
 
 ---
 
+### Version 2.0.7
+
+**Release date:** 2025-11-20
+
+* New audit event is being created, `EIDAS_SUCCESS_RESPONSE`. This event is the same
+as `SAML_SUCCESS_RESPONSE` with the addition that it also contains the peer country.
+
 ### Version 2.0.6
 
 **Release date:** 2025-05-08
