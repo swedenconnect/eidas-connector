@@ -125,6 +125,12 @@ Common for all User Audit Events is that the authentication data contains the fo
 
 **Audit data:** `saml-assertion` - See [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE). 
 
+**Audit data:** `eu-peer-country`
+
+| Parameter | Description | Type |
+| :--- | :--- | :--- |
+| `country` | The country code of the country that authenticated the user. | String |
+
 ### Foreign Authentication Failure
 
 **Type:** `CONNECTOR_ERROR_RESPONSE`
@@ -148,6 +154,22 @@ Common for all User Audit Events is that the authentication data contains the fo
 **Audit data:** `saml-response` - See [Error SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_AUDIT_ERROR_RESPONSE). 
 
 > **Note:** If `CONNECTOR_SUCCESS_RESPONSE` was previously logged, this data is not included.
+
+### Overall Authentication Success
+
+**Type:** `EIDAS_SUCCESS_RESPONSE`
+
+**Description:** The same event as the [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE) that indicates a successful authentication overall, with the add-on that the peer country is logged as we..
+
+**Audit data:** `saml-response` - See [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE).
+
+**Audit data:** `saml-assertion` - See [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE). 
+
+**Audit data:** `eu-peer-country`
+
+| Parameter | Description | Type |
+| :--- | :--- | :--- |
+| `country` | The country code of the country that authenticated the user. | String |
 
 ### Result of Signature Consent
 

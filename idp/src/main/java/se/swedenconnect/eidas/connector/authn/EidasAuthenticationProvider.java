@@ -254,7 +254,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       // Signal event ...
       //
       this.eventPublisher.publishEvent(new SuccessEidasResponseEvent(inputToken,
-          result.getResponse(), result.getAssertion()));
+          result.getResponse(), result.getAssertion(), eidasAuthnRequest.getCountry()));
 
       // Assert that the authentication context URI is valid and map it to a Swedish URI ...
       //

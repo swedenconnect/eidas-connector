@@ -15,7 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.audit;
 
+import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
+import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Response;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.listener.AuditApplicationEvent;
@@ -24,6 +26,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import se.swedenconnect.eidas.connector.audit.data.EidasAuthnRequestAuditData;
 import se.swedenconnect.eidas.connector.audit.data.EuMetadataChangeAuditData;
+import se.swedenconnect.eidas.connector.audit.data.EuPeerCountryAuditData;
 import se.swedenconnect.eidas.connector.audit.data.IdmConsentAuditData;
 import se.swedenconnect.eidas.connector.audit.data.IdmErrorAuditData;
 import se.swedenconnect.eidas.connector.audit.data.IdmRecordAuditData;
@@ -40,6 +43,7 @@ import se.swedenconnect.eidas.connector.events.SignatureConsentEvent;
 import se.swedenconnect.eidas.connector.events.SuccessEidasResponseEvent;
 import se.swedenconnect.spring.saml.idp.audit.data.Saml2AssertionAuditData;
 import se.swedenconnect.spring.saml.idp.audit.data.Saml2ResponseAuditData;
+import se.swedenconnect.spring.saml.idp.events.Saml2SuccessResponseEvent;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -124,7 +128,28 @@ public class ConnectorAuditPublisher {
             Saml2AssertionAuditData.of(event.getAssertion(), Optional.ofNullable(event.getResponse())
                 .map(Response::getEncryptedAssertions)
                 .filter(l -> !l.isEmpty())
-                .isPresent()));
+                .isPresent()),
+            EuPeerCountryAuditData.of(event.getCountry()));
+
+    log.info("Publishing audit event: {}", auditEvent.getLogString());
+
+    this.publish(auditEvent);
+  }
+
+  @EventListener
+  public void onSuccessResponseEvent(@Nonnull final Saml2SuccessResponseEvent event) {
+
+    final Assertion assertion = event.getAssertion();
+
+    final ConnectorAuthnAuditEvent auditEvent =
+        new ConnectorAuthnAuditEvent(ConnectorAuditEvents.EIDAS_AUDIT_SUCCESSFUL_RESPONSE, event.getTimestamp(),
+            event.getSpEntityId(), Optional.ofNullable(event.getResponse()).map(Response::getInResponseTo).orElse(null),
+            Saml2ResponseAuditData.of(event.getResponse()),
+            Saml2AssertionAuditData.of(assertion, Optional.ofNullable(event.getResponse())
+                .map(Response::getEncryptedAssertions)
+                .filter(l -> !l.isEmpty())
+                .isPresent()),
+            EuPeerCountryAuditData.of(assertion));
 
     log.info("Publishing audit event: {}", auditEvent.getLogString());
 
@@ -190,8 +215,7 @@ public class ConnectorAuditPublisher {
 
   /**
    * Handles {@link IdentityMatchingConsentEvent}s and translates them into a
-   * {@value ConnectorAuditEvents#CONNECTOR_IDM_CONSENT_RESULT} event containing
-   * {@link IdmConsentAuditData}.
+   * {@value ConnectorAuditEvents#CONNECTOR_IDM_CONSENT_RESULT} event containing {@link IdmConsentAuditData}.
    *
    * @param event the event
    */
@@ -209,8 +233,7 @@ public class ConnectorAuditPublisher {
 
   /**
    * Handles {@link IdentityMatchingRecordEvent}s and translates them into a
-   * {@value ConnectorAuditEvents#CONNECTOR_IDM_RECORD} event containing
-   * {@link IdmRecordAuditData}.
+   * {@value ConnectorAuditEvents#CONNECTOR_IDM_RECORD} event containing {@link IdmRecordAuditData}.
    *
    * @param event the event
    */
@@ -228,8 +251,7 @@ public class ConnectorAuditPublisher {
 
   /**
    * Handles {@link IdentityMatchingConsentEvent}s and translates them into a
-   * {@value ConnectorAuditEvents#CONNECTOR_IDM_ERROR} event containing
-   * {@link IdmErrorAuditData}.
+   * {@value ConnectorAuditEvents#CONNECTOR_IDM_ERROR} event containing {@link IdmErrorAuditData}.
    *
    * @param event the event
    */
