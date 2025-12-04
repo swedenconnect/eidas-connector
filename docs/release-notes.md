@@ -6,6 +6,18 @@
 
 ---
 
+### Version 2.0.8
+
+**Release date:** 2025-12-04
+
+* During high load, some incoming request messages would fail to decode.
+This has been fixed. See <https://github.com/swedenconnect/saml-identity-provider/issues/127>.
+
+* Added support for configuring the `mdorgext:OrganizationNumber` metadata
+extension. See <https://docs.swedenconnect.se/schemas/authn/1.0/OrganizationNumber-1.0.xsd>.
+
+* Dependency updates.
+
 ### Version 2.0.7
 
 **Release date:** 2025-11-20
