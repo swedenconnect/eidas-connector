@@ -27,7 +27,8 @@ policy:
   <Country code>:
     algorithm: default-eIDAS|colresist-eIDAS|special-characters-eIDAS
     persistenceClass: A|B|C
-  <Country code>: ...```
+  <Country code>: ...
+```
 
 Below is an example of the policy configuration file in Properties format:
 
@@ -81,4 +82,4 @@ The PRID service will reload the PRID policy file every 10 minutes. It is also p
 
 ---
 
-Copyright &copy; 2017-2025, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+Copyright &copy; 2017-2026, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
