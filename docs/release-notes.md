@@ -8,10 +8,12 @@
 
 ### Version 2.0.9
 
-**Release date:** 2026-01-22
+**Release date:** 2026-01-27
 
 * Filtering of available countries based on requested AuthnContextClassRef(s) did not work correctly. This has been
   fixed. See <https://github.com/swedenconnect/eidas-connector/issues/227>.
+
+* Support using `minimum` comparison in `RequestedAuthnContext` elements in `AuthnRequest` was added.
 
 ### Version 2.0.8
 

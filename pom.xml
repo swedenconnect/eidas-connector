@@ -59,10 +59,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>21</java.version>
 
-    <spring.boot.version>3.5.9</spring.boot.version>
+    <spring.boot.version>3.5.10</spring.boot.version>
     <spring.version>6.2.15</spring.version>
     <bc.version>1.83</bc.version>
-    <saml.idp.version>2.3.13</saml.idp.version>
+    <saml.idp.version>2.4.0</saml.idp.version>
     <credentials-support.version>2.1.2</credentials-support.version>
   </properties>
 

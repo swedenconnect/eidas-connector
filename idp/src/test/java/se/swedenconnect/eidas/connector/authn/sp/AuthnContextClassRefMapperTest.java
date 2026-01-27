@@ -15,9 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
-import java.util.List;
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -25,12 +22,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
-
 import se.swedenconnect.eidas.connector.OpenSamlTestBase;
 import se.swedenconnect.opensaml.eidas.common.EidasConstants;
 import se.swedenconnect.opensaml.saml2.core.build.RequestedAuthnContextBuilder;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
 import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Test cases for AuthnContextClassRefMapper.
@@ -98,11 +97,11 @@ public class AuthnContextClassRefMapperTest extends OpenSamlTestBase {
   private static Stream<Arguments> requestedAuthnContextProvider() {
     return Stream.of(
         Arguments.of(
-            List.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF),
-            List.of(EidasConstants.EIDAS_LOA_HIGH),
-            Comp.minimum,
-            List.of(EidasConstants.EIDAS_LOA_HIGH),
-            true),
+            List.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF), // requested
+            List.of(EidasConstants.EIDAS_LOA_HIGH),                                   // supported
+            Comp.minimum,                                                             // expected comparison
+            List.of(EidasConstants.EIDAS_LOA_HIGH),                                   // sent URI
+            true),                                                                    // overall result
         Arguments.of(
             List.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH),
             List.of(EidasConstants.EIDAS_LOA_HIGH),
