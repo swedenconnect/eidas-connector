@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2025 Sweden Connect
+ * Copyright 2017-2026 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.authn.metadata;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import net.shibboleth.shared.resolver.ResolverException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,16 +26,15 @@ import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import net.shibboleth.shared.resolver.ResolverException;
 import se.swedenconnect.eidas.connector.OpenSamlTestBase;
 import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
 import se.swedenconnect.opensaml.saml2.metadata.provider.FilesystemMetadataProvider;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
 import se.swedenconnect.opensaml.sweid.saml2.authn.psc.RequestedPrincipalSelection;
-import se.swedenconnect.opensaml.sweid.saml2.signservice.dss.EncryptedMessage;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test cases for DefaultEuMetadataProvider.
@@ -46,7 +44,7 @@ import se.swedenconnect.opensaml.sweid.saml2.signservice.dss.EncryptedMessage;
 @Slf4j
 public class DefaultEuMetadataProviderTest extends OpenSamlTestBase {
 
-  private static TestApplicationEventPublisher publisher = new TestApplicationEventPublisher();
+  private static final TestApplicationEventPublisher publisher = new TestApplicationEventPublisher();
 
   @BeforeEach
   public void init() {
@@ -56,7 +54,8 @@ public class DefaultEuMetadataProviderTest extends OpenSamlTestBase {
   @Test
   public void test() throws Exception {
 
-    RequestedPrincipalSelection s = (RequestedPrincipalSelection) XMLObjectSupport.buildXMLObject(RequestedPrincipalSelection.DEFAULT_ELEMENT_NAME);
+    final RequestedPrincipalSelection s =
+        (RequestedPrincipalSelection) XMLObjectSupport.buildXMLObject(RequestedPrincipalSelection.DEFAULT_ELEMENT_NAME);
     Assertions.assertNotNull(s);
   }
 
@@ -137,7 +136,7 @@ public class DefaultEuMetadataProviderTest extends OpenSamlTestBase {
 
   @Test
   public void testGetProvider() throws Exception {
-    final MetadataProvider provider = this.createProvider("metadata/eu-metadata-idps.xml");
+    final MetadataProvider provider = createProvider("metadata/eu-metadata-idps.xml");
     try {
       final DefaultEuMetadataProvider euProvider = new DefaultEuMetadataProvider(provider, publisher);
 
@@ -152,8 +151,8 @@ public class DefaultEuMetadataProviderTest extends OpenSamlTestBase {
   public void testEvents() throws Exception {
 
     final MetadataProvider provider = Mockito.mock(MetadataProvider.class);
-    final MetadataProvider provider1 = this.createProvider("metadata/eu-metadata-idps.xml");
-    final MetadataProvider provider2 = this.createProvider("metadata/eu-metadata-idps2.xml");
+    final MetadataProvider provider1 = createProvider("metadata/eu-metadata-idps.xml");
+    final MetadataProvider provider2 = createProvider("metadata/eu-metadata-idps2.xml");
 
     Mockito.when(provider.getID()).thenReturn("test-provider");
 
@@ -183,7 +182,8 @@ public class DefaultEuMetadataProviderTest extends OpenSamlTestBase {
       Assertions.assertEquals(2, publisher.getEvents().size());
       Assertions.assertEquals(0, publisher.getEvents().get(1).getEuMetadataUpdateData().getAddedCountries().size());
       Assertions.assertEquals(1, publisher.getEvents().get(1).getEuMetadataUpdateData().getRemovedCountries().size());
-      Assertions.assertEquals("PT", publisher.getEvents().get(1).getEuMetadataUpdateData().getRemovedCountries().get(0));
+      Assertions.assertEquals("PT",
+          publisher.getEvents().get(1).getEuMetadataUpdateData().getRemovedCountries().get(0));
 
       // And again
       Mockito.when(provider.getLastUpdate()).thenReturn(null);
@@ -231,7 +231,7 @@ public class DefaultEuMetadataProviderTest extends OpenSamlTestBase {
     Assertions.assertEquals(error, publisher.getEvents().get(0).getEuMetadataUpdateData().getError());
   }
 
-  private MetadataProvider createProvider(final String xml) throws Exception {
+  public static MetadataProvider createProvider(final String xml) throws Exception {
     final Resource resource = new ClassPathResource(xml);
     final FilesystemMetadataProvider provider = new FilesystemMetadataProvider(resource.getFile());
     provider.initialize();
@@ -255,7 +255,5 @@ public class DefaultEuMetadataProviderTest extends OpenSamlTestBase {
     }
 
   }
-
-
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2025 Sweden Connect
+ * Copyright 2017-2026 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Representation of a country.
@@ -121,7 +119,8 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
   }
 
   /**
-   * Given the assurance levels, this method tells which assurance levels Swedish assurance levels that are supported.
+   * Given the eIDAS assurance levels, this method tells which assurance levels Swedish assurance levels that are
+   * supported.
    *
    * @return a list of URI:s
    */
@@ -131,63 +130,49 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
       final List<String> idpLevels = this.getAssuranceLevels();
       for (final String uri : idpLevels) {
         if (EidasConstants.EIDAS_LOA_LOW.equals(uri)) {
-          supported.addAll(SUPPORTED_FOR_EIDAS_LOA_LOW);
+          supported.addAll(List.of(
+              LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW,
+              LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW_NF));
         }
-        else if (EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED.equals(uri)) {
-          supported.addAll(SUPPORTED_FOR_EIDAS_LOA_LOW_NON_NOTIFIED);
+        else if (EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED.equals(uri)
+            || EidasConstants.EIDAS_LOA_LOW_NON_NOTIFIED2.equals(uri)) {
+          supported.add(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW);
         }
         else if (EidasConstants.EIDAS_LOA_SUBSTANTIAL.equals(uri)) {
-          supported.addAll(SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL);
+          supported.addAll(List.of(
+              LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL,
+              LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF));
         }
-        else if (EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.equals(uri)) {
-          supported.addAll(SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED);
+        else if (EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.equals(uri)
+            || EidasConstants.EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED2.equals(uri)) {
+          supported.add(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL);
         }
         else if (EidasConstants.EIDAS_LOA_HIGH.equals(uri)) {
-          supported.addAll(SUPPORTED_FOR_EIDAS_LOA_HIGH);
+          supported.addAll(List.of(
+              LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH,
+              LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF));
         }
-        else if (EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED.equals(uri)) {
-          supported.addAll(SUPPORTED_FOR_EIDAS_LOA_HIGH_NON_NOTIFIED);
+        else if (EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED.equals(uri)
+            || EidasConstants.EIDAS_LOA_HIGH_NON_NOTIFIED2.equals(uri)) {
+          supported.add(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH);
         }
       }
       this.supportedSwedishAssuranceLevels = supported.stream().toList();
 
       if (this.supportedSwedishAssuranceLevels.isEmpty()) {
-        // If there is no URI:s here it must mean that the foreign IdP did not declare any URI:s.
+        // If there is no URI:s it must mean that the foreign IdP did not declare any URI:s.
         // In these cases we support anything since we can't know what is supported.
-        this.supportedSwedishAssuranceLevels = SUPPORTED_FOR_EIDAS_LOA_HIGH;
+        this.supportedSwedishAssuranceLevels = List.of(
+            LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW,
+            LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW_NF,
+            LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL,
+            LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF,
+            LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH,
+            LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF);
       }
     }
     return this.supportedSwedishAssuranceLevels;
   }
-
-  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_LOW = List.of(
-      LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW,
-      LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW_NF);
-
-  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_LOW_NON_NOTIFIED = List.of(
-      LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW);
-
-  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL = Stream.concat(
-          Stream.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL,
-              LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF),
-          SUPPORTED_FOR_EIDAS_LOA_LOW.stream())
-      .toList();
-
-  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED = Stream.concat(
-          Stream.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL),
-          SUPPORTED_FOR_EIDAS_LOA_LOW_NON_NOTIFIED.stream())
-      .toList();
-
-  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_HIGH = Stream.concat(
-          Stream.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH,
-              LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF),
-          SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL.stream())
-      .collect(Collectors.toList());
-
-  private static final List<String> SUPPORTED_FOR_EIDAS_LOA_HIGH_NON_NOTIFIED = Stream.concat(
-          Stream.of(LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH),
-          SUPPORTED_FOR_EIDAS_LOA_SUBSTANTIAL_NON_NOTIFIED.stream())
-      .toList();
 
   /**
    * Tells whether the country should be hidden from discovery.
