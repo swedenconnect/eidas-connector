@@ -6,6 +6,12 @@
 
 ---
 
+### Version 2.0.10
+
+**Release date:** 2026-02-03
+
+* Configuration for support of `minimum` comparison in `RequestedAuthnContext` elements in `AuthnRequest` was added.
+
 ### Version 2.0.9
 
 **Release date:** 2026-01-27

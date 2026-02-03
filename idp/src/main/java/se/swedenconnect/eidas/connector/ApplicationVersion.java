@@ -24,7 +24,7 @@ public final class ApplicationVersion {
 
   private static final int MAJOR = 2;
   private static final int MINOR = 0;
-  private static final int PATCH = 9;
+  private static final int PATCH = 10;
 
   /**
    * Global serialization value for classes.
