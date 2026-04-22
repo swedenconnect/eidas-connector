@@ -62,7 +62,7 @@
     <spring.boot.version>3.5.10</spring.boot.version>
     <spring.version>6.2.15</spring.version>
     <bc.version>1.83</bc.version>
-    <saml.idp.version>2.4.0</saml.idp.version>
+    <saml.idp.version>2.5.0</saml.idp.version>
     <credentials-support.version>2.1.2</credentials-support.version>
   </properties>
 
@@ -147,7 +147,7 @@
       <dependency>
         <groupId>se.swedenconnect.opensaml</groupId>
         <artifactId>opensaml-addons</artifactId>
-        <version>2.1.8</version>
+        <version>2.2.0</version>
       </dependency>
 
       <dependency>
