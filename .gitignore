@@ -25,7 +25,6 @@ test-output
 
 # Intelij
 *.iml
-.idea
 .run
 out
 

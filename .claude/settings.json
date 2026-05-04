@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn test:*)",
+      "Bash(mvn clean:*)",
+      "Bash(mvn compile:*)",
+      "Bash(mvn clean compile:*)",
+      "Bash(mvn clean test:*)",
+      "Bash(mvn clean install:*)",
+      "Bash(mvn install:*)",
+      "Bash(mvn verify:*)",
+      "Bash(mvn package:*)",
+      "Bash(mvn dependency\\:tree:*)",
+      "Bash(mvn dependency\\:analyze:*)",
+      "Bash(mvn dependency\\:resolve:*)",
+      "Bash(mvn dependency\\:list:*)",
+      "Bash(mvn versions\\:display-dependency-updates:*)",
+      "Bash(mvn versions\\:display-plugin-updates:*)"
+    ]
+  }
+}

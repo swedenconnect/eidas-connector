@@ -19,8 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.saml.metadata.resolver.impl.HTTPMetadataResolver;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.Status;
 
 import java.util.Iterator;
 
