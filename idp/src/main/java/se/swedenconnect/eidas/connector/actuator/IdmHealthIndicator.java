@@ -16,8 +16,8 @@
 package se.swedenconnect.eidas.connector.actuator;
 
 import jakarta.annotation.Nonnull;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 import se.swedenconnect.eidas.connector.authn.idm.IdmClient;
 import se.swedenconnect.eidas.connector.authn.idm.IdmException;

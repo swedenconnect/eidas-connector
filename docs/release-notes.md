@@ -6,6 +6,12 @@
 
 ---
 
+### Version 2.1.0
+
+**Release date:**
+
+* Upgraded to Spring Boot 4 and Spring 7.
+
 ### Version 2.0.10
 
 **Release date:** 2026-02-03

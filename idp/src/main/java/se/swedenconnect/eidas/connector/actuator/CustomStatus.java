@@ -15,7 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Status;
 
 /**
  * Defines custom health status code(s).
