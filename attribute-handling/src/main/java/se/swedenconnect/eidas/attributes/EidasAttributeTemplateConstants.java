@@ -108,6 +108,11 @@ public class EidasAttributeTemplateConstants {
       XSString.class, AttributeConstants.EIDAS_EMAIL_ADDRESS_ATTRIBUTE_NAME,
       AttributeConstants.EIDAS_EMAIL_ADDRESS_ATTRIBUTE_FRIENDLY_NAME);
 
+  /** Attribute template for the "eJusticeNaturalPersonRole" attribute. */
+  public static final EidasAttributeTemplate EJUSTICE_NATURAL_PERSON_ROLE_TEMPLATE = new EidasAttributeTemplate(
+      XSString.class, AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_NAME,
+      AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_FRIENDLY_NAME);
+
   /** Templates for the eIDAS minimum data set. */
   public static final List<EidasAttributeTemplate> MINIMUM_DATASET_TEMPLATES = List.of(
       PERSON_IDENTIFIER_TEMPLATE, CURRENT_GIVEN_NAME_TEMPLATE, CURRENT_FAMILY_NAME_TEMPLATE, DATE_OF_BIRTH_TEMPLATE);
