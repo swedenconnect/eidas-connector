@@ -16,6 +16,7 @@
 package se.swedenconnect.eidas.attributes.conversion;
 
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplateConstants;
+import se.swedenconnect.opensaml.saml2.attribute.AttributeTemplate;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 
 import java.util.List;
@@ -53,7 +54,11 @@ public class AttributeConverterConstants {
           new AttributeTemplatePair(EidasAttributeTemplateConstants.PHONE_NUMBER_TEMPLATE,
               AttributeConstants.ATTRIBUTE_TEMPLATE_TELEPHONE_NUMBER),
           new AttributeTemplatePair(EidasAttributeTemplateConstants.EMAIL_ADDRESS_TEMPLATE,
-              AttributeConstants.ATTRIBUTE_TEMPLATE_MAIL))),
+              AttributeConstants.ATTRIBUTE_TEMPLATE_MAIL),
+          new AttributeTemplatePair(EidasAttributeTemplateConstants.EJUSTICE_NATURAL_PERSON_ROLE_TEMPLATE,
+              new AttributeTemplate(
+                  se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_NAME,
+                  se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_FRIENDLY_NAME)))),
       new BirthDetailsAttributeConverter(List.of(
           new AttributeTemplatePair(EidasAttributeTemplateConstants.COUNTRY_OF_BIRTH_TEMPLATE,
               AttributeConstants.ATTRIBUTE_TEMPLATE_PLACE_OF_BIRTH),

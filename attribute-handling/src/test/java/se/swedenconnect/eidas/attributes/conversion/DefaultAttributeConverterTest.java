@@ -18,6 +18,7 @@ package se.swedenconnect.eidas.attributes.conversion;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.opensaml.core.xml.XMLObject;
+import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.saml.saml2.core.Attribute;
 import se.swedenconnect.eidas.attributes.EidasAttributeTemplateConstants;
 import se.swedenconnect.eidas.attributes.OpenSamlTestBase;
@@ -28,6 +29,7 @@ import se.swedenconnect.opensaml.eidas.ext.attributes.DateOfBirthType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.EidasAttributeValueType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.PersonIdentifierType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.PlaceOfBirthType;
+import se.swedenconnect.opensaml.saml2.attribute.AttributeTemplate;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 
@@ -54,7 +56,12 @@ public class DefaultAttributeConverterTest extends OpenSamlTestBase {
         new AttributeTemplatePair(EidasAttributeTemplateConstants.BIRTH_NAME_TEMPLATE,
             AttributeConstants.ATTRIBUTE_TEMPLATE_BIRTH_NAME),
         new AttributeTemplatePair(EidasAttributeTemplateConstants.PLACE_OF_BIRTH_TEMPLATE,
-            AttributeConstants.ATTRIBUTE_TEMPLATE_PLACE_OF_BIRTH)));
+            AttributeConstants.ATTRIBUTE_TEMPLATE_PLACE_OF_BIRTH),
+        new AttributeTemplatePair(EidasAttributeTemplateConstants.EJUSTICE_NATURAL_PERSON_ROLE_TEMPLATE,
+            new AttributeTemplate(
+                se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_NAME,
+                se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_FRIENDLY_NAME))
+    ));
 
     // Person identifier
     //
@@ -172,6 +179,31 @@ public class DefaultAttributeConverterTest extends OpenSamlTestBase {
     Assertions.assertNotNull(swAttr2, "Expected Swedish PlaceOfBirth attribute");
     Assertions.assertEquals(AttributeConstants.ATTRIBUTE_NAME_PLACE_OF_BIRTH, swAttr2.getName());
     Assertions.assertEquals("Enköping", AttributeUtils.getAttributeStringValue(swAttr2));
+
+    // eJusticeNaturalPersonRole
+    //
+    final AttributeTemplate eJusticeTemplate = new AttributeTemplate(
+        se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_NAME,
+        se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_FRIENDLY_NAME);
+
+    swAttr = eJusticeTemplate.createBuilder().value("VIP1").build();
+
+    Assertions.assertTrue(converter.supportsConversionToEidas(swAttr.getName()));
+
+    eidasAttr = converter.toEidasAttribute(swAttr);
+    Assertions.assertNotNull(eidasAttr, "Expected eIDAS eJusticeNaturalPersonRole attribute");
+    Assertions.assertEquals(EidasAttributeTemplateConstants.EJUSTICE_NATURAL_PERSON_ROLE_TEMPLATE.getName(),
+        eidasAttr.getName());
+    final XSString role = AttributeUtils.getAttributeValue(eidasAttr, XSString.class);
+    Assertions.assertEquals("VIP1", role.getValue());
+
+    Assertions.assertTrue(converter.supportsConversionToSwedishAttribute(eidasAttr.getName()));
+    swAttr2 = converter.toSwedishEidAttribute(eidasAttr);
+    Assertions.assertNotNull(swAttr2, "Expected Swedish eJusticeNaturalPersonRole attribute");
+    Assertions.assertEquals(
+        se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_NAME,
+        swAttr2.getName());
+    Assertions.assertEquals("VIP1", AttributeUtils.getAttributeStringValue(swAttr2));
   }
 
   @Test

@@ -27,6 +27,7 @@ import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentGivenNameType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.DateOfBirthType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.PersonIdentifierType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.PlaceOfBirthType;
+import se.swedenconnect.opensaml.saml2.attribute.AttributeTemplate;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.saml.idp.attributes.RequestedAttribute;
@@ -176,6 +177,24 @@ public class DefaultAttributeMappingServiceTest extends OpenSamlTestBase {
     Assertions.assertNotNull(swAttr2, "Expected Swedish Mail attribute");
     Assertions.assertEquals(AttributeConstants.ATTRIBUTE_NAME_MAIL, swAttr2.getName());
     Assertions.assertEquals("user@example.com", AttributeUtils.getAttributeStringValue(swAttr2));
+
+    // eJusticeNaturalPersonRole
+    //
+    final AttributeTemplate eJusticeTemplate = new AttributeTemplate(
+        se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_NAME,
+        se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_FRIENDLY_NAME);
+
+    swAttr = eJusticeTemplate.createBuilder().value("VIP1").build();
+    eidasAttr = service.toEidasAttribute(swAttr);
+    Assertions.assertNotNull(eidasAttr, "Expected eIDAS eJusticeNaturalPersonRole attribute");
+    Assertions.assertEquals(EidasAttributeTemplateConstants.EJUSTICE_NATURAL_PERSON_ROLE_TEMPLATE.getName(), eidasAttr.getName());
+    final String role = AttributeUtils.getAttributeStringValue(eidasAttr);
+    Assertions.assertEquals("VIP1", role);
+
+    swAttr2 = service.toSwedishEidAttribute(eidasAttr);
+    Assertions.assertNotNull(swAttr2, "Expected Swedish eJusticeNaturalPersonRole attribute");
+    Assertions.assertEquals(se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_NAME, swAttr2.getName());
+    Assertions.assertEquals("VIP1", AttributeUtils.getAttributeStringValue(swAttr2));
 
     // Not supported
     swAttr = AttributeConstants.ATTRIBUTE_TEMPLATE_C.createBuilder().value("SE").build();
