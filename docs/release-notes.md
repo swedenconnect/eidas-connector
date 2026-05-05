@@ -8,9 +8,11 @@
 
 ### Version 2.1.0
 
-**Release date:**
+**Release date:** 2026-05-05
 
 * Upgraded to Spring Boot 4 and Spring 7.
+
+* Added conversion support for the eIDAS eJusticeNaturalPersonRole attribute (mainly for testing).
 
 ### Version 2.0.10
 
