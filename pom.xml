@@ -64,7 +64,7 @@
     <bc.version>1.84</bc.version>
     <saml.idp.version>2.5.2</saml.idp.version>
     <credentials-support.version>2.2.1</credentials-support.version>
-    <lombok.version>1.18.46</lombok.version>
+    <lombok.version>1.18.48</lombok.version>
   </properties>
 
   <repositories>
