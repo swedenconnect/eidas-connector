@@ -15,10 +15,11 @@
  */
 package se.swedenconnect.eidas.connector.attributes;
 
-import lombok.extern.slf4j.Slf4j;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.saml.saml2.core.Attribute;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
 import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentAddressType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.EidasAttributeValueType;
@@ -57,8 +58,10 @@ import java.util.Objects;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class EidasAttributeConverter {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(EidasAttributeConverter.class);
 
   /** eIDAS attributes that map to exactly one generic attribute with a string value. */
   private static final Map<String, String> STRING_ATTRIBUTES = Map.of(

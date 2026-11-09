@@ -18,8 +18,6 @@ package se.swedenconnect.eidas.connector.audit.data;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.AuthnRequest;
@@ -49,52 +47,180 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The receiving country. */
-  @Getter
-  @Setter
   @JsonProperty("country")
   private String country;
 
   /** The ID for the AuthnRequest. */
-  @Getter
-  @Setter
   @JsonProperty("authn-request-id")
   private String authnRequestId;
 
   /** The relay state. */
-  @Getter
-  @Setter
   @JsonProperty("relay-state")
   private String relayState;
 
   /** The URL to which the authentication request is sent. */
-  @Getter
-  @Setter
   @JsonProperty("destination-url")
   private String destinationUrl;
 
   /** GET or POST. */
-  @Getter
-  @Setter
   @JsonProperty("method")
   private String method;
 
   /** The requested authentication context. */
-  @Getter
-  @Setter
   @JsonProperty("requested-authn-context")
   private RequestedAuthnContextData requestedAuthnContext;
 
   /** The type of SP - public or private. */
-  @Getter
-  @Setter
   @JsonProperty("eidas-sp-type")
   private String eidasSpType;
 
   /** The requested attributes. */
-  @Getter
-  @Setter
   @JsonProperty("requested-attributes")
   private List<RequestedAttributeData> requestedAttributes;
+
+  /**
+   * Gets the receiving country.
+   *
+   * @return the receiving country
+   */
+  public String getCountry() {
+    return this.country;
+  }
+
+  /**
+   * Assigns the receiving country.
+   *
+   * @param country the receiving country
+   */
+  public void setCountry(final String country) {
+    this.country = country;
+  }
+
+  /**
+   * Gets the ID for the AuthnRequest.
+   *
+   * @return the ID for the AuthnRequest
+   */
+  public String getAuthnRequestId() {
+    return this.authnRequestId;
+  }
+
+  /**
+   * Assigns the ID for the AuthnRequest.
+   *
+   * @param authnRequestId the ID for the AuthnRequest
+   */
+  public void setAuthnRequestId(final String authnRequestId) {
+    this.authnRequestId = authnRequestId;
+  }
+
+  /**
+   * Gets the relay state.
+   *
+   * @return the relay state
+   */
+  public String getRelayState() {
+    return this.relayState;
+  }
+
+  /**
+   * Assigns the relay state.
+   *
+   * @param relayState the relay state
+   */
+  public void setRelayState(final String relayState) {
+    this.relayState = relayState;
+  }
+
+  /**
+   * Gets the URL to which the authentication request is sent.
+   *
+   * @return the URL to which the authentication request is sent
+   */
+  public String getDestinationUrl() {
+    return this.destinationUrl;
+  }
+
+  /**
+   * Assigns the URL to which the authentication request is sent.
+   *
+   * @param destinationUrl the URL to which the authentication request is sent
+   */
+  public void setDestinationUrl(final String destinationUrl) {
+    this.destinationUrl = destinationUrl;
+  }
+
+  /**
+   * Gets the HTTP method (GET or POST).
+   *
+   * @return the HTTP method (GET or POST)
+   */
+  public String getMethod() {
+    return this.method;
+  }
+
+  /**
+   * Assigns the HTTP method (GET or POST).
+   *
+   * @param method the HTTP method (GET or POST)
+   */
+  public void setMethod(final String method) {
+    this.method = method;
+  }
+
+  /**
+   * Gets the requested authentication context.
+   *
+   * @return the requested authentication context
+   */
+  public RequestedAuthnContextData getRequestedAuthnContext() {
+    return this.requestedAuthnContext;
+  }
+
+  /**
+   * Assigns the requested authentication context.
+   *
+   * @param requestedAuthnContext the requested authentication context
+   */
+  public void setRequestedAuthnContext(final RequestedAuthnContextData requestedAuthnContext) {
+    this.requestedAuthnContext = requestedAuthnContext;
+  }
+
+  /**
+   * Gets the type of SP (public or private).
+   *
+   * @return the type of SP (public or private)
+   */
+  public String getEidasSpType() {
+    return this.eidasSpType;
+  }
+
+  /**
+   * Assigns the type of SP (public or private).
+   *
+   * @param eidasSpType the type of SP (public or private)
+   */
+  public void setEidasSpType(final String eidasSpType) {
+    this.eidasSpType = eidasSpType;
+  }
+
+  /**
+   * Gets the requested attributes.
+   *
+   * @return the requested attributes
+   */
+  public List<RequestedAttributeData> getRequestedAttributes() {
+    return this.requestedAttributes;
+  }
+
+  /**
+   * Assigns the requested attributes.
+   *
+   * @param requestedAttributes the requested attributes
+   */
+  public void setRequestedAttributes(final List<RequestedAttributeData> requestedAttributes) {
+    this.requestedAttributes = requestedAttributes;
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -161,16 +287,48 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
   public static class RequestedAttributeData {
 
     /** The attribute name. */
-    @Getter
-    @Setter
     @JsonProperty("name")
     private String name;
 
     /** Whether the attribute is required. */
-    @Getter
-    @Setter
     @JsonProperty("is-required")
     private Boolean isRequired;
+
+    /**
+     * Gets the attribute name.
+     *
+     * @return the attribute name
+     */
+    public String getName() {
+      return this.name;
+    }
+
+    /**
+     * Assigns the attribute name.
+     *
+     * @param name the attribute name
+     */
+    public void setName(final String name) {
+      this.name = name;
+    }
+
+    /**
+     * Gets whether the attribute is required.
+     *
+     * @return whether the attribute is required
+     */
+    public Boolean getIsRequired() {
+      return this.isRequired;
+    }
+
+    /**
+     * Assigns whether the attribute is required.
+     *
+     * @param isRequired whether the attribute is required
+     */
+    public void setIsRequired(final Boolean isRequired) {
+      this.isRequired = isRequired;
+    }
 
     /**
      * Creates a {@link RequestedAttributeData} given a {@link RequestedAttribute}.
@@ -202,16 +360,48 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
     private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
     /** Comparison flag. */
-    @Getter
-    @Setter
     @JsonProperty("comparison")
     private String comparison;
 
     /** URI:s for AuthnContextClassRef. */
-    @Getter
-    @Setter
     @JsonProperty("authn-context-class-refs")
     private List<String> authnContextClassRefs;
+
+    /**
+     * Gets the comparison flag.
+     *
+     * @return the comparison flag
+     */
+    public String getComparison() {
+      return this.comparison;
+    }
+
+    /**
+     * Assigns the comparison flag.
+     *
+     * @param comparison the comparison flag
+     */
+    public void setComparison(final String comparison) {
+      this.comparison = comparison;
+    }
+
+    /**
+     * Gets the URI:s for AuthnContextClassRef.
+     *
+     * @return the URI:s for AuthnContextClassRef
+     */
+    public List<String> getAuthnContextClassRefs() {
+      return this.authnContextClassRefs;
+    }
+
+    /**
+     * Assigns the URI:s for AuthnContextClassRef.
+     *
+     * @param authnContextClassRefs the URI:s for AuthnContextClassRef
+     */
+    public void setAuthnContextClassRefs(final List<String> authnContextClassRefs) {
+      this.authnContextClassRefs = authnContextClassRefs;
+    }
 
     /**
      * Creates a {@link RequestedAuthnContext}.

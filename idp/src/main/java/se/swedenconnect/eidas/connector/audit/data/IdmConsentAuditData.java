@@ -16,8 +16,6 @@
 package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.IdentityMatchingConsentEvent;
 
@@ -28,8 +26,6 @@ import java.io.Serial;
  *
  * @author Martin Lindström
  */
-@Setter
-@Getter
 public class IdmConsentAuditData extends ConnectorAuditData {
 
   @Serial
@@ -42,6 +38,42 @@ public class IdmConsentAuditData extends ConnectorAuditData {
   /** The user identity (personal identifier) of the user that consented/rejected the IdM query. */
   @JsonProperty("user")
   private String user;
+
+  /**
+   * Gets whether the user consented to releasing the Identity Matching record.
+   *
+   * @return whether the user consented to releasing the Identity Matching record
+   */
+  public boolean isIdmConsented() {
+    return this.idmConsented;
+  }
+
+  /**
+   * Assigns whether the user consented to releasing the Identity Matching record.
+   *
+   * @param idmConsented whether the user consented to releasing the Identity Matching record
+   */
+  public void setIdmConsented(final boolean idmConsented) {
+    this.idmConsented = idmConsented;
+  }
+
+  /**
+   * Gets the user identity (personal identifier) of the user that consented/rejected the IdM query.
+   *
+   * @return the user identity (personal identifier) of the user that consented/rejected the IdM query
+   */
+  public String getUser() {
+    return this.user;
+  }
+
+  /**
+   * Assigns the user identity (personal identifier) of the user that consented/rejected the IdM query.
+   *
+   * @param user the user identity (personal identifier) of the user that consented/rejected the IdM query
+   */
+  public void setUser(final String user) {
+    this.user = user;
+  }
 
   /** {@inheritDoc} */
   @Override

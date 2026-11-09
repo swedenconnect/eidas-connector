@@ -15,9 +15,10 @@
  */
 package se.swedenconnect.eidas.connector.authn.metadata;
 
-import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.shared.resolver.ResolverException;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
@@ -38,8 +39,10 @@ import java.util.Optional;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class DefaultEuMetadataProvider implements EuMetadataProvider, InitializingBean {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(DefaultEuMetadataProvider.class);
 
   /** The underlying metadata provider. */
   private final MetadataProvider provider;

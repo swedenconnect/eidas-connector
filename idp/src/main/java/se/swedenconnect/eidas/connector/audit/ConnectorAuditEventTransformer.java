@@ -15,8 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.audit;
 
-import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.saml2.core.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.util.StringUtils;
 import se.swedenconnect.eidas.connector.audit.data.ConnectorAuditData;
@@ -57,8 +58,10 @@ import java.util.Optional;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class ConnectorAuditEventTransformer implements EventTransformer {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(ConnectorAuditEventTransformer.class);
 
   /** The principal of system events. */
   public static final String DEFAULT_PRINCIPAL = "eidas-connector";

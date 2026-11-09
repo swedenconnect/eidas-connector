@@ -15,14 +15,14 @@
  */
 package se.swedenconnect.eidas.connector.authn.metadata;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.shared.resolver.ResolverException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.opensaml.core.xml.util.XMLObjectSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -41,8 +41,10 @@ import java.util.List;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class DefaultEuMetadataProviderTest extends OpenSamlTestBase {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(DefaultEuMetadataProviderTest.class);
 
   private static final TestApplicationEventPublisher publisher = new TestApplicationEventPublisher();
 
@@ -240,8 +242,16 @@ public class DefaultEuMetadataProviderTest extends OpenSamlTestBase {
 
   private static class TestApplicationEventPublisher implements ApplicationEventPublisher {
 
-    @Getter
     private final List<EuMetadataEvent> events = new ArrayList<>();
+
+    /**
+     * Gets the published events.
+     *
+     * @return the published events
+     */
+    public List<EuMetadataEvent> getEvents() {
+      return this.events;
+    }
 
     @Override
     public void publishEvent(final Object event) {

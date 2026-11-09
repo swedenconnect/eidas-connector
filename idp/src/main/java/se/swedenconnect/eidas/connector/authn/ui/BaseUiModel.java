@@ -15,14 +15,13 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
-import lombok.Data;
+import java.util.Objects;
 
 /**
  * Base UI model class.
  *
  * @author Martin Lindström
  */
-@Data
 public class BaseUiModel {
 
   /**
@@ -36,9 +35,69 @@ public class BaseUiModel {
   private String accessibilityUrl;
 
   /**
+   * Gets the SP UI info.
+   *
+   * @return the SP UI info
+   */
+  public SpInfo getSpInfo() {
+    return this.spInfo;
+  }
+
+  /**
+   * Assigns the SP UI info.
+   *
+   * @param spInfo the SP UI info
+   */
+  public void setSpInfo(final SpInfo spInfo) {
+    this.spInfo = spInfo;
+  }
+
+  /**
+   * Gets the accessibility report URL.
+   *
+   * @return the accessibility report URL
+   */
+  public String getAccessibilityUrl() {
+    return this.accessibilityUrl;
+  }
+
+  /**
+   * Assigns the accessibility report URL.
+   *
+   * @param accessibilityUrl the accessibility report URL
+   */
+  public void setAccessibilityUrl(final String accessibilityUrl) {
+    this.accessibilityUrl = accessibilityUrl;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || this.getClass() != o.getClass()) {
+      return false;
+    }
+    final BaseUiModel that = (BaseUiModel) o;
+    return Objects.equals(this.spInfo, that.spInfo) && Objects.equals(this.accessibilityUrl, that.accessibilityUrl);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int hashCode() {
+    return Objects.hash(this.spInfo, this.accessibilityUrl);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String toString() {
+    return "spInfo=[" + this.spInfo + "], accessibilityUrl=" + this.accessibilityUrl;
+  }
+
+  /**
    * SP UI Info.
    */
-  @Data
   public static class SpInfo {
 
     /**
@@ -50,6 +109,67 @@ public class BaseUiModel {
      * The SP logotype URL.
      */
     private String logoUrl;
+
+    /**
+     * Gets the SP display name.
+     *
+     * @return the SP display name
+     */
+    public String getDisplayName() {
+      return this.displayName;
+    }
+
+    /**
+     * Assigns the SP display name.
+     *
+     * @param displayName the SP display name
+     */
+    public void setDisplayName(final String displayName) {
+      this.displayName = displayName;
+    }
+
+    /**
+     * Gets the SP logotype URL.
+     *
+     * @return the SP logotype URL
+     */
+    public String getLogoUrl() {
+      return this.logoUrl;
+    }
+
+    /**
+     * Assigns the SP logotype URL.
+     *
+     * @param logoUrl the SP logotype URL
+     */
+    public void setLogoUrl(final String logoUrl) {
+      this.logoUrl = logoUrl;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(final Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || this.getClass() != o.getClass()) {
+        return false;
+      }
+      final SpInfo that = (SpInfo) o;
+      return Objects.equals(this.displayName, that.displayName) && Objects.equals(this.logoUrl, that.logoUrl);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+      return Objects.hash(this.displayName, this.logoUrl);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+      return "displayName=" + this.displayName + ", logoUrl=" + this.logoUrl;
+    }
   }
 
 }

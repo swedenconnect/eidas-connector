@@ -17,13 +17,14 @@ package se.swedenconnect.eidas.connector.authn;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Status;
 import org.opensaml.saml.saml2.core.StatusCode;
 import org.opensaml.saml.saml2.core.StatusMessage;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -96,8 +97,10 @@ import java.util.UUID;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticationProvider {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(EidasAuthenticationProvider.class);
 
   /** The authentication path, i.e., where the SAML engine should direct the user for authentication. */
   public static final String AUTHN_PATH = "/extauth";

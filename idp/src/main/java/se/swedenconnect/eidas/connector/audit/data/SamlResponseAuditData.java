@@ -18,8 +18,6 @@ package se.swedenconnect.eidas.connector.audit.data;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
 import org.opensaml.saml.saml2.core.StatusCode;
@@ -43,40 +41,136 @@ public class SamlResponseAuditData extends ConnectorAuditData {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The Response ID. */
-  @Getter
-  @Setter
   @JsonProperty(value = "id")
   private String id;
 
   /** The ID matching the AuthnRequest ID. */
-  @Getter
-  @Setter
   @JsonProperty(value = "in-response-to")
   private String inResponseTo;
 
   /** The status. */
-  @Getter
-  @Setter
   @JsonProperty(value = "status")
   private SamlStatus status;
 
   /** The response issuance time. */
-  @Getter
-  @Setter
   @JsonProperty(value = "issued-at")
   private Instant issuedAt;
 
   /** The destination, i.e., where the response is being sent. */
-  @Getter
-  @Setter
   @JsonProperty(value = "destination")
   private String destination;
 
   /** Tells whether the response is signed. */
-  @Getter
-  @Setter
   @JsonProperty(value = "is-signed")
   private boolean signed;
+
+  /**
+   * Gets the Response ID.
+   *
+   * @return the Response ID
+   */
+  public String getId() {
+    return this.id;
+  }
+
+  /**
+   * Assigns the Response ID.
+   *
+   * @param id the Response ID
+   */
+  public void setId(final String id) {
+    this.id = id;
+  }
+
+  /**
+   * Gets the ID matching the AuthnRequest ID.
+   *
+   * @return the ID matching the AuthnRequest ID
+   */
+  public String getInResponseTo() {
+    return this.inResponseTo;
+  }
+
+  /**
+   * Assigns the ID matching the AuthnRequest ID.
+   *
+   * @param inResponseTo the ID matching the AuthnRequest ID
+   */
+  public void setInResponseTo(final String inResponseTo) {
+    this.inResponseTo = inResponseTo;
+  }
+
+  /**
+   * Gets the status.
+   *
+   * @return the status
+   */
+  public SamlStatus getStatus() {
+    return this.status;
+  }
+
+  /**
+   * Assigns the status.
+   *
+   * @param status the status
+   */
+  public void setStatus(final SamlStatus status) {
+    this.status = status;
+  }
+
+  /**
+   * Gets the response issuance time.
+   *
+   * @return the response issuance time
+   */
+  public Instant getIssuedAt() {
+    return this.issuedAt;
+  }
+
+  /**
+   * Assigns the response issuance time.
+   *
+   * @param issuedAt the response issuance time
+   */
+  public void setIssuedAt(final Instant issuedAt) {
+    this.issuedAt = issuedAt;
+  }
+
+  /**
+   * Gets the destination, i.e., where the response is being sent.
+   *
+   * @return the destination, i.e., where the response is being sent
+   */
+  public String getDestination() {
+    return this.destination;
+  }
+
+  /**
+   * Assigns the destination, i.e., where the response is being sent.
+   *
+   * @param destination the destination, i.e., where the response is being sent
+   */
+  public void setDestination(final String destination) {
+    this.destination = destination;
+  }
+
+  /**
+   * Gets whether the response is signed.
+   *
+   * @return whether the response is signed
+   */
+  public boolean isSigned() {
+    return this.signed;
+  }
+
+  /**
+   * Assigns whether the response is signed.
+   *
+   * @param signed whether the response is signed
+   */
+  public void setSigned(final boolean signed) {
+    this.signed = signed;
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -134,22 +228,70 @@ public class SamlResponseAuditData extends ConnectorAuditData {
     private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
     /** The main status code. */
-    @Getter
-    @Setter
     @JsonProperty(value = "code")
     private String statusCode;
 
     /** The subordinate status code. */
-    @Getter
-    @Setter
     @JsonProperty(value = "subordinate-code")
     private String subordinateStatusCode;
 
     /** The status message. */
-    @Getter
-    @Setter
     @JsonProperty(value = "message")
     private String statusMessage;
+
+    /**
+     * Gets the main status code.
+     *
+     * @return the main status code
+     */
+    public String getStatusCode() {
+      return this.statusCode;
+    }
+
+    /**
+     * Assigns the main status code.
+     *
+     * @param statusCode the main status code
+     */
+    public void setStatusCode(final String statusCode) {
+      this.statusCode = statusCode;
+    }
+
+    /**
+     * Gets the subordinate status code.
+     *
+     * @return the subordinate status code
+     */
+    public String getSubordinateStatusCode() {
+      return this.subordinateStatusCode;
+    }
+
+    /**
+     * Assigns the subordinate status code.
+     *
+     * @param subordinateStatusCode the subordinate status code
+     */
+    public void setSubordinateStatusCode(final String subordinateStatusCode) {
+      this.subordinateStatusCode = subordinateStatusCode;
+    }
+
+    /**
+     * Gets the status message.
+     *
+     * @return the status message
+     */
+    public String getStatusMessage() {
+      return this.statusMessage;
+    }
+
+    /**
+     * Assigns the status message.
+     *
+     * @param statusMessage the status message
+     */
+    public void setStatusMessage(final String statusMessage) {
+      this.statusMessage = statusMessage;
+    }
 
     /** {@inheritDoc} */
     @Override

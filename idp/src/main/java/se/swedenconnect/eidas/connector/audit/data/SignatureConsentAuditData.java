@@ -17,8 +17,6 @@ package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Getter;
-import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.SignatureConsentEvent;
 
@@ -29,8 +27,6 @@ import java.io.Serial;
  *
  * @author Martin Lindström
  */
-@Setter
-@Getter
 public class SignatureConsentAuditData extends ConnectorAuditData {
 
   @Serial
@@ -43,6 +39,42 @@ public class SignatureConsentAuditData extends ConnectorAuditData {
   /** The user identity (personal identifier) of the user that consented/rejected the signature. */
   @JsonProperty("user")
   private String user;
+
+  /**
+   * Gets whether the user consented to the signature.
+   *
+   * @return whether the user consented to the signature
+   */
+  public boolean isSignatureConsented() {
+    return this.signatureConsented;
+  }
+
+  /**
+   * Assigns whether the user consented to the signature.
+   *
+   * @param signatureConsented whether the user consented to the signature
+   */
+  public void setSignatureConsented(final boolean signatureConsented) {
+    this.signatureConsented = signatureConsented;
+  }
+
+  /**
+   * Gets the user identity (personal identifier) of the user that consented/rejected the signature.
+   *
+   * @return the user identity (personal identifier) of the user that consented/rejected the signature
+   */
+  public String getUser() {
+    return this.user;
+  }
+
+  /**
+   * Assigns the user identity (personal identifier) of the user that consented/rejected the signature.
+   *
+   * @param user the user identity (personal identifier) of the user that consented/rejected the signature
+   */
+  public void setUser(final String user) {
+    this.user = user;
+  }
 
   /** {@inheritDoc} */
   @Override

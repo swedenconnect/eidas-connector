@@ -15,9 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * Represents a country when used in views.
  *
@@ -25,17 +22,12 @@ import lombok.Setter;
  */
 public class UiCountry implements Comparable<UiCountry> {
 
-  @Getter
   private final String code;
 
-  @Getter
   private final String name;
 
-  @Getter
   private final boolean realCountry;
 
-  @Getter
-  @Setter
   private boolean disabled = false;
 
   public UiCountry(final String code, final String name) {
@@ -46,6 +38,51 @@ public class UiCountry implements Comparable<UiCountry> {
     this.code = code;
     this.name = name;
     this.realCountry = realCountry;
+  }
+
+  /**
+   * Gets the country code.
+   *
+   * @return the country code
+   */
+  public String getCode() {
+    return this.code;
+  }
+
+  /**
+   * Gets the country display name.
+   *
+   * @return the country name
+   */
+  public String getName() {
+    return this.name;
+  }
+
+  /**
+   * Tells whether this is a real country.
+   *
+   * @return {@code true} if this is a real country, and {@code false} otherwise
+   */
+  public boolean isRealCountry() {
+    return this.realCountry;
+  }
+
+  /**
+   * Tells whether the country is disabled.
+   *
+   * @return {@code true} if the country is disabled, and {@code false} otherwise
+   */
+  public boolean isDisabled() {
+    return this.disabled;
+  }
+
+  /**
+   * Assigns whether the country is disabled.
+   *
+   * @param disabled whether the country is disabled
+   */
+  public void setDisabled(final boolean disabled) {
+    this.disabled = disabled;
   }
 
   public String getFlag() {

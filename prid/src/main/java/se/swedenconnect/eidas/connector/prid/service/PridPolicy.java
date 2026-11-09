@@ -15,10 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.prid.service;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
 import java.util.Map;
 
 /**
@@ -26,12 +22,9 @@ import java.util.Map;
  *
  * @author Martin Lindström
  */
-@ToString
 public class PridPolicy {
 
   /** The policy map. */
-  @Getter
-  @Setter
   private Map<String, CountryPolicy> policy;
 
   /**
@@ -46,6 +39,24 @@ public class PridPolicy {
    * @param policy the policy
    */
   public PridPolicy(final Map<String, CountryPolicy> policy) {
+    this.policy = policy;
+  }
+
+  /**
+   * Gets the policy map.
+   *
+   * @return the policy map
+   */
+  public Map<String, CountryPolicy> getPolicy() {
+    return this.policy;
+  }
+
+  /**
+   * Assigns the policy map.
+   *
+   * @param policy the policy map
+   */
+  public void setPolicy(final Map<String, CountryPolicy> policy) {
     this.policy = policy;
   }
 
@@ -66,6 +77,12 @@ public class PridPolicy {
    */
   public boolean isEmpty() {
     return this.policy == null || this.policy.isEmpty();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String toString() {
+    return "policy=" + this.getPolicy();
   }
 
 }

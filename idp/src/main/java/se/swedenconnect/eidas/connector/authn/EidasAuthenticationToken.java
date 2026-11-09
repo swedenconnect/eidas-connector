@@ -16,9 +16,6 @@
 package se.swedenconnect.eidas.connector.authn;
 
 import jakarta.annotation.Nullable;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.shared.xml.SerializeSupport;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Assertion;
@@ -29,6 +26,8 @@ import org.opensaml.saml.saml2.core.AuthnContext;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnStatement;
 import org.opensaml.saml.saml2.core.Issuer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
@@ -59,22 +58,21 @@ import java.util.function.Predicate;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class EidasAuthenticationToken extends AbstractAuthenticationToken {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(EidasAuthenticationToken.class);
 
   @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The ID for the response. */
-  @Getter
   private final String responseId;
 
   /** The InResponseTo attribute of the response. */
-  @Getter
   private final String inResponseTo;
 
   /** The issue instant of the response. */
-  @Getter
   private final Instant responseIssueInstant;
 
   /** The SAML assertion. */
@@ -84,21 +82,15 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   private final List<GenericAttribute<?>> attributes = new ArrayList<>();
 
   /** The corresponding request. */
-  @Getter
   private final EidasAuthnRequest authnRequest;
 
   /** Was the signature consented by the user? */
-  @Setter
-  @Getter
   private boolean signatureConsented = false;
 
   /** The Swedish eID authentication context class reference. */
-  @Getter
-  @Setter
   private String swedishEidAuthnContextClassRef;
 
   /** For logging. */
-  @Getter
   private final String logString;
 
   /** The eIDAS person identifier of the user. */
@@ -127,6 +119,87 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
         .filter(Objects::nonNull)
         .findFirst()
         .orElse("unknown");
+  }
+
+  /**
+   * Gets the ID for the response.
+   *
+   * @return the response ID
+   */
+  public String getResponseId() {
+    return this.responseId;
+  }
+
+  /**
+   * Gets the InResponseTo attribute of the response.
+   *
+   * @return the InResponseTo attribute
+   */
+  public String getInResponseTo() {
+    return this.inResponseTo;
+  }
+
+  /**
+   * Gets the issue instant of the response.
+   *
+   * @return the response issue instant
+   */
+  public Instant getResponseIssueInstant() {
+    return this.responseIssueInstant;
+  }
+
+  /**
+   * Gets the corresponding request.
+   *
+   * @return the eIDAS authentication request
+   */
+  public EidasAuthnRequest getAuthnRequest() {
+    return this.authnRequest;
+  }
+
+  /**
+   * Tells whether the signature was consented by the user.
+   *
+   * @return {@code true} if the signature was consented, and {@code false} otherwise
+   */
+  public boolean isSignatureConsented() {
+    return this.signatureConsented;
+  }
+
+  /**
+   * Assigns whether the signature was consented by the user.
+   *
+   * @param signatureConsented whether the signature was consented
+   */
+  public void setSignatureConsented(final boolean signatureConsented) {
+    this.signatureConsented = signatureConsented;
+  }
+
+  /**
+   * Gets the Swedish eID authentication context class reference.
+   *
+   * @return the Swedish eID authentication context class reference
+   */
+  public String getSwedishEidAuthnContextClassRef() {
+    return this.swedishEidAuthnContextClassRef;
+  }
+
+  /**
+   * Assigns the Swedish eID authentication context class reference.
+   *
+   * @param swedishEidAuthnContextClassRef the Swedish eID authentication context class reference
+   */
+  public void setSwedishEidAuthnContextClassRef(final String swedishEidAuthnContextClassRef) {
+    this.swedishEidAuthnContextClassRef = swedishEidAuthnContextClassRef;
+  }
+
+  /**
+   * Gets the string used for logging.
+   *
+   * @return the log string
+   */
+  public String getLogString() {
+    return this.logString;
   }
 
   /**

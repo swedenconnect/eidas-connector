@@ -18,10 +18,6 @@ package se.swedenconnect.eidas.connector.audit.data;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AuthenticatingAuthority;
@@ -56,76 +52,268 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The assertion ID. */
-  @Getter
-  @Setter
   @JsonProperty(value = "id")
   private String id;
 
   /** Holds the ID for the corresponding AuthnRequest. */
-  @Getter
-  @Setter
   @JsonProperty(value = "in-response-to")
   private String inResponseTo;
 
   /** Whether the assertion is signed. */
-  @Getter
-  @Setter
   @JsonProperty(value = "is-signed")
   private boolean signed;
 
   /** Whether the assertion is encrypted. */
-  @Getter
-  @Setter
   @JsonProperty(value = "is-encrypted")
   private boolean encrypted;
 
   /** The issuance time for the assertion. */
-  @Getter
-  @Setter
   @JsonProperty(value = "issued-at")
   private Instant issuedAt;
 
   /** The entityID of the issuing entity. */
-  @Getter
-  @Setter
   @JsonProperty(value = "issuer")
   private String issuer;
 
   /** The authentication instant. */
-  @Getter
-  @Setter
   @JsonProperty(value = "authn-instant")
   private Instant authnInstant;
 
   /** The subject's (assigned) ID. */
-  @Getter
-  @Setter
   @JsonProperty(value = "subject-id")
   private String subjectId;
 
   /** The subject locality (IP). */
-  @Getter
-  @Setter
   @JsonProperty(value = "subject-locality")
   private String subjectLocality;
 
   /** The LoA URI (level of assurance). */
-  @Getter
-  @Setter
   @JsonProperty(value = "authn-context-class-ref")
   private String authnContextClassRef;
 
   /** Optional ID for authenticating authority. */
-  @Getter
-  @Setter
   @JsonProperty(value = "authn-authority")
   private String authnAuthority;
 
   /** The SAML attributes. */
-  @Getter
-  @Setter
   @JsonProperty(value = "attributes")
   private List<SamlAttribute> attributes;
+
+  /**
+   * Gets the assertion ID.
+   *
+   * @return the assertion ID
+   */
+  public String getId() {
+    return this.id;
+  }
+
+  /**
+   * Assigns the assertion ID.
+   *
+   * @param id the assertion ID
+   */
+  public void setId(final String id) {
+    this.id = id;
+  }
+
+  /**
+   * Gets the ID for the corresponding AuthnRequest.
+   *
+   * @return the ID for the corresponding AuthnRequest
+   */
+  public String getInResponseTo() {
+    return this.inResponseTo;
+  }
+
+  /**
+   * Assigns the ID for the corresponding AuthnRequest.
+   *
+   * @param inResponseTo the ID for the corresponding AuthnRequest
+   */
+  public void setInResponseTo(final String inResponseTo) {
+    this.inResponseTo = inResponseTo;
+  }
+
+  /**
+   * Gets whether the assertion is signed.
+   *
+   * @return whether the assertion is signed
+   */
+  public boolean isSigned() {
+    return this.signed;
+  }
+
+  /**
+   * Assigns whether the assertion is signed.
+   *
+   * @param signed whether the assertion is signed
+   */
+  public void setSigned(final boolean signed) {
+    this.signed = signed;
+  }
+
+  /**
+   * Gets whether the assertion is encrypted.
+   *
+   * @return whether the assertion is encrypted
+   */
+  public boolean isEncrypted() {
+    return this.encrypted;
+  }
+
+  /**
+   * Assigns whether the assertion is encrypted.
+   *
+   * @param encrypted whether the assertion is encrypted
+   */
+  public void setEncrypted(final boolean encrypted) {
+    this.encrypted = encrypted;
+  }
+
+  /**
+   * Gets the issuance time for the assertion.
+   *
+   * @return the issuance time for the assertion
+   */
+  public Instant getIssuedAt() {
+    return this.issuedAt;
+  }
+
+  /**
+   * Assigns the issuance time for the assertion.
+   *
+   * @param issuedAt the issuance time for the assertion
+   */
+  public void setIssuedAt(final Instant issuedAt) {
+    this.issuedAt = issuedAt;
+  }
+
+  /**
+   * Gets the entityID of the issuing entity.
+   *
+   * @return the entityID of the issuing entity
+   */
+  public String getIssuer() {
+    return this.issuer;
+  }
+
+  /**
+   * Assigns the entityID of the issuing entity.
+   *
+   * @param issuer the entityID of the issuing entity
+   */
+  public void setIssuer(final String issuer) {
+    this.issuer = issuer;
+  }
+
+  /**
+   * Gets the authentication instant.
+   *
+   * @return the authentication instant
+   */
+  public Instant getAuthnInstant() {
+    return this.authnInstant;
+  }
+
+  /**
+   * Assigns the authentication instant.
+   *
+   * @param authnInstant the authentication instant
+   */
+  public void setAuthnInstant(final Instant authnInstant) {
+    this.authnInstant = authnInstant;
+  }
+
+  /**
+   * Gets the subject's (assigned) ID.
+   *
+   * @return the subject's (assigned) ID
+   */
+  public String getSubjectId() {
+    return this.subjectId;
+  }
+
+  /**
+   * Assigns the subject's (assigned) ID.
+   *
+   * @param subjectId the subject's (assigned) ID
+   */
+  public void setSubjectId(final String subjectId) {
+    this.subjectId = subjectId;
+  }
+
+  /**
+   * Gets the subject locality (IP).
+   *
+   * @return the subject locality (IP)
+   */
+  public String getSubjectLocality() {
+    return this.subjectLocality;
+  }
+
+  /**
+   * Assigns the subject locality (IP).
+   *
+   * @param subjectLocality the subject locality (IP)
+   */
+  public void setSubjectLocality(final String subjectLocality) {
+    this.subjectLocality = subjectLocality;
+  }
+
+  /**
+   * Gets the LoA URI (level of assurance).
+   *
+   * @return the LoA URI (level of assurance)
+   */
+  public String getAuthnContextClassRef() {
+    return this.authnContextClassRef;
+  }
+
+  /**
+   * Assigns the LoA URI (level of assurance).
+   *
+   * @param authnContextClassRef the LoA URI (level of assurance)
+   */
+  public void setAuthnContextClassRef(final String authnContextClassRef) {
+    this.authnContextClassRef = authnContextClassRef;
+  }
+
+  /**
+   * Gets the optional ID for authenticating authority.
+   *
+   * @return the optional ID for authenticating authority
+   */
+  public String getAuthnAuthority() {
+    return this.authnAuthority;
+  }
+
+  /**
+   * Assigns the optional ID for authenticating authority.
+   *
+   * @param authnAuthority the optional ID for authenticating authority
+   */
+  public void setAuthnAuthority(final String authnAuthority) {
+    this.authnAuthority = authnAuthority;
+  }
+
+  /**
+   * Gets the SAML attributes.
+   *
+   * @return the SAML attributes
+   */
+  public List<SamlAttribute> getAttributes() {
+    return this.attributes;
+  }
+
+  /**
+   * Assigns the SAML attributes.
+   *
+   * @param attributes the SAML attributes
+   */
+  public void setAttributes(final List<SamlAttribute> attributes) {
+    this.attributes = attributes;
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -212,24 +400,71 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    * Representation of a SAML attribute.
    */
   @JsonInclude(Include.NON_EMPTY)
-  @AllArgsConstructor
-  @NoArgsConstructor
   public static class SamlAttribute implements Serializable {
 
     @Serial
     private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
     /** The attribute name. */
-    @Getter
-    @Setter
     @JsonProperty(value = "name")
     private String name;
 
     /** The attribute value. */
-    @Getter
-    @Setter
     @JsonProperty(value = "value")
     private String value;
+
+    /**
+     * Default constructor.
+     */
+    public SamlAttribute() {
+    }
+
+    /**
+     * Constructor assigning all fields.
+     *
+     * @param name the attribute name
+     * @param value the attribute value
+     */
+    public SamlAttribute(final String name, final String value) {
+      this.name = name;
+      this.value = value;
+    }
+
+    /**
+     * Gets the attribute name.
+     *
+     * @return the attribute name
+     */
+    public String getName() {
+      return this.name;
+    }
+
+    /**
+     * Assigns the attribute name.
+     *
+     * @param name the attribute name
+     */
+    public void setName(final String name) {
+      this.name = name;
+    }
+
+    /**
+     * Gets the attribute value.
+     *
+     * @return the attribute value
+     */
+    public String getValue() {
+      return this.value;
+    }
+
+    /**
+     * Assigns the attribute value.
+     *
+     * @param value the attribute value
+     */
+    public void setValue(final String value) {
+      this.value = value;
+    }
 
     /** {@inheritDoc} */
     @Override

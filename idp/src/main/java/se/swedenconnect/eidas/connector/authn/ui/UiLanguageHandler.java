@@ -26,7 +26,8 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
 
 /**
@@ -34,8 +35,10 @@ import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Languag
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class UiLanguageHandler {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(UiLanguageHandler.class);
 
   /** Supported languages. */
   private final List<Language> languages;

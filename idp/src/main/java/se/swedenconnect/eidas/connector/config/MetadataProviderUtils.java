@@ -16,7 +16,6 @@
 package se.swedenconnect.eidas.connector.config;
 
 import jakarta.annotation.Nonnull;
-import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.shared.component.ComponentInitializationException;
 import net.shibboleth.shared.httpclient.HttpClientBuilder;
 import net.shibboleth.shared.httpclient.HttpClientSupport;
@@ -26,6 +25,8 @@ import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ssl.NoSuchSslBundleException;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.core.io.FileSystemResource;
@@ -55,8 +56,10 @@ import java.util.Optional;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class MetadataProviderUtils {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(MetadataProviderUtils.class);
 
   /**
    * Based on an {@link EuMetadataProperties} a metadata provider is set up.

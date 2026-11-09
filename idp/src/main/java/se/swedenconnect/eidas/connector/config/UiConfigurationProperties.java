@@ -15,9 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -27,6 +24,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Configuration properties for UI settings.
@@ -57,43 +55,99 @@ public class UiConfigurationProperties implements InitializingBean {
   /**
    * The UI language settings.
    */
-  @Getter
   private final List<Language> languages = new ArrayList<>();
 
   /**
    * The cookie for storing the selected country (in between sessions).
    */
   @NestedConfigurationProperty
-  @Getter
   private final Cookie selectedCountryCookie = new Cookie();
 
   /**
    * The cookie for storing the selected country (during session).
    */
   @NestedConfigurationProperty
-  @Getter
   private final Cookie selectedCountrySessionCookie = new Cookie();
 
   /**
    * The cookie for remembering consent to access IdM record (during session).
    */
   @NestedConfigurationProperty
-  @Getter
   private final Cookie idmConsentSessionCookie = new Cookie();
 
   /**
    * The cookie that controls whether the IdM banner (at the country selection page) should be hidden.
    */
   @NestedConfigurationProperty
-  @Getter
   private final Cookie idmHideBannerCookie = new Cookie();
 
   /**
    * The accessibility report URL.
    */
-  @Getter
-  @Setter
   private String accessibilityUrl;
+
+  /**
+   * Gets the UI language settings.
+   *
+   * @return the UI language settings
+   */
+  public List<Language> getLanguages() {
+    return this.languages;
+  }
+
+  /**
+   * Gets the cookie for storing the selected country (in between sessions).
+   *
+   * @return the cookie for storing the selected country (in between sessions)
+   */
+  public Cookie getSelectedCountryCookie() {
+    return this.selectedCountryCookie;
+  }
+
+  /**
+   * Gets the cookie for storing the selected country (during session).
+   *
+   * @return the cookie for storing the selected country (during session)
+   */
+  public Cookie getSelectedCountrySessionCookie() {
+    return this.selectedCountrySessionCookie;
+  }
+
+  /**
+   * Gets the cookie for remembering consent to access IdM record (during session).
+   *
+   * @return the cookie for remembering consent to access IdM record (during session)
+   */
+  public Cookie getIdmConsentSessionCookie() {
+    return this.idmConsentSessionCookie;
+  }
+
+  /**
+   * Gets the cookie that controls whether the IdM banner (at the country selection page) should be hidden.
+   *
+   * @return the cookie that controls whether the IdM banner (at the country selection page) should be hidden
+   */
+  public Cookie getIdmHideBannerCookie() {
+    return this.idmHideBannerCookie;
+  }
+
+  /**
+   * Gets the accessibility report URL.
+   *
+   * @return the accessibility report URL
+   */
+  public String getAccessibilityUrl() {
+    return this.accessibilityUrl;
+  }
+
+  /**
+   * Assigns the accessibility report URL.
+   *
+   * @param accessibilityUrl the accessibility report URL
+   */
+  public void setAccessibilityUrl(final String accessibilityUrl) {
+    this.accessibilityUrl = accessibilityUrl;
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -142,7 +196,6 @@ public class UiConfigurationProperties implements InitializingBean {
   /**
    * UI language settings.
    */
-  @Data
   public static class Language implements InitializingBean {
 
     /**
@@ -155,6 +208,42 @@ public class UiConfigurationProperties implements InitializingBean {
      */
     private String text;
 
+    /**
+     * Gets the language tag.
+     *
+     * @return the language tag
+     */
+    public String getTag() {
+      return this.tag;
+    }
+
+    /**
+     * Assigns the language tag.
+     *
+     * @param tag the language tag
+     */
+    public void setTag(final String tag) {
+      this.tag = tag;
+    }
+
+    /**
+     * Gets the text associated with the language tag.
+     *
+     * @return the text associated with the language tag
+     */
+    public String getText() {
+      return this.text;
+    }
+
+    /**
+     * Assigns the text associated with the language tag.
+     *
+     * @param text the text associated with the language tag
+     */
+    public void setText(final String text) {
+      this.text = text;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void afterPropertiesSet() {
@@ -162,12 +251,36 @@ public class UiConfigurationProperties implements InitializingBean {
       Assert.hasText(this.text, "Missing ui.languages[].text");
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(final Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || this.getClass() != o.getClass()) {
+        return false;
+      }
+      final Language other = (Language) o;
+      return Objects.equals(this.tag, other.tag) && Objects.equals(this.text, other.text);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+      return Objects.hash(this.tag, this.text);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+      return "tag=" + this.tag + ", text=" + this.text;
+    }
+
   }
 
   /**
    * Cookie settings.
    */
-  @Data
   public static class Cookie {
 
     /**
@@ -184,6 +297,89 @@ public class UiConfigurationProperties implements InitializingBean {
      * Cookie path.
      */
     private String path;
+
+    /**
+     * Gets the cookie name.
+     *
+     * @return the cookie name
+     */
+    public String getName() {
+      return this.name;
+    }
+
+    /**
+     * Assigns the cookie name.
+     *
+     * @param name the cookie name
+     */
+    public void setName(final String name) {
+      this.name = name;
+    }
+
+    /**
+     * Gets the cookie domain.
+     *
+     * @return the cookie domain
+     */
+    public String getDomain() {
+      return this.domain;
+    }
+
+    /**
+     * Assigns the cookie domain.
+     *
+     * @param domain the cookie domain
+     */
+    public void setDomain(final String domain) {
+      this.domain = domain;
+    }
+
+    /**
+     * Gets the cookie path.
+     *
+     * @return the cookie path
+     */
+    public String getPath() {
+      return this.path;
+    }
+
+    /**
+     * Assigns the cookie path.
+     *
+     * @param path the cookie path
+     */
+    public void setPath(final String path) {
+      this.path = path;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(final Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || this.getClass() != o.getClass()) {
+        return false;
+      }
+      final Cookie other = (Cookie) o;
+      return Objects.equals(this.name, other.name)
+          && Objects.equals(this.domain, other.domain)
+          && Objects.equals(this.path, other.path);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+      return Objects.hash(this.name, this.domain, this.path);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+      return "name=" + this.name
+          + ", domain=" + this.domain
+          + ", path=" + this.path;
+    }
   }
 
 }

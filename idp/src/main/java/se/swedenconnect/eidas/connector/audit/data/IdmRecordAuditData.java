@@ -16,8 +16,6 @@
 package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.IdentityMatchingRecordEvent;
 
@@ -28,8 +26,6 @@ import java.io.Serial;
  *
  * @author Martin Lindström
  */
-@Setter
-@Getter
 public class IdmRecordAuditData extends ConnectorAuditData {
 
   @Serial
@@ -46,6 +42,60 @@ public class IdmRecordAuditData extends ConnectorAuditData {
   /** The unique ID for the Identity Matching record. */
   @JsonProperty("record-id")
   private String recordId;
+
+  /**
+   * Gets the user identity (eIDAS personal identifier) of the user.
+   *
+   * @return the user identity (eIDAS personal identifier) of the user
+   */
+  public String getUser() {
+    return this.user;
+  }
+
+  /**
+   * Assigns the user identity (eIDAS personal identifier) of the user.
+   *
+   * @param user the user identity (eIDAS personal identifier) of the user
+   */
+  public void setUser(final String user) {
+    this.user = user;
+  }
+
+  /**
+   * Gets the Swedish identity of the user.
+   *
+   * @return the Swedish identity of the user
+   */
+  public String getSwedishId() {
+    return this.swedishId;
+  }
+
+  /**
+   * Assigns the Swedish identity of the user.
+   *
+   * @param swedishId the Swedish identity of the user
+   */
+  public void setSwedishId(final String swedishId) {
+    this.swedishId = swedishId;
+  }
+
+  /**
+   * Gets the unique ID for the Identity Matching record.
+   *
+   * @return the unique ID for the Identity Matching record
+   */
+  public String getRecordId() {
+    return this.recordId;
+  }
+
+  /**
+   * Assigns the unique ID for the Identity Matching record.
+   *
+   * @param recordId the unique ID for the Identity Matching record
+   */
+  public void setRecordId(final String recordId) {
+    this.recordId = recordId;
+  }
 
   /** {@inheritDoc} */
   @Override

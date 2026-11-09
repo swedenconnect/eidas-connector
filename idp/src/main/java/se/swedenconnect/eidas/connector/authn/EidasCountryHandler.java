@@ -15,8 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
-import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.saml2.core.StatusCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
@@ -35,8 +36,10 @@ import java.util.Objects;
  * @author Martin Lindström
  */
 @Service
-@Slf4j
 public class EidasCountryHandler {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(EidasCountryHandler.class);
 
   /** Prefix URI for country representation. */
   public static final String COUNTRY_URI_PREFIX = "http://id.swedenconnect.se/eidas/1.0/proxy-service/";

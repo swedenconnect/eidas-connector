@@ -15,7 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the "special-characters-eIDAS" PRID calculation algorithm as described in section 2.3.3 of the
@@ -25,8 +26,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class PridGenBase64Eidas extends AbstractPridGenerator {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(PridGenBase64Eidas.class);
 
   /** The algorithm name that this instance implements. */
   public static final String ALGORITHM_NAME = "special-characters-eIDAS";

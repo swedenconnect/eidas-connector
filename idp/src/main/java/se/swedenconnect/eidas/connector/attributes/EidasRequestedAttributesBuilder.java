@@ -15,11 +15,12 @@
  */
 package se.swedenconnect.eidas.connector.attributes;
 
-import lombok.extern.slf4j.Slf4j;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.swedenconnect.opensaml.eidas.ext.RequestedAttribute;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
 import se.swedenconnect.spring.authnserver.saml.attributes.SamlRequestedAttribute;
@@ -57,8 +58,10 @@ import java.util.Objects;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class EidasRequestedAttributesBuilder {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(EidasRequestedAttributesBuilder.class);
 
   /** The eIDAS minimum data set for natural persons. */
   public static final List<EidasAttributeTemplate> NATURAL_PERSON_MINIMUM_DATASET = List.of(

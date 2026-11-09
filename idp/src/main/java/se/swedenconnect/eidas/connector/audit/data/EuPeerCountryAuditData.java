@@ -17,8 +17,6 @@ package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nonnull;
-import lombok.Getter;
-import lombok.Setter;
 import org.opensaml.saml.saml2.core.Assertion;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
@@ -35,10 +33,26 @@ public class EuPeerCountryAuditData extends ConnectorAuditData {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The receiving country. */
-  @Getter
-  @Setter
   @JsonProperty("country")
   private String country;
+
+  /**
+   * Gets the receiving country.
+   *
+   * @return the receiving country
+   */
+  public String getCountry() {
+    return this.country;
+  }
+
+  /**
+   * Assigns the receiving country.
+   *
+   * @param country the receiving country
+   */
+  public void setCountry(final String country) {
+    this.country = country;
+  }
 
   /** {@inheritDoc} */
   @Override

@@ -15,8 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.saml2.core.Attribute;
 import se.swedenconnect.eidas.connector.attributes.EidasAttributeConverter;
@@ -35,8 +33,6 @@ import java.util.stream.Stream;
  *
  * @author Martin Lindström
  */
-@EqualsAndHashCode(callSuper = true)
-@Data
 public class SignUiModel extends BaseUiModel {
 
   /**
@@ -50,9 +46,72 @@ public class SignUiModel extends BaseUiModel {
   private UserInfo userInfo;
 
   /**
+   * Gets the sign message.
+   *
+   * @return the sign message
+   */
+  public String getTextMessage() {
+    return this.textMessage;
+  }
+
+  /**
+   * Assigns the sign message.
+   *
+   * @param textMessage the sign message
+   */
+  public void setTextMessage(final String textMessage) {
+    this.textMessage = textMessage;
+  }
+
+  /**
+   * Gets the information about the user that signs.
+   *
+   * @return the user info
+   */
+  public UserInfo getUserInfo() {
+    return this.userInfo;
+  }
+
+  /**
+   * Assigns the information about the user that signs.
+   *
+   * @param userInfo the user info
+   */
+  public void setUserInfo(final UserInfo userInfo) {
+    this.userInfo = userInfo;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || this.getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    final SignUiModel that = (SignUiModel) o;
+    return Objects.equals(this.textMessage, that.textMessage) && Objects.equals(this.userInfo, that.userInfo);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), this.textMessage, this.userInfo);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String toString() {
+    return "textMessage=" + this.textMessage + ", userInfo=[" + this.userInfo + "]";
+  }
+
+  /**
    * User info.
    */
-  @Data
   public static class UserInfo {
 
     /**
@@ -129,6 +188,106 @@ public class SignUiModel extends BaseUiModel {
         _name.append(surName);
       }
       this.name = !_name.isEmpty() ? _name.toString() : null;
+    }
+
+    /**
+     * Gets the display name.
+     *
+     * @return the display name
+     */
+    public String getName() {
+      return this.name;
+    }
+
+    /**
+     * Assigns the display name.
+     *
+     * @param name the display name
+     */
+    public void setName(final String name) {
+      this.name = name;
+    }
+
+    /**
+     * Gets the Swedish personal identity number.
+     *
+     * @return the Swedish personal identity number
+     */
+    public String getSwedishId() {
+      return this.swedishId;
+    }
+
+    /**
+     * Assigns the Swedish personal identity number.
+     *
+     * @param swedishId the Swedish personal identity number
+     */
+    public void setSwedishId(final String swedishId) {
+      this.swedishId = swedishId;
+    }
+
+    /**
+     * Gets the date of birth.
+     *
+     * @return the date of birth
+     */
+    public String getDateOfBirth() {
+      return this.dateOfBirth;
+    }
+
+    /**
+     * Assigns the date of birth.
+     *
+     * @param dateOfBirth the date of birth
+     */
+    public void setDateOfBirth(final String dateOfBirth) {
+      this.dateOfBirth = dateOfBirth;
+    }
+
+    /**
+     * Gets the eIDAS person identifier.
+     *
+     * @return the eIDAS person identifier
+     */
+    public String getInternationalId() {
+      return this.internationalId;
+    }
+
+    /**
+     * Assigns the eIDAS person identifier.
+     *
+     * @param internationalId the eIDAS person identifier
+     */
+    public void setInternationalId(final String internationalId) {
+      this.internationalId = internationalId;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(final Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || this.getClass() != o.getClass()) {
+        return false;
+      }
+      final UserInfo that = (UserInfo) o;
+      return Objects.equals(this.name, that.name) && Objects.equals(this.swedishId, that.swedishId)
+          && Objects.equals(this.dateOfBirth, that.dateOfBirth)
+          && Objects.equals(this.internationalId, that.internationalId);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+      return Objects.hash(this.name, this.swedishId, this.dateOfBirth, this.internationalId);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+      return "name=" + this.name + ", swedishId=" + this.swedishId + ", dateOfBirth="
+          + this.dateOfBirth + ", internationalId=" + this.internationalId;
     }
 
     /**

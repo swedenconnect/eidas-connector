@@ -15,8 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.prid.service;
 
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
@@ -43,8 +43,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * The PRID service that knows how to generate PRID attributes based on the PRID policy configuration.
  */
-@Slf4j
 public class PridService implements InitializingBean {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(PridService.class);
 
   /** The resource holding the PRID policy configuration. */
   private final Resource policyResource;
@@ -317,7 +319,6 @@ public class PridService implements InitializingBean {
   /**
    * Represents a validation result for a PRID policy.
    */
-  @ToString
   public static class PridPolicyValidation {
 
     /** The validation errors. */
@@ -364,6 +365,12 @@ public class PridService implements InitializingBean {
      */
     public boolean hasErrors() {
       return !this.errors.isEmpty();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+      return "errors=" + this.getErrors();
     }
   }
 
