@@ -15,12 +15,11 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
-import java.util.Optional;
-
+import org.springframework.context.i18n.LocaleContextHolder;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 import se.swedenconnect.eidas.connector.authn.ui.SignUiModel.UserInfo;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
-import se.swedenconnect.spring.saml.idp.extensions.SignatureMessageExtension;
+import se.swedenconnect.eidas.connector.idp.SignMessageProcessor;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 /**
  * Factory for creating model objects for the sign consent view.
@@ -42,21 +41,19 @@ public class SignUiModelFactory extends AbstractUiModelFactory<SignUiModel> {
   /**
    * Creates a {@link SignUiModel}.
    *
-   * @param inputToken the SAML input token
+   * @param inputToken the input token
    * @param eidasToken the eIDAS token
    * @return a {@link SignUiModel}
    */
   public SignUiModel createUiModel(
-      final Saml2UserAuthenticationInputToken inputToken, final EidasAuthenticationToken eidasToken) {
+      final UserAuthenticationInputToken inputToken, final EidasAuthenticationToken eidasToken) {
 
     final SignUiModel model = new SignUiModel();
     this.initModel(model, inputToken);
 
-    model.setTextMessage(
-        Optional.ofNullable(inputToken.getAuthnRequirements().getSignatureMessageExtension())
-            .map(SignatureMessageExtension::getProcessedMessage)
-            .orElse(null));
-    model.setUserInfo(new UserInfo(eidasToken.getAttributes()));
+    model.setTextMessage(SignMessageProcessor.toDisplayMessage(
+        inputToken.getAuthnRequirements().getSignMessage(), LocaleContextHolder.getLocale().getLanguage()));
+    model.setUserInfo(new UserInfo(eidasToken));
 
     return model;
   }

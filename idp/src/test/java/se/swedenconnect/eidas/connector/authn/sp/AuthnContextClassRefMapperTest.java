@@ -26,7 +26,7 @@ import se.swedenconnect.eidas.connector.OpenSamlTestBase;
 import se.swedenconnect.opensaml.eidas.common.EidasConstants;
 import se.swedenconnect.opensaml.saml2.core.build.RequestedAuthnContextBuilder;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
-import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
+import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -71,7 +71,7 @@ public class AuthnContextClassRefMapperTest extends OpenSamlTestBase {
               uris, result, requested, supported));
 
     }
-    catch (final Saml2ErrorStatusException e) {
+    catch (final SamlErrorStatusException e) {
       if (success) {
         Assertions.fail("Expected %s %s - requested: %s - supported: %s".formatted(
             comparison, result, requested, supported));
@@ -154,7 +154,7 @@ public class AuthnContextClassRefMapperTest extends OpenSamlTestBase {
           "Expected %s but got %s - eIDAS URI: %s - Requested: %s"
               .formatted(expected, uri, eidasUri, requested));
     }
-    catch (Saml2ErrorStatusException e) {
+    catch (SamlErrorStatusException e) {
       if (expected != null) {
         Assertions.fail(
             "Expected %s but got exception - eIDAS URI: %s - Requested: %s".formatted(expected, eidasUri, requested));
@@ -217,7 +217,7 @@ public class AuthnContextClassRefMapperTest extends OpenSamlTestBase {
                 .map(AuthnContextClassRef::getURI).toList()));
       }
     }
-    catch (final Saml2ErrorStatusException e) {
+    catch (final SamlErrorStatusException e) {
       if (result) {
         Assertions.fail("Expected success. eIDAS URI: %s. RAC: %s %s".formatted(
             eidasUri, requestedContext.getComparison(), requestedContext.getAuthnContextClassRefs().stream()

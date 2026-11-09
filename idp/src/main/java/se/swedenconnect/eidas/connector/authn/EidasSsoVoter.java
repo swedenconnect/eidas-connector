@@ -15,16 +15,16 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
-import org.opensaml.saml.saml2.core.IDPEntry;
-import org.opensaml.saml.saml2.core.Scoping;
 import org.springframework.util.StringUtils;
-import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthentication;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
-import se.swedenconnect.spring.saml.idp.authentication.provider.SsoVoter;
+import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
+import se.swedenconnect.spring.authnserver.attributes.GenericAttribute;
+import se.swedenconnect.spring.authnserver.authentication.AuthenticationRequirements;
+import se.swedenconnect.spring.authnserver.authentication.Requester;
+import se.swedenconnect.spring.authnserver.authentication.UserAuthentication;
+import se.swedenconnect.spring.authnserver.sso.SsoDecision;
+import se.swedenconnect.spring.authnserver.sso.SsoDenialReason;
+import se.swedenconnect.spring.authnserver.sso.SsoVoter;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,42 +39,35 @@ public class EidasSsoVoter implements SsoVoter {
 
   /** {@inheritDoc} */
   @Override
-  public Vote mayReuse(final Saml2UserAuthentication userAuthn, final Saml2UserAuthenticationInputToken token,
-      final Collection<String> allowedAuthnContexts) {
+  public SsoDecision vote(final UserAuthentication previousAuthentication,
+      final AuthenticationRequirements requirements, final Requester requester,
+      final List<String> allowedAuthnContexts) {
 
-    final List<String> requestedCountries =
-        Optional.ofNullable(token.getAuthnRequestToken().getAuthnRequest().getScoping())
-            .map(Scoping::getIDPList)
-            .map(list -> list.getIDPEntrys().stream()
-                .map(IDPEntry::getProviderID)
-                .filter(Objects::nonNull)
-                .filter(p -> p.startsWith(EidasCountryHandler.COUNTRY_URI_PREFIX))
-                .map(p -> p.substring(EidasCountryHandler.COUNTRY_URI_PREFIX.length()))
-                .filter(StringUtils::hasText)
-                .toList())
-            .orElse(Collections.emptyList());
+    final List<String> requestedCountries = requirements.getRequestedAuthnProviders().stream()
+        .filter(Objects::nonNull)
+        .filter(p -> p.startsWith(EidasCountryHandler.COUNTRY_URI_PREFIX))
+        .map(p -> p.substring(EidasCountryHandler.COUNTRY_URI_PREFIX.length()))
+        .filter(StringUtils::hasText)
+        .toList();
 
     if (requestedCountries.isEmpty()) {
-      return Vote.OK;
+      return SsoDecision.allow();
     }
 
-    final String previousCountry = userAuthn.getSaml2UserDetails().getAttributes().stream()
-        .filter(a -> AttributeConstants.ATTRIBUTE_NAME_C.equals(a.getId()))
-        .filter(a -> !a.getValues().isEmpty())
-        .map(a -> (String) a.getValues().getFirst())
-        .findFirst()
+    final String previousCountry = Optional.ofNullable(
+            previousAuthentication.getAuthenticatedUser().getAttribute(AttributeIdentifiers.COUNTRY))
+        .map(GenericAttribute::getStringValues)
+        .filter(v -> !v.isEmpty())
+        .map(List::getFirst)
         .orElse(null);
 
     if (previousCountry == null) {
-      return Vote.DONT_KNOW;
+      return SsoDecision.abstain();
     }
 
-    if (requestedCountries.contains(previousCountry)) {
-      return Vote.OK;
-    }
-    else {
-      return Vote.DENY;
-    }
+    return requestedCountries.contains(previousCountry)
+        ? SsoDecision.allow()
+        : SsoDecision.deny(SsoDenialReason.NOT_ALLOWED);
   }
 
 }

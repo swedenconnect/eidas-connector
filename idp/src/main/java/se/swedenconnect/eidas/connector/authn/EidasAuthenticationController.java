@@ -43,19 +43,23 @@ import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent.NoDis
 import se.swedenconnect.eidas.connector.events.IdentityMatchingConsentEvent;
 import se.swedenconnect.eidas.connector.events.SignatureConsentEvent;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
-import se.swedenconnect.spring.saml.idp.authentication.provider.external.AbstractAuthenticationController;
-import se.swedenconnect.spring.saml.idp.authnrequest.Saml2AuthnRequestAuthenticationToken;
-import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
-import se.swedenconnect.spring.saml.idp.error.UnrecoverableSaml2IdpError;
-import se.swedenconnect.spring.saml.idp.error.UnrecoverableSaml2IdpException;
-import se.swedenconnect.spring.saml.idp.events.Saml2UnrecoverableErrorEvent;
+import se.swedenconnect.spring.authnserver.audit.AuthnEventPublisher;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.authentication.provider.redirect.AbstractAuthenticationController;
+import se.swedenconnect.spring.authnserver.authentication.provider.redirect.RedirectForAuthenticationToken;
+import se.swedenconnect.spring.authnserver.error.CommonUnrecoverableError;
+import se.swedenconnect.spring.authnserver.error.UnrecoverableErrorException;
+import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
 
 import java.util.Optional;
-import java.util.function.Predicate;
 
 /**
  * The authentication controller.
+ * <p>
+ * Every page of the controller carries the identifier of the authentication in progress in the
+ * {@value RedirectForAuthenticationToken#AUTHN_ID_PARAMETER} parameter. The response from the foreign country does
+ * not carry it, so it is added to that request by the {@link EidasAuthnFlowFilter}.
+ * </p>
  *
  * @author Martin Lindström
  */
@@ -71,6 +75,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
   /** Symbolic name for the action parameter value of "cancel". */
   public static final String ACTION_CANCEL = "cancel";
+
+  /** The name of the model attribute holding the identifier of the authentication. */
+  public static final String AUTHN_ID_MODEL_ATTRIBUTE = "authnId";
 
   /** The authentication provider. */
   private final EidasAuthenticationProvider provider;
@@ -104,6 +111,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
   /** The event publisher. */
   private final ApplicationEventPublisher eventPublisher;
+
+  /** For auditing errors that cannot be reported to the Swedish SP. */
+  private final AuthnEventPublisher authnEventPublisher;
 
   /**
    * Constructor.
@@ -142,15 +152,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     this.idmHideBannerCookieGenerator = idmHideBannerCookieGenerator;
     this.countryHandler = countryHandler;
     this.eventPublisher = eventPublisher;
+    this.authnEventPublisher = new AuthnEventPublisher(eventPublisher);
   }
-
-  /**
-   * Tells whether the request is made from a signature service.
-   */
-  private static final Predicate<Saml2UserAuthenticationInputToken> isSignatureService =
-      t -> Optional.ofNullable(t.getAuthnRequestToken())
-          .map(Saml2AuthnRequestAuthenticationToken::isSignatureServicePeer)
-          .orElse(false);
 
   /** {@inheritDoc} */
   @Override
@@ -170,9 +173,10 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   public ModelAndView authenticate(final HttpServletRequest request, final HttpServletResponse response,
       @RequestParam(name = "lang", required = false) final String language) {
 
-    try {
-      final Saml2UserAuthenticationInputToken token = this.getInputToken(request).getAuthnInputToken();
+    final RedirectForAuthenticationToken redirectToken = this.getInputToken(request);
+    final UserAuthenticationInputToken token = redirectToken.getAuthnInputToken();
 
+    try {
       if (language != null) {
         this.uiLanguageHandler.setUiLanguage(request, response, language);
       }
@@ -198,7 +202,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       // If the request is made by a signature service and the selected country is known, we skip
       // the "select country" view.
       //
-      if (isSignatureService.test(token) && selectedCountry != null) {
+      if (SignServiceSsoVoter.isSignatureService(token.getAuthnRequirements()) && selectedCountry != null) {
         if (signalEvent) {
           log.info("Request is from a signature service. Will default to previously selected country: '{}' [{}]",
               selectedCountry, token.getLogString());
@@ -229,6 +233,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       }
 
       final ModelAndView modelAndView = new ModelAndView("country-select");
+      modelAndView.addObject(AUTHN_ID_MODEL_ATTRIBUTE, redirectToken.getAuthnId());
       modelAndView.addObject("pingFlag", this.provider.isPingRequest(token));
       modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
       modelAndView.addObject("ui", this.eidasUiModelFactory.createUiModel(
@@ -243,8 +248,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
       return modelAndView;
     }
-    catch (final Saml2ErrorStatusException e) {
-      return this.complete(request, e);
+    catch (final SamlErrorStatusException e) {
+      return this.completeWithError(request, e);
     }
   }
 
@@ -262,7 +267,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
       @RequestParam(name = "selectedCountry") final String selectedCountry) {
 
-    final Saml2UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
+    final RedirectForAuthenticationToken redirectToken = this.getInputToken(httpRequest);
+    final UserAuthenticationInputToken inputToken = redirectToken.getAuthnInputToken();
 
     if (ACTION_CANCEL.equals(selectedCountry)) {
       log.info("User cancelled country selection - aborting authentication [{}]", inputToken.getLogString());
@@ -275,7 +281,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       // Generate AuthnRequest
       //
       final RequestHttpObject<AuthnRequest> authnRequest = this.getProvider().generateAuthnRequest(
-          httpRequest, selectedCountry, inputToken);
+          httpRequest, selectedCountry, redirectToken);
 
       // Save the country as "selected" ...
       //
@@ -294,8 +300,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
         return new ModelAndView("redirect:" + authnRequest.getSendUrl());
       }
     }
-    catch (final Saml2ErrorStatusException e) {
-      return this.complete(httpRequest, e);
+    catch (final SamlErrorStatusException e) {
+      return this.completeWithError(httpRequest, e);
     }
   }
 
@@ -321,18 +327,19 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
     log.debug("Received SAML response [client-ip-address='{}']", httpRequest.getRemoteAddr());
 
+    final UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
     try {
       // Process the response ...
       //
       final EidasAuthenticationToken token =
-          this.getProvider().processSamlResponse(httpRequest, samlResponse, relayState);
+          this.getProvider().processSamlResponse(httpRequest, inputToken, samlResponse, relayState);
 
       // OK, now we have an authentication token. Time to complete the authentication ...
       //
       return this.completeAuthentication(httpRequest, httpResponse, token, false, false);
     }
-    catch (final Saml2ErrorStatusException e) {
-      return this.complete(httpRequest, e);
+    catch (final SamlErrorStatusException e) {
+      return this.completeWithError(httpRequest, e);
     }
   }
 
@@ -351,7 +358,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       final HttpServletResponse httpResponse, final EidasAuthenticationToken token,
       final boolean idmProcessed, final boolean signConsentProcessed) {
 
-    final Saml2UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
+    final UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
+    final boolean signatureService = SignServiceSsoVoter.isSignatureService(inputToken.getAuthnRequirements());
 
     if (!idmProcessed) {
       if (this.getProvider().isIdmActive()) {
@@ -362,7 +370,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
         // We only check the cookie if this is a signature request since the legal requirements state that the
         // user needs to be prompted for consent every time he/she authenticates.
         //
-        final IdmSessionState idmState = isSignatureService.test(inputToken)
+        final IdmSessionState idmState = signatureService
             ? Optional.ofNullable(WebUtils.getCookie(httpRequest, this.idmConsentCookieGenerator.getName()))
             .map(Cookie::getValue)
             .map(IdmSessionState::fromString)
@@ -404,7 +412,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     }
 
     if (!signConsentProcessed) {
-      if (isSignatureService.test(inputToken)) {
+      if (signatureService) {
         log.debug("User '{}' has performed authentication given a request from a SignService. "
             + "Directing to signature consent dialogue ... [{}]", token.getPrincipal(), token.getLogString());
 
@@ -419,8 +427,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     try {
       this.getProvider().assertPrincipalSelection(inputToken, token);
     }
-    catch (final Saml2ErrorStatusException e) {
-      return this.complete(httpRequest, e);
+    catch (final SamlErrorStatusException e) {
+      return this.completeWithError(httpRequest, e);
     }
 
     return this.complete(httpRequest, token);
@@ -442,16 +450,18 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     if (language != null) {
       this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
     }
+    final RedirectForAuthenticationToken redirectToken = this.getInputToken(httpRequest);
+
     final ModelAndView modelAndView = new ModelAndView("idm-consent");
+    modelAndView.addObject(AUTHN_ID_MODEL_ATTRIBUTE, redirectToken.getAuthnId());
     modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
-    modelAndView.addObject("idmConsent",
-        this.idmUiModelFactory.createUiModel(this.getInputToken(httpRequest).getAuthnInputToken()));
+    modelAndView.addObject("idmConsent", this.idmUiModelFactory.createUiModel(redirectToken.getAuthnInputToken()));
 
     return modelAndView;
   }
 
   /**
-   * Receives the results from the sign consent page.
+   * Receives the results from the IdM consent page.
    *
    * @param httpRequest the HTTP servlet request
    * @param httpResponse the HTTP servlet response
@@ -463,8 +473,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
       @RequestParam(name = "action") final String action) {
 
+    final UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
     final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest);
-    final Saml2UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
 
     if (ACTION_OK.equals(action)) {
       log.debug("User '{}' consented to getting IdM record [{}]", token.getPrincipal(), token.getLogString());
@@ -481,7 +491,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       this.idmHideBannerCookieGenerator.addCookie("false", httpResponse);
     }
     else {
-      log.warn("Unknown action parameter {}", action);
+      log.info("Unknown action parameter {} [{}]", action, token.getLogString());
       return this.idmConsentPage(httpRequest, httpResponse, null);
     }
     return this.completeAuthentication(httpRequest, httpResponse, token, true, false);
@@ -503,14 +513,20 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     if (language != null) {
       this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
     }
+    final RedirectForAuthenticationToken redirectToken = this.getInputToken(httpRequest);
 
-    final ModelAndView modelAndView = new ModelAndView("sign-consent");
-    modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
-    modelAndView.addObject("signMessageConsent", this.signUiModelFactory.createUiModel(
-        this.getInputToken(httpRequest).getAuthnInputToken(),
-        this.getProvider().getEidasAuthenticationToken(httpRequest)));
+    try {
+      final ModelAndView modelAndView = new ModelAndView("sign-consent");
+      modelAndView.addObject(AUTHN_ID_MODEL_ATTRIBUTE, redirectToken.getAuthnId());
+      modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
+      modelAndView.addObject("signMessageConsent", this.signUiModelFactory.createUiModel(
+          redirectToken.getAuthnInputToken(), this.getProvider().getEidasAuthenticationToken(httpRequest)));
 
-    return modelAndView;
+      return modelAndView;
+    }
+    catch (final SamlErrorStatusException e) {
+      return this.completeWithError(httpRequest, e);
+    }
   }
 
   /**
@@ -526,8 +542,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
       @RequestParam(name = "action") final String action) {
 
+    final UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
     final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest);
-    final Saml2UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
 
     if (ACTION_OK.equals(action)) {
       log.debug("User consented to signature [{}]", inputToken.getLogString());
@@ -541,15 +557,12 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       log.debug("User did not consent to signing [{}]", inputToken.getLogString());
       this.eventPublisher.publishEvent(new SignatureConsentEvent(inputToken, token, false));
 
-      // TODO: clean up session
-
-      final String msg = "User did not consent to signature";
-      return this.complete(httpRequest,
-          new Saml2ErrorStatusException(StatusCode.RESPONDER, "http://id.elegnamnden.se/status/1.0/cancel",
-              "idp.error.status.reject-signature", msg, msg));
+      return this.completeWithError(httpRequest, SamlErrors.errorWithMessageCode(StatusCode.RESPONDER,
+          SamlErrors.CANCEL_STATUS_CODE, SamlErrors.REJECT_SIGNATURE_MESSAGE_CODE,
+          "User did not consent to signature"));
     }
     else {
-      log.warn("Unknown action parameter {}", action);
+      log.info("Unknown action parameter {} [{}]", action, inputToken.getLogString());
       return this.signConsentPage(httpRequest, httpResponse, null);
     }
   }
@@ -561,11 +574,15 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     return super.complete(request, authentication);
   }
 
-  /** {@inheritDoc} */
-  @Override
-  protected ModelAndView complete(final HttpServletRequest request, final Saml2ErrorStatusException error) {
-    this.getProvider().removeEidasAuthenticationToken(request);
-    return super.complete(request, error);
+  /**
+   * Completes the authentication with a SAML error that is reported to the Swedish SP.
+   *
+   * @param request the HTTP servlet request
+   * @param error the error
+   * @return a redirect to the resume path
+   */
+  protected ModelAndView completeWithError(final HttpServletRequest request, final SamlErrorStatusException error) {
+    return this.complete(request, new EidasAuthenticationErrorToken(error));
   }
 
   /** {@inheritDoc} */
@@ -576,30 +593,30 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   }
 
   /**
-   * Handles unexpected exceptions.
+   * Handles errors that cannot be reported to the Swedish SP, and unexpected exceptions.
    *
+   * @param request the HTTP servlet request
    * @param e the exception
    * @return a {@link ModelAndView}
    */
   @ExceptionHandler(Exception.class)
-  public ModelAndView handleException(final Exception e) {
-    log.error("Caught unexpected exception - {}", e.getMessage(), e);
+  public ModelAndView handleException(final HttpServletRequest request, final Exception e) {
 
-    if (e instanceof final UnrecoverableSaml2IdpException unrecoverable) {
-      this.eventPublisher.publishEvent(new Saml2UnrecoverableErrorEvent(unrecoverable));
+    if (e instanceof final UnrecoverableErrorException unrecoverable) {
+      log.info("Error that cannot be reported to the Service Provider - {}", e.getMessage());
+      this.authnEventPublisher.publishUnrecoverableError(request, unrecoverable);
 
       final ModelAndView modelAndView = new ModelAndView("error/idp");
-      modelAndView.addObject("idpErrorMessageCode", Optional.ofNullable(unrecoverable.getError())
-          .map(UnrecoverableSaml2IdpError::getMessageCode)
-          .orElse(UnrecoverableSaml2IdpError.INTERNAL.getMessageCode()));
+      modelAndView.addObject("idpErrorMessageCode", unrecoverable.getMessageCode());
       return modelAndView;
     }
     else {
-      this.eventPublisher.publishEvent(new Saml2UnrecoverableErrorEvent(
-          new UnrecoverableSaml2IdpException(UnrecoverableSaml2IdpError.INTERNAL, e.getMessage(), e, null)));
+      log.error("Caught unexpected exception - {}", e.getMessage(), e);
+      this.authnEventPublisher.publishUnrecoverableError(request,
+          new UnrecoverableErrorException(CommonUnrecoverableError.INTERNAL, e.getMessage(), e));
 
       final ModelAndView modelAndView = new ModelAndView("error");
-      modelAndView.addObject("message", UnrecoverableSaml2IdpError.INTERNAL.getDescription());
+      modelAndView.addObject("message", CommonUnrecoverableError.INTERNAL.getDescription());
       return modelAndView;
     }
   }

@@ -6,6 +6,12 @@
 
 ---
 
+### Version 3.0.0
+
+**Release date:** _not yet released_
+
+* Moved to the Spring Authentication Server library. The configuration has changed, see [Migration from eIDAS Connector 2.1.0](migration-from-2.1.0.html). See [#249](https://github.com/swedenconnect/eidas-connector/issues/249).
+
 ### Version 2.1.0
 
 **Release date:** 2026-05-05

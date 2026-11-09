@@ -15,11 +15,14 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -206,6 +209,31 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
   @Bean
   IdmUiModelFactory idmUiModelFactory(final UiLanguageHandler uiLanguageHandler) {
     return new IdmUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl());
+  }
+
+  /**
+   * Creates the view resolver for errors that cannot be reported back to the Service Provider.
+   *
+   * @return an {@link UnrecoverableErrorViewResolver}
+   */
+  @Bean
+  UnrecoverableErrorViewResolver unrecoverableErrorViewResolver() {
+    return new UnrecoverableErrorViewResolver();
+  }
+
+  /**
+   * Registers the filter that makes the IdP error page the answer to every error that cannot be reported back to the
+   * Service Provider, also when the request does not accept HTML.
+   *
+   * @return a {@link FilterRegistrationBean}
+   */
+  @Bean
+  FilterRegistrationBean<UnrecoverableErrorPageFilter> unrecoverableErrorPageFilter() {
+    final FilterRegistrationBean<UnrecoverableErrorPageFilter> registration =
+        new FilterRegistrationBean<>(new UnrecoverableErrorPageFilter());
+    registration.setDispatcherTypes(DispatcherType.ERROR);
+    registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+    return registration;
   }
 
   /**

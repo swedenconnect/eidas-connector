@@ -19,7 +19,7 @@ import org.opensaml.saml.saml2.core.Response;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 import java.io.Serial;
 
@@ -45,7 +45,7 @@ public class ResponseProcessingErrorEvent extends AbstractConnectorAuthnEvent {
    * @param token the input token
    * @param errorMsg the error message
    */
-  public ResponseProcessingErrorEvent(final Saml2UserAuthenticationInputToken token, final String errorMsg) {
+  public ResponseProcessingErrorEvent(final UserAuthenticationInputToken token, final String errorMsg) {
     this(token, errorMsg, null);
   }
 
@@ -56,7 +56,7 @@ public class ResponseProcessingErrorEvent extends AbstractConnectorAuthnEvent {
    * @param errorMsg the error message
    * @param response the SAML response
    */
-  public ResponseProcessingErrorEvent(final Saml2UserAuthenticationInputToken token, final String errorMsg,
+  public ResponseProcessingErrorEvent(final UserAuthenticationInputToken token, final String errorMsg,
       final Response response) {
     super(token);
     this.errorMsg = errorMsg;
@@ -78,7 +78,7 @@ public class ResponseProcessingErrorEvent extends AbstractConnectorAuthnEvent {
    * @return the {@link Response} or {@code null} if it is not available
    */
   public Response getResponse() {
-    return this.response.get();
+    return this.response != null ? this.response.get() : null;
   }
 
 }

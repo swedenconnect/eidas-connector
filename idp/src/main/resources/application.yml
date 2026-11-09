@@ -89,7 +89,7 @@ connector:
   eu-metadata:
     backup-location: ${connector.backup-directory}/metadata/eu-cache.xml
   eidas:
-    entity-id: ${saml.idp.base-url}/metadata/sp
+    entity-id: ${authn-server.base-url}/metadata/sp
     requires-signed-assertions: false
     preferred-binding: urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST
     metadata:
@@ -143,19 +143,64 @@ connector:
         - algorithm: http://www.w3.org/2009/xmlenc11#aes128-gcm
         - algorithm: http://www.w3.org/2009/xmlenc11#rsa-oaep
 
-saml:
-  idp:
-    base-url: ${connector.base-url}
-    audit:
-      in-memory:
-        capacity: 1000
-      exclude-events:
-        - AUTHENTICATION_SUCCESS
-        - AUTHORIZATION_FAILURE
+authn-server:
+  base-url: ${connector.base-url}
+  #
+  # Single sign-on as in earlier versions of the connector: an authentication may be reused by any Service Provider
+  # for 60 minutes.
+  #
+  sso:
+    time-limit: 60m
+    same-requester-required: false
+  entity-information:
+    ui-info:
+      display-names:
+        en: "Foreign eID"
+        sv: "Utländskt eID"
+      descriptions:
+        en: "Identity Provider for foreign eID:s"
+        sv: "Legitimeringstjänst för utländsk legitimering"
+      logotypes:
+        - path: /images/idp-logo-notext.svg
+          height: 256
+          width: 256
+        - path: /images/idp-logo.svg
+          height: 56
+          width: 280
+    organization:
+      names:
+        en: Sweden Connect
+        sv: Sweden Connect
+      display-names:
+        en: Sweden Connect
+        sv: Sweden Connect
+      urls:
+        en: https://www.swedenconnect.se/en
+        sv: https://www.swedenconnect.se
+    contact-persons:
+      technical:
+        company: Sweden Connect
+        email-addresses:
+          - operations@swedenconnect.se
+      support:
+        company: Sweden Connect
+        email-addresses:
+          - operations@swedenconnect.se
+  saml:
+    enabled: true
+    #
+    # The SAML endpoints are given in full, so that they are the same as in earlier versions of the connector.
+    #
+    path: ""
     endpoints:
       metadata: /metadata/idp.xml
       post-authn: /profile/SAML2/POST/SSO
       redirect-authn: /profile/SAML2/Redirect/SSO
+    #
+    # Persistent NameID:s are computed as in earlier versions of the connector, that is, without a secret.
+    #
+    subject-identifier:
+      secret: ""
     requires-signed-requests: true
     authn-context:
       minimum-mappings:
@@ -228,36 +273,14 @@ saml:
         - "urn:oid:1.2.752.201.3.16"
         # c
         - "urn:oid:2.5.4.6"
-      ui-info:
-        display-names:
-          en: "Foreign eID"
-          sv: "Utländskt eID"
-        descriptions:
-          en: "Identity Provider for foreign eID:s"
-          sv: "Legitimeringstjänst för utländsk legitimering"
-        logotypes:
-          - path: /images/idp-logo-notext.svg
-            height: 256
-            width: 256
-          - path: /images/idp-logo.svg
-            height: 56
-            width: 280
-      organization:
-        names:
-          en: Sweden Connect
-          sv: Sweden Connect
-        display-names:
-          en: Sweden Connect
-          sv: Sweden Connect
-        urls:
-          en: https://www.swedenconnect.se/en
-          sv: https://www.swedenconnect.se
-      contact-persons:
-        technical:
-          company: Sweden Connect
-          email-addresses:
-            - operations@swedenconnect.se
-        support:
-          company: Sweden Connect
-          email-addresses:
-            - operations@swedenconnect.se
+
+#
+# Audit logging. See https://docs.swedenconnect.se/spring-audit-support/configuration.html.
+#
+audit:
+  repository:
+    in-memory:
+      capacity: 1000
+    exclude-events:
+      - AUTHENTICATION_SUCCESS
+      - AUTHORIZATION_FAILURE

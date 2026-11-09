@@ -15,12 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
-import org.opensaml.saml.saml2.core.AuthnRequest;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
-import se.swedenconnect.spring.saml.idp.audit.Saml2AuditEvent;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
-import se.swedenconnect.spring.saml.idp.authnrequest.Saml2AuthnRequestAuthenticationToken;
-import se.swedenconnect.spring.saml.idp.events.AbstractSaml2IdpEvent;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 import java.io.Serial;
 import java.util.Objects;
@@ -31,27 +27,30 @@ import java.util.Optional;
  *
  * @author Martin Lindström
  */
-public class AbstractConnectorAuthnEvent extends AbstractSaml2IdpEvent {
+public class AbstractConnectorAuthnEvent extends AbstractEidasConnectorEvent {
 
   @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
+
+  /** Used when the SP entityID or the ID of the authentication request is not known. */
+  public static final String UNKNOWN = "unknown";
 
   /**
    * Constructor.
    *
    * @param token the authentication input token
    */
-  public AbstractConnectorAuthnEvent(final Saml2UserAuthenticationInputToken token) {
+  public AbstractConnectorAuthnEvent(final UserAuthenticationInputToken token) {
     super(Objects.requireNonNull(token, "token must not be null"));
   }
 
   /**
    * Gets the input token.
    *
-   * @return the {@link Saml2UserAuthenticationInputToken}
+   * @return the {@link UserAuthenticationInputToken}
    */
-  public final Saml2UserAuthenticationInputToken getToken() {
-    return (Saml2UserAuthenticationInputToken) this.getSource();
+  public final UserAuthenticationInputToken getToken() {
+    return (UserAuthenticationInputToken) this.getSource();
   }
 
   /**
@@ -60,21 +59,16 @@ public class AbstractConnectorAuthnEvent extends AbstractSaml2IdpEvent {
    * @return the entityID of the Swedish SP that requested authentication
    */
   public final String getOriginalSpId() {
-    return Optional.ofNullable(this.getToken().getAuthnRequestToken())
-        .map(Saml2AuthnRequestAuthenticationToken::getEntityId)
-        .orElse(Saml2AuditEvent.UNKNOWN_SP);
+    return this.getToken().getRequester().identifier();
   }
 
   /**
-   * Gets the ID of the original {@link AuthnRequest}, i.e., the request sent by the Swedish SP.
+   * Gets the ID of the original {@code AuthnRequest}, i.e., the request sent by the Swedish SP.
    *
-   * @return the ID of the original {@link AuthnRequest}
+   * @return the ID of the original {@code AuthnRequest}
    */
   public final String getOriginalAuthnRequestId() {
-    return Optional.ofNullable(this.getToken().getAuthnRequestToken())
-        .map(Saml2AuthnRequestAuthenticationToken::getAuthnRequest)
-        .map(AuthnRequest::getID)
-        .orElse(Saml2AuditEvent.UNKNOWN_AUTHN_REQUEST_ID);
+    return Optional.ofNullable(this.getToken().getRequestId()).orElse(UNKNOWN);
   }
 
 }

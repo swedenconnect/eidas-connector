@@ -92,7 +92,9 @@ Even though this guide should supply sufficient information for how to configure
 
 - [Spring Boot Common Application Properties](https://docs.spring.io/spring-boot/appendix/application-properties/index.html) - A listing of all Spring Boot base properties.
 
-- [Sweden Connect - SAML Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html) - The Swedish eIDAS Connector is built using the [Spring Security SAML Identity Provider](https://github.com/swedenconnect/saml-identity-provider) open source libraries.
+- [Spring Authentication Server - Configuration](https://docs.swedenconnect.se/spring-authentication-server/configuration.html) - The Swedish eIDAS Connector is built using the [Spring Authentication Server](https://docs.swedenconnect.se/spring-authentication-server) open source libraries.
+
+- [Migration from eIDAS Connector 2.1.0](migration-from-2.1.0.html) - What to change when upgrading a deployment from version 2.1.0.
 
 - [Configuration Reference for the Swedish eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/configuration-reference.html) - A complete configuration reference for the eIDAS Connector.
 
@@ -355,11 +357,15 @@ server:
 <a name="redis-configuration"></a>
 ### 2.5. Redis Configuration
 
-If more than one instance of the eIDAS Connector is deployed, it is recommended to use Redis for storing session data. For this purpose, Spring's Redis features need to be configured. 
-
-In its simplest form it would look like:
+If more than one instance of the eIDAS Connector is deployed, it is recommended to use Redis for storing session data
+and the other state that the instances share. The connector image includes Spring Data Redis and Spring Session for
+Redis, so Redis is enabled by configuration alone:
 
 ```yaml
+authn-server:
+  storage:
+    type: redis
+
 spring:
   data:
     redis:
@@ -371,9 +377,18 @@ spring:
         bundle: redis-tls-trust
 ```
 
+The setting `authn-server.storage.type` decides where the HTTP session and the stores of the authentication server,
+such as the IDs of received authentication requests, are kept. The default is `memory`. The connection is configured
+with Spring Boot's own `spring.data.redis.*` settings.
+
 The above example illustrates how we use a [SSL Trust Bundle](#configuring-certificate-trust) for the TLS connection against the Redis server.
 
-For details about Redis configuration, see the [Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#redis-configuration) documentation.
+For details about Redis configuration, see [Running several nodes](https://docs.swedenconnect.se/spring-authentication-server/configuration.html#running-several-nodes)
+in the Spring Authentication Server documentation.
+
+:raised_hand: Redisson is not supported. A deployment that used the Redisson settings in earlier versions of the
+connector configures the connection with the `spring.data.redis.*` settings instead, see
+[Migration from eIDAS Connector 2.1.0](migration-from-2.1.0.html).
 
 <a name="logging-configuration"></a>
 ### 2.6. Logging Configuration
@@ -464,26 +479,31 @@ By default, the management endpoints are exposed under `/actuator/<endpoint>`. T
 
 See the [Management using the Actuator](https://docs.swedenconnect.se/eidas-connector/management.html) page for a description of each exposed management endpoint.
 
-:raised_hand: Redis is available in the classpath, so if you are not using Redis make sure to disable the Redis health check by setting the `management.health.redis.enabled` setting to `false`.
+:raised_hand: Redis is available in the classpath. The base configuration turns the Redis health check off (`management.health.redis.enabled: false`). If you are using Redis, set it to `true`.
 
 :exclamation: Make sure not to expose the management endpoints publicly. See [Building and Deploying the eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/installation.html) for deployment details.
 
 <a name="saml-identity-provider-configuration"></a>
 ## 3. SAML Identity Provider Configuration
 
-The Swedish eIDAS Connector is built upon the [Spring Security SAML Identity Provider](https://github.com/swedenconnect/saml-identity-provider) libraries, and the resource [Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html) contains a complete reference of how to configure the Identity Provider.
+The Swedish eIDAS Connector is built upon the [Spring Authentication Server](https://docs.swedenconnect.se/spring-authentication-server) libraries, and the resource [Configuration](https://docs.swedenconnect.se/spring-authentication-server/configuration.html) contains a complete reference of how to configure the Identity Provider.
 
 This section will only cover the very few IdP-settings that need to be changed given the default values. By default, we assume that the eIDAS Connector will be installed in a Sweden Connect environment, and that it will be acting as the official Swedish eIDAS Connector (for customized deployments, additional changes will have to be made).
 
-The default IdP configuration can be viewed under the `saml.idp`-key in the [application.yml](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/resources/application.yml). This configuration needs to be extended with the following settings:
+The default IdP configuration can be viewed under the `authn-server`-key in the [application.yml](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/resources/application.yml). This configuration needs to be extended with the following settings:
 
-- `saml.idp.entity-id` - The unique SAML entityID that the IdP-part of the eIDAS Connector should have in the federation.
+- `authn-server.saml.entity-id` - The unique SAML entityID that the IdP-part of the eIDAS Connector should have in the federation. If not set, the entityID is the base URL of the connector.
 
-- `saml.idp.metadata-providers.*` - Configuration for how the eIDAS Connector IdP downloads trusted SAML metadata for the federation. See section [Metadata Provider Configuration](#idp-metadata-provider-configuration) below.
+- `authn-server.saml.metadata-providers.*` - Configuration for how the eIDAS Connector IdP downloads trusted SAML metadata for the federation. See section [Metadata Provider Configuration](#idp-metadata-provider-configuration) below.
 
-- `saml.idp.credentials.*` - Configuration for the credentials (i.e., keys and certificates) used by the IdP. See [Credentials Configuration](#credentials-configuration) below.
+- `authn-server.saml.credentials.*` - Configuration for the credentials (i.e., keys and certificates) used by the IdP. See [Credentials Configuration](#credentials-configuration) below.
 
-- `saml.idp.audit.*` - Audit configuration for the application. See [Audit Logging Configuration](#audit-logging-configuration) below.
+- `audit.*` - Audit configuration for the application. See [Audit Logging Configuration](#audit-logging-configuration) below.
+
+:raised_hand: The base configuration turns off the subject identifier secret for SAML
+(`authn-server.saml.subject-identifier.secret` is empty), so that the persistent `NameID`s are the same as those
+issued by earlier versions of the connector. The authentication server logs a warning about this at startup. Do not
+assign a secret unless all Service Providers should get new `NameID`s for their users.
 
 <a name="idp-metadata-provider-configuration"></a>
 ### 3.1. Metadata Provider Configuration
@@ -499,8 +519,8 @@ Optionally, the `https-trust-bundle` property may be set to a trust bundle (see 
 Example:
 
 ```yaml
-saml:
-  idp:
+authn-server:
+  saml:
     ...
     metadata-providers:
       - location: https://md.swedenconnect.se/role/sp.xml
@@ -510,7 +530,7 @@ saml:
 
 More than one metadata provider can be configured. This may be useful to allow additional Service Providers (not in the federation) to use the connector.
 
-See the [Metadata Provider Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#metadata-provider-configuration) section of the [Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html) page for details.
+See [Service Provider metadata](https://docs.swedenconnect.se/spring-authentication-server/configuration.html#sp-metadata) of the [Configuration](https://docs.swedenconnect.se/spring-authentication-server/configuration.html) page for details.
 
 <a name=sweden-connect-environments"></a>
 #### 3.1.1. Sweden Connect Environments
@@ -532,15 +552,15 @@ The IdP uses PKI credentials (private keys and certificates) in the following sc
 
 - To sign the SAML metadata that it exposes.
 
-See the [Credentials Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#credentials-configuration) section of the [Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html) page for details on how to configure each credential.
+See [Credentials](https://docs.swedenconnect.se/spring-authentication-server/configuration.html#credentials) of the [Configuration](https://docs.swedenconnect.se/spring-authentication-server/configuration.html) page for details on how to configure each credential.
 
-:point_right: It is possible to use the same credential for several purposes, and by assigning the `saml.idp.credentials.default-credential.*` property, this will be used if a specific purpose is not assigned.
+:point_right: It is possible to use the same credential for several purposes, and by assigning the `authn-server.saml.credentials.default-credential.*` property, this will be used if a specific purpose is not assigned.
 
 Example where the [Credential Bundles](#credential-bundles) are referenced (this is the recommended way of configuring credentials):
 
 ```yaml
-saml:
-  idp:
+authn-server:
+  saml:
     ...
     credentials:
       sign:
@@ -554,8 +574,8 @@ saml:
 It is also possible to configure each credential "inline":
 
 ```yaml
-saml:
-  idp:
+authn-server:
+  saml:
     ...
     credentials:
       sign:
@@ -596,8 +616,8 @@ credential:
         private-key: file:/opt/keys/idp-sign2.key
         name: "IdP Sign 2"
 
-saml:
-  idp:
+authn-server:
+  saml:
     ...
     credentials:
       sign:
@@ -610,8 +630,8 @@ saml:
 In the example above, the `future-sign` property points at the certificate resource that is the certificate for the new signing certificate. After the actual change has been made, change to configuration to:
 
 ```yaml
-saml:
-  idp:
+authn-server:
+  saml:
     ...
     credentials:
       sign:
@@ -637,8 +657,8 @@ credential:
         private-key: file:/opt/keys/idp-encrypt2.key
         name: "IdP Encrypt 2"
         
-saml:
-  idp:
+authn-server:
+  saml:
     ...
     credentials:
       ...
@@ -681,8 +701,8 @@ credential:
       test-interval: 10m
       health-endpoint-enabled: true    
 
-saml:
-  idp:
+authn-server:
+  saml:
     ...
     credentials:
       sign:
@@ -701,160 +721,69 @@ The references PKCS#11 configuration file should be formatted according to [PKCS
 <a name="audit-logging-configuration"></a>
 ### 3.3. Audit Logging Configuration
 
+The audit logging is handled by [spring-audit-support](https://docs.swedenconnect.se/spring-audit-support), and is
+configured with its `audit.*` properties. See [Configuration](https://docs.swedenconnect.se/spring-audit-support/configuration.html)
+and [Repositories](https://docs.swedenconnect.se/spring-audit-support/repositories.html) for a full reference.
+
 The default is to only hold audit entries in memory and expose them via the [Spring Boot Actuator](https://www.baeldung.com/spring-boot-actuators) endpoint for audit (see [Accessing Audit Logs](https://docs.swedenconnect.se/eidas-connector/management.html#accessing-audit-logs)). In a production environment we probably want to persist audit entries.
 
-Section [Audit Configuration](https://docs.swedenconnect.se/saml-identity-provider/configuration.html#audit-configuration) for the [Identity Provider Configuration and Deployment](https://docs.swedenconnect.se/saml-identity-provider/configuration.html) contains a full configuration reference.
-
-By default, the IdP audit configuration looks like:
+By default, the audit configuration looks like:
 
 ```yaml
-saml:
-  idp:
-    ...
-    audit:
-      in-memory:
-        capacity: 1000
+audit:
+  repository:
+    in-memory:
+      capacity: 1000
+    exclude-events:
+      - AUTHENTICATION_SUCCESS
+      - AUTHORIZATION_FAILURE
 ```
 
 So, for audit logging to file, add the following:
 
 ```yaml
-saml:
-  idp:
-    ...
-    audit:
-      in-memory:
-        capacity: 1000
-      file:
-        log-file: file:/etc/var/logging/connector-audit.log
+audit:
+  repository:
+    file:
+      log-file: /etc/var/logging/connector-audit.log
 ```
 
-The audit logger will now also write to the `connector-audit.log` file. It uses a rolling file appender that creates a new log file every day, and saves the old ones as `<file-name>-<date>.<ext>`.
+The audit logger will now also write to the `connector-audit.log` file, one JSON event per line. A new log file is
+started every day, and the old ones are saved as `<file-name>-<date>.<ext>`.
 
-In the example above we keep the in-memory logging which can be a good idea to allow for the management endpoints to view log files, see [Accessing Audit Logs](https://docs.swedenconnect.se/eidas-connector/management.html#accessing-audit-logs).
+The in-memory repository is kept, since the file repository cannot be queried. This allows the management endpoints
+to view audit events, see [Accessing Audit Logs](https://docs.swedenconnect.se/eidas-connector/management.html#accessing-audit-logs).
 
 It is also possible to persist audit entries to Redis:
 
 ```yaml
-saml:
-  idp:
-    ...
-    audit:
-      in-memory:
-        capacity: 1000
-      redis:
-        name: "connector-audit"
-        type: list
+audit:
+  repository:
+    redis:
+      key: "connector-audit"
 ```
 
 When using Redis for audit logging, Spring's Redis support must also be configured, see section [2.5](#redis-configuration), [Redis Configuration](#redis-configuration).
-
-The Swedish eIDAS Connector uses [Logback](https://logback.qos.ch) as the underlying log framework, and it is possible to configure audit logging to be directed to this log system.
-
-```yaml
-saml:
-  idp:
-    ...
-    audit:
-      in-memory:
-        capacity: 1000
-      log-system:
-        logger-name: "AUDIT"
-
-...
-
-logging:
-  level:
-    ...       
-  config: file:/opt/logs/logback.xml
-
-```
-
-By providing a `logback.xml` file placed according to the `logging.config` property, an specific appender can be added, for example for Syslog - see [Logback Syslog Appender](https://logback.qos.ch/manual/appenders.html#SyslogAppender). See full details in section [3.3.1](#audit-logging-to-syslog) below.
 
 :grey_exclamation: See also the page [Swedish eIDAS Connector Audit Logging](https://docs.swedenconnect.se/eidas-connector/audit.html) for a full reference for all audit events produced by the eIDAS Connector.
 
 <a name="audit-logging-to-syslog"></a>
 #### 3.3.1. Audit Logging to Syslog
 
-In order to audit log to a Syslog server, the following steps need to be taken:
-
-Create a `logback.xml` file according to the following:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-
-  <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-  <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
-  <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
-
-  <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="eIDAS Connector"/>
-
-  <appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
-    <syslogHost>replace-with-your-syslog-host</syslogHost>
-    <port>514</port>
-    <facility>USER</facility>
-    <suffixPattern>%msg</suffixPattern>
-    <throwableExcluded>true</throwableExcluded>
-  </appender>
-
-  <root level="info">
-    <appender-ref ref="CONSOLE"/>
-    <appender-ref ref="FILE"/>
-  </root>
-
-  <logger name="AUDIT" level="info" additivity="false">
-    <appender-ref ref="SYSLOG"/>
-  </logger>
-
-</configuration>
-```
-
-The file can also be downloaded [here](logback.xml). Make sure to assign `syslogHost` with the correct hostname.
-
-Should you want several Syslog servers, simply create sevaral appenders, with different names and configurations, and add them under the audit logger.
-
-```xml
-  <appender name="SYSLOG1" class="ch.qos.logback.classic.net.SyslogAppender">
-    ...
-  </appender>
-  
-  <appender name="SYSLOG2" class="ch.qos.logback.classic.net.SyslogAppender">
-    ...
-  </appender>
-
-  ...
-
-  <logger name="AUDIT" level="info" additivity="false">
-    <appender-ref ref="SYSLOG1"/>
-    <appender-ref ref="SYSLOG2"/>
-  </logger>
-```
-
-Next, point at this new `logback.xml` file in your connector configuration:
+Audit events are sent to a Syslog server by configuring the syslog repository:
 
 ```yaml
-logging:
-  level:
-    ...       
-  config: file:/opt/logs/logback.xml
+audit:
+  repository:
+    syslog:
+      host: syslog.example.com
+      port: 514
+      transport: tcp
+      facility: LOCAL0
 ```
 
-Finally, configure the audit logging to use log system logging (as described above):
-
-```yaml
-saml:
-  idp:
-    ...
-    audit:
-      ...
-      log-system:
-        logger-name: "AUDIT"
-```
-
-:grey_exclamation: The `logger-name` must correspond to the Syslog logger name given in the `logback.xml` file.
-
+Each event is sent as a JSON message. See [Syslog](https://docs.swedenconnect.se/spring-audit-support/repositories.html#syslog)
+for all settings.
 
 <a name="eidas-connector-configuration"></a>
 ## 4. eIDAS Connector Configuration
@@ -879,7 +808,7 @@ See the [eIDAS Connector Configuration](configuration-reference.html#eidas-conne
 <a name="additional-identity-provider-settings"></a>
 ### 4.2. Additional Identity Provider Settings
 
-The configuration properties under `saml.idp` are extended with some additional configuration settings for the Identity Provider part of the Connector. See the [Connector IdP Configuration](configuration-reference.html#connector-idp-configuration) of the [Configuration Reference for the Swedish eIDAS Connector](configuration-reference.html).
+The configuration properties under `authn-server.saml` are extended with some additional configuration settings for the Identity Provider part of the Connector. See the [Connector IdP Configuration](configuration-reference.html#connector-idp-configuration) of the [Configuration Reference for the Swedish eIDAS Connector](configuration-reference.html).
 
 <a name="eidas-authentication-configuration"></a>
 ### 4.3. eIDAS Authentication Configuration
@@ -893,7 +822,7 @@ The `connector.eidas.entity-id` setting is assigned the SAML entityID of the SAM
 
 Under the `connector.eidas.credentials` key, the credentials that are to be used by the SP part of the eIDAS Connector are configured. If not assigned, the keys configured for the SAML IdP will be used also for the SP (see section [3.2](#credentials-configuration) above). 
 
-If specific credentials for the SP part should be set up, the same type of configuration as for the IdP credentials is used (see section [3.2](#credentials-configuration) above), with the exception that the configuration prefix is `connector.eidas.credentials` instead of `saml.idp.credentials`.
+If specific credentials for the SP part should be set up, the same type of configuration as for the IdP credentials is used (see section [3.2](#credentials-configuration) above), with the exception that the configuration prefix is `connector.eidas.credentials` instead of `authn-server.saml.credentials`.
 
 <a name="service-provider-metadata-configuration"></a>
 #### 4.3.2. Service Provider Metadata Configuration
@@ -947,13 +876,13 @@ connector:
     service-url: https://sandbox.swedenconnect.se/idm
     oauth2:
       resource-id: https://sandbox.swedenconnect.se/idm
-      client-id: ${saml.idp.entity-id}
+      client-id: ${authn-server.saml.entity-id}
       check-scopes:
         - ${connector.idm.oauth2.resource-id}/idrecord_check
       get-scopes:
         - ${connector.idm.oauth2.resource-id}/idrecord_get
       server:
-        issuer: ${saml.idp.entity-id}/as
+        issuer: ${authn-server.saml.entity-id}/as
       credential:
         bundle: idp-oauth2
 ```

@@ -20,7 +20,8 @@ import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Scoping;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import se.swedenconnect.eidas.attributes.AttributeMappingService;
+import se.swedenconnect.eidas.connector.attributes.EidasRequestedAttributesBuilder;
+import se.swedenconnect.eidas.connector.authn.SamlRequestData;
 import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
 import se.swedenconnect.eidas.connector.authn.metadata.MetadataFunctions;
 import se.swedenconnect.eidas.connector.config.EidasAuthenticationProperties;
@@ -40,7 +41,8 @@ import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCateg
 import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.opensaml.OpenSamlCredential;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.saml.authentication.SamlAuthenticationRequirements;
 
 import java.util.Collections;
 import java.util.List;
@@ -58,8 +60,8 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
   /** The SP metadata. */
   private final EntityDescriptor spMetadata;
 
-  /** Attribute mappings. */
-  private final AttributeMappingService attributeMappings;
+  /** Works out the eIDAS requested attributes. */
+  private final EidasRequestedAttributesBuilder requestedAttributesBuilder;
 
   /** The name to add to the field {@code providerName}. */
   private final String providerName;
@@ -79,18 +81,19 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    * @param spMetadata the SP metadata
    * @param signatureCredential the signature credential
    * @param securityConfiguration the security configuration
-   * @param attributeMappings attribute mapping service
+   * @param requestedAttributesBuilder works out the eIDAS requested attributes
    * @param providerName the provider name to use in generated requests
    */
   public EidasAuthnRequestGenerator(final EntityDescriptor spMetadata, final PkiCredential signatureCredential,
-      final SecurityConfiguration securityConfiguration, final AttributeMappingService attributeMappings,
-      final String providerName) {
+      final SecurityConfiguration securityConfiguration,
+      final EidasRequestedAttributesBuilder requestedAttributesBuilder, final String providerName) {
     super(Objects.requireNonNull(spMetadata, "spMetadata must not be null").getEntityID(),
         new OpenSamlCredential(Objects.requireNonNull(signatureCredential, "signatureCredential must not be null")));
     this.securityConfiguration =
         Objects.requireNonNull(securityConfiguration, "securityConfiguration must not be null");
     this.spMetadata = spMetadata;
-    this.attributeMappings = Objects.requireNonNull(attributeMappings, "attributeMappings must not be null");
+    this.requestedAttributesBuilder =
+        Objects.requireNonNull(requestedAttributesBuilder, "requestedAttributesBuilder must not be null");
     this.providerName = Objects.requireNonNullElse(providerName, EidasAuthenticationProperties.DEFAULT_PROVIDER_NAME);
   }
 
@@ -98,30 +101,33 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    * Generates an {@link AuthnRequest} to be sent to the foreign IdP.
    *
    * @param country the country metadata
-   * @param token the input SAML token
+   * @param token the input token for the authentication requested by the Swedish SP
    * @param relayState the RelayState to use
    * @return a {@link RequestHttpObject}
    * @throws RequestGenerationException for errors generating the {@code AuthnRequest}
    */
   public RequestHttpObject<AuthnRequest> generateAuthnRequest(final CountryMetadata country,
-      final Saml2UserAuthenticationInputToken token, final String relayState) throws RequestGenerationException {
+      final UserAuthenticationInputToken token, final String relayState) throws RequestGenerationException {
 
     // Is this a public or private SP?
     //
-    final SPTypeEnumeration spType = token.getAuthnRequirements().getEntityCategories()
-        .contains(EntityCategoryConstants.SERVICE_TYPE_CATEGORY_PRIVATE_SECTOR_SP.getUri())
-        ? SPTypeEnumeration.PRIVATE
-        : SPTypeEnumeration.PUBLIC;
+    final List<String> entityCategories = token.getAuthnRequirements() instanceof final SamlAuthenticationRequirements r
+        ? r.getEntityCategories()
+        : Collections.emptyList();
+    final SPTypeEnumeration spType =
+        entityCategories.contains(EntityCategoryConstants.SERVICE_TYPE_CATEGORY_PRIVATE_SECTOR_SP.getUri())
+            ? SPTypeEnumeration.PRIVATE
+            : SPTypeEnumeration.PUBLIC;
 
     // Map requested attributes from Swedish eID format to eIDAS format ...
     //
-    final List<se.swedenconnect.opensaml.eidas.ext.RequestedAttribute> requestedAttributes =
-        this.attributeMappings.toEidasRequestedAttributes(token.getAuthnRequirements().getRequestedAttributes(), true);
+    final List<RequestedAttribute> requestedAttributes = this.requestedAttributesBuilder.build(
+        SamlRequestData.getAuthnRequest(token), SamlRequestData.getSpMetadata(token), true);
 
     // Set up a context ...
     //
     final EidasAuthnRequestGeneratorContext context = new EidasAuthnRequestGeneratorContext(
-        country.getCountryCode(), token.getAuthnRequestToken().getEntityId(), spType, requestedAttributes,
+        country.getCountryCode(), token.getRequester().identifier(), spType, requestedAttributes,
         token.getAuthnRequirements().getAuthnContextRequirements(), this.providerName, this.preferredBinding,
         this.securityConfiguration);
 

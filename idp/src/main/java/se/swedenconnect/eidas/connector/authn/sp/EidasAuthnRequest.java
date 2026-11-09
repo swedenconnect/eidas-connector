@@ -46,6 +46,9 @@ public class EidasAuthnRequest implements Serializable {
   /** The country code for the recipient country. */
   private final String country;
 
+  /** The identifier of the authentication in progress that the request was sent for. */
+  private final String authnId;
+
   /**
    * Constructor.
    *
@@ -53,15 +56,17 @@ public class EidasAuthnRequest implements Serializable {
    * @param relayState the relay state (may be {@code null})
    * @param associatedRequestId the AuthnRequest ID of the associated request (i.e., the request from the Swedish SP)
    * @param country the country code for the recipient country
+   * @param authnId the identifier of the authentication in progress that the request was sent for
    */
   public EidasAuthnRequest(
       final AuthnRequest authnRequest, final String relayState, final String associatedRequestId,
-      final String country) {
+      final String country, final String authnId) {
     this.authnRequest = new SerializableOpenSamlObject<>(
         Objects.requireNonNull(authnRequest, "authnRequest must not be null"));
     this.relayState = relayState;
     this.associatedRequestId = Objects.requireNonNull(associatedRequestId, "associatedRequestId must not be null");
     this.country = Objects.requireNonNull(country, "country must not be null");
+    this.authnId = Objects.requireNonNull(authnId, "authnId must not be null");
   }
 
   /**
@@ -98,6 +103,15 @@ public class EidasAuthnRequest implements Serializable {
    */
   public String getCountry() {
     return this.country;
+  }
+
+  /**
+   * Gets the identifier of the authentication in progress that the request was sent for.
+   *
+   * @return the identifier of the authentication
+   */
+  public String getAuthnId() {
+    return this.authnId;
   }
 
 }

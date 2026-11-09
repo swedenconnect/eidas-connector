@@ -22,7 +22,7 @@ import java.util.Objects;
 import org.springframework.context.ApplicationEvent;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 /**
  * An {@link ApplicationEvent} that is issued when a valid AuthnRequest has been received and the connector has
@@ -47,11 +47,11 @@ public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
   /**
    * Constructor used when the user was directed to the country selection view.
    *
-   * @param token the {@link Saml2UserAuthenticationInputToken}
+   * @param token the {@link UserAuthenticationInputToken}
    * @param countries a list of countries that was displayed for the user to select from
    */
   public BeforeCountrySelectionEvent(
-      final Saml2UserAuthenticationInputToken token, final List<String> countries) {
+      final UserAuthenticationInputToken token, final List<String> countries) {
     super(token);
     this.selectableCountries = Objects.requireNonNull(countries, "countries must not be null");
   }
@@ -59,24 +59,24 @@ public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
   /**
    * Constructor used when the country selection view was skipped.
    *
-   * @param token the {@link Saml2UserAuthenticationInputToken}
+   * @param token the {@link UserAuthenticationInputToken}
    * @param country the pre-selected country
    * @param reason the reason why no country selection view was displayed
    */
   public BeforeCountrySelectionEvent(
-      final Saml2UserAuthenticationInputToken token, final String country, final NoDisplayReason reason) {
+      final UserAuthenticationInputToken token, final String country, final NoDisplayReason reason) {
     super(token);
     this.preSelectedCountry = Objects.requireNonNull(country, "country must not be null");
     this.noDisplayReason = Objects.requireNonNull(reason, "reason must not be null");
   }
 
   /**
-   * Gets the {@link Saml2UserAuthenticationInputToken} associated to the event.
+   * Gets the {@link UserAuthenticationInputToken} associated to the event.
    *
-   * @return the {@link Saml2UserAuthenticationInputToken}
+   * @return the {@link UserAuthenticationInputToken}
    */
-  public Saml2UserAuthenticationInputToken getInputToken() {
-    return (Saml2UserAuthenticationInputToken) this.getSource();
+  public UserAuthenticationInputToken getInputToken() {
+    return (UserAuthenticationInputToken) this.getSource();
   }
 
   /**

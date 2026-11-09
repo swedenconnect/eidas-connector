@@ -16,19 +16,16 @@
 package se.swedenconnect.eidas.connector.authn;
 
 import lombok.extern.slf4j.Slf4j;
-import org.opensaml.saml.saml2.core.AuthnRequest;
-import org.opensaml.saml.saml2.core.IDPEntry;
 import org.opensaml.saml.saml2.core.StatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
-import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
-import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
-import se.swedenconnect.spring.saml.idp.error.Saml2ErrorStatusException;
+import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
+import se.swedenconnect.spring.authnserver.attributes.GenericRequestedAttribute;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -77,10 +74,10 @@ public class EidasCountryHandler {
    *
    * @param token the input token
    * @return a {@link SelectableCountries}
-   * @throws Saml2ErrorStatusException for SAML error responses
+   * @throws SamlErrorStatusException for SAML error responses
    */
-  public SelectableCountries getSelectableCountries(final Saml2UserAuthenticationInputToken token)
-      throws Saml2ErrorStatusException {
+  public SelectableCountries getSelectableCountries(final UserAuthenticationInputToken token)
+      throws SamlErrorStatusException {
 
     // First see if the authentication request pointed out specific country/countries.
     //
@@ -107,14 +104,14 @@ public class EidasCountryHandler {
       if (filteredRequestedCountries.isEmpty()) {
         final String msg = String.format("Country/countries %s not available for authentication", requestedCountries);
         log.info("{} [{}]", msg, token.getLogString());
-        throw new Saml2ErrorStatusException(StatusCode.REQUESTER, StatusCode.NO_AVAILABLE_IDP, null, msg, msg);
+        throw SamlErrors.error(StatusCode.REQUESTER, StatusCode.NO_AVAILABLE_IDP, msg);
       }
       else if (filteredRequestedCountries.size() == 1 && requestedCountries.size() == 1) {
         if (!filteredRequestedCountries.getFirst().canAuthenticate()) {
           final String msg = String.format("Can not send request to %s - it does not support requested authn context",
               filteredRequestedCountries.getFirst().country());
           log.info("{} [{}]", msg, token.getLogString());
-          throw new Saml2ErrorStatusException(StatusCode.REQUESTER, StatusCode.NO_AVAILABLE_IDP, null, msg, msg);
+          throw SamlErrors.error(StatusCode.REQUESTER, StatusCode.NO_AVAILABLE_IDP, msg);
         }
         return new SelectableCountries(filteredRequestedCountries, false);
       }
@@ -136,47 +133,39 @@ public class EidasCountryHandler {
    * @param token the input
    * @return a list of country codes (possibly empty)
    */
-  public static List<String> getRequestedCountries(final Saml2UserAuthenticationInputToken token) {
+  public static List<String> getRequestedCountries(final UserAuthenticationInputToken token) {
 
-    // First check PrincipalSelection extension.
+    // First check PrincipalSelection extension. A country given there is a requested c attribute holding values.
     //
-    final UserAttribute principalSelection =
-        token.getAuthnRequirements().getPrincipalSelectionAttributes().stream()
-            .filter(u -> Objects.equals(AttributeConstants.ATTRIBUTE_NAME_C, u.getId()))
-            .findFirst()
-            .orElse(null);
-    if (principalSelection != null) {
-      final List<String> countries = principalSelection.getValues().stream()
-          .filter(String.class::isInstance)
-          .map(String.class::cast)
-          .toList();
-      if (!countries.isEmpty()) {
-        return countries;
-      }
+    final List<String> principalSelection = token.getAuthnRequirements().getRequestedAttributes().stream()
+        .filter(a -> Objects.equals(AttributeIdentifiers.COUNTRY, a.getIdentifier()))
+        .map(GenericRequestedAttribute::getRequestedValues)
+        .flatMap(List::stream)
+        .filter(String.class::isInstance)
+        .map(String.class::cast)
+        .toList();
+    if (!principalSelection.isEmpty()) {
+      return principalSelection;
     }
 
     // Check scoping in AuthnRequest ...
     //
-    final AuthnRequest authnRequest = token.getAuthnRequestToken().getAuthnRequest();
-    if (authnRequest.getScoping() == null || authnRequest.getScoping().getIDPList() == null) {
-      return Collections.emptyList();
-    }
     final List<String> countries = new ArrayList<>();
-    for (final IDPEntry entry : authnRequest.getScoping().getIDPList().getIDPEntrys()) {
-      if (entry.getProviderID() == null) {
+    for (final String providerId : token.getAuthnRequirements().getRequestedAuthnProviders()) {
+      if (providerId == null) {
         continue;
       }
-      if (entry.getProviderID().startsWith(COUNTRY_URI_PREFIX)) {
-        final String country = entry.getProviderID().substring(COUNTRY_URI_PREFIX.length());
+      if (providerId.startsWith(COUNTRY_URI_PREFIX)) {
+        final String country = providerId.substring(COUNTRY_URI_PREFIX.length());
         if (StringUtils.hasText(country)) {
           countries.add(country.toUpperCase());
         }
         else {
-          log.warn("Bad value for IDPEntry ({}) in AuthnRequest '{}'", entry.getProviderID(), authnRequest.getID());
+          log.warn("Bad value for IDPEntry ({}) in AuthnRequest [{}]", providerId, token.getLogString());
         }
       }
       else {
-        log.info("Unrecognized IDPEntry ({}) in AuthnRequest '{}'", entry.getProviderID(), authnRequest.getID());
+        log.info("Unrecognized IDPEntry ({}) in AuthnRequest [{}]", providerId, token.getLogString());
       }
     }
     return countries;

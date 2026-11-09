@@ -1,0 +1,25 @@
+#
+# Test profile for the authentication flow test. It is applied on top of the base configuration. The locations of
+# keys, metadata and the PRID policy are given by the test.
+#
+connector:
+  domain: www.example.com
+  base-url: https://www.example.com/idp
+  development-mode: true
+  country: SE
+  eidas:
+    credentials:
+      default-credential:
+        bundle: connector
+
+authn-server:
+  saml:
+    entity-id: https://connector.example.com/eidas
+    credentials:
+      default-credential:
+        bundle: connector
+
+logging:
+  level:
+    se:
+      swedenconnect: INFO

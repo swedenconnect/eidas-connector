@@ -30,21 +30,22 @@ import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.Extensions;
 import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
 import org.opensaml.security.credential.Credential;
+import org.opensaml.storage.ReplayCache;
 import org.opensaml.xmlsec.DecryptionConfiguration;
 import org.opensaml.xmlsec.DecryptionParameters;
 import org.opensaml.xmlsec.encryption.support.ChainingEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
-import se.swedenconnect.eidas.attributes.AttributeMappingService;
-import se.swedenconnect.eidas.attributes.DefaultAttributeMappingService;
-import se.swedenconnect.eidas.attributes.conversion.AttributeConverterConstants;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
+import se.swedenconnect.eidas.connector.attributes.EidasAttributeConverter;
+import se.swedenconnect.eidas.connector.attributes.EidasRequestedAttributesBuilder;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationController;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequestGenerator;
@@ -63,7 +64,7 @@ import se.swedenconnect.opensaml.saml2.metadata.build.EntityDescriptorBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.OrganizationBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.SPSSODescriptorBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.SigningMethodBuilder;
-import se.swedenconnect.opensaml.saml2.response.replay.MessageReplayChecker;
+import se.swedenconnect.opensaml.saml2.response.replay.MessageReplayCheckerImpl;
 import se.swedenconnect.opensaml.saml2.response.validation.ResponseValidationSettings;
 import se.swedenconnect.opensaml.xmlsec.config.ExtendedDefaultSecurityConfigurationBootstrap;
 import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
@@ -71,8 +72,11 @@ import se.swedenconnect.opensaml.xmlsec.encryption.support.DecryptionUtils;
 import se.swedenconnect.opensaml.xmlsec.encryption.support.SAMLObjectDecrypter;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.opensaml.OpenSamlCredential;
-import se.swedenconnect.spring.saml.idp.settings.IdentityProviderSettings;
+import se.swedenconnect.spring.authnserver.autoconfigure.AuthnServerConfigurationProperties;
+import se.swedenconnect.spring.authnserver.autoconfigure.saml.SamlConfigurationProperties;
+import se.swedenconnect.spring.authnserver.saml.authnrequest.validation.replay.InMemoryReplayCache;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -94,11 +98,20 @@ public class EidasAuthenticationConfiguration {
   /** eIDAS protocol version attribute name. */
   private static final String PROTOCOL_VERSION_NAME = "http://eidas.europa.eu/entity-attributes/protocol-version";
 
+  /** The clock skew that is used when not configured. */
+  private static final Duration DEFAULT_CLOCK_SKEW = Duration.ofSeconds(30);
+
+  /** The maximum message age that is used when not configured. */
+  private static final Duration DEFAULT_MAX_MESSAGE_AGE = Duration.ofMinutes(3);
+
   /** The connector properties. */
   private final ConnectorConfigurationProperties properties;
 
-  /** The IdP settings. */
-  private final IdentityProviderSettings idpSettings;
+  /** The time that clocks of other parties may differ from ours. */
+  private final Duration clockSkew;
+
+  /** The maximum age of a received message. */
+  private final Duration maxMessageAge;
 
   /** The connector credentials. */
   private final ConnectorCredentials credentials;
@@ -107,13 +120,18 @@ public class EidasAuthenticationConfiguration {
    * Constructor.
    *
    * @param properties the connector properties
-   * @param idpSettings the SAML IP settings
+   * @param serverProperties the authentication server properties
+   * @param samlProperties the SAML properties of the authentication server
    * @param credentials the connector credentials
    */
   public EidasAuthenticationConfiguration(final ConnectorConfigurationProperties properties,
-      final IdentityProviderSettings idpSettings, final ConnectorCredentials credentials) {
+      final AuthnServerConfigurationProperties serverProperties, final SamlConfigurationProperties samlProperties,
+      final ConnectorCredentials credentials) {
     this.properties = properties;
-    this.idpSettings = idpSettings;
+    this.clockSkew = Optional.ofNullable(samlProperties.getClockSkew())
+        .or(() -> Optional.ofNullable(serverProperties.getClockSkew()))
+        .orElse(DEFAULT_CLOCK_SKEW);
+    this.maxMessageAge = Optional.ofNullable(samlProperties.getMaxMessageAge()).orElse(DEFAULT_MAX_MESSAGE_AGE);
     this.credentials = credentials;
   }
 
@@ -132,18 +150,17 @@ public class EidasAuthenticationConfiguration {
    *
    * @param metadata the SP metadata
    * @param securityConfiguration the security configuration
-   * @param attributeMappingService attribute mappings
    * @return {@link EidasAuthnRequestGenerator}
    */
   @Bean
   EidasAuthnRequestGenerator eidasAuthnRequestGenerator(
       @Qualifier("connector.sp.metadata") final EntityDescriptor metadata,
-      @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration,
-      final AttributeMappingService attributeMappingService) {
+      @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration) {
 
     final EidasAuthnRequestGenerator generator = new EidasAuthnRequestGenerator(
         metadata, this.credentials.getSpSigningCredential(), securityConfiguration,
-        attributeMappingService, this.properties.getEidas().getProviderName());
+        new EidasRequestedAttributesBuilder(this.properties.getIdp().getEntityCategories()),
+        this.properties.getEidas().getProviderName());
     generator.setSkipScopingElementFor(this.properties.getEidas().getSkipScopingFor());
     generator.setPreferredBinding(this.properties.getEidas().getPreferredBinding());
 
@@ -151,13 +168,13 @@ public class EidasAuthenticationConfiguration {
   }
 
   /**
-   * Creates a {@link AttributeMappingService} that helps us map between Swedish eID attributes and eIDAS attributes.
+   * Creates the {@link EidasAttributeConverter} that converts the attributes received from the foreign countries.
    *
-   * @return a {@link AttributeMappingService}
+   * @return an {@link EidasAttributeConverter}
    */
   @Bean
-  AttributeMappingService attributeMappingService() {
-    return new DefaultAttributeMappingService(AttributeConverterConstants.DEFAULT_CONVERTERS);
+  EidasAttributeConverter eidasAttributeConverter() {
+    return new EidasAttributeConverter();
   }
 
   /**
@@ -220,7 +237,7 @@ public class EidasAuthenticationConfiguration {
    * @param euMetadataProvider the EU metadata
    * @param securityConfiguration the security configuration
    * @param decrypter object decrypter
-   * @param messageReplayChecker the message replay checker
+   * @param replayCache the replay cache of the authentication server, when its replay IDs are kept in Redis
    * @return a {@link EidasResponseProcessor}.
    * @throws ComponentInitializationException for init errors
    */
@@ -228,13 +245,19 @@ public class EidasAuthenticationConfiguration {
   EidasResponseProcessor eidasResponseProcessor(final EuMetadataProvider euMetadataProvider,
       @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration,
       @Qualifier("connector.sp.SAMLObjectDecrypter") final SAMLObjectDecrypter decrypter,
-      final MessageReplayChecker messageReplayChecker) throws ComponentInitializationException {
+      final ObjectProvider<ReplayCache> replayCache) throws ComponentInitializationException {
 
     final ResponseValidationSettings validationSettings = new ResponseValidationSettings();
     validationSettings.setRequireSignedAssertions(
         this.properties.getEidas().getRequiresSignedAssertions());
-    validationSettings.setAllowedClockSkew(this.idpSettings.getClockSkewAdjustment());
-    validationSettings.setMaxAgeResponse(this.idpSettings.getMaxMessageAge());
+    validationSettings.setAllowedClockSkew(this.clockSkew);
+    validationSettings.setMaxAgeResponse(this.maxMessageAge);
+
+    // The responses from the foreign countries are checked for replay in the same store as the authentication
+    // server uses for received requests ...
+    //
+    final MessageReplayCheckerImpl messageReplayChecker = new MessageReplayCheckerImpl(
+        replayCache.getIfUnique(InMemoryReplayCache::new), "connector-sp-replay-checker");
 
     // TODO: Make configurable
     validationSettings.setStrictValidation(false);

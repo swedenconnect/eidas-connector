@@ -17,15 +17,18 @@ package se.swedenconnect.eidas.connector.authn.ui;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.opensaml.core.xml.XMLObject;
+import org.opensaml.saml.saml2.core.Attribute;
+import se.swedenconnect.eidas.connector.attributes.EidasAttributeConverter;
+import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
 import se.swedenconnect.opensaml.eidas.ext.attributes.TransliterationStringType;
-import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
-import se.swedenconnect.spring.saml.idp.attributes.eidas.EidasAttributeValue;
-import se.swedenconnect.spring.saml.idp.attributes.eidas.TransliterationString;
+import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
+import se.swedenconnect.spring.authnserver.attributes.GenericAttribute;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Model class for the Sign Consent view.
@@ -78,33 +81,38 @@ public class SignUiModel extends BaseUiModel {
     public UserInfo() {
     }
 
-    public UserInfo(final List<UserAttribute> attributes) {
+    /**
+     * Constructor setting up the user info from the eIDAS authentication.
+     *
+     * @param token the eIDAS authentication token
+     */
+    public UserInfo(final EidasAuthenticationToken token) {
 
       String givenName = null;
       String surName = null;
 
-      for (final UserAttribute attribute : attributes) {
-        if (AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME.equals(attribute.getId())) {
-          this.internationalId = getEidasAttributeValue(attribute.getValues());
+      for (final Attribute attribute : token.getEidasAttributes()) {
+        if (AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME.equals(attribute.getName())) {
+          this.internationalId = getEidasAttributeValue(attribute);
         }
-        else if (AttributeConstants.EIDAS_DATE_OF_BIRTH_ATTRIBUTE_NAME.equals(attribute.getId())) {
-          this.dateOfBirth = getEidasAttributeValue(attribute.getValues());
+        else if (AttributeConstants.EIDAS_DATE_OF_BIRTH_ATTRIBUTE_NAME.equals(attribute.getName())) {
+          this.dateOfBirth = getEidasAttributeValue(attribute);
         }
-        else if (AttributeConstants.EIDAS_CURRENT_GIVEN_NAME_ATTRIBUTE_NAME.equals(attribute.getId())) {
-          givenName = getEidasAttributeValue(attribute.getValues());
+        else if (AttributeConstants.EIDAS_CURRENT_GIVEN_NAME_ATTRIBUTE_NAME.equals(attribute.getName())) {
+          givenName = getEidasAttributeValue(attribute);
         }
-        else if (AttributeConstants.EIDAS_CURRENT_FAMILY_NAME_ATTRIBUTE_NAME.equals(attribute.getId())) {
-          surName = getEidasAttributeValue(attribute.getValues());
-        }
-        else if (se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants.ATTRIBUTE_NAME_MAPPED_PERSONAL_IDENTITY_NUMBER
-            .equals(attribute.getId())) {
-          this.swedishId = attribute.getValues().stream()
-              .filter(Objects::nonNull)
-              .map(String.class::cast)
-              .findFirst()
-              .orElse(null);
+        else if (AttributeConstants.EIDAS_CURRENT_FAMILY_NAME_ATTRIBUTE_NAME.equals(attribute.getName())) {
+          surName = getEidasAttributeValue(attribute);
         }
       }
+      this.swedishId = Stream.of(AttributeIdentifiers.MAPPED_PERSONAL_IDENTITY_NUMBER,
+              AttributeIdentifiers.MAPPED_COORDINATION_NUMBER)
+          .map(token::getAttribute)
+          .filter(Objects::nonNull)
+          .map(GenericAttribute::getStringValues)
+          .flatMap(List::stream)
+          .findFirst()
+          .orElse(null);
 
       if (this.swedishId != null && this.swedishId.length() == 12) {
         this.swedishId = "%s-%s".formatted(this.swedishId.substring(0, 8), this.swedishId.substring(8));
@@ -123,26 +131,26 @@ public class SignUiModel extends BaseUiModel {
       this.name = !_name.isEmpty() ? _name.toString() : null;
     }
 
-    private static String getEidasAttributeValue(final List<? extends Serializable> values) {
-      final boolean transliterated = !values.isEmpty() && values.getFirst() instanceof TransliterationString;
+    /**
+     * Gets the value of an eIDAS attribute for display. For a transliterated attribute with several values, the value
+     * in Latin script is used.
+     *
+     * @param attribute the eIDAS attribute
+     * @return the value, or {@code null}
+     */
+    private static String getEidasAttributeValue(final Attribute attribute) {
+      final List<XMLObject> values = attribute.getAttributeValues();
+      final boolean transliterated = !values.isEmpty() && values.getFirst() instanceof TransliterationStringType;
       if (transliterated && values.size() > 1) {
         return values.stream()
-            .filter(Objects::nonNull)
-            .map(TransliterationString.class::cast)
-            .map(TransliterationString::createXmlObject)
-            .filter(TransliterationStringType::getLatinScript)
+            .filter(TransliterationStringType.class::isInstance)
+            .map(TransliterationStringType.class::cast)
+            .filter(v -> Boolean.TRUE.equals(v.getLatinScript()))
             .map(TransliterationStringType::getValue)
             .findFirst()
             .orElse(null);
       }
-      else {
-        return values.stream()
-            .filter(Objects::nonNull)
-            .map(EidasAttributeValue.class::cast)
-            .map(EidasAttributeValue::getValueAsString)
-            .findFirst()
-            .orElse(null);
-      }
+      return EidasAttributeConverter.getValue(attribute);
     }
 
   }
