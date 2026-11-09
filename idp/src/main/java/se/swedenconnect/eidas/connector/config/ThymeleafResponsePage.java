@@ -1,0 +1,84 @@
+/*
+ * Copyright 2017-2026 Sweden Connect
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package se.swedenconnect.eidas.connector.config;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.thymeleaf.context.WebContext;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.thymeleaf.web.servlet.JakartaServletWebApplication;
+import se.swedenconnect.spring.authnserver.saml.response.ResponsePage;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+/**
+ * A {@link ResponsePage} that posts the SAML response to the Service Provider using a Thymeleaf template.
+ *
+ * @author Martin Lindström
+ */
+@Slf4j
+public class ThymeleafResponsePage implements ResponsePage {
+
+  /** The content type of the page. */
+  private static final MediaType TEXT_HTML_UTF8 = new MediaType("text", "html", StandardCharsets.UTF_8);
+
+  /** The template engine. */
+  private final SpringTemplateEngine templateEngine;
+
+  /** The template ID. */
+  private final String templateId;
+
+  /**
+   * Constructor.
+   *
+   * @param templateEngine the template engine
+   * @param templateId the template ID
+   */
+  public ThymeleafResponsePage(final SpringTemplateEngine templateEngine, final String templateId) {
+    this.templateEngine = Objects.requireNonNull(templateEngine, "templateEngine must not be null");
+    this.templateId = Objects.requireNonNull(templateId, "templateId must not be null");
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void sendResponse(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse,
+      final String destination, final String samlResponse, final String relayState) throws IOException {
+
+    log.debug("Invoking template to create POST body");
+
+    final JakartaServletWebApplication webApplication = JakartaServletWebApplication.buildApplication(
+        httpServletRequest.getServletContext());
+
+    final WebContext thymeleafContext =
+        new WebContext(webApplication.buildExchange(httpServletRequest, httpServletResponse));
+
+    thymeleafContext.setVariable("action", destination);
+    thymeleafContext.setVariable("SAMLResponse", samlResponse);
+    if (relayState != null) {
+      thymeleafContext.setVariable("RelayState", relayState);
+    }
+    httpServletResponse.setContentType(TEXT_HTML_UTF8.toString());
+    httpServletResponse.setHeader("Cache-control", "no-cache, no-store");
+    httpServletResponse.setHeader("Pragma", "no-cache");
+
+    this.templateEngine.process(this.templateId, thymeleafContext, httpServletResponse.getWriter());
+  }
+
+}

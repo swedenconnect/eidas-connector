@@ -15,6 +15,6 @@
  */
 
 /**
- * Extensions to the IdP library.
+ * Handling of Identity Provider request data that the authentication server leaves to the connector.
  */
 package se.swedenconnect.eidas.connector.idp;

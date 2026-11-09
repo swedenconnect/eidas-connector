@@ -20,7 +20,7 @@ import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Response;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 import java.io.Serial;
 import java.util.Objects;
@@ -51,7 +51,7 @@ public class SuccessEidasResponseEvent extends AbstractConnectorAuthnEvent {
    * @param response the SAML response
    * @param assertion the SAML assertion
    */
-  public SuccessEidasResponseEvent(@Nonnull final Saml2UserAuthenticationInputToken token,
+  public SuccessEidasResponseEvent(@Nonnull final UserAuthenticationInputToken token,
       @Nonnull final Response response, @Nonnull final Assertion assertion, @Nonnull final String country) {
     super(token);
     this.response = new SerializableOpenSamlObject<>(

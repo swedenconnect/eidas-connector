@@ -92,20 +92,20 @@ connector:
     service-url: https://sandbox.swedenconnect.se/idm
     oauth2:
       resource-id: https://sandbox.swedenconnect.se/idm
-      client-id: ${saml.idp.entity-id}
+      client-id: ${authn-server.saml.entity-id}
       check-scopes:
         - ${connector.idm.oauth2.resource-id}/idrecord_check
       get-scopes:
         - ${connector.idm.oauth2.resource-id}/idrecord_get
       server:
-        issuer: ${saml.idp.entity-id}/as
+        issuer: ${authn-server.saml.entity-id}/as
       credential:
         bundle: idp-oauth2
 
-saml:
-  idp:
+authn-server:
+  base-url: ${connector.base-url}
+  saml:
     entity-id: https://dev.connector.swedenconnect.se/eidas
-    base-url: ${connector.base-url}
     metadata-providers:
       - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
         backup-location: ${connector.backup-directory}/metadata/sc-cache.xml
@@ -125,11 +125,13 @@ saml:
           key:
             alias: old-encrypt
             key-password: secret
-    audit:
-      in-memory:
-        capacity: 1000
-      file:
-        log-file: ${CONNECTOR_DIRECTORY}/logs/audit.log
+
+audit:
+  repository:
+    in-memory:
+      capacity: 1000
+    file:
+      log-file: ${CONNECTOR_DIRECTORY}/logs/audit.log
 
 logging:
   level:

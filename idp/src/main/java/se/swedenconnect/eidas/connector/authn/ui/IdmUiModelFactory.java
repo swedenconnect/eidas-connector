@@ -15,7 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 /**
  * Factory for creating {@link IdmUiModel} objects.
@@ -40,7 +40,7 @@ public class IdmUiModelFactory extends AbstractUiModelFactory<IdmUiModel> {
    * @param inputToken the input token
    * @return an {@link IdmUiModel}
    */
-  public IdmUiModel createUiModel(final Saml2UserAuthenticationInputToken inputToken) {
+  public IdmUiModel createUiModel(final UserAuthenticationInputToken inputToken) {
     final IdmUiModel model = new IdmUiModel();
     this.initModel(model, inputToken);
     return model;

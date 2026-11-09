@@ -22,10 +22,10 @@ import java.util.function.Predicate;
 
 import org.springframework.context.i18n.LocaleContextHolder;
 
+import se.swedenconnect.eidas.connector.authn.SamlRequestData;
 import se.swedenconnect.eidas.connector.authn.ui.BaseUiModel.SpInfo;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2ServiceProviderUiInfo;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 /**
  * Abstract factory bean for creating UI model objects.
@@ -57,9 +57,9 @@ public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
    * Initializes the model object.
    *
    * @param model the object to initialize
-   * @param token the SAML input token
+   * @param token the input token
    */
-  protected void initModel(final T model, final Saml2UserAuthenticationInputToken token) {
+  protected void initModel(final T model, final UserAuthenticationInputToken token) {
     model.setAccessibilityUrl(this.accessibilityUrl);
     model.setSpInfo(this.createSpInfo(token));
   }
@@ -73,11 +73,11 @@ public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
     return this.languageHandler;
   }
 
-  private SpInfo createSpInfo(final Saml2UserAuthenticationInputToken token) {
+  private SpInfo createSpInfo(final UserAuthenticationInputToken token) {
 
     final Locale locale = LocaleContextHolder.getLocale();
 
-    final Saml2ServiceProviderUiInfo spUiInfo = token.getUiInfo();
+    final ServiceProviderUiInfo spUiInfo = new ServiceProviderUiInfo(SamlRequestData.getSpMetadata(token));
     final SpInfo model = new EidasUiModel.SpInfo();
 
     // First the display name ...
@@ -96,17 +96,17 @@ public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
     // Try to find something larger than 80px and less than 120px first
     //
     model.setLogoUrl(Optional.ofNullable(spUiInfo.getLogotype(findBestSize(locale.getLanguage())))
-        .map(Saml2ServiceProviderUiInfo.Logotype::getUrl)
+        .map(ServiceProviderUiInfo.Logotype::getUrl)
         .orElseGet(() -> Optional.ofNullable(spUiInfo.getLogotype(findBestSize()))
-            .map(Saml2ServiceProviderUiInfo.Logotype::getUrl)
+            .map(ServiceProviderUiInfo.Logotype::getUrl)
             .orElseGet(() -> Optional.ofNullable(spUiInfo.getLogotype((l) -> true))
-                .map(Saml2ServiceProviderUiInfo.Logotype::getUrl)
+                .map(ServiceProviderUiInfo.Logotype::getUrl)
                 .orElse(null))));
 
     return model;
   }
 
-  private static Predicate<Saml2ServiceProviderUiInfo.Logotype> findBestSize(final String languageTag) {
+  private static Predicate<ServiceProviderUiInfo.Logotype> findBestSize(final String languageTag) {
     return (logo) -> {
       if (logo.getLanguage() == null) {
         return false;
@@ -115,7 +115,7 @@ public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
     };
   }
 
-  private static Predicate<Saml2ServiceProviderUiInfo.Logotype> findBestSize() {
+  private static Predicate<ServiceProviderUiInfo.Logotype> findBestSize() {
     return (logo) -> {
       if (logo.getHeight() == null) {
         return false;

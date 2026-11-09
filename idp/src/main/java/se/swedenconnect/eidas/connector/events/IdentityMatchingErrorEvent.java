@@ -17,7 +17,7 @@ package se.swedenconnect.eidas.connector.events;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 import java.io.Serial;
 
@@ -44,7 +44,7 @@ public class IdentityMatchingErrorEvent extends AbstractConnectorAuthnEvent {
    * @param eidasToken the eIDAS authentication token
    * @param error the error raised during the IdM operation
    */
-  public IdentityMatchingErrorEvent(final Saml2UserAuthenticationInputToken token,
+  public IdentityMatchingErrorEvent(final UserAuthenticationInputToken token,
       final EidasAuthenticationToken eidasToken, final Exception error) {
     super(token);
     this.eidasToken = eidasToken;

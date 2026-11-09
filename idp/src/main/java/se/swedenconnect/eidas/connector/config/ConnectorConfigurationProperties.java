@@ -27,7 +27,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import se.swedenconnect.eidas.connector.authn.sp.EidasSpMetadataController;
-import se.swedenconnect.spring.saml.idp.autoconfigure.settings.IdentityProviderConfigurationProperties;
 
 import java.io.File;
 import java.security.cert.X509Certificate;
@@ -182,7 +181,34 @@ public class ConnectorConfigurationProperties implements InitializingBean {
     /**
      * If the {@code location} setting is a URL and an HTTP proxy is required this setting configures this proxy.
      */
-    private IdentityProviderConfigurationProperties.MetadataProviderConfigurationProperties.HttpProxy httpProxy;
+    private HttpProxy httpProxy;
+
+    /**
+     * Configuration properties for an HTTP proxy.
+     */
+    @Data
+    public static class HttpProxy {
+
+      /**
+       * The proxy host.
+       */
+      private String host;
+
+      /**
+       * The proxy port.
+       */
+      private Integer port;
+
+      /**
+       * The proxy password (optional).
+       */
+      private String password;
+
+      /**
+       * The proxy user name (optional).
+       */
+      private String userName;
+    }
 
     /** {@inheritDoc} */
     @Override

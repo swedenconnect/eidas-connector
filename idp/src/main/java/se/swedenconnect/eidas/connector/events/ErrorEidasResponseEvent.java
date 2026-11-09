@@ -18,7 +18,7 @@ package se.swedenconnect.eidas.connector.events;
 import org.opensaml.saml.saml2.core.Response;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 import java.io.Serial;
 import java.util.Objects;
@@ -42,7 +42,7 @@ public class ErrorEidasResponseEvent extends AbstractConnectorAuthnEvent {
    * @param token the authentication input token
    * @param response the SAML response
    */
-  public ErrorEidasResponseEvent(final Saml2UserAuthenticationInputToken token, final Response response) {
+  public ErrorEidasResponseEvent(final UserAuthenticationInputToken token, final Response response) {
     super(token);
     this.response = new SerializableOpenSamlObject<>(
         Objects.requireNonNull(response, "response must not be null"));

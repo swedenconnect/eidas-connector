@@ -24,7 +24,7 @@ import org.springframework.web.util.WebUtils;
 import se.swedenconnect.eidas.connector.authn.EidasCountryHandler.SelectableCountry;
 import se.swedenconnect.eidas.connector.config.CookieGenerator;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -70,12 +70,12 @@ public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
    * Creates an {@link EidasUiModel}.
    *
    * @param request the HTTP servlet request
-   * @param token the SAML input token
+   * @param token the input token
    * @param selectableCountries available countries
    * @return an {@link EidasUiModel}
    */
   public EidasUiModel createUiModel(final HttpServletRequest request,
-      final Saml2UserAuthenticationInputToken token,
+      final UserAuthenticationInputToken token,
       final List<SelectableCountry> selectableCountries) {
 
     final EidasUiModel uiModel = new EidasUiModel();

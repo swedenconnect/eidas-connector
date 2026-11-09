@@ -28,6 +28,8 @@
 
     4.2. [Current PRID Policy Configuration](#current-prid-policy-configuration)
 
+    4.3. [Authentication Server Information](#authentication-server-information)
+
 5. [**The PRID Configuration Refresh Endpoint**](#the-prid-configuration-refresh-endpoint)
 
 ---
@@ -36,6 +38,11 @@
 ## 1. Introduction
 
 The Spring Boot [Actuator Endpoints](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html) can be used for supervision of the application. It defines a set of endpoints which are described in the sections below.
+
+The connector is built on the [Spring Authentication Server](https://docs.swedenconnect.se/spring-authentication-server), which adds its own Actuator support, see
+[Monitoring and managing the server](https://docs.swedenconnect.se/spring-authentication-server/management.html). The base configuration of the connector exposes the
+endpoints `info`, `health`, `metrics`, `loggers`, `refreshprid` and `auditevents`. The `clients` endpoint of the
+authentication server is not exposed by default.
 
 <a name="accessing-audit-logs"></a>
 ## 2. Accessing Audit Logs
@@ -46,7 +53,10 @@ The Spring Boot [Actuator Endpoints](https://docs.spring.io/spring-boot/referenc
 
 Displays audit events.
 
-Depending on how Audit logging is configured (see [Audit Logging Configuration](configuration.html#audit-logging-configuration)), the audit endpoint may not display all available events. For example, if Redis is not used to save events, the settings for in-memory logging will be used.
+The audit events are handled by [spring-audit-support](https://docs.swedenconnect.se/spring-audit-support). The endpoint
+returns the events of the first repository that can be queried. Repositories that can only be written, such as the
+file and syslog repositories, cannot be read back, so when no other repository that can be queried is configured, the
+in-memory repository is used. See [Audit Logging Configuration](configuration.html#audit-logging-configuration).
 
 See [Swedish eIDAS Connector Audit Logging](audit.html) for a listing of which audit events that are logged by the Connector.
 
@@ -78,7 +88,11 @@ Apart from Spring's standard health components<sup>1</sup>, the eIDAS Connector 
 
 **Key:** `saml-metadata`
 
-**Description:** Asserts that the connector has access to valid SAML metadata.
+**Description:** Asserts that the connector has access to valid SAML metadata. The `id` holds the identifiers of the
+configured metadata sources, separated by commas.
+
+The indicator replaces the `saml-metadata` health indicator of the Spring Authentication Server, which therefore is
+not shown.
 
 If the connector has access to valid metadata, the component will display the following information:
 
@@ -238,6 +252,16 @@ Example:
   ...
 }
 ```
+
+<a name="authentication-server-information"></a>
+### 4.3. Authentication Server Information
+
+**Keys:** `authn-server` and `client-registry`
+
+**Description:** Added by the Spring Authentication Server. `authn-server` gives the SAML entityID of the IdP and the
+authentication contexts that it supports, and `client-registry` gives the SAML metadata sources, the number of
+Service Providers they hold and the time of their last update. See
+[The info endpoint](https://docs.swedenconnect.se/spring-authentication-server/management.html#the-info-endpoint).
 
 <a name="the-prid-configuration-refresh-endpoint"></a>
 ## 5. The PRID Configuration Refresh Endpoint

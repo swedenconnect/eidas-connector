@@ -6,25 +6,27 @@
 
 ---
 
-The application produces audit log entries using Spring Boot's auditing support, see 
-[Spring Boot Authentication Auditing Support](https://www.baeldung.com/spring-boot-authentication-audit).
+The application produces audit log entries using [spring-audit-support](https://docs.swedenconnect.se/spring-audit-support).
+How the audit events are stored is configured with the `audit.*` properties, see
+[Audit Logging Configuration](configuration.html#audit-logging-configuration).
 
-If you want to be able to obtain audit logs via Spring Boot Actuator you need to:
-
-- Set the property `management.auditevents.enabled` to `true`.
-
-- Include the string `auditevents` among the list specified by the setting 
-`management.endpoints.web.exposure.include`.
-
-- Make sure a `org.springframework.boot.actuate.audit.AuditEventRepository` bean exists.
+The audit events can be read through the Spring Boot Actuator `auditevents` endpoint, see
+[Accessing Audit Logs](management.html#accessing-audit-logs).
 
 The eIDAS Connector produces two types of Audit events: System Audit Events and User Audit Events.
 
-All audit events will contain the following fields:
+All audit events have the common structure of spring-audit-support, see
+[The audit event](https://docs.swedenconnect.se/spring-audit-support/usage.html#the-audit-event):
 
 - `type` - The type of the audit entry, see below.
 
 - `timestamp` - The timestamp of when the audit event entry was created.
+
+- `application` - The application that produced the event, with `name` (`eidas-connector` unless
+`spring.application.name` is changed) and `version`.
+
+- `correlation_id` - Ties together all events of one authentication flow, from the authentication request sent by the
+Swedish Service Provider to the response sent back. Not present for system events.
 
 - `principal` - The "owner" of the entry. Depending on the type of audit event this is either
 "eidas-connector" for system events or the ID SAML Service Provider that requested user authentication
@@ -65,30 +67,30 @@ Proxy Services are periodically updated. This event is signalled when something 
 
 User Audit Events are events that are logged as a result of an authentication request being processed.
 
-The Swedish eIDAS Connector is built using the [Spring Security SAML Identity Provider](https://github.com/swedenconnect/saml-identity-provider) library. The [Identity Provider Auditing](https://docs.swedenconnect.se/saml-identity-provider/audit.html) page describes all the SAML-related audit events that are logged also by the eIDAS Connector. 
+The Swedish eIDAS Connector is built using the
+[Spring Authentication Server](https://docs.swedenconnect.se/spring-authentication-server) library. The
+[Auditing](https://docs.swedenconnect.se/spring-authentication-server/audit.html) page describes the audit events
+that the library produces, and that are also logged by the eIDAS Connector. These are:
 
-These are:
+- `authn_request_received` - An authentication request has been received. No checks have been made yet.
 
-- [Authentication Request Received](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_REQUEST_RECEIVED) - `SAML2_REQUEST_RECEIVED` - An event that is created when a SAML
-`AuthnRequest` has been received. At this point the IdP has not performed any checks to validate the
-correctness of the message.
+- `authn_request_accepted` - The received authentication request has been successfully validated, and the user
+authentication starts.
 
-- [Before User Authentication](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_BEFORE_USER_AUTHN) - `SAML2_BEFORE_USER_AUTHN` - The received authentication request has been successfully validated.
+- `authn_user_authenticated` - The user has been authenticated. This can also be a re-use of a previously performed
+authentication (SSO). In those cases this is reflected in the audit data.
 
-- [After User Authentication](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_AFTER_USER_AUTHN) - `SAML2_AFTER_USER_AUTHN` - The Identity Provider has successfully 
-authenticated the user. This can also be a re-use of a previously performed authentication (SSO). In those
-cases this is reflected in the audit data.
+- `authn_success_response` - A successful SAML response is sent. This means that the request has been processed, the
+user authenticated and a SAML assertion created.
 
-- [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE) - `SAML2_SUCCESS_RESPONSE` - An event that is created before a
-success SAML response is sent. This means that the request has been processed, the user authenticated 
-and a SAML assertion created.
+- `authn_error_response` - An error SAML response is sent. The error can represent a bad request or that the user
+authentication failed. This event is also used to signal that the user cancelled the operation.
 
-- [Error SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_AUDIT_ERROR_RESPONSE) - `SAML2_AUDIT_ERROR_RESPONSE` - An event that is created before an error SAML response is sent. The error can represent a bad request or that the user authentication failed.
-This event is also used to signal that the user cancelled the operation.
+- `authn_unrecoverable_error` - An error that cannot be reported back to the Service Provider. The error is displayed in
+the user interface.
 
-- [Unrecoverable Error](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_UNRECOVERABLE_ERROR) - `SAML2_UNRECOVERABLE_ERROR` - If an error occurs during processing
-of an request and the IdP has no means of posting a SAML error response back, this error is displayed in 
-the user interface. In these cases this is also audited.
+spring-audit-support also logs the `system_started` and `system_shutdown` events, see
+[Audit Events](https://docs.swedenconnect.se/spring-audit-support/audit-events.html).
 
 Common for all User Audit Events is that the authentication data contains the following items:
 
@@ -119,11 +121,11 @@ Common for all User Audit Events is that the authentication data contains the fo
 
 **Type:** `CONNECTOR_SUCCESS_RESPONSE`
 
-**Description:** An event that is logged when a successful SAML response message has been received from the foreign IdP. Note that this does not necessarily mean that the entire operation succeeded, since the received assertion needs to be translated into a Swedish response. The [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE) will indicate a successful authentication overall.
+**Description:** An event that is logged when a successful SAML response message has been received from the foreign IdP. Note that this does not necessarily mean that the entire operation succeeded, since the received assertion needs to be translated into a Swedish response. The `authn_success_response` and `EIDAS_SUCCESS_RESPONSE` events will indicate a successful authentication overall.
 
-**Audit data:** `saml-response` - See [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE).
+**Audit data:** `saml-response` - See [SAML Response Data](#saml-response-data).
 
-**Audit data:** `saml-assertion` - See [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE). 
+**Audit data:** `saml-assertion` - See [SAML Assertion Data](#saml-assertion-data).
 
 **Audit data:** `eu-peer-country`
 
@@ -137,7 +139,7 @@ Common for all User Audit Events is that the authentication data contains the fo
 
 **Description:** A SAML error response was received from the foreign IdP.
 
-**Audit data:** `saml-response` - See [Error SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_AUDIT_ERROR_RESPONSE).
+**Audit data:** `saml-response` - See [SAML Response Data](#saml-response-data).
 
 ### Processing Error of Foreign Response
 
@@ -151,7 +153,7 @@ Common for all User Audit Events is that the authentication data contains the fo
 | :--- | :--- | :--- |
 | `error-message` | Textual description of the error. | String |
 
-**Audit data:** `saml-response` - See [Error SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_AUDIT_ERROR_RESPONSE). 
+**Audit data:** `saml-response` - See [SAML Response Data](#saml-response-data). 
 
 > **Note:** If `CONNECTOR_SUCCESS_RESPONSE` was previously logged, this data is not included.
 
@@ -159,11 +161,13 @@ Common for all User Audit Events is that the authentication data contains the fo
 
 **Type:** `EIDAS_SUCCESS_RESPONSE`
 
-**Description:** The same event as the [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE) that indicates a successful authentication overall, with the add-on that the peer country is logged as we..
+**Description:** Logged when a successful SAML response is sent to the Swedish Service Provider, that is, when the
+authentication succeeded overall. It holds the response and the assertion that was sent, with the add-on that the
+peer country is logged as well.
 
-**Audit data:** `saml-response` - See [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE).
+**Audit data:** `saml-response` - See [SAML Response Data](#saml-response-data).
 
-**Audit data:** `saml-assertion` - See [Successful SAML Response](https://docs.swedenconnect.se/saml-identity-provider/audit.html#SAML2_SUCCESS_RESPONSE). 
+**Audit data:** `saml-assertion` - See [SAML Assertion Data](#saml-assertion-data).
 
 **Audit data:** `eu-peer-country`
 
@@ -224,6 +228,44 @@ Common for all User Audit Events is that the authentication data contains the fo
 | `user` | The eIDAS PersonIdentifier of the user. | String |
 | `error-message` | The error message. | String |
 
+
+## Common Audit Data
+
+<a name="saml-response-data"></a>
+### SAML Response Data
+
+**Audit data:** `saml-response`
+
+| Parameter | Description | Type |
+| :--- | :--- | :--- |
+| `id` | The ID of the `Response`. | String |
+| `in-response-to` | The ID of the `AuthnRequest` that the response answers. | String |
+| `status.code` | The main status code. | String |
+| `status.subordinate-code` | The subordinate status code. Not present if there is none. | String |
+| `status.message` | The status message. Not present if there is none. | String |
+| `issued-at` | The `IssueInstant` of the response. | String |
+| `destination` | The destination, i.e., where the response is sent. | String |
+| `is-signed` | Whether the response is signed. | Boolean |
+
+<a name="saml-assertion-data"></a>
+### SAML Assertion Data
+
+**Audit data:** `saml-assertion`
+
+| Parameter | Description | Type |
+| :--- | :--- | :--- |
+| `id` | The ID of the assertion. | String |
+| `in-response-to` | The ID of the `AuthnRequest` that the assertion answers. | String |
+| `is-signed` | Whether the assertion is signed. | Boolean |
+| `is-encrypted` | Whether the assertion is encrypted in the response. | Boolean |
+| `issued-at` | The `IssueInstant` of the assertion. | String |
+| `issuer` | The entityID of the issuer. | String |
+| `authn-instant` | The authentication instant. | String |
+| `subject-id` | The `NameID` of the subject. | String |
+| `subject-locality` | The IP address of the user. | String |
+| `authn-context-class-ref` | The authentication context class reference. | String |
+| `authn-authority` | The first `AuthenticatingAuthority`. Not present if there is none. | String |
+| `attributes` | The attributes of the assertion. Each element has `name` and `value`, where `value` is the first value of the attribute. | List |
 
 ---
 

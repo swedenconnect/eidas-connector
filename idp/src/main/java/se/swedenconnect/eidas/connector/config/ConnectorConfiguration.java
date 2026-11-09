@@ -20,8 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.boot.ssl.NoSuchSslBundleException;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
@@ -33,11 +33,16 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.util.StringUtils;
 import org.thymeleaf.spring6.SpringTemplateEngine;
-import se.swedenconnect.eidas.attributes.AttributeMappingService;
+import se.swedenconnect.eidas.connector.attributes.ConnectorAttributes;
+import se.swedenconnect.eidas.connector.attributes.EidasAttributeConverter;
+import se.swedenconnect.eidas.connector.audit.ConnectorAuditEventTransformer;
+import se.swedenconnect.eidas.connector.audit.EidasSuccessResponseAuditPublisher;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationController;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
+import se.swedenconnect.eidas.connector.authn.EidasAuthnFlowFilter;
 import se.swedenconnect.eidas.connector.authn.idm.DefaultIdmClient;
 import se.swedenconnect.eidas.connector.authn.idm.IdmClient;
 import se.swedenconnect.eidas.connector.authn.idm.NoopIdmClient;
@@ -54,18 +59,18 @@ import se.swedenconnect.eidas.connector.prid.generator.PridGenDefaultEidas;
 import se.swedenconnect.eidas.connector.prid.generator.PridGenTestEidas;
 import se.swedenconnect.eidas.connector.prid.service.PridService;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
-import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryRegistry;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.config.properties.PkiCredentialConfigurationProperties;
 import se.swedenconnect.security.credential.factory.PkiCredentialFactory;
-import se.swedenconnect.spring.saml.idp.config.configurers.Saml2IdpConfigurerAdapter;
-import se.swedenconnect.spring.saml.idp.extensions.SignatureMessagePreprocessor;
-import se.swedenconnect.spring.saml.idp.metadata.EntityCategoryHelper;
-import se.swedenconnect.spring.saml.idp.response.ThymeleafResponsePage;
-import se.swedenconnect.spring.saml.idp.settings.IdentityProviderSettings;
+import se.swedenconnect.spring.audit.transform.EventTransformer;
+import se.swedenconnect.spring.authnserver.autoconfigure.AuthnServerConfigurationProperties;
+import se.swedenconnect.spring.authnserver.autoconfigure.saml.SamlCredentialConfiguration;
+import se.swedenconnect.spring.authnserver.config.AuthnServerConfigurerAdapter;
+import se.swedenconnect.spring.authnserver.saml.config.Saml2IdpConfigurer;
 
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -82,7 +87,7 @@ public class ConnectorConfiguration {
 
   private final ConnectorConfigurationProperties connectorProperties;
 
-  private final IdentityProviderSettings idpSettings;
+  private final String baseUrl;
 
   private final SslBundles sslBundles;
 
@@ -92,36 +97,41 @@ public class ConnectorConfiguration {
    * Connector.
    *
    * @param connectorProperties the configuration properties
-   * @param idpSettings the IdP configuration
+   * @param serverProperties the authentication server configuration
    * @param sslBundles the SSL bundles
    * @param credentialFactory the credential factory bean
    */
   public ConnectorConfiguration(final ConnectorConfigurationProperties connectorProperties,
-      final IdentityProviderSettings idpSettings, final SslBundles sslBundles,
+      final AuthnServerConfigurationProperties serverProperties, final SslBundles sslBundles,
       final PkiCredentialFactory credentialFactory) {
     this.connectorProperties = connectorProperties;
-    this.idpSettings = idpSettings;
+    this.baseUrl = Objects.requireNonNull(serverProperties.getBaseUrl(), "authn-server.base-url must be set");
     this.sslBundles = sslBundles;
     this.credentialFactory = credentialFactory;
   }
 
   /**
-   * Gets a default {@link SecurityFilterChain} protecting other resources.
+   * Gets a default {@link SecurityFilterChain} protecting the pages of the connector that the filter chain of the
+   * authentication server does not cover.
    * <p>
-   * The chain with order 1 is the Spring Security chain for the SAML IdP ...
+   * The chain of the authentication server comes first. It covers the SAML endpoints, the authentication path
+   * ({@code /extauth}) and the resume path ({@code /resume}).
    * </p>
    *
    * @param http the HttpSecurity object
+   * @param provider the authentication provider
    * @return a SecurityFilterChain
    * @throws Exception for config errors
    */
   @Bean
   @Order(2)
-  SecurityFilterChain defaultSecurityFilterChain(final HttpSecurity http) throws Exception {
+  SecurityFilterChain defaultSecurityFilterChain(final HttpSecurity http, final EidasAuthenticationProvider provider)
+      throws Exception {
     http
         .securityContext(sc -> sc.requireExplicitSave(false))
         .csrf(c -> c.ignoringRequestMatchers(EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**",
             EidasAuthenticationProvider.AUTHN_PATH + "/**", EidasAuthenticationProvider.RESUME_PATH + "/**"))
+        .addFilterAfter(new EidasAuthnFlowFilter(provider), SecurityContextHolderFilter.class)
         .authorizeHttpRequests((authorize) -> authorize
             .requestMatchers(HttpMethod.POST, EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**").permitAll()
             .requestMatchers(EidasAuthenticationProvider.AUTHN_PATH + "/**",
@@ -138,16 +148,23 @@ public class ConnectorConfiguration {
   }
 
   /**
-   * Gets a {@link Saml2IdpConfigurerAdapter} that applies custom configuration for the IdP.
+   * Gets an {@link AuthnServerConfigurerAdapter} that applies the connector's settings to the SAML Identity Provider:
+   * the attribute mapping, the response page and the customizers that give the connector's audit event for a
+   * successful response.
    *
-   * @param signMessageProcessor a {@link SignatureMessagePreprocessor} for display of sign messages
-   * @return a {@link Saml2IdpConfigurerAdapter}
+   * @param responsePage the response page
+   * @param auditPublisher publishes the audit event for a successful response
+   * @return an {@link AuthnServerConfigurerAdapter}
    */
   @Bean
-  Saml2IdpConfigurerAdapter samlIdpSettingsAdapter(final SignatureMessagePreprocessor signMessageProcessor) {
-    return (http, configurer) -> configurer
-        .authnRequestProcessor(c -> c.authenticationProvider(
-            pc -> pc.signatureMessagePreprocessor(signMessageProcessor)));
+  AuthnServerConfigurerAdapter samlIdpSettingsAdapter(final ThymeleafResponsePage responsePage,
+      final EidasSuccessResponseAuditPublisher auditPublisher) {
+    return (http, configurer) -> configurer.protocol(Saml2IdpConfigurer.class, saml -> saml
+        .attributeMapping(ConnectorAttributes.createSamlAttributeMapping())
+        .authnRequestProcessor(c -> c
+            .responsePage(responsePage)
+            .assertionCustomizer(auditPublisher.assertionCustomizer())
+            .responseCustomizer(auditPublisher.responseCustomizer())));
   }
 
   /**
@@ -159,6 +176,28 @@ public class ConnectorConfiguration {
   @Bean
   ThymeleafResponsePage responsePage(final SpringTemplateEngine templateEngine) {
     return new ThymeleafResponsePage(templateEngine, "post-response.html");
+  }
+
+  /**
+   * Publishes the audit event for a successful response to the Swedish SP.
+   *
+   * @param eventPublisher the event publisher
+   * @return an {@link EidasSuccessResponseAuditPublisher}
+   */
+  @Bean
+  EidasSuccessResponseAuditPublisher eidasSuccessResponseAuditPublisher(
+      final ApplicationEventPublisher eventPublisher) {
+    return new EidasSuccessResponseAuditPublisher(eventPublisher);
+  }
+
+  /**
+   * Transforms the events of the connector into audit events.
+   *
+   * @return an {@link EventTransformer}
+   */
+  @Bean
+  EventTransformer connectorAuditEventTransformer() {
+    return new ConnectorAuditEventTransformer();
   }
 
   /**
@@ -175,12 +214,12 @@ public class ConnectorConfiguration {
    */
   @Bean
   ConnectorCredentials connectorCredentials(
-      final @Qualifier("saml.idp.credentials.Default") @Autowired(required = false) PkiCredential defaultCredential,
-      final @Qualifier("saml.idp.credentials.Sign") @Autowired(required = false) PkiCredential signCredential,
-      final @Qualifier("saml.idp.credentials.FutureSign") @Autowired(required = false) X509Certificate futureSignCertificate,
-      final @Qualifier("saml.idp.credentials.Encrypt") @Autowired(required = false) PkiCredential encryptCredential,
-      final @Qualifier("saml.idp.credentials.PreviousEncrypt") @Autowired(required = false) PkiCredential previousEncryptCredential,
-      final @Qualifier("saml.idp.credentials.MetadataSign") @Autowired(required = false) PkiCredential metadataSignCredential)
+      final @Qualifier(SamlCredentialConfiguration.DEFAULT_CREDENTIAL) @Autowired(required = false) PkiCredential defaultCredential,
+      final @Qualifier(SamlCredentialConfiguration.SIGN_CREDENTIAL) @Autowired(required = false) PkiCredential signCredential,
+      final @Qualifier(SamlCredentialConfiguration.FUTURE_SIGN_CERTIFICATE) @Autowired(required = false) X509Certificate futureSignCertificate,
+      final @Qualifier(SamlCredentialConfiguration.ENCRYPT_CREDENTIAL) @Autowired(required = false) PkiCredential encryptCredential,
+      final @Qualifier(SamlCredentialConfiguration.PREVIOUS_ENCRYPT_CREDENTIAL) @Autowired(required = false) PkiCredential previousEncryptCredential,
+      final @Qualifier(SamlCredentialConfiguration.METADATA_SIGN_CREDENTIAL) @Autowired(required = false) PkiCredential metadataSignCredential)
       throws Exception {
 
     return new ConnectorCredentials(defaultCredential, signCredential, futureSignCertificate, encryptCredential,
@@ -227,16 +266,6 @@ public class ConnectorConfiguration {
   EuMetadataProvider euMetadataProvider(
       final MetadataProvider metadataProvider, final ApplicationEventPublisher publisher) {
     return new DefaultEuMetadataProvider(metadataProvider, publisher);
-  }
-
-  /**
-   * Gets an {@link EntityCategoryRegistry} bean.
-   *
-   * @return an {@link EntityCategoryRegistry}
-   */
-  @Bean
-  EntityCategoryRegistry entityCategoryRegistry() {
-    return EntityCategoryHelper.getDefaultEntityCategoryRegistry();
   }
 
   @Bean
@@ -296,12 +325,12 @@ public class ConnectorConfiguration {
       final EidasAuthnRequestGenerator authnRequestGenerator,
       final EidasResponseProcessor eidasResponseProcessor,
       final EuMetadataProvider euMetadataProvider,
-      final AttributeMappingService attributeMappingService,
+      final EidasAttributeConverter attributeConverter,
       final PridService pridService,
       final IdmClient idmClient) {
-    return new EidasAuthenticationProvider(this.idpSettings.getBaseUrl(),
+    return new EidasAuthenticationProvider(this.baseUrl,
         eventPublisher, metadata, authnRequestGenerator, eidasResponseProcessor, euMetadataProvider,
-        attributeMappingService, pridService, idmClient, this.connectorProperties.getIdp().getSupportedLoas(),
+        attributeConverter, pridService, idmClient, this.connectorProperties.getIdp().getSupportedLoas(),
         this.connectorProperties.getIdp().getEntityCategories(), this.connectorProperties.getIdp().getPingWhitelist());
   }
 

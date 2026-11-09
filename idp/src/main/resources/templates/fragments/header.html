@@ -44,6 +44,7 @@
   <div class="col-sm-12">
     <div th:if="${languages != null && !languages.isEmpty()}">
       <form action="#" th:action="@{${path}}" method="GET">
+        <input type="hidden" name="authnId" th:value="${authnId}" th:if="${authnId != null}"/>
         <button
             th:each="uiLang: ${languages}"
             class="lang float-right btn btn-link"

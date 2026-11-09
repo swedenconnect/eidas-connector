@@ -37,6 +37,7 @@
       </p>
 
       <form class="form-inline" method="POST" action="#" th:action="@{/extauth/idmresult}" id="consentForm">
+        <input type="hidden" name="authnId" th:value="${authnId}" th:if="${authnId != null}"/>
         <button class="btn btn-secondary mr-2" type="submit" name="action" value="cancel" id="denyButton">
           <span th:text="#{connector.ui.idm.consent.button.deny}">No, do not share</span>
         </button>

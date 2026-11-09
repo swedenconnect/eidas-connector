@@ -20,7 +20,7 @@ import org.springframework.context.ApplicationEvent;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 import java.io.Serial;
 
@@ -50,13 +50,13 @@ public class BeforeEidasAuthenticationEvent extends AbstractConnectorAuthnEvent 
   /**
    * Constructor.
    *
-   * @param token the {@link Saml2UserAuthenticationInputToken}
+   * @param token the {@link UserAuthenticationInputToken}
    * @param country the receiving country
    * @param authnRequest the SAML {@link AuthnRequest}
    * @param relayState the RelayState variable
    * @param method GET or POST
    */
-  public BeforeEidasAuthenticationEvent(final Saml2UserAuthenticationInputToken token,
+  public BeforeEidasAuthenticationEvent(final UserAuthenticationInputToken token,
       final String country, final AuthnRequest authnRequest, final String relayState, final String method) {
     super(token);
     this.authnRequest = new SerializableOpenSamlObject<>(authnRequest);

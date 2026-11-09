@@ -80,6 +80,7 @@
       <hr class="full-width"/>
 
       <form method="POST" action="#" th:action="@{/extauth/proxyauth}" th:object="${result}" id="countrySelectForm">
+        <input type="hidden" name="authnId" th:value="${authnId}" th:if="${authnId != null}"/>
         <div class="row" th:if="${ui.getCountries().isEmpty()}">
           <div class="col-sm error">
             <p class="error-text">
@@ -272,6 +273,7 @@
 
     <div class="col-sm-12 return" th:unless="${ui.getCountries().isEmpty()}">
       <form method="POST" action="#" th:action="@{/extauth/proxyauth}" th:object="${result}" id="countrySelectForm2">
+        <input type="hidden" name="authnId" th:value="${authnId}" th:if="${authnId != null}"/>
         <button class="btn btn-link" type="submit" name="selectedCountry" value="cancel">
           <span th:text="#{connector.ui.button.cancel-return}">Cancel and return to the service</span>
         </button>

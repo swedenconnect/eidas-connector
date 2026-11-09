@@ -42,7 +42,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 import se.swedenconnect.eidas.connector.config.DevelopmentMode;
-import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
+import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
 
 import javax.net.ssl.SSLContext;
 import java.util.List;
@@ -248,7 +248,7 @@ public class DefaultIdmClient implements IdmClient {
    * @throws IdmException if no PRID attribute is available
    */
   private String getPridAttribute(final EidasAuthenticationToken token) throws IdmException {
-    return Optional.ofNullable(token.getAttribute(AttributeConstants.ATTRIBUTE_NAME_PRID))
+    return Optional.ofNullable(token.getAttribute(AttributeIdentifiers.PRID))
         .filter(a -> !a.getValues().isEmpty())
         .map(a -> a.getStringValues().get(0))
         .orElseThrow(() -> new IdmException("No PRID attribute available for user"));

@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.shared.xml.SerializeSupport;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Assertion;
+import org.opensaml.saml.saml2.core.Attribute;
+import org.opensaml.saml.saml2.core.AttributeStatement;
 import org.opensaml.saml.saml2.core.AuthenticatingAuthority;
 import org.opensaml.saml.saml2.core.AuthnContext;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
@@ -30,13 +32,13 @@ import org.opensaml.saml.saml2.core.Issuer;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
+import se.swedenconnect.eidas.connector.attributes.EidasAttributeConverter;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequest;
 import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
 import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
 import se.swedenconnect.opensaml.saml2.response.ResponseProcessingResult;
-import se.swedenconnect.spring.saml.idp.attributes.UserAttribute;
-import se.swedenconnect.spring.saml.idp.attributes.eidas.EidasAttributeValue;
-import se.swedenconnect.spring.saml.idp.authentication.Saml2UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.attributes.GenericAttribute;
+import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Serial;
@@ -51,6 +53,9 @@ import java.util.function.Predicate;
 
 /**
  * An {@link Authentication} object representing a validated response from the foreign country.
+ * <p>
+ * The token holds the eIDAS assertion, and the generic attributes that are released to the Swedish Service Provider.
+ * </p>
  *
  * @author Martin Lindström
  */
@@ -75,8 +80,8 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   /** The SAML assertion. */
   private final SerializableOpenSamlObject<Assertion> assertion;
 
-  /** Attributes from the assertion. */
-  private final List<UserAttribute> attributes;
+  /** The generic attributes that are released to the Swedish Service Provider. */
+  private final List<GenericAttribute<?>> attributes = new ArrayList<>();
 
   /** The corresponding request. */
   @Getter
@@ -96,8 +101,8 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   @Getter
   private final String logString;
 
-  /** For caching the principal name. */
-  private transient String principalCache;
+  /** The eIDAS person identifier of the user. */
+  private final String principal;
 
   /**
    * Constructor.
@@ -107,7 +112,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    * @param inputToken the input token (used for logging)
    */
   public EidasAuthenticationToken(final ResponseProcessingResult result, final EidasAuthnRequest authnRequest,
-      final Saml2UserAuthenticationInputToken inputToken) {
+      final UserAuthenticationInputToken inputToken) {
     super(Collections.emptyList());
     this.logString = Objects.requireNonNull(inputToken, "inputToken must not be null").getLogString();
     Objects.requireNonNull(result, "result must not be null");
@@ -116,17 +121,12 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
     this.responseIssueInstant = result.getIssueInstant();
     this.assertion = new SerializableOpenSamlObject<>(result.getAssertion());
     this.authnRequest = Objects.requireNonNull(authnRequest, "authnRequest must not be null");
-
-    this.attributes = new ArrayList<>();
-    result.getAttributes().forEach(a -> {
-      try {
-        this.attributes.add(new UserAttribute(a));
-      }
-      catch (final Exception e) {
-        log.warn("Received {} attribute that could not be processed", a.getName(), e);
-      }
-    });
-
+    this.principal = this.getEidasAttributes().stream()
+        .filter(a -> AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME.equals(a.getName()))
+        .map(EidasAttributeConverter::getValue)
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse("unknown");
   }
 
   /**
@@ -160,36 +160,51 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   }
 
   /**
-   * Returns a read-only list of the attributes received.
+   * Gets the eIDAS attributes of the assertion.
+   *
+   * @return a list of eIDAS attributes
+   */
+  public List<Attribute> getEidasAttributes() {
+    return Optional.ofNullable(this.assertion.get())
+        .map(Assertion::getAttributeStatements)
+        .map(statements -> statements.stream()
+            .map(AttributeStatement::getAttributes)
+            .flatMap(List::stream)
+            .toList())
+        .orElse(Collections.emptyList());
+  }
+
+  /**
+   * Returns a read-only list of the generic attributes that are released to the Swedish Service Provider.
    *
    * @return attribute list
    */
-  public List<UserAttribute> getAttributes() {
+  public List<GenericAttribute<?>> getAttributes() {
     return Collections.unmodifiableList(this.attributes);
   }
 
   /**
-   * Adds an attribute.
+   * Adds a generic attribute that is released to the Swedish Service Provider. An attribute with the same identifier
+   * is replaced.
    *
    * @param attribute the attribute to add
    */
-  public void addAttribute(final UserAttribute attribute) {
+  public void addAttribute(final GenericAttribute<?> attribute) {
     if (attribute != null) {
+      this.attributes.removeIf(a -> a.getIdentifier().equals(attribute.getIdentifier()));
       this.attributes.add(attribute);
     }
-    // Clear cache
-    this.principalCache = null;
   }
 
   /**
-   * Gets the attribute matching the given attribute name.
+   * Gets the generic attribute with the given identifier.
    *
-   * @param attributeName the attribute name
-   * @return the {@link UserAttribute} or {@code null} if not available
+   * @param identifier the attribute identifier
+   * @return the {@link GenericAttribute} or {@code null} if not available
    */
-  public UserAttribute getAttribute(final String attributeName) {
+  public GenericAttribute<?> getAttribute(final String identifier) {
     return this.attributes.stream()
-        .filter(a -> Objects.equals(attributeName, a.getId()))
+        .filter(a -> Objects.equals(identifier, a.getIdentifier()))
         .findFirst()
         .orElse(null);
   }
@@ -258,20 +273,12 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
     return authorities;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * Gets the eIDAS person identifier of the user.
+   */
   @Override
   public Object getPrincipal() {
-    if (this.principalCache == null) {
-      this.principalCache =
-          Optional.ofNullable(this.getAttribute(AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME))
-              .map(UserAttribute::getValues)
-              .filter(Predicate.not(List::isEmpty))
-              .map(List::getFirst)
-              .map(EidasAttributeValue.class::cast)
-              .map(EidasAttributeValue::getValueAsString)
-              .orElse("unknown");
-    }
-    return this.principalCache;
+    return this.principal;
   }
 
   /** {@inheritDoc} */

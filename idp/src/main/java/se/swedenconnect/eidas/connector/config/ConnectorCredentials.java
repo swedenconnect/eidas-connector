@@ -26,7 +26,6 @@ import se.swedenconnect.opensaml.saml2.metadata.build.EncryptionMethodBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.KeyDescriptorBuilder;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.ReloadablePkiCredential;
-import se.swedenconnect.spring.saml.idp.autoconfigure.settings.IdentityProviderConfigurationProperties;
 
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -181,7 +180,7 @@ public class ConnectorCredentials {
    * @return a list of {@link KeyDescriptor} elements
    */
   public List<KeyDescriptor> getSpKeyDescriptors(
-      final List<IdentityProviderConfigurationProperties.MetadataConfigurationProperties.EncryptionMethod> encryptionMethods) {
+      final List<EidasSpMetadataProperties.EncryptionMethod> encryptionMethods) {
 
     final List<KeyDescriptor> keyDescriptors = new ArrayList<>();
     KeyDescriptorBuilder unspecifiedBuilder = null;
@@ -273,7 +272,7 @@ public class ConnectorCredentials {
   }
 
   private List<EncryptionMethod> createEncryptionMethods(
-      final List<IdentityProviderConfigurationProperties.MetadataConfigurationProperties.EncryptionMethod> encryptionMethods) {
+      final List<EidasSpMetadataProperties.EncryptionMethod> encryptionMethods) {
 
     if (encryptionMethods != null && !encryptionMethods.isEmpty()) {
       return encryptionMethods.stream()
