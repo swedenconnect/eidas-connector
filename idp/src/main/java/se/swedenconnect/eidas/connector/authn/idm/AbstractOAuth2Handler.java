@@ -25,6 +25,8 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.ClientID;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.nimbus.JwkTransformerFunction;
 
@@ -42,27 +44,27 @@ import java.util.Optional;
 public abstract class AbstractOAuth2Handler implements OAuth2Handler {
 
   /** The cached access token for the HEAD calls. */
-  private BearerAccessTokenHolder cachedAccessToken;
+  private @Nullable BearerAccessTokenHolder cachedAccessToken;
 
   /** The OAuth2 credential - used to sign OAuth2 items. */
-  private final PkiCredential oauth2Credential;
+  private final @NonNull PkiCredential oauth2Credential;
 
   /** The JWK representation of the {@code oauth2Credential} including the signer and signing algorithm. */
-  private final JwkInfo oauth2Jwk;
+  private final @NonNull JwkInfo oauth2Jwk;
 
   /** The Connector OAuth2 client ID. */
-  private final ClientID clientId;
+  private final @NonNull ClientID clientId;
 
   /** The OAuth2 scope(s) to use for HEAD calls. */
-  private final Scope checkScope;
+  private final @NonNull Scope checkScope;
 
   /** The OAuth2 scope(s) to use for GET calls. */
-  private final Scope getScope;
+  private final @NonNull Scope getScope;
 
   /**
    * Holds information about a JWK.
    */
-  protected record JwkInfo(JWK jwk, JWSSigner signer, JWSAlgorithm signingAlgorithm) {
+  protected record JwkInfo(@NonNull JWK jwk, @NonNull JWSSigner signer, @NonNull JWSAlgorithm signingAlgorithm) {
   }
 
   /**
@@ -73,8 +75,8 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
    * @param getScopes the OAuth2 scope(s) to use when making GET requests
    * @param oauth2Credential the credential used to sign the OAuth2 items
    */
-  public AbstractOAuth2Handler(final String clientId, final List<String> checkScopes, final List<String> getScopes,
-      final PkiCredential oauth2Credential) {
+  public AbstractOAuth2Handler(final @NonNull String clientId, final @NonNull List<String> checkScopes,
+      final @NonNull List<String> getScopes, final @NonNull PkiCredential oauth2Credential) {
     this.clientId = new ClientID(Objects.requireNonNull(clientId, "clientId must not be null"));
     this.checkScope = Optional.ofNullable(Scope.parse(checkScopes))
         .orElseThrow(() -> new IllegalArgumentException("Missing checkScopes parameter"));
@@ -86,7 +88,7 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
 
   /** {@inheritDoc} */
   @Override
-  public synchronized String getCheckAccessToken() throws IdmException {
+  public synchronized @NonNull String getCheckAccessToken() throws IdmException {
 
     final String header = Optional.ofNullable(this.cachedAccessToken)
         .filter(BearerAccessTokenHolder::isValid)
@@ -103,7 +105,7 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
 
   /** {@inheritDoc} */
   @Override
-  public String getGetAccessToken(final String prid) throws IdmException {
+  public @NonNull String getGetAccessToken(final @NonNull String prid) throws IdmException {
     return this.obtainAccessToken(prid, this.getScope).getBearerAccessToken();
   }
 
@@ -115,15 +117,15 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
    * @return the {@link BearerAccessTokenHolder}
    * @throws IdmException for OAuth2 errors
    */
-  protected abstract BearerAccessTokenHolder obtainAccessToken(final String subject, final Scope scope)
-      throws IdmException;
+  protected abstract @NonNull BearerAccessTokenHolder obtainAccessToken(final @NonNull String subject,
+      final @NonNull Scope scope) throws IdmException;
 
   /**
    * Gets the OAuth2 credential - used to sign OAuth2 items.
    *
    * @return the {@link PkiCredential}
    */
-  protected PkiCredential getOauth2Credential() {
+  protected @NonNull PkiCredential getOauth2Credential() {
     return this.oauth2Credential;
   }
 
@@ -132,7 +134,7 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
    *
    * @return the {@link JwkInfo}
    */
-  protected JwkInfo getOauth2Jwk() {
+  protected @NonNull JwkInfo getOauth2Jwk() {
     return this.oauth2Jwk;
   }
 
@@ -142,7 +144,7 @@ public abstract class AbstractOAuth2Handler implements OAuth2Handler {
    * @param credential the {@link PkiCredential}
    * @return a {@link JwkInfo}
    */
-  protected JwkInfo createJwk(final PkiCredential credential) {
+  protected @NonNull JwkInfo createJwk(final @NonNull PkiCredential credential) {
     try {
       final JwkTransformerFunction transformer = JwkTransformerFunction.function()
           .withAlgorithmFunction(c -> {

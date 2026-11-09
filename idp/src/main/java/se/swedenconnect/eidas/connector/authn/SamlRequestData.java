@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
@@ -36,7 +38,7 @@ public final class SamlRequestData {
    * @return the {@link Saml2AuthnRequestData}
    * @throws UnrecoverableErrorException if the token holds no SAML data
    */
-  public static Saml2AuthnRequestData get(final UserAuthenticationInputToken token)
+  public static @NonNull Saml2AuthnRequestData get(final @NonNull UserAuthenticationInputToken token)
       throws UnrecoverableErrorException {
     if (token.getProtocolRequestData() instanceof final Saml2AuthnRequestData data) {
       return data;
@@ -52,7 +54,7 @@ public final class SamlRequestData {
    * @return the {@link AuthnRequest}
    * @throws UnrecoverableErrorException if the token holds no SAML data
    */
-  public static AuthnRequest getAuthnRequest(final UserAuthenticationInputToken token)
+  public static @NonNull AuthnRequest getAuthnRequest(final @NonNull UserAuthenticationInputToken token)
       throws UnrecoverableErrorException {
     return get(token).getAuthnRequest();
   }
@@ -64,7 +66,7 @@ public final class SamlRequestData {
    * @return the SP metadata
    * @throws UnrecoverableErrorException if the token holds no SAML data
    */
-  public static EntityDescriptor getSpMetadata(final UserAuthenticationInputToken token)
+  public static @NonNull EntityDescriptor getSpMetadata(final @NonNull UserAuthenticationInputToken token)
       throws UnrecoverableErrorException {
     return get(token).responseAttributes().getPeerMetadata();
   }
@@ -76,7 +78,8 @@ public final class SamlRequestData {
    * @return the relay state, or {@code null}
    * @throws UnrecoverableErrorException if the token holds no SAML data
    */
-  public static String getRelayState(final UserAuthenticationInputToken token) throws UnrecoverableErrorException {
+  public static @Nullable String getRelayState(final @NonNull UserAuthenticationInputToken token)
+      throws UnrecoverableErrorException {
     return get(token).responseAttributes().relayState();
   }
 

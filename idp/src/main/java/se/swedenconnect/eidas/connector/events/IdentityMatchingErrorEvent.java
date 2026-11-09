@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
@@ -32,10 +33,10 @@ public class IdentityMatchingErrorEvent extends AbstractConnectorAuthnEvent {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The eIDAS authentication token. */
-  private final EidasAuthenticationToken eidasToken;
+  private final @NonNull EidasAuthenticationToken eidasToken;
 
   /** The error raised during the IdM operation. */
-  private final Exception error;
+  private final @NonNull Exception error;
 
   /**
    * Constructor.
@@ -44,8 +45,8 @@ public class IdentityMatchingErrorEvent extends AbstractConnectorAuthnEvent {
    * @param eidasToken the eIDAS authentication token
    * @param error the error raised during the IdM operation
    */
-  public IdentityMatchingErrorEvent(final UserAuthenticationInputToken token,
-      final EidasAuthenticationToken eidasToken, final Exception error) {
+  public IdentityMatchingErrorEvent(final @NonNull UserAuthenticationInputToken token,
+      final @NonNull EidasAuthenticationToken eidasToken, final @NonNull Exception error) {
     super(token);
     this.eidasToken = eidasToken;
     this.error = error;
@@ -56,7 +57,7 @@ public class IdentityMatchingErrorEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the {@link EidasAuthenticationToken}
    */
-  public EidasAuthenticationToken getEidasToken() {
+  public @NonNull EidasAuthenticationToken getEidasToken() {
     return this.eidasToken;
   }
 
@@ -64,7 +65,7 @@ public class IdentityMatchingErrorEvent extends AbstractConnectorAuthnEvent {
    * Gets the error raised during the IdM operation.
    * @return an {@link Exception}
    */
-  public Exception getError() {
+  public @NonNull Exception getError() {
     return this.error;
   }
 

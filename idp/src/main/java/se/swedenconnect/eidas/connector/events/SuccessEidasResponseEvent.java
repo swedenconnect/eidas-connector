@@ -15,7 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Response;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
@@ -36,13 +36,13 @@ public class SuccessEidasResponseEvent extends AbstractConnectorAuthnEvent {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The SAML response */
-  private final SerializableOpenSamlObject<Response> response;
+  private final @NonNull SerializableOpenSamlObject<Response> response;
 
   /** The SAML assertion. */
-  private final SerializableOpenSamlObject<Assertion> assertion;
+  private final @NonNull SerializableOpenSamlObject<Assertion> assertion;
 
   /** The country. */
-  private final String country;
+  private final @NonNull String country;
 
   /**
    * Constructor.
@@ -51,8 +51,8 @@ public class SuccessEidasResponseEvent extends AbstractConnectorAuthnEvent {
    * @param response the SAML response
    * @param assertion the SAML assertion
    */
-  public SuccessEidasResponseEvent(@Nonnull final UserAuthenticationInputToken token,
-      @Nonnull final Response response, @Nonnull final Assertion assertion, @Nonnull final String country) {
+  public SuccessEidasResponseEvent(final @NonNull UserAuthenticationInputToken token,
+      final @NonNull Response response, final @NonNull Assertion assertion, final @NonNull String country) {
     super(token);
     this.response = new SerializableOpenSamlObject<>(
         Objects.requireNonNull(response, "response must not be null"));
@@ -66,8 +66,7 @@ public class SuccessEidasResponseEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the {@link Response}
    */
-  @Nonnull
-  public Response getResponse() {
+  public @NonNull Response getResponse() {
     return this.response.get();
   }
 
@@ -76,8 +75,7 @@ public class SuccessEidasResponseEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the {@link Assertion}
    */
-  @Nonnull
-  public Assertion getAssertion() {
+  public @NonNull Assertion getAssertion() {
     return this.assertion.get();
   }
 
@@ -86,8 +84,7 @@ public class SuccessEidasResponseEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the country code
    */
-  @Nonnull
-  public String getCountry() {
+  public @NonNull String getCountry() {
     return this.country;
   }
 

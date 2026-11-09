@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp.validators;
 
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.common.assertion.ValidationResult;
 import org.opensaml.saml.saml2.core.Response;
@@ -43,8 +44,8 @@ public class EidasResponseValidator extends SwedishEidResponseValidator {
    * @param signaturePrevalidator the signature pre-validator used to pre-validate the object's signature
    * @throws IllegalArgumentException if {@code null} values are supplied
    */
-  public EidasResponseValidator(final SignatureTrustEngine trustEngine,
-      final SignaturePrevalidator signaturePrevalidator) throws IllegalArgumentException {
+  public EidasResponseValidator(final @NonNull SignatureTrustEngine trustEngine,
+      final @NonNull SignaturePrevalidator signaturePrevalidator) throws IllegalArgumentException {
     super(trustEngine, signaturePrevalidator);
   }
 
@@ -52,7 +53,8 @@ public class EidasResponseValidator extends SwedishEidResponseValidator {
    * The EU software sometimes includes assertions in error responses. We'll have to accept that.
    */
   @Override
-  public ValidationResult validateAssertions(final Response response, final ValidationContext context) {
+  public @NonNull ValidationResult validateAssertions(final @NonNull Response response,
+      final @NonNull ValidationContext context) {
     if (response.getStatus() == null || response.getStatus().getStatusCode() == null) {
       context.getValidationFailureMessages().add("Response message does not contain status code");
       return ValidationResult.INVALID;

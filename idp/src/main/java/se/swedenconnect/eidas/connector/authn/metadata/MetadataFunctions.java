@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.authn.metadata;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.ext.saml2mdattr.EntityAttributes;
@@ -39,7 +41,8 @@ import java.util.Optional;
 public class MetadataFunctions {
 
   /** Entity category value for "hide from discovery". */
-  public static final String HIDE_FROM_DISCOVERY_ENTITY_CATEGORY = "http://refeds.org/category/hide-from-discovery";
+  public static final @NonNull String HIDE_FROM_DISCOVERY_ENTITY_CATEGORY =
+      "http://refeds.org/category/hide-from-discovery";
 
   /**
    * Gets the node country extension value from the metadata.
@@ -47,7 +50,7 @@ public class MetadataFunctions {
    * @param ed the metadata entry
    * @return the node country (or {@code null})
    */
-  public static String getNodeCountry(final EntityDescriptor ed) {
+  public static @Nullable String getNodeCountry(final @NonNull EntityDescriptor ed) {
     final Extensions exts = Optional.ofNullable(ed.getIDPSSODescriptor(SAMLConstants.SAML20P_NS))
         .map(IDPSSODescriptor::getExtensions)
         .orElse(null);
@@ -67,7 +70,7 @@ public class MetadataFunctions {
    * @param ed the metadata entry
    * @return {@code true} if hide-from-discovery is declared, and {@code false} otherwise
    */
-  public static boolean getHideFromDiscovery(final EntityDescriptor ed) {
+  public static boolean getHideFromDiscovery(final @NonNull EntityDescriptor ed) {
 
     return EntityDescriptorUtils.getEntityCategories(ed)
         .stream()
@@ -80,7 +83,7 @@ public class MetadataFunctions {
    * @param ed the metadata entry
    * @return a list of assurance levels
    */
-  public static List<String> getAssuranceLevels(final EntityDescriptor ed) {
+  public static @NonNull List<String> getAssuranceLevels(final @NonNull EntityDescriptor ed) {
     // Very defensive implementation. We can handle several EntityAttributes extensions
     // and that several matching attributes ...
     //

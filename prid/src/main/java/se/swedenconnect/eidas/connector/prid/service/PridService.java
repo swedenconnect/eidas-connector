@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.prid.service;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -49,19 +51,19 @@ public class PridService implements InitializingBean {
   private static final Logger log = LoggerFactory.getLogger(PridService.class);
 
   /** The resource holding the PRID policy configuration. */
-  private final Resource policyResource;
+  private final @NonNull Resource policyResource;
 
   /** Whether the policy resource is a YAML file (or a properties file). */
   private final boolean isYamlResource;
 
   /** The installed PRID-generators. */
-  private final List<PridGenerator> pridGenerators;
+  private final @NonNull List<PridGenerator> pridGenerators;
 
   /** The actual policy. */
-  private PridPolicy policy;
+  private @Nullable PridPolicy policy;
 
   /** The latest PRID policy validation result. */
-  private PridPolicyValidation latestValidationResult;
+  private @Nullable PridPolicyValidation latestValidationResult;
 
   /**
    * Constructor.
@@ -69,7 +71,8 @@ public class PridService implements InitializingBean {
    * @param policyConfiguration the resource holding the PRID policy configuration
    * @param pridGenerators the installed PRID-generators. Used to validate algorithms from config
    */
-  public PridService(final Resource policyConfiguration, final List<PridGenerator> pridGenerators) {
+  public PridService(
+      final @NonNull Resource policyConfiguration, final @NonNull List<PridGenerator> pridGenerators) {
     this.policyResource = Objects.requireNonNull(policyConfiguration, "policyConfiguration must not be null");
     this.pridGenerators = Objects.requireNonNull(pridGenerators, "pridGenerators must not be null");
 
@@ -87,7 +90,7 @@ public class PridService implements InitializingBean {
    * @throws PridGeneratorException for generation errors
    * @throws CountryPolicyNotFoundException if a country is not supported
    */
-  public PridResult generatePrid(final String id, final String country)
+  public @NonNull PridResult generatePrid(final @NonNull String id, final @NonNull String country)
       throws PridGeneratorException, CountryPolicyNotFoundException {
 
     final CountryPolicy policy = Optional.ofNullable(this.getPolicy(country))
@@ -114,7 +117,7 @@ public class PridService implements InitializingBean {
    * @param countryCode the country code
    * @return the policy, or {@code null} if the country has not been configured
    */
-  public CountryPolicy getPolicy(final String countryCode) {
+  public @Nullable CountryPolicy getPolicy(final @NonNull String countryCode) {
     return this.getPolicy().getPolicy(countryCode);
   }
 
@@ -123,7 +126,7 @@ public class PridService implements InitializingBean {
    *
    * @return PRID policy
    */
-  public synchronized PridPolicy getPolicy() {
+  public synchronized @Nullable PridPolicy getPolicy() {
     return this.policy;
   }
 
@@ -132,7 +135,7 @@ public class PridService implements InitializingBean {
    *
    * @return validation result
    */
-  public PridPolicyValidation getLatestValidationResult() {
+  public @Nullable PridPolicyValidation getLatestValidationResult() {
     return this.latestValidationResult;
   }
 
@@ -149,7 +152,7 @@ public class PridService implements InitializingBean {
    *
    * @return the validation result for the updated policy
    */
-  public synchronized PridPolicyValidation updatePolicy() {
+  public synchronized @NonNull PridPolicyValidation updatePolicy() {
 
     log.debug("Updating PRID policy configuration ...");
 
@@ -182,7 +185,7 @@ public class PridService implements InitializingBean {
    * @throws BindException for format errors when creating a policy object
    * @throws Exception for errors reading the policy file
    */
-  protected PridPolicy loadPolicy() throws Exception, BindException {
+  protected @NonNull PridPolicy loadPolicy() throws Exception, BindException {
 
     // Get hold of the properties/YAML file holding the config ...
     //
@@ -243,7 +246,8 @@ public class PridService implements InitializingBean {
    * @param validationResult the validation result (will be updated with errors)
    * @return a policy object with only correct entries
    */
-  protected PridPolicy validate(final PridPolicy policy, final PridPolicyValidation validationResult) {
+  protected @NonNull PridPolicy validate(
+      final @NonNull PridPolicy policy, final @NonNull PridPolicyValidation validationResult) {
     log.debug("Validating policy ...");
 
     if (policy.getPolicy() == null || policy.isEmpty()) {
@@ -297,7 +301,7 @@ public class PridService implements InitializingBean {
    * @param algorithm the algorithm to test
    * @return {@code true} if the algorithm is valid and {@code false} otherwise
    */
-  protected boolean isValidAlgorithm(final String algorithm) {
+  protected boolean isValidAlgorithm(final @NonNull String algorithm) {
     return this.pridGenerators.stream()
         .anyMatch(p -> p.getAlgorithmName().equalsIgnoreCase(algorithm));
   }
@@ -322,7 +326,7 @@ public class PridService implements InitializingBean {
   public static class PridPolicyValidation {
 
     /** The validation errors. */
-    private final List<String> errors;
+    private final @NonNull List<String> errors;
 
     /**
      * Constructor.
@@ -336,7 +340,7 @@ public class PridService implements InitializingBean {
      *
      * @param msg the error message
      */
-    public void addError(final String msg) {
+    public void addError(final @NonNull String msg) {
       this.errors.add(msg);
     }
 
@@ -345,7 +349,7 @@ public class PridService implements InitializingBean {
      *
      * @param msgs the messages to add
      */
-    public void addErrors(final List<String> msgs) {
+    public void addErrors(final @NonNull List<String> msgs) {
       this.errors.addAll(msgs);
     }
 
@@ -354,7 +358,7 @@ public class PridService implements InitializingBean {
      *
      * @return the error messages
      */
-    public List<String> getErrors() {
+    public @NonNull List<String> getErrors() {
       return this.errors;
     }
 
@@ -369,7 +373,7 @@ public class PridService implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "errors=" + this.getErrors();
     }
   }

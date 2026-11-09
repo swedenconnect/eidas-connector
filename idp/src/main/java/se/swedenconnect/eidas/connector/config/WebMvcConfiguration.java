@@ -16,6 +16,7 @@
 package se.swedenconnect.eidas.connector.config;
 
 import jakarta.servlet.DispatcherType;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -50,13 +51,13 @@ import java.util.Optional;
 public class WebMvcConfiguration implements WebMvcConfigurer {
 
   /** UI settings. */
-  private final UiConfigurationProperties ui;
+  private final @NonNull UiConfigurationProperties ui;
 
   /** IdM settings. */
-  private final IdmProperties idm;
+  private final @NonNull IdmProperties idm;
 
   /** The message source. */
-  private final MessageSource messageSource;
+  private final @NonNull MessageSource messageSource;
 
   /**
    * Constructor.
@@ -65,9 +66,9 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @param connector the Connector configuration
    * @param messageSource the Spring {@link MessageSource}
    */
-  public WebMvcConfiguration(final UiConfigurationProperties ui,
-      final ConnectorConfigurationProperties connector,
-      final MessageSource messageSource) {
+  public WebMvcConfiguration(final @NonNull UiConfigurationProperties ui,
+      final @NonNull ConnectorConfigurationProperties connector,
+      final @NonNull MessageSource messageSource) {
     this.ui = Objects.requireNonNull(ui, "ui must not be null");
     this.idm = connector.getIdm();
     this.messageSource = Objects.requireNonNull(messageSource, "messageSource must not be null");
@@ -79,7 +80,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return the {@link UiLanguageHandler}
    */
   @Bean
-  UiLanguageHandler uiLanguageHandler() {
+  @NonNull UiLanguageHandler uiLanguageHandler() {
     return new UiLanguageHandler(this.ui.getLanguages());
   }
 
@@ -89,7 +90,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return the UI languages
    */
   @Bean
-  List<Language> languages() {
+  @NonNull List<Language> languages() {
     return this.ui.getLanguages();
   }
 
@@ -100,7 +101,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return a {@link LocaleResolver}
    */
   @Bean("localeResolver")
-  LocaleResolver localeResolver(@Value("${server.servlet.context-path}") final String contextPath) {
+  @NonNull LocaleResolver localeResolver(@Value("${server.servlet.context-path}") final @NonNull String contextPath) {
     final CookieLocaleResolver resolver = new CookieLocaleResolver();
     resolver.setDefaultLocale(Locale.of("en"));
     resolver.setCookiePath(contextPath);
@@ -116,7 +117,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return a {@link LocaleChangeInterceptor}
    */
   @Bean
-  LocaleChangeInterceptor localeChangeInterceptor() {
+  @NonNull LocaleChangeInterceptor localeChangeInterceptor() {
     final LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
     interceptor.setParamName("lang");
     return interceptor;
@@ -128,7 +129,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return {@link CookieGenerator}
    */
   @Bean("selectedCountryCookieGenerator")
-  CookieGenerator selectedCountryCookieGenerator() {
+  @NonNull CookieGenerator selectedCountryCookieGenerator() {
     return new CookieGenerator(
         this.ui.getSelectedCountryCookie().getName(),
         this.ui.getSelectedCountryCookie().getDomain(),
@@ -142,7 +143,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return {@link CookieGenerator}
    */
   @Bean("selectedCountrySessionCookieGenerator")
-  CookieGenerator selectedCountrySessionCookieGenerator() {
+  @NonNull CookieGenerator selectedCountrySessionCookieGenerator() {
     return new CookieGenerator(
         this.ui.getSelectedCountrySessionCookie().getName(),
         this.ui.getSelectedCountrySessionCookie().getDomain(),
@@ -155,7 +156,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return {@link CookieGenerator}
    */
   @Bean("idmConsentSessionCookieGenerator")
-  CookieGenerator idmConsentSessionCookieGenerator() {
+  @NonNull CookieGenerator idmConsentSessionCookieGenerator() {
     return new CookieGenerator(
         this.ui.getIdmConsentSessionCookie().getName(),
         this.ui.getIdmConsentSessionCookie().getDomain(),
@@ -168,7 +169,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return {@link CookieGenerator}
    */
   @Bean("idmHideBannerCookieGenerator")
-  CookieGenerator idmHideBannerCookieGenerator() {
+  @NonNull CookieGenerator idmHideBannerCookieGenerator() {
     return new CookieGenerator(
         this.ui.getIdmHideBannerCookie().getName(),
         this.ui.getIdmHideBannerCookie().getDomain(),
@@ -183,7 +184,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return a {@link EidasUiModelFactory}
    */
   @Bean
-  EidasUiModelFactory eidasUiModelFactory(final UiLanguageHandler uiLanguageHandler) {
+  @NonNull EidasUiModelFactory eidasUiModelFactory(final @NonNull UiLanguageHandler uiLanguageHandler) {
     return new EidasUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl(), this.messageSource,
         Optional.ofNullable(this.idm).map(IdmProperties::getServiceUrl).orElse(null),
         this.idmHideBannerCookieGenerator());
@@ -196,7 +197,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return a {@link SignUiModelFactory}
    */
   @Bean
-  SignUiModelFactory signUiModelFactory(final UiLanguageHandler uiLanguageHandler) {
+  @NonNull SignUiModelFactory signUiModelFactory(final @NonNull UiLanguageHandler uiLanguageHandler) {
     return new SignUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl());
   }
 
@@ -207,7 +208,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return an {@link IdmUiModelFactory}
    */
   @Bean
-  IdmUiModelFactory idmUiModelFactory(final UiLanguageHandler uiLanguageHandler) {
+  @NonNull IdmUiModelFactory idmUiModelFactory(final @NonNull UiLanguageHandler uiLanguageHandler) {
     return new IdmUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl());
   }
 
@@ -217,7 +218,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return an {@link UnrecoverableErrorViewResolver}
    */
   @Bean
-  UnrecoverableErrorViewResolver unrecoverableErrorViewResolver() {
+  @NonNull UnrecoverableErrorViewResolver unrecoverableErrorViewResolver() {
     return new UnrecoverableErrorViewResolver();
   }
 
@@ -228,7 +229,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * @return a {@link FilterRegistrationBean}
    */
   @Bean
-  FilterRegistrationBean<UnrecoverableErrorPageFilter> unrecoverableErrorPageFilter() {
+  @NonNull FilterRegistrationBean<UnrecoverableErrorPageFilter> unrecoverableErrorPageFilter() {
     final FilterRegistrationBean<UnrecoverableErrorPageFilter> registration =
         new FilterRegistrationBean<>(new UnrecoverableErrorPageFilter());
     registration.setDispatcherTypes(DispatcherType.ERROR);
@@ -240,7 +241,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * Adds the configured {@link LocaleChangeInterceptor}.
    */
   @Override
-  public void addInterceptors(final InterceptorRegistry registry) {
+  public void addInterceptors(final @NonNull InterceptorRegistry registry) {
     registry.addInterceptor(this.localeChangeInterceptor());
   }
 

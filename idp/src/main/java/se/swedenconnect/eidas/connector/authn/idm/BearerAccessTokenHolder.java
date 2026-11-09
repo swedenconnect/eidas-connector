@@ -15,6 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import java.time.Instant;
 
 /**
@@ -27,12 +30,12 @@ public class BearerAccessTokenHolder {
   /**
    * The serialized access token (including the "Bearer " prefix).
    */
-  private final String accessToken;
+  private final @NonNull String accessToken;
 
   /**
    * The expiration time.
    */
-  private final Instant expires;
+  private final @Nullable Instant expires;
 
   /**
    * Constructor.
@@ -40,7 +43,7 @@ public class BearerAccessTokenHolder {
    * @param authorizationHeader the authorization header (containing the OAuth2 access token)
    * @param expires the expiration time
    */
-  public BearerAccessTokenHolder(final String authorizationHeader, final Instant expires) {
+  public BearerAccessTokenHolder(final @NonNull String authorizationHeader, final @Nullable Instant expires) {
     this.accessToken = authorizationHeader;
     this.expires = expires;
   }
@@ -50,7 +53,7 @@ public class BearerAccessTokenHolder {
    *
    * @return the bearer access token
    */
-  public String getBearerAccessToken() {
+  public @NonNull String getBearerAccessToken() {
     return this.accessToken;
   }
 

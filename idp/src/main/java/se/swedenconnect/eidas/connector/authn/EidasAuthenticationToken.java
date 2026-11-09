@@ -15,8 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
-import jakarta.annotation.Nullable;
 import net.shibboleth.shared.xml.SerializeSupport;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Attribute;
@@ -67,34 +68,34 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The ID for the response. */
-  private final String responseId;
+  private final @NonNull String responseId;
 
   /** The InResponseTo attribute of the response. */
-  private final String inResponseTo;
+  private final @NonNull String inResponseTo;
 
   /** The issue instant of the response. */
-  private final Instant responseIssueInstant;
+  private final @NonNull Instant responseIssueInstant;
 
   /** The SAML assertion. */
-  private final SerializableOpenSamlObject<Assertion> assertion;
+  private final @NonNull SerializableOpenSamlObject<Assertion> assertion;
 
   /** The generic attributes that are released to the Swedish Service Provider. */
-  private final List<GenericAttribute<?>> attributes = new ArrayList<>();
+  private final @NonNull List<GenericAttribute<?>> attributes = new ArrayList<>();
 
   /** The corresponding request. */
-  private final EidasAuthnRequest authnRequest;
+  private final @NonNull EidasAuthnRequest authnRequest;
 
   /** Was the signature consented by the user? */
   private boolean signatureConsented = false;
 
   /** The Swedish eID authentication context class reference. */
-  private String swedishEidAuthnContextClassRef;
+  private @Nullable String swedishEidAuthnContextClassRef;
 
   /** For logging. */
-  private final String logString;
+  private final @NonNull String logString;
 
   /** The eIDAS person identifier of the user. */
-  private final String principal;
+  private final @NonNull String principal;
 
   /**
    * Constructor.
@@ -103,8 +104,8 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    * @param authnRequest the eIDAS authentication request
    * @param inputToken the input token (used for logging)
    */
-  public EidasAuthenticationToken(final ResponseProcessingResult result, final EidasAuthnRequest authnRequest,
-      final UserAuthenticationInputToken inputToken) {
+  public EidasAuthenticationToken(final @NonNull ResponseProcessingResult result,
+      final @NonNull EidasAuthnRequest authnRequest, final @NonNull UserAuthenticationInputToken inputToken) {
     super(Collections.emptyList());
     this.logString = Objects.requireNonNull(inputToken, "inputToken must not be null").getLogString();
     Objects.requireNonNull(result, "result must not be null");
@@ -126,7 +127,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return the response ID
    */
-  public String getResponseId() {
+  public @NonNull String getResponseId() {
     return this.responseId;
   }
 
@@ -135,7 +136,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return the InResponseTo attribute
    */
-  public String getInResponseTo() {
+  public @NonNull String getInResponseTo() {
     return this.inResponseTo;
   }
 
@@ -144,7 +145,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return the response issue instant
    */
-  public Instant getResponseIssueInstant() {
+  public @NonNull Instant getResponseIssueInstant() {
     return this.responseIssueInstant;
   }
 
@@ -153,7 +154,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return the eIDAS authentication request
    */
-  public EidasAuthnRequest getAuthnRequest() {
+  public @NonNull EidasAuthnRequest getAuthnRequest() {
     return this.authnRequest;
   }
 
@@ -180,7 +181,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return the Swedish eID authentication context class reference
    */
-  public String getSwedishEidAuthnContextClassRef() {
+  public @Nullable String getSwedishEidAuthnContextClassRef() {
     return this.swedishEidAuthnContextClassRef;
   }
 
@@ -189,7 +190,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @param swedishEidAuthnContextClassRef the Swedish eID authentication context class reference
    */
-  public void setSwedishEidAuthnContextClassRef(final String swedishEidAuthnContextClassRef) {
+  public void setSwedishEidAuthnContextClassRef(final @Nullable String swedishEidAuthnContextClassRef) {
     this.swedishEidAuthnContextClassRef = swedishEidAuthnContextClassRef;
   }
 
@@ -198,7 +199,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return the log string
    */
-  public String getLogString() {
+  public @NonNull String getLogString() {
     return this.logString;
   }
 
@@ -207,7 +208,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return an {@link Assertion}
    */
-  public Assertion getAssertion() {
+  public @NonNull Assertion getAssertion() {
     return this.assertion.get();
   }
 
@@ -216,8 +217,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return the Base64-encoded {@link Assertion}
    */
-  @Nullable
-  public String getAssertionBase64() {
+  public @Nullable String getAssertionBase64() {
     final Assertion assertion = this.getAssertion();
     if (assertion == null) {
       return null;
@@ -237,7 +237,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return a list of eIDAS attributes
    */
-  public List<Attribute> getEidasAttributes() {
+  public @NonNull List<Attribute> getEidasAttributes() {
     return Optional.ofNullable(this.assertion.get())
         .map(Assertion::getAttributeStatements)
         .map(statements -> statements.stream()
@@ -252,7 +252,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return attribute list
    */
-  public List<GenericAttribute<?>> getAttributes() {
+  public @NonNull List<GenericAttribute<?>> getAttributes() {
     return Collections.unmodifiableList(this.attributes);
   }
 
@@ -262,7 +262,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @param attribute the attribute to add
    */
-  public void addAttribute(final GenericAttribute<?> attribute) {
+  public void addAttribute(final @Nullable GenericAttribute<?> attribute) {
     if (attribute != null) {
       this.attributes.removeIf(a -> a.getIdentifier().equals(attribute.getIdentifier()));
       this.attributes.add(attribute);
@@ -275,7 +275,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    * @param identifier the attribute identifier
    * @return the {@link GenericAttribute} or {@code null} if not available
    */
-  public GenericAttribute<?> getAttribute(final String identifier) {
+  public @Nullable GenericAttribute<?> getAttribute(final @NonNull String identifier) {
     return this.attributes.stream()
         .filter(a -> Objects.equals(identifier, a.getIdentifier()))
         .findFirst()
@@ -287,7 +287,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return authentication instant
    */
-  public Instant getAuthnInstant() {
+  public @NonNull Instant getAuthnInstant() {
     return Optional.ofNullable(this.assertion.get())
         .map(Assertion::getAuthnStatements)
         .filter(Predicate.not(List::isEmpty))
@@ -301,7 +301,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return the authn context class ref URI or {@code null} if it is not present in the assertion
    */
-  public String getAuthnContextClassRef() {
+  public @Nullable String getAuthnContextClassRef() {
     return Optional.ofNullable(this.assertion.get())
         .map(Assertion::getAuthnStatements)
         .filter(Predicate.not(List::isEmpty))
@@ -318,7 +318,7 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    *
    * @return a list of authenticating authorities
    */
-  public List<String> getAuthenticatingAuthorities() {
+  public @NonNull List<String> getAuthenticatingAuthorities() {
 
     final List<String> authorities = new ArrayList<>();
 
@@ -350,13 +350,13 @@ public class EidasAuthenticationToken extends AbstractAuthenticationToken {
    * Gets the eIDAS person identifier of the user.
    */
   @Override
-  public Object getPrincipal() {
+  public @NonNull Object getPrincipal() {
     return this.principal;
   }
 
   /** {@inheritDoc} */
   @Override
-  public Object getCredentials() {
+  public @NonNull Object getCredentials() {
     return this.getAssertion();
   }
 

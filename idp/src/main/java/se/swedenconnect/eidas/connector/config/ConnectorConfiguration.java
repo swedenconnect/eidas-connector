@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,13 +87,13 @@ public class ConnectorConfiguration {
 
   private static final Logger log = LoggerFactory.getLogger(ConnectorConfiguration.class);
 
-  private final ConnectorConfigurationProperties connectorProperties;
+  private final @NonNull ConnectorConfigurationProperties connectorProperties;
 
-  private final String baseUrl;
+  private final @NonNull String baseUrl;
 
-  private final SslBundles sslBundles;
+  private final @NonNull SslBundles sslBundles;
 
-  private final PkiCredentialFactory credentialFactory;
+  private final @NonNull PkiCredentialFactory credentialFactory;
 
   /**
    * Connector.
@@ -101,9 +103,9 @@ public class ConnectorConfiguration {
    * @param sslBundles the SSL bundles
    * @param credentialFactory the credential factory bean
    */
-  public ConnectorConfiguration(final ConnectorConfigurationProperties connectorProperties,
-      final AuthnServerConfigurationProperties serverProperties, final SslBundles sslBundles,
-      final PkiCredentialFactory credentialFactory) {
+  public ConnectorConfiguration(final @NonNull ConnectorConfigurationProperties connectorProperties,
+      final @NonNull AuthnServerConfigurationProperties serverProperties, final @NonNull SslBundles sslBundles,
+      final @NonNull PkiCredentialFactory credentialFactory) {
     this.connectorProperties = connectorProperties;
     this.baseUrl = Objects.requireNonNull(serverProperties.getBaseUrl(), "authn-server.base-url must be set");
     this.sslBundles = sslBundles;
@@ -125,8 +127,8 @@ public class ConnectorConfiguration {
    */
   @Bean
   @Order(2)
-  SecurityFilterChain defaultSecurityFilterChain(final HttpSecurity http, final EidasAuthenticationProvider provider)
-      throws Exception {
+  @NonNull SecurityFilterChain defaultSecurityFilterChain(final @NonNull HttpSecurity http,
+      final @NonNull EidasAuthenticationProvider provider) throws Exception {
     http
         .securityContext(sc -> sc.requireExplicitSave(false))
         .csrf(c -> c.ignoringRequestMatchers(EidasAuthenticationController.ASSERTION_CONSUMER_PATH + "/**",
@@ -157,8 +159,8 @@ public class ConnectorConfiguration {
    * @return an {@link AuthnServerConfigurerAdapter}
    */
   @Bean
-  AuthnServerConfigurerAdapter samlIdpSettingsAdapter(final ThymeleafResponsePage responsePage,
-      final EidasSuccessResponseAuditPublisher auditPublisher) {
+  @NonNull AuthnServerConfigurerAdapter samlIdpSettingsAdapter(final @NonNull ThymeleafResponsePage responsePage,
+      final @NonNull EidasSuccessResponseAuditPublisher auditPublisher) {
     return (http, configurer) -> configurer.protocol(Saml2IdpConfigurer.class, saml -> saml
         .attributeMapping(ConnectorAttributes.createSamlAttributeMapping())
         .authnRequestProcessor(c -> c
@@ -174,7 +176,7 @@ public class ConnectorConfiguration {
    * @return a {@link ThymeleafResponsePage}
    */
   @Bean
-  ThymeleafResponsePage responsePage(final SpringTemplateEngine templateEngine) {
+  @NonNull ThymeleafResponsePage responsePage(final @NonNull SpringTemplateEngine templateEngine) {
     return new ThymeleafResponsePage(templateEngine, "post-response.html");
   }
 
@@ -185,8 +187,8 @@ public class ConnectorConfiguration {
    * @return an {@link EidasSuccessResponseAuditPublisher}
    */
   @Bean
-  EidasSuccessResponseAuditPublisher eidasSuccessResponseAuditPublisher(
-      final ApplicationEventPublisher eventPublisher) {
+  @NonNull EidasSuccessResponseAuditPublisher eidasSuccessResponseAuditPublisher(
+      final @NonNull ApplicationEventPublisher eventPublisher) {
     return new EidasSuccessResponseAuditPublisher(eventPublisher);
   }
 
@@ -196,7 +198,7 @@ public class ConnectorConfiguration {
    * @return an {@link EventTransformer}
    */
   @Bean
-  EventTransformer connectorAuditEventTransformer() {
+  @NonNull EventTransformer connectorAuditEventTransformer() {
     return new ConnectorAuditEventTransformer();
   }
 
@@ -213,13 +215,19 @@ public class ConnectorConfiguration {
    * @throws Exception for credential loading errors
    */
   @Bean
-  ConnectorCredentials connectorCredentials(
-      final @Qualifier(SamlCredentialConfiguration.DEFAULT_CREDENTIAL) @Autowired(required = false) PkiCredential defaultCredential,
-      final @Qualifier(SamlCredentialConfiguration.SIGN_CREDENTIAL) @Autowired(required = false) PkiCredential signCredential,
-      final @Qualifier(SamlCredentialConfiguration.FUTURE_SIGN_CERTIFICATE) @Autowired(required = false) X509Certificate futureSignCertificate,
-      final @Qualifier(SamlCredentialConfiguration.ENCRYPT_CREDENTIAL) @Autowired(required = false) PkiCredential encryptCredential,
-      final @Qualifier(SamlCredentialConfiguration.PREVIOUS_ENCRYPT_CREDENTIAL) @Autowired(required = false) PkiCredential previousEncryptCredential,
-      final @Qualifier(SamlCredentialConfiguration.METADATA_SIGN_CREDENTIAL) @Autowired(required = false) PkiCredential metadataSignCredential)
+  @NonNull ConnectorCredentials connectorCredentials(
+      @Qualifier(SamlCredentialConfiguration.DEFAULT_CREDENTIAL) @Autowired(required = false)
+      final @Nullable PkiCredential defaultCredential,
+      @Qualifier(SamlCredentialConfiguration.SIGN_CREDENTIAL) @Autowired(required = false)
+      final @Nullable PkiCredential signCredential,
+      @Qualifier(SamlCredentialConfiguration.FUTURE_SIGN_CERTIFICATE) @Autowired(required = false)
+      final @Nullable X509Certificate futureSignCertificate,
+      @Qualifier(SamlCredentialConfiguration.ENCRYPT_CREDENTIAL) @Autowired(required = false)
+      final @Nullable PkiCredential encryptCredential,
+      @Qualifier(SamlCredentialConfiguration.PREVIOUS_ENCRYPT_CREDENTIAL) @Autowired(required = false)
+      final @Nullable PkiCredential previousEncryptCredential,
+      @Qualifier(SamlCredentialConfiguration.METADATA_SIGN_CREDENTIAL) @Autowired(required = false)
+      final @Nullable PkiCredential metadataSignCredential)
       throws Exception {
 
     return new ConnectorCredentials(defaultCredential, signCredential, futureSignCertificate, encryptCredential,
@@ -251,7 +259,7 @@ public class ConnectorConfiguration {
    * @throws Exception for config errors
    */
   @Bean(initMethod = "initialize", destroyMethod = "destroy")
-  MetadataProvider metadataProvider(final SslBundles sslBundles) throws Exception {
+  @NonNull MetadataProvider metadataProvider(final @NonNull SslBundles sslBundles) throws Exception {
     return MetadataProviderUtils.createMetadataProvider(this.connectorProperties.getEuMetadata(), sslBundles);
   }
 
@@ -263,13 +271,13 @@ public class ConnectorConfiguration {
    * @return the {@link EuMetadataProvider}
    */
   @Bean
-  EuMetadataProvider euMetadataProvider(
-      final MetadataProvider metadataProvider, final ApplicationEventPublisher publisher) {
+  @NonNull EuMetadataProvider euMetadataProvider(
+      final @NonNull MetadataProvider metadataProvider, final @NonNull ApplicationEventPublisher publisher) {
     return new DefaultEuMetadataProvider(metadataProvider, publisher);
   }
 
   @Bean
-  OAuth2Handler oauth2Handler(final ConnectorCredentials connectorCredentials) {
+  @Nullable OAuth2Handler oauth2Handler(final @NonNull ConnectorCredentials connectorCredentials) {
     if (!this.connectorProperties.getIdm().getActive()) {
       // IdM-feature is not active
       return null;
@@ -294,7 +302,7 @@ public class ConnectorConfiguration {
   }
 
   @Bean
-  IdmClient idmClient(@Autowired(required = false) final OAuth2Handler oauth2) {
+  @NonNull IdmClient idmClient(@Autowired(required = false) final @Nullable OAuth2Handler oauth2) {
     if (this.connectorProperties.getIdm().getActive()) {
       if (oauth2 == null) {
         throw new IllegalArgumentException("Missing OAuth2 handler");
@@ -319,15 +327,15 @@ public class ConnectorConfiguration {
   }
 
   @Bean
-  EidasAuthenticationProvider eidasAuthenticationProvider(
-      final ApplicationEventPublisher eventPublisher,
-      @Qualifier("connector.sp.metadata") final EntityDescriptor metadata,
-      final EidasAuthnRequestGenerator authnRequestGenerator,
-      final EidasResponseProcessor eidasResponseProcessor,
-      final EuMetadataProvider euMetadataProvider,
-      final EidasAttributeConverter attributeConverter,
-      final PridService pridService,
-      final IdmClient idmClient) {
+  @NonNull EidasAuthenticationProvider eidasAuthenticationProvider(
+      final @NonNull ApplicationEventPublisher eventPublisher,
+      @Qualifier("connector.sp.metadata") final @NonNull EntityDescriptor metadata,
+      final @NonNull EidasAuthnRequestGenerator authnRequestGenerator,
+      final @NonNull EidasResponseProcessor eidasResponseProcessor,
+      final @NonNull EuMetadataProvider euMetadataProvider,
+      final @NonNull EidasAttributeConverter attributeConverter,
+      final @NonNull PridService pridService,
+      final @NonNull IdmClient idmClient) {
     return new EidasAuthenticationProvider(this.baseUrl,
         eventPublisher, metadata, authnRequestGenerator, eidasResponseProcessor, euMetadataProvider,
         attributeConverter, pridService, idmClient, this.connectorProperties.getIdp().getSupportedLoas(),
@@ -335,7 +343,7 @@ public class ConnectorConfiguration {
   }
 
   @Bean
-  PridService pridService() {
+  @NonNull PridService pridService() {
     return new PridService(
         this.connectorProperties.getPrid().getPolicyResource(),
         List.of(

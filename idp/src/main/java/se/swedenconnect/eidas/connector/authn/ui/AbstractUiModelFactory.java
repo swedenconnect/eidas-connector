@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import se.swedenconnect.eidas.connector.authn.SamlRequestData;
@@ -37,10 +38,10 @@ import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthentic
 public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
 
   /** The UI language handler. */
-  private final UiLanguageHandler languageHandler;
+  private final @NonNull UiLanguageHandler languageHandler;
 
   /** The accessibility URL. */
-  private final String accessibilityUrl;
+  private final @NonNull String accessibilityUrl;
 
   /**
    * Constructor.
@@ -48,7 +49,8 @@ public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
    * @param languageHandler the UI language handler
    * @param accessibilityUrl the accessibility URL
    */
-  public AbstractUiModelFactory(final UiLanguageHandler languageHandler, final String accessibilityUrl) {
+  public AbstractUiModelFactory(final @NonNull UiLanguageHandler languageHandler,
+      final @NonNull String accessibilityUrl) {
     this.languageHandler = Objects.requireNonNull(languageHandler, "languageHandler must not be null");
     this.accessibilityUrl = Objects.requireNonNull(accessibilityUrl, "accessibilityUrl must not be null");
   }
@@ -59,7 +61,7 @@ public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
    * @param model the object to initialize
    * @param token the input token
    */
-  protected void initModel(final T model, final UserAuthenticationInputToken token) {
+  protected void initModel(final @NonNull T model, final @NonNull UserAuthenticationInputToken token) {
     model.setAccessibilityUrl(this.accessibilityUrl);
     model.setSpInfo(this.createSpInfo(token));
   }
@@ -69,7 +71,7 @@ public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
    *
    * @return the {@link UiLanguageHandler}
    */
-  protected UiLanguageHandler getUiLanguageHandler() {
+  protected @NonNull UiLanguageHandler getUiLanguageHandler() {
     return this.languageHandler;
   }
 

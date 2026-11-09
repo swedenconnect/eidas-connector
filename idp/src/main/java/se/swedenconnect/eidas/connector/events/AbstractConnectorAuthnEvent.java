@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
@@ -33,14 +34,14 @@ public class AbstractConnectorAuthnEvent extends AbstractEidasConnectorEvent {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** Used when the SP entityID or the ID of the authentication request is not known. */
-  public static final String UNKNOWN = "unknown";
+  public static final @NonNull String UNKNOWN = "unknown";
 
   /**
    * Constructor.
    *
    * @param token the authentication input token
    */
-  public AbstractConnectorAuthnEvent(final UserAuthenticationInputToken token) {
+  public AbstractConnectorAuthnEvent(final @NonNull UserAuthenticationInputToken token) {
     super(Objects.requireNonNull(token, "token must not be null"));
   }
 
@@ -49,7 +50,7 @@ public class AbstractConnectorAuthnEvent extends AbstractEidasConnectorEvent {
    *
    * @return the {@link UserAuthenticationInputToken}
    */
-  public final UserAuthenticationInputToken getToken() {
+  public final @NonNull UserAuthenticationInputToken getToken() {
     return (UserAuthenticationInputToken) this.getSource();
   }
 
@@ -58,7 +59,7 @@ public class AbstractConnectorAuthnEvent extends AbstractEidasConnectorEvent {
    *
    * @return the entityID of the Swedish SP that requested authentication
    */
-  public final String getOriginalSpId() {
+  public final @NonNull String getOriginalSpId() {
     return this.getToken().getRequester().identifier();
   }
 
@@ -67,7 +68,7 @@ public class AbstractConnectorAuthnEvent extends AbstractEidasConnectorEvent {
    *
    * @return the ID of the original {@code AuthnRequest}
    */
-  public final String getOriginalAuthnRequestId() {
+  public final @NonNull String getOriginalAuthnRequestId() {
     return Optional.ofNullable(this.getToken().getRequestId()).orElse(UNKNOWN);
   }
 

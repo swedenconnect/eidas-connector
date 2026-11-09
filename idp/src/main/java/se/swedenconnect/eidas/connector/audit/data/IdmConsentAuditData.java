@@ -16,6 +16,8 @@
 package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.IdentityMatchingConsentEvent;
 
@@ -37,7 +39,7 @@ public class IdmConsentAuditData extends ConnectorAuditData {
 
   /** The user identity (personal identifier) of the user that consented/rejected the IdM query. */
   @JsonProperty("user")
-  private String user;
+  private @Nullable String user;
 
   /**
    * Gets whether the user consented to releasing the Identity Matching record.
@@ -62,7 +64,7 @@ public class IdmConsentAuditData extends ConnectorAuditData {
    *
    * @return the user identity (personal identifier) of the user that consented/rejected the IdM query
    */
-  public String getUser() {
+  public @Nullable String getUser() {
     return this.user;
   }
 
@@ -71,13 +73,13 @@ public class IdmConsentAuditData extends ConnectorAuditData {
    *
    * @param user the user identity (personal identifier) of the user that consented/rejected the IdM query
    */
-  public void setUser(final String user) {
+  public void setUser(final @Nullable String user) {
     this.user = user;
   }
 
   /** {@inheritDoc} */
   @Override
-  public String getName() {
+  public @NonNull String getName() {
     return "idm-consent-result";
   }
 
@@ -87,7 +89,7 @@ public class IdmConsentAuditData extends ConnectorAuditData {
    * @param event a {@link IdentityMatchingConsentEvent}
    * @return a {@link IdmConsentAuditData}
    */
-  public static IdmConsentAuditData of(final IdentityMatchingConsentEvent event) {
+  public static @NonNull IdmConsentAuditData of(final @NonNull IdentityMatchingConsentEvent event) {
     final IdmConsentAuditData data = new IdmConsentAuditData();
     data.setIdmConsented(event.isConsented());
     data.setUser((String) event.getEidasToken().getPrincipal());
@@ -96,7 +98,7 @@ public class IdmConsentAuditData extends ConnectorAuditData {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return String.format("idm-consented='%s', user='%s'", this.idmConsented, this.user);
   }
 

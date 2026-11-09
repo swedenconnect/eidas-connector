@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.Response;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.saml2.response.validation.ResponseValidationException;
@@ -33,7 +35,8 @@ public class EidasResponseValidationException extends ResponseValidationExceptio
   @Serial
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
-  private final SamlErrorStatusException error;
+  /** The error to report back to the Swedish SP. */
+  private final @NonNull SamlErrorStatusException error;
 
   /**
    * Constructor.
@@ -41,7 +44,8 @@ public class EidasResponseValidationException extends ResponseValidationExceptio
    * @param error the error to report back to the Swedish SP
    * @param response the response that failed validation
    */
-  public EidasResponseValidationException(final SamlErrorStatusException error, final Response response) {
+  public EidasResponseValidationException(final @NonNull SamlErrorStatusException error,
+      final @Nullable Response response) {
     super(Objects.requireNonNull(error, "error must not be null").getMessage(), error.getCause(), response, null);
     this.error = error;
   }
@@ -51,7 +55,7 @@ public class EidasResponseValidationException extends ResponseValidationExceptio
    *
    * @return a {@link SamlErrorStatusException}
    */
-  public SamlErrorStatusException getError() {
+  public @NonNull SamlErrorStatusException getError() {
     return this.error;
   }
 

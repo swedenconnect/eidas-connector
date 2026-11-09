@@ -18,6 +18,8 @@ package se.swedenconnect.eidas.connector.audit.data;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AuthenticatingAuthority;
@@ -53,11 +55,11 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
 
   /** The assertion ID. */
   @JsonProperty(value = "id")
-  private String id;
+  private @Nullable String id;
 
   /** Holds the ID for the corresponding AuthnRequest. */
   @JsonProperty(value = "in-response-to")
-  private String inResponseTo;
+  private @Nullable String inResponseTo;
 
   /** Whether the assertion is signed. */
   @JsonProperty(value = "is-signed")
@@ -69,42 +71,42 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
 
   /** The issuance time for the assertion. */
   @JsonProperty(value = "issued-at")
-  private Instant issuedAt;
+  private @Nullable Instant issuedAt;
 
   /** The entityID of the issuing entity. */
   @JsonProperty(value = "issuer")
-  private String issuer;
+  private @Nullable String issuer;
 
   /** The authentication instant. */
   @JsonProperty(value = "authn-instant")
-  private Instant authnInstant;
+  private @Nullable Instant authnInstant;
 
   /** The subject's (assigned) ID. */
   @JsonProperty(value = "subject-id")
-  private String subjectId;
+  private @Nullable String subjectId;
 
   /** The subject locality (IP). */
   @JsonProperty(value = "subject-locality")
-  private String subjectLocality;
+  private @Nullable String subjectLocality;
 
   /** The LoA URI (level of assurance). */
   @JsonProperty(value = "authn-context-class-ref")
-  private String authnContextClassRef;
+  private @Nullable String authnContextClassRef;
 
   /** Optional ID for authenticating authority. */
   @JsonProperty(value = "authn-authority")
-  private String authnAuthority;
+  private @Nullable String authnAuthority;
 
   /** The SAML attributes. */
   @JsonProperty(value = "attributes")
-  private List<SamlAttribute> attributes;
+  private @Nullable List<SamlAttribute> attributes;
 
   /**
    * Gets the assertion ID.
    *
    * @return the assertion ID
    */
-  public String getId() {
+  public @Nullable String getId() {
     return this.id;
   }
 
@@ -113,7 +115,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @param id the assertion ID
    */
-  public void setId(final String id) {
+  public void setId(final @Nullable String id) {
     this.id = id;
   }
 
@@ -122,7 +124,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @return the ID for the corresponding AuthnRequest
    */
-  public String getInResponseTo() {
+  public @Nullable String getInResponseTo() {
     return this.inResponseTo;
   }
 
@@ -131,7 +133,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @param inResponseTo the ID for the corresponding AuthnRequest
    */
-  public void setInResponseTo(final String inResponseTo) {
+  public void setInResponseTo(final @Nullable String inResponseTo) {
     this.inResponseTo = inResponseTo;
   }
 
@@ -176,7 +178,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @return the issuance time for the assertion
    */
-  public Instant getIssuedAt() {
+  public @Nullable Instant getIssuedAt() {
     return this.issuedAt;
   }
 
@@ -185,7 +187,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @param issuedAt the issuance time for the assertion
    */
-  public void setIssuedAt(final Instant issuedAt) {
+  public void setIssuedAt(final @Nullable Instant issuedAt) {
     this.issuedAt = issuedAt;
   }
 
@@ -194,7 +196,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @return the entityID of the issuing entity
    */
-  public String getIssuer() {
+  public @Nullable String getIssuer() {
     return this.issuer;
   }
 
@@ -203,7 +205,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @param issuer the entityID of the issuing entity
    */
-  public void setIssuer(final String issuer) {
+  public void setIssuer(final @Nullable String issuer) {
     this.issuer = issuer;
   }
 
@@ -212,7 +214,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @return the authentication instant
    */
-  public Instant getAuthnInstant() {
+  public @Nullable Instant getAuthnInstant() {
     return this.authnInstant;
   }
 
@@ -221,7 +223,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @param authnInstant the authentication instant
    */
-  public void setAuthnInstant(final Instant authnInstant) {
+  public void setAuthnInstant(final @Nullable Instant authnInstant) {
     this.authnInstant = authnInstant;
   }
 
@@ -230,7 +232,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @return the subject's (assigned) ID
    */
-  public String getSubjectId() {
+  public @Nullable String getSubjectId() {
     return this.subjectId;
   }
 
@@ -239,7 +241,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @param subjectId the subject's (assigned) ID
    */
-  public void setSubjectId(final String subjectId) {
+  public void setSubjectId(final @Nullable String subjectId) {
     this.subjectId = subjectId;
   }
 
@@ -248,7 +250,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @return the subject locality (IP)
    */
-  public String getSubjectLocality() {
+  public @Nullable String getSubjectLocality() {
     return this.subjectLocality;
   }
 
@@ -257,7 +259,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @param subjectLocality the subject locality (IP)
    */
-  public void setSubjectLocality(final String subjectLocality) {
+  public void setSubjectLocality(final @Nullable String subjectLocality) {
     this.subjectLocality = subjectLocality;
   }
 
@@ -266,7 +268,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @return the LoA URI (level of assurance)
    */
-  public String getAuthnContextClassRef() {
+  public @Nullable String getAuthnContextClassRef() {
     return this.authnContextClassRef;
   }
 
@@ -275,7 +277,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @param authnContextClassRef the LoA URI (level of assurance)
    */
-  public void setAuthnContextClassRef(final String authnContextClassRef) {
+  public void setAuthnContextClassRef(final @Nullable String authnContextClassRef) {
     this.authnContextClassRef = authnContextClassRef;
   }
 
@@ -284,7 +286,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @return the optional ID for authenticating authority
    */
-  public String getAuthnAuthority() {
+  public @Nullable String getAuthnAuthority() {
     return this.authnAuthority;
   }
 
@@ -293,7 +295,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @param authnAuthority the optional ID for authenticating authority
    */
-  public void setAuthnAuthority(final String authnAuthority) {
+  public void setAuthnAuthority(final @Nullable String authnAuthority) {
     this.authnAuthority = authnAuthority;
   }
 
@@ -302,7 +304,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @return the SAML attributes
    */
-  public List<SamlAttribute> getAttributes() {
+  public @Nullable List<SamlAttribute> getAttributes() {
     return this.attributes;
   }
 
@@ -311,13 +313,13 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    *
    * @param attributes the SAML attributes
    */
-  public void setAttributes(final List<SamlAttribute> attributes) {
+  public void setAttributes(final @Nullable List<SamlAttribute> attributes) {
     this.attributes = attributes;
   }
 
   /** {@inheritDoc} */
   @Override
-  public String getName() {
+  public @NonNull String getName() {
     return "saml-assertion";
   }
 
@@ -328,7 +330,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
    * @param encrypted whether this assertion is encrypted (when placed in response)
    * @return a {@link SamlAssertionAuditData}, or {@code null} if no assertion is given
    */
-  public static SamlAssertionAuditData of(final Assertion assertion, final boolean encrypted) {
+  public static @Nullable SamlAssertionAuditData of(final @Nullable Assertion assertion, final boolean encrypted) {
     if (assertion == null) {
       return null;
     }
@@ -388,7 +390,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return String.format(
         "id='%s', in-response-to='%s', is-signed='%s', is-encrypted='%s', issued-at='%s', issuer='%s', subject-id='%s'"
             + ", authn-instant='%s', subject-locality='%s', authn-context-class-ref='%s', authn-authority='%s', attributes=%s",
@@ -407,11 +409,11 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
 
     /** The attribute name. */
     @JsonProperty(value = "name")
-    private String name;
+    private @Nullable String name;
 
     /** The attribute value. */
     @JsonProperty(value = "value")
-    private String value;
+    private @Nullable String value;
 
     /**
      * Default constructor.
@@ -425,7 +427,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
      * @param name the attribute name
      * @param value the attribute value
      */
-    public SamlAttribute(final String name, final String value) {
+    public SamlAttribute(final @Nullable String name, final @Nullable String value) {
       this.name = name;
       this.value = value;
     }
@@ -435,7 +437,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
      *
      * @return the attribute name
      */
-    public String getName() {
+    public @Nullable String getName() {
       return this.name;
     }
 
@@ -444,7 +446,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
      *
      * @param name the attribute name
      */
-    public void setName(final String name) {
+    public void setName(final @Nullable String name) {
       this.name = name;
     }
 
@@ -453,7 +455,7 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
      *
      * @return the attribute value
      */
-    public String getValue() {
+    public @Nullable String getValue() {
       return this.value;
     }
 
@@ -462,13 +464,13 @@ public class SamlAssertionAuditData extends ConnectorAuditData {
      *
      * @param value the attribute value
      */
-    public void setValue(final String value) {
+    public void setValue(final @Nullable String value) {
       this.value = value;
     }
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return String.format("%s='%s'", this.name, this.value);
     }
   }

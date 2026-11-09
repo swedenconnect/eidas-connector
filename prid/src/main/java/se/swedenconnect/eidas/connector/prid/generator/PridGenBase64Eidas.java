@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,7 @@ public class PridGenBase64Eidas extends AbstractPridGenerator {
   private static final Logger log = LoggerFactory.getLogger(PridGenBase64Eidas.class);
 
   /** The algorithm name that this instance implements. */
-  public static final String ALGORITHM_NAME = "special-characters-eIDAS";
+  public static final @NonNull String ALGORITHM_NAME = "special-characters-eIDAS";
 
   /**
    * Constructor (using "SE" as destination country).
@@ -46,7 +47,7 @@ public class PridGenBase64Eidas extends AbstractPridGenerator {
    *
    * @param destinationCountry country code to which the eIDAS person identifiers are issued for
    */
-  public PridGenBase64Eidas(final String destinationCountry) {
+  public PridGenBase64Eidas(final @NonNull String destinationCountry) {
     super(destinationCountry);
   }
 
@@ -54,7 +55,7 @@ public class PridGenBase64Eidas extends AbstractPridGenerator {
    * {@inheritDoc}
    */
   @Override
-  public String getAlgorithmName() {
+  public @NonNull String getAlgorithmName() {
     return ALGORITHM_NAME;
   }
 
@@ -62,8 +63,8 @@ public class PridGenBase64Eidas extends AbstractPridGenerator {
    * {@inheritDoc}
    */
   @Override
-  protected String calculatePridIdentifier(
-      final String checkedStrippedInput, final String originalInput) throws PridGeneratorException {
+  protected @NonNull String calculatePridIdentifier(
+      final @NonNull String checkedStrippedInput, final @NonNull String originalInput) throws PridGeneratorException {
 
     if (checkedStrippedInput.length() < 16) {
       final String msg = String.format("Input for PRID calculation '%s' is shorter than 16 characters", originalInput);

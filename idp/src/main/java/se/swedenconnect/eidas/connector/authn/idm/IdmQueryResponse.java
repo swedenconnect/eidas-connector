@@ -21,6 +21,8 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Representation of a response to a record query.
@@ -34,30 +36,30 @@ public class IdmQueryResponse {
    * Unique ID for the matched record.
    */
   @JsonProperty("rid")
-  private String recordId;
+  private @Nullable String recordId;
 
   /**
    * The eIDAS PersonalIdentifier.
    */
   @JsonProperty("eidas-user-id")
-  private String eidasUserId;
+  private @Nullable String eidasUserId;
 
   /**
    * The Swedish personal identity number.
    */
   @JsonProperty("swedish-id")
-  private String swedishId;
+  private @Nullable String swedishId;
 
   /** The binding level. */
   @JsonProperty("binding-level")
-  private String bindingLevel;
+  private @Nullable String bindingLevel;
 
   /**
    * A list of one or more URI:s identifying the "bindings", i.e., the processes that were applied to create the match
    * record.
    */
   @JsonProperty("bindings")
-  private List<String> bindings;
+  private @Nullable List<String> bindings;
 
   /**
    * A timestamp (seconds since epoch) for when the record was created.
@@ -81,8 +83,9 @@ public class IdmQueryResponse {
    * @param bindings the URI:s identifying the processes applied to create the match record
    * @param created the timestamp (seconds since epoch) for when the record was created
    */
-  public IdmQueryResponse(final String recordId, final String eidasUserId, final String swedishId,
-      final String bindingLevel, final List<String> bindings, final long created) {
+  public IdmQueryResponse(final @Nullable String recordId, final @Nullable String eidasUserId,
+      final @Nullable String swedishId, final @Nullable String bindingLevel, final @Nullable List<String> bindings,
+      final long created) {
     this.recordId = recordId;
     this.eidasUserId = eidasUserId;
     this.swedishId = swedishId;
@@ -96,7 +99,7 @@ public class IdmQueryResponse {
    *
    * @return a builder
    */
-  public static IdmQueryResponseBuilder builder() {
+  public static @NonNull IdmQueryResponseBuilder builder() {
     return new IdmQueryResponseBuilder();
   }
 
@@ -105,7 +108,7 @@ public class IdmQueryResponse {
    *
    * @return the unique ID for the matched record
    */
-  public String getRecordId() {
+  public @Nullable String getRecordId() {
     return this.recordId;
   }
 
@@ -114,7 +117,7 @@ public class IdmQueryResponse {
    *
    * @param recordId the unique ID for the matched record
    */
-  public void setRecordId(final String recordId) {
+  public void setRecordId(final @Nullable String recordId) {
     this.recordId = recordId;
   }
 
@@ -123,7 +126,7 @@ public class IdmQueryResponse {
    *
    * @return the eIDAS PersonalIdentifier
    */
-  public String getEidasUserId() {
+  public @Nullable String getEidasUserId() {
     return this.eidasUserId;
   }
 
@@ -132,7 +135,7 @@ public class IdmQueryResponse {
    *
    * @param eidasUserId the eIDAS PersonalIdentifier
    */
-  public void setEidasUserId(final String eidasUserId) {
+  public void setEidasUserId(final @Nullable String eidasUserId) {
     this.eidasUserId = eidasUserId;
   }
 
@@ -141,7 +144,7 @@ public class IdmQueryResponse {
    *
    * @return the Swedish personal identity number
    */
-  public String getSwedishId() {
+  public @Nullable String getSwedishId() {
     return this.swedishId;
   }
 
@@ -150,7 +153,7 @@ public class IdmQueryResponse {
    *
    * @param swedishId the Swedish personal identity number
    */
-  public void setSwedishId(final String swedishId) {
+  public void setSwedishId(final @Nullable String swedishId) {
     this.swedishId = swedishId;
   }
 
@@ -159,7 +162,7 @@ public class IdmQueryResponse {
    *
    * @return the binding level
    */
-  public String getBindingLevel() {
+  public @Nullable String getBindingLevel() {
     return this.bindingLevel;
   }
 
@@ -168,7 +171,7 @@ public class IdmQueryResponse {
    *
    * @param bindingLevel the binding level
    */
-  public void setBindingLevel(final String bindingLevel) {
+  public void setBindingLevel(final @Nullable String bindingLevel) {
     this.bindingLevel = bindingLevel;
   }
 
@@ -177,7 +180,7 @@ public class IdmQueryResponse {
    *
    * @return the URI:s identifying the processes applied to create the match record
    */
-  public List<String> getBindings() {
+  public @Nullable List<String> getBindings() {
     return this.bindings;
   }
 
@@ -186,7 +189,7 @@ public class IdmQueryResponse {
    *
    * @param bindings the URI:s identifying the processes applied to create the match record
    */
-  public void setBindings(final List<String> bindings) {
+  public void setBindings(final @Nullable List<String> bindings) {
     this.bindings = bindings;
   }
 
@@ -210,7 +213,7 @@ public class IdmQueryResponse {
 
   /** {@inheritDoc} */
   @Override
-  public boolean equals(final Object o) {
+  public boolean equals(final @Nullable Object o) {
     if (o == this) {
       return true;
     }
@@ -234,7 +237,7 @@ public class IdmQueryResponse {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return "recordId=" + this.recordId + ", eidasUserId=" + this.eidasUserId
         + ", swedishId=" + this.swedishId + ", bindingLevel=" + this.bindingLevel
         + ", bindings=" + this.bindings + ", created=" + this.created;
@@ -245,11 +248,11 @@ public class IdmQueryResponse {
    */
   public static final class IdmQueryResponseBuilder {
 
-    private String recordId;
-    private String eidasUserId;
-    private String swedishId;
-    private String bindingLevel;
-    private List<String> bindings;
+    private @Nullable String recordId;
+    private @Nullable String eidasUserId;
+    private @Nullable String swedishId;
+    private @Nullable String bindingLevel;
+    private @Nullable List<String> bindings;
     private long created;
 
     /**
@@ -264,7 +267,7 @@ public class IdmQueryResponse {
      * @param recordId the unique ID for the matched record
      * @return the builder
      */
-    public IdmQueryResponseBuilder recordId(final String recordId) {
+    public @NonNull IdmQueryResponseBuilder recordId(final @Nullable String recordId) {
       this.recordId = recordId;
       return this;
     }
@@ -275,7 +278,7 @@ public class IdmQueryResponse {
      * @param eidasUserId the eIDAS PersonalIdentifier
      * @return the builder
      */
-    public IdmQueryResponseBuilder eidasUserId(final String eidasUserId) {
+    public @NonNull IdmQueryResponseBuilder eidasUserId(final @Nullable String eidasUserId) {
       this.eidasUserId = eidasUserId;
       return this;
     }
@@ -286,7 +289,7 @@ public class IdmQueryResponse {
      * @param swedishId the Swedish personal identity number
      * @return the builder
      */
-    public IdmQueryResponseBuilder swedishId(final String swedishId) {
+    public @NonNull IdmQueryResponseBuilder swedishId(final @Nullable String swedishId) {
       this.swedishId = swedishId;
       return this;
     }
@@ -297,7 +300,7 @@ public class IdmQueryResponse {
      * @param bindingLevel the binding level
      * @return the builder
      */
-    public IdmQueryResponseBuilder bindingLevel(final String bindingLevel) {
+    public @NonNull IdmQueryResponseBuilder bindingLevel(final @Nullable String bindingLevel) {
       this.bindingLevel = bindingLevel;
       return this;
     }
@@ -308,7 +311,7 @@ public class IdmQueryResponse {
      * @param bindings the URI:s identifying the processes applied to create the match record
      * @return the builder
      */
-    public IdmQueryResponseBuilder bindings(final List<String> bindings) {
+    public @NonNull IdmQueryResponseBuilder bindings(final @Nullable List<String> bindings) {
       this.bindings = bindings;
       return this;
     }
@@ -319,7 +322,7 @@ public class IdmQueryResponse {
      * @param created the timestamp (seconds since epoch) for when the record was created
      * @return the builder
      */
-    public IdmQueryResponseBuilder created(final long created) {
+    public @NonNull IdmQueryResponseBuilder created(final long created) {
       this.created = created;
       return this;
     }
@@ -329,14 +332,14 @@ public class IdmQueryResponse {
      *
      * @return an {@link IdmQueryResponse} object
      */
-    public IdmQueryResponse build() {
+    public @NonNull IdmQueryResponse build() {
       return new IdmQueryResponse(this.recordId, this.eidasUserId, this.swedishId, this.bindingLevel, this.bindings,
           this.created);
     }
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "recordId=" + this.recordId + ", eidasUserId=" + this.eidasUserId
           + ", swedishId=" + this.swedishId + ", bindingLevel=" + this.bindingLevel
           + ", bindings=" + this.bindings + ", created=" + this.created;

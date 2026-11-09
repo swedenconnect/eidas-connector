@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.saml2.core.StatusCode;
 import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatus;
 import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
@@ -31,19 +32,19 @@ import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
 public final class SamlErrors {
 
   /** A message code that is never resolved, so that the description of the error becomes the status message. */
-  public static final String NO_MESSAGE_CODE = "connector.error.status.description";
+  public static final @NonNull String NO_MESSAGE_CODE = "connector.error.status.description";
 
   /** The message code for a requested authentication context that cannot be met. */
-  public static final String NO_AUTHN_CONTEXT_MESSAGE_CODE = "authn-server.error.no-authn-context";
+  public static final @NonNull String NO_AUTHN_CONTEXT_MESSAGE_CODE = "authn-server.error.no-authn-context";
 
   /** The message code for a sign message that cannot be displayed. */
-  public static final String SIGN_MESSAGE_MESSAGE_CODE = "authn-server.error.saml.sign-message";
+  public static final @NonNull String SIGN_MESSAGE_MESSAGE_CODE = "authn-server.error.saml.sign-message";
 
   /** The message code for a signature that the user did not consent to. */
-  public static final String REJECT_SIGNATURE_MESSAGE_CODE = "idp.error.status.reject-signature";
+  public static final @NonNull String REJECT_SIGNATURE_MESSAGE_CODE = "idp.error.status.reject-signature";
 
   /** The Sweden Connect status code for a cancelled operation. */
-  public static final String CANCEL_STATUS_CODE = "http://id.elegnamnden.se/status/1.0/cancel";
+  public static final @NonNull String CANCEL_STATUS_CODE = "http://id.elegnamnden.se/status/1.0/cancel";
 
   /**
    * Creates an error whose status message is the description.
@@ -53,8 +54,8 @@ public final class SamlErrors {
    * @param description the description, used as status message
    * @return a {@link SamlErrorStatusException}
    */
-  public static SamlErrorStatusException error(
-      final String statusCode, final String subStatusCode, final String description) {
+  public static @NonNull SamlErrorStatusException error(final @NonNull String statusCode,
+      final @NonNull String subStatusCode, final @NonNull String description) {
     return new SamlErrorStatusException(
         new SamlErrorStatus(statusCode, subStatusCode), NO_MESSAGE_CODE, description);
   }
@@ -68,8 +69,8 @@ public final class SamlErrors {
    * @param cause the cause of the error
    * @return a {@link SamlErrorStatusException}
    */
-  public static SamlErrorStatusException error(
-      final String statusCode, final String subStatusCode, final String description, final Throwable cause) {
+  public static @NonNull SamlErrorStatusException error(final @NonNull String statusCode,
+      final @NonNull String subStatusCode, final @NonNull String description, final @NonNull Throwable cause) {
     return new SamlErrorStatusException(
         new SamlErrorStatus(statusCode, subStatusCode), NO_MESSAGE_CODE, description, cause);
   }
@@ -83,8 +84,8 @@ public final class SamlErrors {
    * @param description the description of the error
    * @return a {@link SamlErrorStatusException}
    */
-  public static SamlErrorStatusException errorWithMessageCode(final String statusCode, final String subStatusCode,
-      final String messageCode, final String description) {
+  public static @NonNull SamlErrorStatusException errorWithMessageCode(final @NonNull String statusCode,
+      final @NonNull String subStatusCode, final @NonNull String messageCode, final @NonNull String description) {
     return new SamlErrorStatusException(new SamlErrorStatus(statusCode, subStatusCode), messageCode, description);
   }
 
@@ -94,7 +95,7 @@ public final class SamlErrors {
    * @param description the description of the error
    * @return a {@link SamlErrorStatusException}
    */
-  public static SamlErrorStatusException noAuthnContext(final String description) {
+  public static @NonNull SamlErrorStatusException noAuthnContext(final @NonNull String description) {
     return errorWithMessageCode(StatusCode.REQUESTER, StatusCode.NO_AUTHN_CONTEXT,
         NO_AUTHN_CONTEXT_MESSAGE_CODE, description);
   }

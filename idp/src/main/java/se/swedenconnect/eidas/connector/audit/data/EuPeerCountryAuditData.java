@@ -16,7 +16,8 @@
 package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.Assertion;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeUtils;
@@ -34,14 +35,14 @@ public class EuPeerCountryAuditData extends ConnectorAuditData {
 
   /** The receiving country. */
   @JsonProperty("country")
-  private String country;
+  private @Nullable String country;
 
   /**
    * Gets the receiving country.
    *
    * @return the receiving country
    */
-  public String getCountry() {
+  public @Nullable String getCountry() {
     return this.country;
   }
 
@@ -50,13 +51,13 @@ public class EuPeerCountryAuditData extends ConnectorAuditData {
    *
    * @param country the receiving country
    */
-  public void setCountry(final String country) {
+  public void setCountry(final @Nullable String country) {
     this.country = country;
   }
 
   /** {@inheritDoc} */
   @Override
-  public String getName() {
+  public @NonNull String getName() {
     return "eu-peer-country";
   }
 
@@ -66,8 +67,7 @@ public class EuPeerCountryAuditData extends ConnectorAuditData {
    * @param country the country code
    * @return an {@link EuPeerCountryAuditData}
    */
-  @Nonnull
-  public static EuPeerCountryAuditData of(@Nonnull final String country) {
+  public static @NonNull EuPeerCountryAuditData of(final @NonNull String country) {
     final EuPeerCountryAuditData data = new EuPeerCountryAuditData();
     data.setCountry(country);
     return data;
@@ -79,8 +79,7 @@ public class EuPeerCountryAuditData extends ConnectorAuditData {
    * @param assertion the SAML assertion
    * @return an {@link EuPeerCountryAuditData}
    */
-  @Nonnull
-  public static EuPeerCountryAuditData of(@Nonnull final Assertion assertion) {
+  public static @NonNull EuPeerCountryAuditData of(final @NonNull Assertion assertion) {
     final EuPeerCountryAuditData data = new EuPeerCountryAuditData();
 
     if (assertion != null && !assertion.getAttributeStatements().isEmpty()) {

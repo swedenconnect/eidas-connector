@@ -17,6 +17,8 @@ package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.EuMetadataEvent.EuMetadataUpdateData;
 
@@ -38,33 +40,33 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
    * update.
    */
   @JsonProperty(value = "removed-countries")
-  private List<String> removedCountries;
+  private @Nullable List<String> removedCountries;
 
   /**
    * A list of country codes for countries that previously did not appear in the EU metadata, but were added in the last
    * update.
    */
   @JsonProperty(value = "added-countries")
-  private List<String> addedCountries;
+  private @Nullable List<String> addedCountries;
 
   /**
    * Textual information from the update. Contains information that may be of interest.
    */
   @JsonProperty(value = "info")
-  private String info;
+  private @Nullable String info;
 
   /**
    * Textual information from the update if an error occurred.
    */
   @JsonProperty(value = "error-info")
-  private String errorInfo;
+  private @Nullable String errorInfo;
 
   /**
    * Gets the list of country codes for countries that were removed in the last update.
    *
    * @return the list of country codes for countries that were removed in the last update
    */
-  public List<String> getRemovedCountries() {
+  public @Nullable List<String> getRemovedCountries() {
     return this.removedCountries;
   }
 
@@ -73,7 +75,7 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
    *
    * @param removedCountries the list of country codes for countries that were removed in the last update
    */
-  public void setRemovedCountries(final List<String> removedCountries) {
+  public void setRemovedCountries(final @Nullable List<String> removedCountries) {
     this.removedCountries = removedCountries;
   }
 
@@ -82,7 +84,7 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
    *
    * @return the list of country codes for countries that were added in the last update
    */
-  public List<String> getAddedCountries() {
+  public @Nullable List<String> getAddedCountries() {
     return this.addedCountries;
   }
 
@@ -91,7 +93,7 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
    *
    * @param addedCountries the list of country codes for countries that were added in the last update
    */
-  public void setAddedCountries(final List<String> addedCountries) {
+  public void setAddedCountries(final @Nullable List<String> addedCountries) {
     this.addedCountries = addedCountries;
   }
 
@@ -100,7 +102,7 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
    *
    * @return the textual information from the update
    */
-  public String getInfo() {
+  public @Nullable String getInfo() {
     return this.info;
   }
 
@@ -109,7 +111,7 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
    *
    * @param info the textual information from the update
    */
-  public void setInfo(final String info) {
+  public void setInfo(final @Nullable String info) {
     this.info = info;
   }
 
@@ -118,7 +120,7 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
    *
    * @return the textual error information from the update
    */
-  public String getErrorInfo() {
+  public @Nullable String getErrorInfo() {
     return this.errorInfo;
   }
 
@@ -127,14 +129,14 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
    *
    * @param errorInfo the textual error information from the update
    */
-  public void setErrorInfo(final String errorInfo) {
+  public void setErrorInfo(final @Nullable String errorInfo) {
     this.errorInfo = errorInfo;
   }
 
   /** {@inheritDoc} */
   @Override
   @JsonIgnore
-  public String getName() {
+  public @NonNull String getName() {
     return "eu-metadata-change";
   }
 
@@ -144,7 +146,7 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
    * @param data the {@link EuMetadataUpdateData}
    * @return an {@link EuMetadataChangeAuditData}
    */
-  public static EuMetadataChangeAuditData of(final EuMetadataUpdateData data) {
+  public static @Nullable EuMetadataChangeAuditData of(final @Nullable EuMetadataUpdateData data) {
     if (data == null) {
       return null;
     }
@@ -171,7 +173,7 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return String.format("removed-countries=%s, added-countries=%s, info='%s', error-info='%s'",
         this.removedCountries, this.addedCountries, this.info, this.errorInfo);
   }

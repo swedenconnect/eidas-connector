@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -33,7 +34,7 @@ public class EidasConnectorApplication {
    *
    * @param args program arguments
    */
-  public static void main(final String[] args) {
+  public static void main(final @NonNull String @NonNull [] args) {
     SpringApplication.run(EidasConnectorApplication.class, args);
   }
 

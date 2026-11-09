@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Implementation of the "colresist-eIDAS" PRID calculation algorithm as described in section 2.3.2 of the <a href=
  * "https://docs.swedenconnect.se/technical-framework/latest/11_-_eIDAS_Constructed_Attributes_Specification_for_the_Swedish_eID_Framework.html#algorithm-colresist-eidas">
@@ -25,7 +27,7 @@ package se.swedenconnect.eidas.connector.prid.generator;
 public class PridGenColResistEidas extends PridGenDefaultEidas {
 
   /** The algorithm name that this instance implements. */
-  public static final String ALGORITHM_NAME = "colresist-eIDAS";
+  public static final @NonNull String ALGORITHM_NAME = "colresist-eIDAS";
 
   /**
    * Constructor (using "SE" as destination country).
@@ -39,7 +41,7 @@ public class PridGenColResistEidas extends PridGenDefaultEidas {
    *
    * @param destinationCountry country code to which the eIDAS person identifiers are issued for
    */
-  public PridGenColResistEidas(final String destinationCountry) {
+  public PridGenColResistEidas(final @NonNull String destinationCountry) {
     super(destinationCountry);
   }
 
@@ -47,7 +49,7 @@ public class PridGenColResistEidas extends PridGenDefaultEidas {
    * {@inheritDoc}
    */
   @Override
-  public String getAlgorithmName() {
+  public @NonNull String getAlgorithmName() {
     return ALGORITHM_NAME;
   }
 
@@ -55,7 +57,7 @@ public class PridGenColResistEidas extends PridGenDefaultEidas {
    * {@inheritDoc}
    */
   @Override
-  protected String generateForLongID(final String input)
+  protected @NonNull String generateForLongID(final @NonNull String input)
       throws IndexOutOfBoundsException, NullPointerException {
     return getID(input, 36, 30);
   }

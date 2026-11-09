@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 
 /**
@@ -45,7 +46,7 @@ public interface IdmClient {
    * @return {@code true} if the user has a record and {@code false otherwise}
    * @throws IdmException for errors communicating with the Identity Matching service
    */
-  boolean hasRecord(final EidasAuthenticationToken token) throws IdmException;
+  boolean hasRecord(final @NonNull EidasAuthenticationToken token) throws IdmException;
 
   /**
    * The method will attempt to get the Identity Matching record for the authenticated user, and if a valid record
@@ -56,6 +57,6 @@ public interface IdmClient {
    * @return the {@link IdmRecord} for the binding
    * @throws IdmException for errors communicating with the Identity Matching service or if no record was available
    */
-  IdmRecord getRecord(final EidasAuthenticationToken token) throws IdmException;
+  @NonNull IdmRecord getRecord(final @NonNull EidasAuthenticationToken token) throws IdmException;
 
 }

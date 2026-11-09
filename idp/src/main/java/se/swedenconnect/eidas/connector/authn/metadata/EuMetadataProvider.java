@@ -18,6 +18,8 @@ package se.swedenconnect.eidas.connector.authn.metadata;
 import java.util.Collections;
 import java.util.List;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.swedenconnect.opensaml.saml2.metadata.provider.MetadataProvider;
 
 /**
@@ -32,7 +34,7 @@ public interface EuMetadataProvider {
    *
    * @return a {@link MetadataProvider}
    */
-  MetadataProvider getProvider();
+  @NonNull MetadataProvider getProvider();
 
   /**
    * Gets the metadata for a given country.
@@ -40,7 +42,7 @@ public interface EuMetadataProvider {
    * @param countryCode the country code
    * @return the {@link CountryMetadata} of {@code null} if it does not appear in the metadata
    */
-  CountryMetadata getCountry(final String countryCode);
+  @Nullable CountryMetadata getCountry(final @Nullable String countryCode);
 
   /**
    * Predicate that tells whether the supplied country is among to stored countries.
@@ -49,7 +51,7 @@ public interface EuMetadataProvider {
    * @param hiddenOk is it OK if the country is "hidden from discovery"?
    * @return true if the country is among to stored countries
    */
-  boolean contains(final String countryCode, final boolean hiddenOk);
+  boolean contains(final @Nullable String countryCode, final boolean hiddenOk);
 
   /**
    * Lists all countries that may be displayed on the connector country selection page.
@@ -59,7 +61,7 @@ public interface EuMetadataProvider {
    *
    * @return a list of countries
    */
-  default List<CountryMetadata> getCountries() {
+  default @NonNull List<CountryMetadata> getCountries() {
     return this.getCountries(Collections.emptyList());
   }
 
@@ -68,7 +70,7 @@ public interface EuMetadataProvider {
    *
    * @return a list of countries
    */
-  List<CountryMetadata> getAllCountries();
+  @NonNull List<CountryMetadata> getAllCountries();
 
   /**
    * Lists all countries that may be displayed on the connector country selection page.
@@ -80,6 +82,6 @@ public interface EuMetadataProvider {
    * @param requestedCountries a (possibly empty) list of requested countries
    * @return a list of matching countries
    */
-  List<CountryMetadata> getCountries(final List<String> requestedCountries);
+  @NonNull List<CountryMetadata> getCountries(final @Nullable List<String> requestedCountries);
 
 }

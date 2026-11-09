@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.springframework.context.ApplicationEvent;
 
@@ -36,16 +38,16 @@ public class BeforeEidasAuthenticationEvent extends AbstractConnectorAuthnEvent 
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The receiving county. */
-  private final String country;
+  private final @NonNull String country;
 
   /** The authentication request. */
-  private final SerializableOpenSamlObject<AuthnRequest> authnRequest;
+  private final @NonNull SerializableOpenSamlObject<AuthnRequest> authnRequest;
 
   /** The relay state. */
-  private final String relayState;
+  private final @Nullable String relayState;
 
   /** How the AuthnRequest was passed (GET or POST). */
-  private final String method;
+  private final @NonNull String method;
 
   /**
    * Constructor.
@@ -56,8 +58,9 @@ public class BeforeEidasAuthenticationEvent extends AbstractConnectorAuthnEvent 
    * @param relayState the RelayState variable
    * @param method GET or POST
    */
-  public BeforeEidasAuthenticationEvent(final UserAuthenticationInputToken token,
-      final String country, final AuthnRequest authnRequest, final String relayState, final String method) {
+  public BeforeEidasAuthenticationEvent(final @NonNull UserAuthenticationInputToken token,
+      final @NonNull String country, final @NonNull AuthnRequest authnRequest, final @Nullable String relayState,
+      final @NonNull String method) {
     super(token);
     this.authnRequest = new SerializableOpenSamlObject<>(authnRequest);
     this.relayState = relayState;
@@ -70,7 +73,7 @@ public class BeforeEidasAuthenticationEvent extends AbstractConnectorAuthnEvent 
    *
    * @return the {@link AuthnRequest}
    */
-  public AuthnRequest getAuthnRequest() {
+  public @NonNull AuthnRequest getAuthnRequest() {
     return this.authnRequest.get();
   }
 
@@ -79,7 +82,7 @@ public class BeforeEidasAuthenticationEvent extends AbstractConnectorAuthnEvent 
    *
    * @return the RelayState
    */
-  public String getRelayState() {
+  public @Nullable String getRelayState() {
     return this.relayState;
   }
 
@@ -88,7 +91,7 @@ public class BeforeEidasAuthenticationEvent extends AbstractConnectorAuthnEvent 
    *
    * @return the country code
    */
-  public String getCountry() {
+  public @NonNull String getCountry() {
     return this.country;
   }
 
@@ -97,7 +100,7 @@ public class BeforeEidasAuthenticationEvent extends AbstractConnectorAuthnEvent 
    *
    * @return the HTTP method
    */
-  public String getMethod() {
+  public @NonNull String getMethod() {
     return this.method;
   }
 

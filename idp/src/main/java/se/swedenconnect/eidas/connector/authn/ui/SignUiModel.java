@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.saml2.core.Attribute;
 import se.swedenconnect.eidas.connector.attributes.EidasAttributeConverter;
@@ -38,19 +40,19 @@ public class SignUiModel extends BaseUiModel {
   /**
    * The sign message.
    */
-  private String textMessage;
+  private @Nullable String textMessage;
 
   /**
    * Information about the user that signs.
    */
-  private UserInfo userInfo;
+  private @Nullable UserInfo userInfo;
 
   /**
    * Gets the sign message.
    *
    * @return the sign message
    */
-  public String getTextMessage() {
+  public @Nullable String getTextMessage() {
     return this.textMessage;
   }
 
@@ -59,7 +61,7 @@ public class SignUiModel extends BaseUiModel {
    *
    * @param textMessage the sign message
    */
-  public void setTextMessage(final String textMessage) {
+  public void setTextMessage(final @Nullable String textMessage) {
     this.textMessage = textMessage;
   }
 
@@ -68,7 +70,7 @@ public class SignUiModel extends BaseUiModel {
    *
    * @return the user info
    */
-  public UserInfo getUserInfo() {
+  public @Nullable UserInfo getUserInfo() {
     return this.userInfo;
   }
 
@@ -77,13 +79,13 @@ public class SignUiModel extends BaseUiModel {
    *
    * @param userInfo the user info
    */
-  public void setUserInfo(final UserInfo userInfo) {
+  public void setUserInfo(final @Nullable UserInfo userInfo) {
     this.userInfo = userInfo;
   }
 
   /** {@inheritDoc} */
   @Override
-  public boolean equals(final Object o) {
+  public boolean equals(final @Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -105,7 +107,7 @@ public class SignUiModel extends BaseUiModel {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return "textMessage=" + this.textMessage + ", userInfo=[" + this.userInfo + "]";
   }
 
@@ -117,22 +119,22 @@ public class SignUiModel extends BaseUiModel {
     /**
      * The display name.
      */
-    private String name;
+    private @Nullable String name;
 
     /**
      * The Swedish personal identity number.
      */
-    private String swedishId;
+    private @Nullable String swedishId;
 
     /**
      * The date of birth
      */
-    private String dateOfBirth;
+    private @Nullable String dateOfBirth;
 
     /**
      * The eIDAS person identifier
      */
-    private String internationalId;
+    private @Nullable String internationalId;
 
     /**
      * Default constructor.
@@ -145,7 +147,7 @@ public class SignUiModel extends BaseUiModel {
      *
      * @param token the eIDAS authentication token
      */
-    public UserInfo(final EidasAuthenticationToken token) {
+    public UserInfo(final @NonNull EidasAuthenticationToken token) {
 
       String givenName = null;
       String surName = null;
@@ -195,7 +197,7 @@ public class SignUiModel extends BaseUiModel {
      *
      * @return the display name
      */
-    public String getName() {
+    public @Nullable String getName() {
       return this.name;
     }
 
@@ -204,7 +206,7 @@ public class SignUiModel extends BaseUiModel {
      *
      * @param name the display name
      */
-    public void setName(final String name) {
+    public void setName(final @Nullable String name) {
       this.name = name;
     }
 
@@ -213,7 +215,7 @@ public class SignUiModel extends BaseUiModel {
      *
      * @return the Swedish personal identity number
      */
-    public String getSwedishId() {
+    public @Nullable String getSwedishId() {
       return this.swedishId;
     }
 
@@ -222,7 +224,7 @@ public class SignUiModel extends BaseUiModel {
      *
      * @param swedishId the Swedish personal identity number
      */
-    public void setSwedishId(final String swedishId) {
+    public void setSwedishId(final @Nullable String swedishId) {
       this.swedishId = swedishId;
     }
 
@@ -231,7 +233,7 @@ public class SignUiModel extends BaseUiModel {
      *
      * @return the date of birth
      */
-    public String getDateOfBirth() {
+    public @Nullable String getDateOfBirth() {
       return this.dateOfBirth;
     }
 
@@ -240,7 +242,7 @@ public class SignUiModel extends BaseUiModel {
      *
      * @param dateOfBirth the date of birth
      */
-    public void setDateOfBirth(final String dateOfBirth) {
+    public void setDateOfBirth(final @Nullable String dateOfBirth) {
       this.dateOfBirth = dateOfBirth;
     }
 
@@ -249,7 +251,7 @@ public class SignUiModel extends BaseUiModel {
      *
      * @return the eIDAS person identifier
      */
-    public String getInternationalId() {
+    public @Nullable String getInternationalId() {
       return this.internationalId;
     }
 
@@ -258,13 +260,13 @@ public class SignUiModel extends BaseUiModel {
      *
      * @param internationalId the eIDAS person identifier
      */
-    public void setInternationalId(final String internationalId) {
+    public void setInternationalId(final @Nullable String internationalId) {
       this.internationalId = internationalId;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -285,7 +287,7 @@ public class SignUiModel extends BaseUiModel {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "name=" + this.name + ", swedishId=" + this.swedishId + ", dateOfBirth="
           + this.dateOfBirth + ", internationalId=" + this.internationalId;
     }
@@ -297,7 +299,7 @@ public class SignUiModel extends BaseUiModel {
      * @param attribute the eIDAS attribute
      * @return the value, or {@code null}
      */
-    private static String getEidasAttributeValue(final Attribute attribute) {
+    private static @Nullable String getEidasAttributeValue(final Attribute attribute) {
       final List<XMLObject> values = attribute.getAttributeValues();
       final boolean transliterated = !values.isEmpty() && values.getFirst() instanceof TransliterationStringType;
       if (transliterated && values.size() > 1) {

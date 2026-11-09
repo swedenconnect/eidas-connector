@@ -21,6 +21,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -56,28 +58,29 @@ public class EidasAuthnFlowFilter extends OncePerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(EidasAuthnFlowFilter.class);
 
   /** The authentication provider. */
-  private final EidasAuthenticationProvider provider;
+  private final @NonNull EidasAuthenticationProvider provider;
 
   /**
    * Constructor.
    *
    * @param provider the authentication provider
    */
-  public EidasAuthnFlowFilter(final EidasAuthenticationProvider provider) {
+  public EidasAuthnFlowFilter(final @NonNull EidasAuthenticationProvider provider) {
     this.provider = Objects.requireNonNull(provider, "provider must not be null");
   }
 
   /** {@inheritDoc} */
   @Override
-  protected boolean shouldNotFilter(final HttpServletRequest request) {
+  protected boolean shouldNotFilter(final @NonNull HttpServletRequest request) {
     return !request.getRequestURI().startsWith(
         request.getContextPath() + EidasAuthenticationProvider.AUTHN_PATH + "/");
   }
 
   /** {@inheritDoc} */
   @Override
-  protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
-      final FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(final @NonNull HttpServletRequest request,
+      final @NonNull HttpServletResponse response, final @NonNull FilterChain filterChain)
+      throws ServletException, IOException {
 
     final HttpServletRequest flowRequest = this.addAuthnId(request);
 
@@ -138,7 +141,7 @@ public class EidasAuthnFlowFilter extends OncePerRequestFilter {
   private static final class AuthnIdRequest extends HttpServletRequestWrapper {
 
     /** The parameters of the request. */
-    private final Map<String, String[]> parameters;
+    private final @NonNull Map<String, String[]> parameters;
 
     /**
      * Constructor.
@@ -146,7 +149,7 @@ public class EidasAuthnFlowFilter extends OncePerRequestFilter {
      * @param request the request
      * @param authnId the identifier of the authentication
      */
-    AuthnIdRequest(final HttpServletRequest request, final String authnId) {
+    AuthnIdRequest(final @NonNull HttpServletRequest request, final @NonNull String authnId) {
       super(request);
       final Map<String, String[]> map = new LinkedHashMap<>(request.getParameterMap());
       map.put(RedirectForAuthenticationToken.AUTHN_ID_PARAMETER, new String[] { authnId });
@@ -155,26 +158,26 @@ public class EidasAuthnFlowFilter extends OncePerRequestFilter {
 
     /** {@inheritDoc} */
     @Override
-    public String getParameter(final String name) {
+    public @Nullable String getParameter(final @NonNull String name) {
       final String[] values = this.parameters.get(name);
       return values != null && values.length > 0 ? values[0] : null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Map<String, String[]> getParameterMap() {
+    public @NonNull Map<String, String[]> getParameterMap() {
       return this.parameters;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Enumeration<String> getParameterNames() {
+    public @NonNull Enumeration<String> getParameterNames() {
       return Collections.enumeration(this.parameters.keySet());
     }
 
     /** {@inheritDoc} */
     @Override
-    public String[] getParameterValues(final String name) {
+    public String @Nullable [] getParameterValues(final @NonNull String name) {
       return this.parameters.get(name);
     }
 

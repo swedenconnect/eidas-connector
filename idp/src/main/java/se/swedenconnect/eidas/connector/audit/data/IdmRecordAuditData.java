@@ -16,6 +16,8 @@
 package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.IdentityMatchingRecordEvent;
 
@@ -33,22 +35,22 @@ public class IdmRecordAuditData extends ConnectorAuditData {
 
   /** The user identity (eIDAS personal identifier) of the user. */
   @JsonProperty("user")
-  private String user;
+  private @Nullable String user;
 
   /** The user identity (eIDAS personal identifier) of the user. */
   @JsonProperty("swedish-id")
-  private String swedishId;
+  private @Nullable String swedishId;
 
   /** The unique ID for the Identity Matching record. */
   @JsonProperty("record-id")
-  private String recordId;
+  private @Nullable String recordId;
 
   /**
    * Gets the user identity (eIDAS personal identifier) of the user.
    *
    * @return the user identity (eIDAS personal identifier) of the user
    */
-  public String getUser() {
+  public @Nullable String getUser() {
     return this.user;
   }
 
@@ -57,7 +59,7 @@ public class IdmRecordAuditData extends ConnectorAuditData {
    *
    * @param user the user identity (eIDAS personal identifier) of the user
    */
-  public void setUser(final String user) {
+  public void setUser(final @Nullable String user) {
     this.user = user;
   }
 
@@ -66,7 +68,7 @@ public class IdmRecordAuditData extends ConnectorAuditData {
    *
    * @return the Swedish identity of the user
    */
-  public String getSwedishId() {
+  public @Nullable String getSwedishId() {
     return this.swedishId;
   }
 
@@ -75,7 +77,7 @@ public class IdmRecordAuditData extends ConnectorAuditData {
    *
    * @param swedishId the Swedish identity of the user
    */
-  public void setSwedishId(final String swedishId) {
+  public void setSwedishId(final @Nullable String swedishId) {
     this.swedishId = swedishId;
   }
 
@@ -84,7 +86,7 @@ public class IdmRecordAuditData extends ConnectorAuditData {
    *
    * @return the unique ID for the Identity Matching record
    */
-  public String getRecordId() {
+  public @Nullable String getRecordId() {
     return this.recordId;
   }
 
@@ -93,13 +95,13 @@ public class IdmRecordAuditData extends ConnectorAuditData {
    *
    * @param recordId the unique ID for the Identity Matching record
    */
-  public void setRecordId(final String recordId) {
+  public void setRecordId(final @Nullable String recordId) {
     this.recordId = recordId;
   }
 
   /** {@inheritDoc} */
   @Override
-  public String getName() {
+  public @NonNull String getName() {
     return "idm-record";
   }
 
@@ -109,7 +111,7 @@ public class IdmRecordAuditData extends ConnectorAuditData {
    * @param event the event
    * @return an {@link IdmRecordAuditData} object
    */
-  public static IdmRecordAuditData of(final IdentityMatchingRecordEvent event) {
+  public static @NonNull IdmRecordAuditData of(final @NonNull IdentityMatchingRecordEvent event) {
     final IdmRecordAuditData auditData = new IdmRecordAuditData();
     auditData.setUser((String) event.getEidasToken().getPrincipal());
     auditData.setSwedishId(event.getIdmRecord().getSwedishIdentity());
@@ -119,7 +121,7 @@ public class IdmRecordAuditData extends ConnectorAuditData {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return "user='%s', swedish-id='%s', record-id='%s'".formatted(this.user, this.swedishId, this.recordId);
   }
 }

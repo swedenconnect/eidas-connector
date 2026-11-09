@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,7 @@ public class DevelopmentMode {
   private static final DevelopmentMode INSTANCE = new DevelopmentMode();
 
   /** Whether development mode is active. */
-  private Boolean active;
+  private @Nullable Boolean active;
 
   /**
    * Tells whether "development mode" is active.

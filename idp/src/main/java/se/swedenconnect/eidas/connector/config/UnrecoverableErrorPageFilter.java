@@ -24,6 +24,8 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -42,7 +44,8 @@ public class UnrecoverableErrorPageFilter implements Filter {
 
   /** {@inheritDoc} */
   @Override
-  public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
+  public void doFilter(final @NonNull ServletRequest request, final @NonNull ServletResponse response,
+      final @NonNull FilterChain chain)
       throws IOException, ServletException {
     if (request instanceof final HttpServletRequest httpRequest
         && request.getDispatcherType() == DispatcherType.ERROR
@@ -63,19 +66,19 @@ public class UnrecoverableErrorPageFilter implements Filter {
      *
      * @param request the request
      */
-    HtmlOnlyRequest(final HttpServletRequest request) {
+    HtmlOnlyRequest(final @NonNull HttpServletRequest request) {
       super(request);
     }
 
     /** {@inheritDoc} */
     @Override
-    public String getHeader(final String name) {
+    public @Nullable String getHeader(final @NonNull String name) {
       return HttpHeaders.ACCEPT.equalsIgnoreCase(name) ? MediaType.TEXT_HTML_VALUE : super.getHeader(name);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Enumeration<String> getHeaders(final String name) {
+    public @NonNull Enumeration<String> getHeaders(final @NonNull String name) {
       return HttpHeaders.ACCEPT.equalsIgnoreCase(name)
           ? Collections.enumeration(Collections.singletonList(MediaType.TEXT_HTML_VALUE))
           : super.getHeaders(name);

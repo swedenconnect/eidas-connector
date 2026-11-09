@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.saml2.core.Response;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.opensaml.common.utils.SerializableOpenSamlObject;
@@ -34,7 +35,7 @@ public class ErrorEidasResponseEvent extends AbstractConnectorAuthnEvent {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The SAML response */
-  private final SerializableOpenSamlObject<Response> response;
+  private final @NonNull SerializableOpenSamlObject<Response> response;
 
   /**
    * Constructor.
@@ -42,7 +43,7 @@ public class ErrorEidasResponseEvent extends AbstractConnectorAuthnEvent {
    * @param token the authentication input token
    * @param response the SAML response
    */
-  public ErrorEidasResponseEvent(final UserAuthenticationInputToken token, final Response response) {
+  public ErrorEidasResponseEvent(final @NonNull UserAuthenticationInputToken token, final @NonNull Response response) {
     super(token);
     this.response = new SerializableOpenSamlObject<>(
         Objects.requireNonNull(response, "response must not be null"));
@@ -53,7 +54,7 @@ public class ErrorEidasResponseEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the {@link Response}
    */
-  public Response getResponse() {
+  public @NonNull Response getResponse() {
     return this.response.get();
   }
 

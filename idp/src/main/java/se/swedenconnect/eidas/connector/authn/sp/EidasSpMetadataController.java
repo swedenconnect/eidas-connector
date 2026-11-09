@@ -17,6 +17,8 @@ package se.swedenconnect.eidas.connector.authn.sp;
 
 import jakarta.servlet.http.HttpServletRequest;
 import net.shibboleth.shared.xml.SerializeSupport;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.slf4j.Logger;
@@ -49,13 +51,13 @@ public class EidasSpMetadataController {
   private static final Logger log = LoggerFactory.getLogger(EidasSpMetadataController.class);
 
   /** The path for publishing the SP metadata. */
-  public static final String METADATA_PATH = "/metadata/sp";
+  public static final @NonNull String METADATA_PATH = "/metadata/sp";
 
   /** Media type for SAML metadata in XML format. */
-  public static final String APPLICATION_SAML_METADATA = "application/samlmetadata+xml";
+  public static final @NonNull String APPLICATION_SAML_METADATA = "application/samlmetadata+xml";
 
   /** The eIDAS SP metadata container. */
-  private final EntityDescriptorContainer metadataContainer;
+  private final @NonNull EntityDescriptorContainer metadataContainer;
 
   /**
    * Constructor.
@@ -63,7 +65,7 @@ public class EidasSpMetadataController {
    * @param metadataContainer the eIDAS SP metadata container
    */
   public EidasSpMetadataController(
-      @Qualifier("connector.sp.EntityDescriptorContainer") final EntityDescriptorContainer metadataContainer) {
+      @Qualifier("connector.sp.EntityDescriptorContainer") final @NonNull EntityDescriptorContainer metadataContainer) {
     this.metadataContainer = Objects.requireNonNull(metadataContainer, "metadataContainer must not be null");
   }
 
@@ -76,8 +78,8 @@ public class EidasSpMetadataController {
    */
   @GetMapping(METADATA_PATH)
   @ResponseBody
-  public HttpEntity<byte[]> getMetadata(final HttpServletRequest request,
-      @RequestHeader(name = "Accept", required = false) final String acceptHeader) {
+  public @NonNull HttpEntity<byte[]> getMetadata(final @NonNull HttpServletRequest request,
+      @RequestHeader(name = "Accept", required = false) final @Nullable String acceptHeader) {
 
     log.debug("Request to download metadata from {}", request.getRemoteAddr());
 

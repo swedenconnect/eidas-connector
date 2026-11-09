@@ -17,6 +17,8 @@ package se.swedenconnect.eidas.connector.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -43,10 +45,10 @@ public class ThymeleafResponsePage implements ResponsePage {
   private static final MediaType TEXT_HTML_UTF8 = new MediaType("text", "html", StandardCharsets.UTF_8);
 
   /** The template engine. */
-  private final SpringTemplateEngine templateEngine;
+  private final @NonNull SpringTemplateEngine templateEngine;
 
   /** The template ID. */
-  private final String templateId;
+  private final @NonNull String templateId;
 
   /**
    * Constructor.
@@ -54,15 +56,16 @@ public class ThymeleafResponsePage implements ResponsePage {
    * @param templateEngine the template engine
    * @param templateId the template ID
    */
-  public ThymeleafResponsePage(final SpringTemplateEngine templateEngine, final String templateId) {
+  public ThymeleafResponsePage(final @NonNull SpringTemplateEngine templateEngine, final @NonNull String templateId) {
     this.templateEngine = Objects.requireNonNull(templateEngine, "templateEngine must not be null");
     this.templateId = Objects.requireNonNull(templateId, "templateId must not be null");
   }
 
   /** {@inheritDoc} */
   @Override
-  public void sendResponse(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse,
-      final String destination, final String samlResponse, final String relayState) throws IOException {
+  public void sendResponse(final @NonNull HttpServletRequest httpServletRequest,
+      final @NonNull HttpServletResponse httpServletResponse, final @NonNull String destination,
+      final @NonNull String samlResponse, final @Nullable String relayState) throws IOException {
 
     log.debug("Invoking template to create POST body");
 

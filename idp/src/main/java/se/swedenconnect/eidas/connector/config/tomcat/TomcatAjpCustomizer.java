@@ -17,6 +17,7 @@ package se.swedenconnect.eidas.connector.config.tomcat;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.ajp.AbstractAjpProtocol;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
@@ -36,20 +37,20 @@ import java.util.Objects;
 public class TomcatAjpCustomizer implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
 
   /** The Tomcat AJP settings. */
-  private final TomcatAjpConfigurationProperties ajp;
+  private final @NonNull TomcatAjpConfigurationProperties ajp;
 
   /**
    * Constructor.
    *
    * @param ajp the Tomcat AJP settings
    */
-  public TomcatAjpCustomizer(final TomcatAjpConfigurationProperties ajp) {
+  public TomcatAjpCustomizer(final @NonNull TomcatAjpConfigurationProperties ajp) {
     this.ajp = Objects.requireNonNull(ajp, "ajp must not be null");
   }
 
   /** {@inheritDoc} */
   @Override
-  public void customize(final TomcatServletWebServerFactory factory) {
+  public void customize(final @NonNull TomcatServletWebServerFactory factory) {
 
     if (this.ajp.isEnabled()) {
       final Connector ajpConnector = new Connector("AJP/1.3");

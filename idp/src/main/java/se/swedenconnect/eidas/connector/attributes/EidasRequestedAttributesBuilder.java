@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.attributes;
 
+import org.jspecify.annotations.NonNull;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AuthnRequest;
@@ -64,7 +65,7 @@ public class EidasRequestedAttributesBuilder {
   private static final Logger log = LoggerFactory.getLogger(EidasRequestedAttributesBuilder.class);
 
   /** The eIDAS minimum data set for natural persons. */
-  public static final List<EidasAttributeTemplate> NATURAL_PERSON_MINIMUM_DATASET = List.of(
+  public static final @NonNull List<EidasAttributeTemplate> NATURAL_PERSON_MINIMUM_DATASET = List.of(
       EidasNaturalPersonAttributes.PERSON_IDENTIFIER,
       EidasNaturalPersonAttributes.CURRENT_GIVEN_NAME,
       EidasNaturalPersonAttributes.CURRENT_FAMILY_NAME,
@@ -102,20 +103,20 @@ public class EidasRequestedAttributesBuilder {
   }
 
   /** The processors for the attributes that the Service Provider requests explicitly. */
-  private final List<RequestedAttributeProcessor> explicitProcessors = List.of(
+  private final @NonNull List<RequestedAttributeProcessor> explicitProcessors = List.of(
       new MetadataRequestedAttributeProcessor(),
       new OasisExtensionRequestedAttributeProcessor(),
       new EidasRequestedAttributeProcessor());
 
   /** The processor for the attributes that the Service Provider requests through its entity categories. */
-  private final EntityCategoryRequestedAttributeProcessor entityCategoryProcessor;
+  private final @NonNull EntityCategoryRequestedAttributeProcessor entityCategoryProcessor;
 
   /**
    * Constructor.
    *
    * @param idpEntityCategories the entity categories that the Identity Provider declares
    */
-  public EidasRequestedAttributesBuilder(final List<String> idpEntityCategories) {
+  public EidasRequestedAttributesBuilder(final @NonNull List<String> idpEntityCategories) {
     this.entityCategoryProcessor = new EntityCategoryRequestedAttributeProcessor(
         Objects.requireNonNull(idpEntityCategories, "idpEntityCategories must not be null"));
   }
@@ -128,8 +129,8 @@ public class EidasRequestedAttributesBuilder {
    * @param includeMinimumDataSet whether the eIDAS minimum data set should always be requested
    * @return the eIDAS requested attributes
    */
-  public List<RequestedAttribute> build(final AuthnRequest authnRequest, final EntityDescriptor spMetadata,
-      final boolean includeMinimumDataSet) {
+  public @NonNull List<RequestedAttribute> build(final @NonNull AuthnRequest authnRequest,
+      final @NonNull EntityDescriptor spMetadata, final boolean includeMinimumDataSet) {
 
     final RequestedAttributeContext context = new RequestedAttributeContext(authnRequest, spMetadata);
 

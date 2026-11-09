@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +32,7 @@ public class PridGenDefaultEidas extends AbstractPridGenerator {
   private static final Logger log = LoggerFactory.getLogger(PridGenDefaultEidas.class);
 
   /** The algorithm name that this instance implements. */
-  public static final String ALGORITHM_NAME = "default-eIDAS";
+  public static final @NonNull String ALGORITHM_NAME = "default-eIDAS";
 
   /**
    * Constructor (using "SE" as destination country).
@@ -45,7 +46,7 @@ public class PridGenDefaultEidas extends AbstractPridGenerator {
    *
    * @param destinationCountry country code to which the eIDAS person identifiers are issued for
    */
-  public PridGenDefaultEidas(final String destinationCountry) {
+  public PridGenDefaultEidas(final @NonNull String destinationCountry) {
     super(destinationCountry);
   }
 
@@ -53,7 +54,7 @@ public class PridGenDefaultEidas extends AbstractPridGenerator {
    * {@inheritDoc}
    */
   @Override
-  public String getAlgorithmName() {
+  public @NonNull String getAlgorithmName() {
     return ALGORITHM_NAME;
   }
 
@@ -61,7 +62,8 @@ public class PridGenDefaultEidas extends AbstractPridGenerator {
    * {@inheritDoc}
    */
   @Override
-  protected String calculatePridIdentifier(final String checkedStrippedInput, final String originalInput)
+  protected @NonNull String calculatePridIdentifier(
+      final @NonNull String checkedStrippedInput, final @NonNull String originalInput)
       throws PridGeneratorException {
 
     // Convert to lower case
@@ -103,7 +105,7 @@ public class PridGenDefaultEidas extends AbstractPridGenerator {
    * @param input the input
    * @return a hashed ID
    */
-  protected String generateForLongID(final String input) {
+  protected @NonNull String generateForLongID(final @NonNull String input) {
     return getID(input, 16, 30);
   }
 

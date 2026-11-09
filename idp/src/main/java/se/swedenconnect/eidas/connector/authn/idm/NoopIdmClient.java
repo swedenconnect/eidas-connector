@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 
 /**
@@ -40,7 +41,7 @@ public class NoopIdmClient implements IdmClient {
   }
 
   @Override
-  public boolean hasRecord(final EidasAuthenticationToken token) {
+  public boolean hasRecord(final @NonNull EidasAuthenticationToken token) {
     return false;
   }
 
@@ -48,7 +49,7 @@ public class NoopIdmClient implements IdmClient {
    * Will always return {@code false}.
    */
   @Override
-  public IdmRecord getRecord(final EidasAuthenticationToken token) throws IdmException {
+  public @NonNull IdmRecord getRecord(final @NonNull EidasAuthenticationToken token) throws IdmException {
     throw new IdmException("NoopIdmClient can not get record");
   }
 

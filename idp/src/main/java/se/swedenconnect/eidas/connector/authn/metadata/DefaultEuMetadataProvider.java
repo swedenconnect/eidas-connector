@@ -16,6 +16,8 @@
 package se.swedenconnect.eidas.connector.authn.metadata;
 
 import net.shibboleth.shared.resolver.ResolverException;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,16 +47,16 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider, Initializi
   private static final Logger log = LoggerFactory.getLogger(DefaultEuMetadataProvider.class);
 
   /** The underlying metadata provider. */
-  private final MetadataProvider provider;
+  private final @NonNull MetadataProvider provider;
 
   /** The system event publisher. */
-  private final ApplicationEventPublisher publisher;
+  private final @NonNull ApplicationEventPublisher publisher;
 
   /** An index of country codes and their respective entity descriptors. */
-  private Map<String, CountryMetadata> countries = Collections.emptyMap();
+  private @NonNull Map<String, CountryMetadata> countries = Collections.emptyMap();
 
   /** The last time the country list was indexed. */
-  private Instant countryIndexingTime = Instant.ofEpochMilli(0L);
+  private @NonNull Instant countryIndexingTime = Instant.ofEpochMilli(0L);
 
   /**
    * Constructor.
@@ -62,26 +64,27 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider, Initializi
    * @param provider the underlying metadata provider
    * @param publisher the system event publisher
    */
-  public DefaultEuMetadataProvider(final MetadataProvider provider, final ApplicationEventPublisher publisher) {
+  public DefaultEuMetadataProvider(final @NonNull MetadataProvider provider,
+      final @NonNull ApplicationEventPublisher publisher) {
     this.provider = Objects.requireNonNull(provider, "provider must not be null");
     this.publisher = Objects.requireNonNull(publisher, "publisher must not be null");
   }
 
   /** {@inheritDoc} */
   @Override
-  public MetadataProvider getProvider() {
+  public @NonNull MetadataProvider getProvider() {
     return this.provider;
   }
 
   /** {@inheritDoc} */
   @Override
-  public CountryMetadata getCountry(final String countryCode) {
+  public @Nullable CountryMetadata getCountry(final @Nullable String countryCode) {
     return this.getCountryMap().get(Optional.ofNullable(countryCode).map(String::toUpperCase).orElse(""));
   }
 
   /** {@inheritDoc} */
   @Override
-  public boolean contains(final String countryCode, final boolean hiddenOk) {
+  public boolean contains(final @Nullable String countryCode, final boolean hiddenOk) {
     return Optional.ofNullable(this.getCountry(countryCode))
         .filter(c -> (hiddenOk || !c.isHideFromDiscovery()))
         .isPresent();
@@ -89,7 +92,7 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider, Initializi
 
   /** {@inheritDoc} */
   @Override
-  public List<CountryMetadata> getCountries(final List<String> requestedCountries) {
+  public @NonNull List<CountryMetadata> getCountries(final @Nullable List<String> requestedCountries) {
     final Collection<CountryMetadata> availableCountries = this.getCountryMap().values();
     if (requestedCountries == null || requestedCountries.isEmpty()) {
       return availableCountries.stream()
@@ -106,7 +109,7 @@ public class DefaultEuMetadataProvider implements EuMetadataProvider, Initializi
 
   /** {@inheritDoc} */
   @Override
-  public List<CountryMetadata> getAllCountries() {
+  public @NonNull List<CountryMetadata> getAllCountries() {
     return this.getCountryMap().values().stream().toList();
   }
 

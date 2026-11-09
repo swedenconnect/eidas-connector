@@ -16,6 +16,8 @@
 package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.IdentityMatchingErrorEvent;
 
@@ -33,18 +35,18 @@ public class IdmErrorAuditData extends ConnectorAuditData {
 
   /** The user identity (eIDAS personal identifier) of the user. */
   @JsonProperty("user")
-  private String user;
+  private @Nullable String user;
 
   /** The error message. */
   @JsonProperty("error-message")
-  private String errorMessage;
+  private @Nullable String errorMessage;
 
   /**
    * Gets the user identity (eIDAS personal identifier) of the user.
    *
    * @return the user identity (eIDAS personal identifier) of the user
    */
-  public String getUser() {
+  public @Nullable String getUser() {
     return this.user;
   }
 
@@ -53,7 +55,7 @@ public class IdmErrorAuditData extends ConnectorAuditData {
    *
    * @param user the user identity (eIDAS personal identifier) of the user
    */
-  public void setUser(final String user) {
+  public void setUser(final @Nullable String user) {
     this.user = user;
   }
 
@@ -62,7 +64,7 @@ public class IdmErrorAuditData extends ConnectorAuditData {
    *
    * @return the error message
    */
-  public String getErrorMessage() {
+  public @Nullable String getErrorMessage() {
     return this.errorMessage;
   }
 
@@ -71,13 +73,13 @@ public class IdmErrorAuditData extends ConnectorAuditData {
    *
    * @param errorMessage the error message
    */
-  public void setErrorMessage(final String errorMessage) {
+  public void setErrorMessage(final @Nullable String errorMessage) {
     this.errorMessage = errorMessage;
   }
 
   /** {@inheritDoc} */
   @Override
-  public String getName() {
+  public @NonNull String getName() {
     return "idm-error";
   }
 
@@ -87,7 +89,7 @@ public class IdmErrorAuditData extends ConnectorAuditData {
    * @param event the evebt
    * @return an {@link IdmRecordAuditData} object
    */
-  public static IdmErrorAuditData of(final IdentityMatchingErrorEvent event) {
+  public static @NonNull IdmErrorAuditData of(final @NonNull IdentityMatchingErrorEvent event) {
     final IdmErrorAuditData auditData = new IdmErrorAuditData();
     auditData.setUser((String) event.getEidasToken().getPrincipal());
     auditData.setErrorMessage(event.getError().getMessage());
@@ -96,7 +98,7 @@ public class IdmErrorAuditData extends ConnectorAuditData {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return String.format("user='%s', error-message='%s'", this.user, this.errorMessage);
   }
 

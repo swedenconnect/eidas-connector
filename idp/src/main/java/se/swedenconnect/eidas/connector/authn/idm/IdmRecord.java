@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 
 import java.io.Serial;
@@ -32,13 +33,13 @@ public class IdmRecord implements Serializable {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The ID for the record. */
-  private final String id;
+  private final @NonNull String id;
 
   /** The Swedish identity. */
-  private final String swedishIdentity;
+  private final @NonNull String swedishIdentity;
 
   /** The binding URI/URI:s. */
-  private final String binding;
+  private final @NonNull String binding;
 
   /**
    * Creates a new instance of IdmRecord.
@@ -47,7 +48,7 @@ public class IdmRecord implements Serializable {
    * @param swedishIdentity the Swedish identity
    * @param binding the binding URI/URI:s
    */
-  public IdmRecord(final String id, final String swedishIdentity, final String binding) {
+  public IdmRecord(final @NonNull String id, final @NonNull String swedishIdentity, final @NonNull String binding) {
     this.id = Objects.requireNonNull(id, "id must not be null");
     this.swedishIdentity = Objects.requireNonNull(swedishIdentity, "swedishIdentity must not be null");
     this.binding = Objects.requireNonNull(binding, "binding must not be null");
@@ -58,7 +59,7 @@ public class IdmRecord implements Serializable {
    *
    * @return the ID for the record
    */
-  public String getId() {
+  public @NonNull String getId() {
     return this.id;
   }
 
@@ -67,7 +68,7 @@ public class IdmRecord implements Serializable {
    *
    * @return the Swedish identity
    */
-  public String getSwedishIdentity() {
+  public @NonNull String getSwedishIdentity() {
     return this.swedishIdentity;
   }
 
@@ -76,13 +77,13 @@ public class IdmRecord implements Serializable {
    *
    * @return the binding URI/URI:s
    */
-  public String getBinding() {
+  public @NonNull String getBinding() {
     return this.binding;
   }
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return "id='%s', swedish-identity='%s', binding='%s'".formatted(this.id, this.swedishIdentity, this.binding);
   }
 

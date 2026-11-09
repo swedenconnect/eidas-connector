@@ -15,7 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.ext.saml2alg.DigestMethod;
 import org.opensaml.saml.saml2.metadata.EncryptionMethod;
 import org.opensaml.saml.saml2.metadata.KeyDescriptor;
@@ -40,31 +41,31 @@ import java.util.Objects;
  */
 public class ConnectorCredentials {
 
-  private final PkiCredential defaultCredential;
+  private final @Nullable PkiCredential defaultCredential;
 
-  private final PkiCredential signCredential;
+  private final @Nullable PkiCredential signCredential;
 
-  private final X509Certificate futureSignCertificate;
+  private final @Nullable X509Certificate futureSignCertificate;
 
-  private final PkiCredential encryptCredential;
+  private final @Nullable PkiCredential encryptCredential;
 
-  private final PkiCredential previousEncryptCredential;
+  private final @Nullable PkiCredential previousEncryptCredential;
 
-  private final PkiCredential metadataSignCredential;
+  private final @Nullable PkiCredential metadataSignCredential;
 
-  private final PkiCredential spDefaultCredential;
+  private final @Nullable PkiCredential spDefaultCredential;
 
-  private final PkiCredential spSignCredential;
+  private final @Nullable PkiCredential spSignCredential;
 
-  private final X509Certificate spFutureSignCertificate;
+  private final @Nullable X509Certificate spFutureSignCertificate;
 
-  private final PkiCredential spEncryptCredential;
+  private final @Nullable PkiCredential spEncryptCredential;
 
-  private final PkiCredential spPreviousEncryptCredential;
+  private final @Nullable PkiCredential spPreviousEncryptCredential;
 
-  private final PkiCredential spMetadataSignCredential;
+  private final @Nullable PkiCredential spMetadataSignCredential;
 
-  private final PkiCredential oauth2Credential;
+  private final @Nullable PkiCredential oauth2Credential;
 
   /**
    * Initializes the ConnectorCredentials object with the provided credentials for various purposes.
@@ -84,19 +85,19 @@ public class ConnectorCredentials {
    * @param oauth2Credential the PKI credential for OAuth2 use
    */
   public ConnectorCredentials(
-      @Nullable final PkiCredential defaultCredential,
-      @Nullable final PkiCredential signCredential,
-      @Nullable final X509Certificate futureSignCertificate,
-      @Nullable final PkiCredential encryptCredential,
-      @Nullable final PkiCredential previousEncryptCredential,
-      @Nullable final PkiCredential spDefaultCredential,
-      @Nullable final PkiCredential spSignCredential,
-      @Nullable final X509Certificate spFutureSignCertificate,
-      @Nullable final PkiCredential spEncryptCredential,
-      @Nullable final PkiCredential spPreviousEncryptCredential,
-      @Nullable final PkiCredential metadataSignCredential,
-      @Nullable final PkiCredential spMetadataSignCredential,
-      @Nullable final PkiCredential oauth2Credential) {
+      final @Nullable PkiCredential defaultCredential,
+      final @Nullable PkiCredential signCredential,
+      final @Nullable X509Certificate futureSignCertificate,
+      final @Nullable PkiCredential encryptCredential,
+      final @Nullable PkiCredential previousEncryptCredential,
+      final @Nullable PkiCredential spDefaultCredential,
+      final @Nullable PkiCredential spSignCredential,
+      final @Nullable X509Certificate spFutureSignCertificate,
+      final @Nullable PkiCredential spEncryptCredential,
+      final @Nullable PkiCredential spPreviousEncryptCredential,
+      final @Nullable PkiCredential metadataSignCredential,
+      final @Nullable PkiCredential spMetadataSignCredential,
+      final @Nullable PkiCredential oauth2Credential) {
     this.defaultCredential = defaultCredential;
     this.signCredential = signCredential;
     this.futureSignCertificate = futureSignCertificate;
@@ -118,7 +119,7 @@ public class ConnectorCredentials {
    * @return the {@link PkiCredential}
    * @throws IllegalArgumentException if no credential is found
    */
-  public PkiCredential getSpSigningCredential() {
+  public @NonNull PkiCredential getSpSigningCredential() {
     final PkiCredential[] creds =
         { this.spSignCredential, this.spDefaultCredential, this.signCredential, this.defaultCredential };
     for (final PkiCredential c : creds) {
@@ -135,7 +136,7 @@ public class ConnectorCredentials {
    * @return a list of {@link PkiCredential}s
    * @throws IllegalArgumentException if no credential is found
    */
-  public List<PkiCredential> getSpEncryptCredentials() {
+  public @NonNull List<PkiCredential> getSpEncryptCredentials() {
     final List<PkiCredential> creds = new ArrayList<>();
     if (this.spEncryptCredential != null) {
       creds.add(this.spEncryptCredential);
@@ -179,8 +180,8 @@ public class ConnectorCredentials {
    * @param encryptionMethods the {@code md:EncryptionMethod} elements to use for encryption.
    * @return a list of {@link KeyDescriptor} elements
    */
-  public List<KeyDescriptor> getSpKeyDescriptors(
-      final List<EidasSpMetadataProperties.EncryptionMethod> encryptionMethods) {
+  public @NonNull List<KeyDescriptor> getSpKeyDescriptors(
+      final @Nullable List<EidasSpMetadataProperties.EncryptionMethod> encryptionMethods) {
 
     final List<KeyDescriptor> keyDescriptors = new ArrayList<>();
     KeyDescriptorBuilder unspecifiedBuilder = null;
@@ -307,8 +308,7 @@ public class ConnectorCredentials {
    *
    * @return the {@link PkiCredential}, or {@code null} if none is configured
    */
-  @Nullable
-  public PkiCredential getSpMetadataSigningCredential() {
+  public @Nullable PkiCredential getSpMetadataSigningCredential() {
     final PkiCredential[] creds = { this.spMetadataSignCredential, this.spDefaultCredential,
         this.metadataSignCredential, this.defaultCredential };
     for (final PkiCredential c : creds) {
@@ -324,7 +324,7 @@ public class ConnectorCredentials {
    *
    * @return the certificate or {@code null}
    */
-  public X509Certificate getSpFutureSigningCertificate() {
+  public @Nullable X509Certificate getSpFutureSigningCertificate() {
     if (this.spSignCredential != null || this.spDefaultCredential != null) {
       return this.spFutureSignCertificate;
     }
@@ -342,7 +342,7 @@ public class ConnectorCredentials {
    * @return the {@link PkiCredential}
    * @throws IllegalArgumentException if no credential is found
    */
-  public PkiCredential getIdpSigningCredential() {
+  public @NonNull PkiCredential getIdpSigningCredential() {
     final PkiCredential[] creds = { this.signCredential, this.defaultCredential };
     for (final PkiCredential c : creds) {
       if (c != null) {
@@ -358,7 +358,7 @@ public class ConnectorCredentials {
    * @return the {@link PkiCredential}
    * @throws IllegalArgumentException if no credential is found
    */
-  public PkiCredential getOAuth2Credential() {
+  public @NonNull PkiCredential getOAuth2Credential() {
     final PkiCredential[] creds = { this.oauth2Credential, this.defaultCredential, this.spDefaultCredential,
         this.signCredential, this.spSignCredential };
     for (final PkiCredential c : creds) {
@@ -375,7 +375,7 @@ public class ConnectorCredentials {
    *
    * @return a (possibly empty) list of {@link ReloadablePkiCredential}
    */
-  public List<ReloadablePkiCredential> getHardwareCredentials() {
+  public @NonNull List<ReloadablePkiCredential> getHardwareCredentials() {
 
     final PkiCredential[] creds = { this.signCredential, this.spSignCredential, this.encryptCredential,
         this.spEncryptCredential, this.defaultCredential, this.spDefaultCredential, this.metadataSignCredential,

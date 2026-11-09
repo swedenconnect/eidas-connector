@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.ext.saml2mdui.Logo;
 import org.opensaml.saml.ext.saml2mdui.UIInfo;
@@ -41,20 +43,20 @@ import java.util.function.Predicate;
 public class ServiceProviderUiInfo {
 
   /** The key used for a display name without a language. */
-  public static final String NO_LANG = "nolang";
+  public static final @NonNull String NO_LANG = "nolang";
 
   /** The display names, keyed by language. */
-  private final Map<String, String> displayNames;
+  private final @NonNull Map<String, String> displayNames;
 
   /** The logotypes. */
-  private final List<Logotype> logotypes;
+  private final @NonNull List<Logotype> logotypes;
 
   /**
    * Constructor.
    *
    * @param metadata the metadata of the Service Provider, may be {@code null}
    */
-  public ServiceProviderUiInfo(final EntityDescriptor metadata) {
+  public ServiceProviderUiInfo(final @Nullable EntityDescriptor metadata) {
 
     final UIInfo uiInfo = Optional.ofNullable(metadata)
         .map(m -> m.getSPSSODescriptor(SAMLConstants.SAML20P_NS))
@@ -96,7 +98,7 @@ public class ServiceProviderUiInfo {
    *
    * @return the display names
    */
-  public Map<String, String> getDisplayNames() {
+  public @NonNull Map<String, String> getDisplayNames() {
     return this.displayNames;
   }
 
@@ -106,7 +108,7 @@ public class ServiceProviderUiInfo {
    * @param languageTag the language tag
    * @return the display name, or {@code null}
    */
-  public String getDisplayName(final String languageTag) {
+  public @Nullable String getDisplayName(final @NonNull String languageTag) {
     return this.displayNames.getOrDefault(languageTag, this.displayNames.get(NO_LANG));
   }
 
@@ -116,7 +118,7 @@ public class ServiceProviderUiInfo {
    * @param predicate the predicate
    * @return the logotype, or {@code null}
    */
-  public Logotype getLogotype(final Predicate<Logotype> predicate) {
+  public @Nullable Logotype getLogotype(final @NonNull Predicate<Logotype> predicate) {
     Objects.requireNonNull(predicate, "predicate must not be null");
     return this.logotypes.stream()
         .filter(predicate)
@@ -130,20 +132,20 @@ public class ServiceProviderUiInfo {
   public static class Logotype {
 
     /** The URL of the logotype. */
-    private final String url;
+    private final @Nullable String url;
 
     /** The height in pixels. */
-    private final Integer height;
+    private final @Nullable Integer height;
 
     /** The language. */
-    private final String language;
+    private final @Nullable String language;
 
     /**
      * Constructor.
      *
      * @param logo the metadata {@code Logo} element
      */
-    public Logotype(final Logo logo) {
+    public Logotype(final @NonNull Logo logo) {
       this.url = logo.getURI();
       this.height = logo.getHeight();
       this.language = logo.getXMLLang();
@@ -154,7 +156,7 @@ public class ServiceProviderUiInfo {
      *
      * @return the URL
      */
-    public String getUrl() {
+    public @Nullable String getUrl() {
       return this.url;
     }
 
@@ -163,7 +165,7 @@ public class ServiceProviderUiInfo {
      *
      * @return the height, or {@code null}
      */
-    public Integer getHeight() {
+    public @Nullable Integer getHeight() {
       return this.height;
     }
 
@@ -172,7 +174,7 @@ public class ServiceProviderUiInfo {
      *
      * @return the language, or {@code null}
      */
-    public String getLanguage() {
+    public @Nullable String getLanguage() {
       return this.language;
     }
 

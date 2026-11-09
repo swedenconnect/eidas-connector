@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
@@ -45,7 +47,7 @@ public class AuthnContextClassRefMapper {
   private static final Logger log = LoggerFactory.getLogger(AuthnContextClassRefMapper.class);
 
   /** Special purpose AuthnContext Class Ref for eIDAS test. */
-  public static final String EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF = "http://eidas.europa.eu/LoA/test";
+  public static final @NonNull String EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF = "http://eidas.europa.eu/LoA/test";
 
   /**
    * Based on the AuthnContextClassRef URI:s supported by a foreign IdP and the AuthnContextClassRef URI:s requsted by a
@@ -56,8 +58,8 @@ public class AuthnContextClassRefMapper {
    * @return a {@link RequestedAuthnContext}
    * @throws SamlErrorStatusException if no match is found
    */
-  public static RequestedAuthnContext calculateRequestedAuthnContext(
-      final List<String> supportedEidasUris, final List<String> requestedSwedishUris)
+  public static @NonNull RequestedAuthnContext calculateRequestedAuthnContext(
+      final @NonNull List<String> supportedEidasUris, final @NonNull List<String> requestedSwedishUris)
       throws SamlErrorStatusException {
 
     final SwedishRequestedUris requested = new SwedishRequestedUris(requestedSwedishUris);
@@ -75,7 +77,7 @@ public class AuthnContextClassRefMapper {
    * @return {@code true} if authentication can be done and {@code false} otherwise
    */
   public static boolean canAuthenticate(
-      final List<String> supportedEidasUris, final List<String> requestedSwedishUris) {
+      final @NonNull List<String> supportedEidasUris, final @NonNull List<String> requestedSwedishUris) {
 
     final SwedishRequestedUris requested = new SwedishRequestedUris(requestedSwedishUris);
     final EidasUris supported = new EidasUris(supportedEidasUris);
@@ -95,8 +97,8 @@ public class AuthnContextClassRefMapper {
    * @return the Swedish URI to use in the Swedish assertion
    * @throws SamlErrorStatusException for processing errors
    */
-  public static String calculateReturnAuthnContextUri(final String eidasUri, final List<String> requestedSwedishUris)
-      throws SamlErrorStatusException {
+  public static @NonNull String calculateReturnAuthnContextUri(final @Nullable String eidasUri,
+      final @NonNull List<String> requestedSwedishUris) throws SamlErrorStatusException {
 
     if (EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF.equals(eidasUri)
         && requestedSwedishUris.contains(EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF)) {
@@ -153,8 +155,8 @@ public class AuthnContextClassRefMapper {
    * @param requestedContext the {@link RequestedAuthnContext}
    * @throws SamlErrorStatusException for errors
    */
-  public static void assertReturnedAuthnContextUri(final String eidasUri, final RequestedAuthnContext requestedContext)
-      throws SamlErrorStatusException {
+  public static void assertReturnedAuthnContextUri(final @Nullable String eidasUri,
+      final @NonNull RequestedAuthnContext requestedContext) throws SamlErrorStatusException {
 
     if (eidasUri == null) {
       final String msg = "Invalid assertion received from foreign IdP - No AuthnContextClassRef present";
@@ -266,7 +268,7 @@ public class AuthnContextClassRefMapper {
      *
      * @param requestedUris a list of the requested URI:s
      */
-    public SwedishRequestedUris(final List<String> requestedUris) {
+    public SwedishRequestedUris(final @NonNull List<String> requestedUris) {
       if (requestedUris.contains(EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF)) {
         this.requested = TEST;
       }
@@ -312,7 +314,7 @@ public class AuthnContextClassRefMapper {
      *
      * @return the URI for high notified if set, else {@code null}
      */
-    public String getHighNotified() {
+    public @Nullable String getHighNotified() {
       return this.highNotified() ? LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH_NF : null;
     }
 
@@ -330,7 +332,7 @@ public class AuthnContextClassRefMapper {
      *
      * @return the URI for high notified accepting non-notified if set, else {@code null}
      */
-    public String getHighNotifiedAcceptsNn() {
+    public @Nullable String getHighNotifiedAcceptsNn() {
       return this.highAcceptsNn() ? LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_HIGH : null;
     }
 
@@ -348,7 +350,7 @@ public class AuthnContextClassRefMapper {
      *
      * @return the URI for substantial notified if set, else {@code null}
      */
-    public String getSubstantialNotified() {
+    public @Nullable String getSubstantialNotified() {
       return this.substantialNotified() ? LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL_NF : null;
     }
 
@@ -366,7 +368,7 @@ public class AuthnContextClassRefMapper {
      *
      * @return the URI for substantial notified accepting non-notified if set, else {@code null}
      */
-    public String getSubstantialAcceptsNn() {
+    public @Nullable String getSubstantialAcceptsNn() {
       return this.substantialAcceptsNn() ? LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_SUBSTANTIAL : null;
     }
 
@@ -384,7 +386,7 @@ public class AuthnContextClassRefMapper {
      *
      * @return the URI for low notified if set, else {@code null}
      */
-    public String getLowNotified() {
+    public @Nullable String getLowNotified() {
       return this.lowNotified() ? LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW_NF : null;
     }
 
@@ -402,7 +404,7 @@ public class AuthnContextClassRefMapper {
      *
      * @return the URI for low notified accepting non-notified if set, else {@code null}
      */
-    public String getLowAcceptsNn() {
+    public @Nullable String getLowAcceptsNn() {
       return this.lowAcceptsNn() ? LevelOfAssuranceUris.AUTHN_CONTEXT_URI_EIDAS_LOW : null;
     }
 
@@ -444,7 +446,7 @@ public class AuthnContextClassRefMapper {
     private byte supported = 0b0;
 
     /** An array of all URI:s and their byte values. */
-    private static final Uri[] uris = {
+    private static final Uri @NonNull [] uris = {
         new Uri(EidasConstants.EIDAS_LOA_HIGH, EIDAS_HIGH),
         new Uri(EidasConstants.EIDAS_LOA_SUBSTANTIAL, EIDAS_SUB),
         new Uri(EidasConstants.EIDAS_LOA_LOW, EIDAS_LOW),
@@ -459,7 +461,7 @@ public class AuthnContextClassRefMapper {
      *
      * @param supportedUris a list of the supported AuthnContextClassRef URI:s
      */
-    public EidasUris(final List<String> supportedUris) {
+    public EidasUris(final @NonNull List<String> supportedUris) {
 
       for (final String uri : supportedUris) {
         this.supported |= switch (uri) {
@@ -482,7 +484,7 @@ public class AuthnContextClassRefMapper {
      * @param requested the requested Swedish URI:s
      * @return {@code true} if authentication is possible and {@code false} otherwise
      */
-    public boolean canAuthenticate(final SwedishRequestedUris requested) {
+    public boolean canAuthenticate(final @NonNull SwedishRequestedUris requested) {
       return this.getRequestedAuthnContextMatch(requested).value() != 0;
     }
 
@@ -494,7 +496,7 @@ public class AuthnContextClassRefMapper {
      * @return {@link RequestedAuthnContext}
      * @throws SamlErrorStatusException if no match is found
      */
-    public RequestedAuthnContext getRequestedAuthnContext(final SwedishRequestedUris requested)
+    public @NonNull RequestedAuthnContext getRequestedAuthnContext(final @NonNull SwedishRequestedUris requested)
         throws SamlErrorStatusException {
 
       final MatchResult result = this.getRequestedAuthnContextMatch(requested);
@@ -585,14 +587,14 @@ public class AuthnContextClassRefMapper {
     }
 
     // Represents a mapping between URI:s and their byte values
-    private record Uri(String uri, String additionalUri, byte value) {
-      public Uri(final String uri, final byte value) {
+    private record Uri(@NonNull String uri, @Nullable String additionalUri, byte value) {
+      public Uri(final @NonNull String uri, final byte value) {
         this(uri, null, value);
       }
     }
 
     // Internal for representing a match result between requested and supported URI:s
-    private record MatchResult(AuthnContextComparisonTypeEnumeration comparison, byte value) {
+    private record MatchResult(@NonNull AuthnContextComparisonTypeEnumeration comparison, byte value) {
     }
 
   }

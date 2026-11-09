@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -36,25 +37,25 @@ public class ConnectorIdpProperties implements InitializingBean {
   /**
    * The supported LoA:s.
    */
-  private List<String> supportedLoas = new ArrayList<>();
+  private @NonNull List<String> supportedLoas = new ArrayList<>();
 
   /**
    * The SAML entity categories this IdP declares.
    */
-  private final List<String> entityCategories = new ArrayList<>();
+  private final @NonNull List<String> entityCategories = new ArrayList<>();
 
   /**
    * A list of SAML entityID:s for the SP:s that are allowed to send special "eIDAS ping" authentication requests to the
    * connector. If the list is empty, no ping requests will be served.
    */
-  private final List<String> pingWhitelist = new ArrayList<>();
+  private final @NonNull List<String> pingWhitelist = new ArrayList<>();
 
   /**
    * Gets the supported LoA:s.
    *
    * @return the supported LoA:s
    */
-  public List<String> getSupportedLoas() {
+  public @NonNull List<String> getSupportedLoas() {
     return this.supportedLoas;
   }
 
@@ -63,7 +64,7 @@ public class ConnectorIdpProperties implements InitializingBean {
    *
    * @return the SAML entity categories this IdP declares
    */
-  public List<String> getEntityCategories() {
+  public @NonNull List<String> getEntityCategories() {
     return this.entityCategories;
   }
 
@@ -72,7 +73,7 @@ public class ConnectorIdpProperties implements InitializingBean {
    *
    * @return the entityID:s for the SP:s that are allowed to send "eIDAS ping" requests
    */
-  public List<String> getPingWhitelist() {
+  public @NonNull List<String> getPingWhitelist() {
     return this.pingWhitelist;
   }
 

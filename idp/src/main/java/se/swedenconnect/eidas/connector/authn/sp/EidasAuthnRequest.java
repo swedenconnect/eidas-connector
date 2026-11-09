@@ -19,6 +19,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
@@ -35,19 +37,19 @@ public class EidasAuthnRequest implements Serializable {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The authentication request. */
-  private final SerializableOpenSamlObject<AuthnRequest> authnRequest;
+  private final @NonNull SerializableOpenSamlObject<AuthnRequest> authnRequest;
 
   /** The relay state. */
-  private final String relayState;
+  private final @Nullable String relayState;
 
   /** The AuthnRequest ID of the associated request (i.e., the request from the Swedish SP). */
-  private final String associatedRequestId;
+  private final @NonNull String associatedRequestId;
 
   /** The country code for the recipient country. */
-  private final String country;
+  private final @NonNull String country;
 
   /** The identifier of the authentication in progress that the request was sent for. */
-  private final String authnId;
+  private final @NonNull String authnId;
 
   /**
    * Constructor.
@@ -59,8 +61,8 @@ public class EidasAuthnRequest implements Serializable {
    * @param authnId the identifier of the authentication in progress that the request was sent for
    */
   public EidasAuthnRequest(
-      final AuthnRequest authnRequest, final String relayState, final String associatedRequestId,
-      final String country, final String authnId) {
+      final @NonNull AuthnRequest authnRequest, final @Nullable String relayState,
+      final @NonNull String associatedRequestId, final @NonNull String country, final @NonNull String authnId) {
     this.authnRequest = new SerializableOpenSamlObject<>(
         Objects.requireNonNull(authnRequest, "authnRequest must not be null"));
     this.relayState = relayState;
@@ -74,7 +76,7 @@ public class EidasAuthnRequest implements Serializable {
    *
    * @return the authentication request
    */
-  public AuthnRequest getAuthnRequest() {
+  public @NonNull AuthnRequest getAuthnRequest() {
     return this.authnRequest.get();
   }
 
@@ -83,7 +85,7 @@ public class EidasAuthnRequest implements Serializable {
    *
    * @return the relay state, or {@code null} if not set
    */
-  public String getRelayState() {
+  public @Nullable String getRelayState() {
     return this.relayState;
   }
 
@@ -92,7 +94,7 @@ public class EidasAuthnRequest implements Serializable {
    *
    * @return associated AuthnRequest ID
    */
-  public String getAssociatedRequestId() {
+  public @NonNull String getAssociatedRequestId() {
     return this.associatedRequestId;
   }
 
@@ -101,7 +103,7 @@ public class EidasAuthnRequest implements Serializable {
    *
    * @return country code
    */
-  public String getCountry() {
+  public @NonNull String getCountry() {
     return this.country;
   }
 
@@ -110,7 +112,7 @@ public class EidasAuthnRequest implements Serializable {
    *
    * @return the identifier of the authentication
    */
-  public String getAuthnId() {
+  public @NonNull String getAuthnId() {
     return this.authnId;
   }
 

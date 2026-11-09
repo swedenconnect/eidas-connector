@@ -20,6 +20,7 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.Scope;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.swedenconnect.security.credential.PkiCredential;
@@ -43,13 +44,13 @@ public class OAuth2Server extends AbstractOAuth2Handler {
   private static final Logger log = LoggerFactory.getLogger(OAuth2Server.class);
 
   /** The issuer of the access tokens. */
-  private final String issuer;
+  private final @NonNull String issuer;
 
   /** The intended audience for the issued access tokens. */
-  private final String audience;
+  private final @NonNull String audience;
 
   /** The duration for issued access tokens. */
-  private Duration lifeTime = Duration.ofSeconds(3600);
+  private @NonNull Duration lifeTime = Duration.ofSeconds(3600);
 
   /**
    * Constructor.
@@ -61,8 +62,9 @@ public class OAuth2Server extends AbstractOAuth2Handler {
    * @param audience the audience of the access tokens
    * @param oauth2Credential the credential used to sign the OAuth2 items
    */
-  public OAuth2Server(final String clientId, final List<String> checkScopes, final List<String> getScopes,
-      final String issuer, final String audience, final PkiCredential oauth2Credential) {
+  public OAuth2Server(final @NonNull String clientId, final @NonNull List<String> checkScopes,
+      final @NonNull List<String> getScopes, final @NonNull String issuer, final @NonNull String audience,
+      final @NonNull PkiCredential oauth2Credential) {
     super(clientId, checkScopes, getScopes, oauth2Credential);
     this.issuer = Objects.requireNonNull(issuer, "issuer must not be null");
     this.audience = Objects.requireNonNull(audience, "audience must not be null");
@@ -73,13 +75,14 @@ public class OAuth2Server extends AbstractOAuth2Handler {
    *
    * @param lifeTime the duration for issued access tokens
    */
-  public void setLifeTime(final Duration lifeTime) {
+  public void setLifeTime(final @NonNull Duration lifeTime) {
     this.lifeTime = lifeTime;
   }
 
   /** {@inheritDoc} */
   @Override
-  protected BearerAccessTokenHolder obtainAccessToken(final String subject, final Scope scope) throws IdmException {
+  protected @NonNull BearerAccessTokenHolder obtainAccessToken(final @NonNull String subject,
+      final @NonNull Scope scope) throws IdmException {
 
     try {
       final Instant now = Instant.now();

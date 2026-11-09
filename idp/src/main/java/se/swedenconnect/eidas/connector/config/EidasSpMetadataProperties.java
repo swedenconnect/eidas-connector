@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
@@ -35,22 +37,22 @@ public class EidasSpMetadataProperties implements InitializingBean {
   /**
    * A template for the SP metadata.
    */
-  private Resource template;
+  private @Nullable Resource template;
 
   /**
    * Tells how long the published SP metadata can remain in a cache.
    */
-  private Duration cacheDuration;
+  private @Nullable Duration cacheDuration;
 
   /**
    * Tells for how long a published metadata entry should be valid.
    */
-  private Duration validityPeriod;
+  private @Nullable Duration validityPeriod;
 
   /**
    * The {@code alg:DigestMethod} elements to include in the metadata.
    */
-  private List<String> digestMethods;
+  private @Nullable List<String> digestMethods;
 
   /**
    * Whether {@code alg:DigestMethod} elements should be placed in an {@code Extensions} element under the role
@@ -62,7 +64,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
   /**
    * The {@code alg:SigningMethod} elements to include in the metadata.
    */
-  private List<SigningMethod> signingMethods;
+  private @Nullable List<SigningMethod> signingMethods;
 
   /**
    * Whether {@code alg:SigningMethod} elements should be placed in an {@code Extensions} element under the role
@@ -75,36 +77,36 @@ public class EidasSpMetadataProperties implements InitializingBean {
    * The {@code md:EncryptionMethod} elements that should be included under the {@code md:KeyDescriptor} for the
    * encryption key. Note that these algorithms must match the configured encryption key.
    */
-  private List<EncryptionMethod> encryptionMethods;
+  private @Nullable List<EncryptionMethod> encryptionMethods;
 
   /**
    * The metadata {@code Organization} element.
    */
-  private Organization organization;
+  private @Nullable Organization organization;
 
   /**
    * The metadata {@code ContactPerson} elements, keyed by type.
    */
-  private Map<ContactPersonType, ContactPerson> contactPersons;
+  private @Nullable Map<ContactPersonType, ContactPerson> contactPersons;
 
   /**
    * The value to insert for the eIDAS entity category
    * {@code http://eidas.europa.eu/entity-attributes/application-identifier}. The current version of the connector will
    * always be appended to this value.
    */
-  private String applicationIdentifierPrefix;
+  private @Nullable String applicationIdentifierPrefix;
 
   /**
    * The values to use for the eIDAS entity category {@code http://eidas.europa.eu/entity-attributes/protocol-version}.
    */
-  private final List<String> protocolVersions = new ArrayList<>();
+  private final @NonNull List<String> protocolVersions = new ArrayList<>();
 
   /**
    * Gets a template for the SP metadata.
    *
    * @return a template for the SP metadata
    */
-  public Resource getTemplate() {
+  public @Nullable Resource getTemplate() {
     return this.template;
   }
 
@@ -113,7 +115,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @param template a template for the SP metadata
    */
-  public void setTemplate(final Resource template) {
+  public void setTemplate(final @Nullable Resource template) {
     this.template = template;
   }
 
@@ -122,7 +124,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @return how long the published SP metadata can remain in a cache
    */
-  public Duration getCacheDuration() {
+  public @Nullable Duration getCacheDuration() {
     return this.cacheDuration;
   }
 
@@ -131,7 +133,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @param cacheDuration how long the published SP metadata can remain in a cache
    */
-  public void setCacheDuration(final Duration cacheDuration) {
+  public void setCacheDuration(final @Nullable Duration cacheDuration) {
     this.cacheDuration = cacheDuration;
   }
 
@@ -140,7 +142,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @return for how long a published metadata entry should be valid
    */
-  public Duration getValidityPeriod() {
+  public @Nullable Duration getValidityPeriod() {
     return this.validityPeriod;
   }
 
@@ -149,7 +151,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @param validityPeriod for how long a published metadata entry should be valid
    */
-  public void setValidityPeriod(final Duration validityPeriod) {
+  public void setValidityPeriod(final @Nullable Duration validityPeriod) {
     this.validityPeriod = validityPeriod;
   }
 
@@ -158,7 +160,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @return the {@code alg:DigestMethod} elements to include in the metadata
    */
-  public List<String> getDigestMethods() {
+  public @Nullable List<String> getDigestMethods() {
     return this.digestMethods;
   }
 
@@ -167,7 +169,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @param digestMethods the {@code alg:DigestMethod} elements to include in the metadata
    */
-  public void setDigestMethods(final List<String> digestMethods) {
+  public void setDigestMethods(final @Nullable List<String> digestMethods) {
     this.digestMethods = digestMethods;
   }
 
@@ -194,7 +196,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @return the {@code alg:SigningMethod} elements to include in the metadata
    */
-  public List<SigningMethod> getSigningMethods() {
+  public @Nullable List<SigningMethod> getSigningMethods() {
     return this.signingMethods;
   }
 
@@ -203,7 +205,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @param signingMethods the {@code alg:SigningMethod} elements to include in the metadata
    */
-  public void setSigningMethods(final List<SigningMethod> signingMethods) {
+  public void setSigningMethods(final @Nullable List<SigningMethod> signingMethods) {
     this.signingMethods = signingMethods;
   }
 
@@ -230,7 +232,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @return the {@code md:EncryptionMethod} elements for the encryption key
    */
-  public List<EncryptionMethod> getEncryptionMethods() {
+  public @Nullable List<EncryptionMethod> getEncryptionMethods() {
     return this.encryptionMethods;
   }
 
@@ -239,7 +241,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @param encryptionMethods the {@code md:EncryptionMethod} elements for the encryption key
    */
-  public void setEncryptionMethods(final List<EncryptionMethod> encryptionMethods) {
+  public void setEncryptionMethods(final @Nullable List<EncryptionMethod> encryptionMethods) {
     this.encryptionMethods = encryptionMethods;
   }
 
@@ -248,7 +250,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @return the metadata {@code Organization} element
    */
-  public Organization getOrganization() {
+  public @Nullable Organization getOrganization() {
     return this.organization;
   }
 
@@ -257,7 +259,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @param organization the metadata {@code Organization} element
    */
-  public void setOrganization(final Organization organization) {
+  public void setOrganization(final @Nullable Organization organization) {
     this.organization = organization;
   }
 
@@ -266,7 +268,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @return the metadata {@code ContactPerson} elements, keyed by type
    */
-  public Map<ContactPersonType, ContactPerson> getContactPersons() {
+  public @Nullable Map<ContactPersonType, ContactPerson> getContactPersons() {
     return this.contactPersons;
   }
 
@@ -275,7 +277,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @param contactPersons the metadata {@code ContactPerson} elements, keyed by type
    */
-  public void setContactPersons(final Map<ContactPersonType, ContactPerson> contactPersons) {
+  public void setContactPersons(final @Nullable Map<ContactPersonType, ContactPerson> contactPersons) {
     this.contactPersons = contactPersons;
   }
 
@@ -284,7 +286,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @return the prefix for the eIDAS application-identifier entity category
    */
-  public String getApplicationIdentifierPrefix() {
+  public @Nullable String getApplicationIdentifierPrefix() {
     return this.applicationIdentifierPrefix;
   }
 
@@ -293,7 +295,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @param applicationIdentifierPrefix the prefix for the eIDAS application-identifier entity category
    */
-  public void setApplicationIdentifierPrefix(final String applicationIdentifierPrefix) {
+  public void setApplicationIdentifierPrefix(final @Nullable String applicationIdentifierPrefix) {
     this.applicationIdentifierPrefix = applicationIdentifierPrefix;
   }
 
@@ -302,7 +304,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
    *
    * @return the values for the eIDAS protocol-version entity category
    */
-  public List<String> getProtocolVersions() {
+  public @NonNull List<String> getProtocolVersions() {
     return this.protocolVersions;
   }
 
@@ -328,26 +330,26 @@ public class EidasSpMetadataProperties implements InitializingBean {
     /**
      * Identifies the algorithm by means of the URL defined for its use with the XML Signature specification.
      */
-    private String algorithm;
+    private @Nullable String algorithm;
 
     /**
      * The smallest key size, in bits, that the entity supports in conjunction with the algorithm. If omitted, no
      * minimum is implied.
      */
-    private Integer minKeySize;
+    private @Nullable Integer minKeySize;
 
     /**
      * The largest key size, in bits, that the entity supports in conjunction with the algorithm. If omitted, no
      * maximum is implied.
      */
-    private Integer maxKeySize;
+    private @Nullable Integer maxKeySize;
 
     /**
      * Gets the algorithm URI.
      *
      * @return the algorithm URI
      */
-    public String getAlgorithm() {
+    public @Nullable String getAlgorithm() {
       return this.algorithm;
     }
 
@@ -356,7 +358,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param algorithm the algorithm URI
      */
-    public void setAlgorithm(final String algorithm) {
+    public void setAlgorithm(final @Nullable String algorithm) {
       this.algorithm = algorithm;
     }
 
@@ -365,7 +367,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @return the smallest key size (in bits)
      */
-    public Integer getMinKeySize() {
+    public @Nullable Integer getMinKeySize() {
       return this.minKeySize;
     }
 
@@ -374,7 +376,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param minKeySize the smallest key size (in bits)
      */
-    public void setMinKeySize(final Integer minKeySize) {
+    public void setMinKeySize(final @Nullable Integer minKeySize) {
       this.minKeySize = minKeySize;
     }
 
@@ -383,7 +385,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @return the largest key size (in bits)
      */
-    public Integer getMaxKeySize() {
+    public @Nullable Integer getMaxKeySize() {
       return this.maxKeySize;
     }
 
@@ -392,13 +394,13 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param maxKeySize the largest key size (in bits)
      */
-    public void setMaxKeySize(final Integer maxKeySize) {
+    public void setMaxKeySize(final @Nullable Integer maxKeySize) {
       this.maxKeySize = maxKeySize;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -419,7 +421,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "algorithm=" + this.algorithm
           + ", minKeySize=" + this.minKeySize
           + ", maxKeySize=" + this.maxKeySize;
@@ -434,30 +436,30 @@ public class EidasSpMetadataProperties implements InitializingBean {
     /**
      * The algorithm URI of the encryption method.
      */
-    private String algorithm;
+    private @Nullable String algorithm;
 
     /**
      * The key size.
      */
-    private Integer keySize;
+    private @Nullable Integer keySize;
 
     /**
      * The OAEP parameters (in Base64-encoding).
      */
-    private String oaepParams;
+    private @Nullable String oaepParams;
 
     /**
      * If {@code algorithm} indicates a key transport algorithm where the digest algorithm needs to be given, this
      * field should be set to this algorithm URI.
      */
-    private String digestMethod;
+    private @Nullable String digestMethod;
 
     /**
      * Gets the algorithm URI of the encryption method.
      *
      * @return the algorithm URI of the encryption method
      */
-    public String getAlgorithm() {
+    public @Nullable String getAlgorithm() {
       return this.algorithm;
     }
 
@@ -466,7 +468,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param algorithm the algorithm URI of the encryption method
      */
-    public void setAlgorithm(final String algorithm) {
+    public void setAlgorithm(final @Nullable String algorithm) {
       this.algorithm = algorithm;
     }
 
@@ -475,7 +477,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @return the key size
      */
-    public Integer getKeySize() {
+    public @Nullable Integer getKeySize() {
       return this.keySize;
     }
 
@@ -484,7 +486,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param keySize the key size
      */
-    public void setKeySize(final Integer keySize) {
+    public void setKeySize(final @Nullable Integer keySize) {
       this.keySize = keySize;
     }
 
@@ -493,7 +495,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @return the OAEP parameters (in Base64-encoding)
      */
-    public String getOaepParams() {
+    public @Nullable String getOaepParams() {
       return this.oaepParams;
     }
 
@@ -502,7 +504,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param oaepParams the OAEP parameters (in Base64-encoding)
      */
-    public void setOaepParams(final String oaepParams) {
+    public void setOaepParams(final @Nullable String oaepParams) {
       this.oaepParams = oaepParams;
     }
 
@@ -511,7 +513,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @return the digest method algorithm URI
      */
-    public String getDigestMethod() {
+    public @Nullable String getDigestMethod() {
       return this.digestMethod;
     }
 
@@ -520,13 +522,13 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param digestMethod the digest method algorithm URI
      */
-    public void setDigestMethod(final String digestMethod) {
+    public void setDigestMethod(final @Nullable String digestMethod) {
       this.digestMethod = digestMethod;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -548,7 +550,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "algorithm=" + this.algorithm
           + ", keySize=" + this.keySize
           + ", oaepParams=" + this.oaepParams
@@ -564,25 +566,25 @@ public class EidasSpMetadataProperties implements InitializingBean {
     /**
      * The {@code OrganizationName}. The map key is the language tag and value is display name for that language.
      */
-    private Map<String, String> names;
+    private @Nullable Map<String, String> names;
 
     /**
      * The {@code OrganizationDisplayName}. The map key is the language tag and value is display name for that
      * language.
      */
-    private Map<String, String> displayNames;
+    private @Nullable Map<String, String> displayNames;
 
     /**
      * The {@code OrganizationURL}. The map key is the language tag and value is display name for that language.
      */
-    private Map<String, String> urls;
+    private @Nullable Map<String, String> urls;
 
     /**
      * Gets the {@code OrganizationName} values (keyed by language tag).
      *
      * @return the {@code OrganizationName} values (keyed by language tag)
      */
-    public Map<String, String> getNames() {
+    public @Nullable Map<String, String> getNames() {
       return this.names;
     }
 
@@ -591,7 +593,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param names the {@code OrganizationName} values (keyed by language tag)
      */
-    public void setNames(final Map<String, String> names) {
+    public void setNames(final @Nullable Map<String, String> names) {
       this.names = names;
     }
 
@@ -600,7 +602,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @return the {@code OrganizationDisplayName} values (keyed by language tag)
      */
-    public Map<String, String> getDisplayNames() {
+    public @Nullable Map<String, String> getDisplayNames() {
       return this.displayNames;
     }
 
@@ -609,7 +611,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param displayNames the {@code OrganizationDisplayName} values (keyed by language tag)
      */
-    public void setDisplayNames(final Map<String, String> displayNames) {
+    public void setDisplayNames(final @Nullable Map<String, String> displayNames) {
       this.displayNames = displayNames;
     }
 
@@ -618,7 +620,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @return the {@code OrganizationURL} values (keyed by language tag)
      */
-    public Map<String, String> getUrls() {
+    public @Nullable Map<String, String> getUrls() {
       return this.urls;
     }
 
@@ -627,13 +629,13 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param urls the {@code OrganizationURL} values (keyed by language tag)
      */
-    public void setUrls(final Map<String, String> urls) {
+    public void setUrls(final @Nullable Map<String, String> urls) {
       this.urls = urls;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -654,7 +656,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "names=" + this.names
           + ", displayNames=" + this.displayNames
           + ", urls=" + this.urls;
@@ -687,34 +689,34 @@ public class EidasSpMetadataProperties implements InitializingBean {
     /**
      * The {@code Company} element.
      */
-    private String company;
+    private @Nullable String company;
 
     /**
      * The {@code GivenName} element.
      */
-    private String givenName;
+    private @Nullable String givenName;
 
     /**
      * The {@code SurName} element.
      */
-    private String surname;
+    private @Nullable String surname;
 
     /**
      * The {@code EmailAddress} elements.
      */
-    private List<String> emailAddresses;
+    private @Nullable List<String> emailAddresses;
 
     /**
      * The {@code TelephoneNumber} elements.
      */
-    private List<String> telephoneNumbers;
+    private @Nullable List<String> telephoneNumbers;
 
     /**
      * Gets the {@code Company} element.
      *
      * @return the {@code Company} element
      */
-    public String getCompany() {
+    public @Nullable String getCompany() {
       return this.company;
     }
 
@@ -723,7 +725,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param company the {@code Company} element
      */
-    public void setCompany(final String company) {
+    public void setCompany(final @Nullable String company) {
       this.company = company;
     }
 
@@ -732,7 +734,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @return the {@code GivenName} element
      */
-    public String getGivenName() {
+    public @Nullable String getGivenName() {
       return this.givenName;
     }
 
@@ -741,7 +743,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param givenName the {@code GivenName} element
      */
-    public void setGivenName(final String givenName) {
+    public void setGivenName(final @Nullable String givenName) {
       this.givenName = givenName;
     }
 
@@ -750,7 +752,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @return the {@code SurName} element
      */
-    public String getSurname() {
+    public @Nullable String getSurname() {
       return this.surname;
     }
 
@@ -759,7 +761,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param surname the {@code SurName} element
      */
-    public void setSurname(final String surname) {
+    public void setSurname(final @Nullable String surname) {
       this.surname = surname;
     }
 
@@ -768,7 +770,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @return the {@code EmailAddress} elements
      */
-    public List<String> getEmailAddresses() {
+    public @Nullable List<String> getEmailAddresses() {
       return this.emailAddresses;
     }
 
@@ -777,7 +779,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param emailAddresses the {@code EmailAddress} elements
      */
-    public void setEmailAddresses(final List<String> emailAddresses) {
+    public void setEmailAddresses(final @Nullable List<String> emailAddresses) {
       this.emailAddresses = emailAddresses;
     }
 
@@ -786,7 +788,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @return the {@code TelephoneNumber} elements
      */
-    public List<String> getTelephoneNumbers() {
+    public @Nullable List<String> getTelephoneNumbers() {
       return this.telephoneNumbers;
     }
 
@@ -795,13 +797,13 @@ public class EidasSpMetadataProperties implements InitializingBean {
      *
      * @param telephoneNumbers the {@code TelephoneNumber} elements
      */
-    public void setTelephoneNumbers(final List<String> telephoneNumbers) {
+    public void setTelephoneNumbers(final @Nullable List<String> telephoneNumbers) {
       this.telephoneNumbers = telephoneNumbers;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -824,7 +826,7 @@ public class EidasSpMetadataProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "company=" + this.company
           + ", givenName=" + this.givenName
           + ", surname=" + this.surname

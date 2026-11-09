@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationEvent;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
@@ -36,7 +37,7 @@ public abstract class AbstractEidasConnectorEvent extends ApplicationEvent {
    *
    * @param source the object with which the event is associated (never {@code null})
    */
-  public AbstractEidasConnectorEvent(final Object source) {
+  public AbstractEidasConnectorEvent(final @NonNull Object source) {
     super(source);
   }
 

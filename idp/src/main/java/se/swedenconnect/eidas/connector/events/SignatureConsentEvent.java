@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
@@ -32,7 +33,7 @@ public class SignatureConsentEvent extends AbstractConnectorAuthnEvent {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The authentication token. */
-  private final EidasAuthenticationToken eidasToken;
+  private final @NonNull EidasAuthenticationToken eidasToken;
 
   /** Whether the signature was consented. */
   private final boolean signatureConsented;
@@ -44,8 +45,8 @@ public class SignatureConsentEvent extends AbstractConnectorAuthnEvent {
    * @param eidasToken the eIDAS authentication token
    * @param signatureConsented whether the signature was consented by the user
    */
-  public SignatureConsentEvent(final UserAuthenticationInputToken inputToken,
-      final EidasAuthenticationToken eidasToken, final boolean signatureConsented) {
+  public SignatureConsentEvent(final @NonNull UserAuthenticationInputToken inputToken,
+      final @NonNull EidasAuthenticationToken eidasToken, final boolean signatureConsented) {
     super(inputToken);
     this.eidasToken = eidasToken;
     this.signatureConsented = signatureConsented;
@@ -56,7 +57,7 @@ public class SignatureConsentEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the {@link EidasAuthenticationToken}
    */
-  public EidasAuthenticationToken getEidasToken() {
+  public @NonNull EidasAuthenticationToken getEidasToken() {
     return this.eidasToken;
   }
 

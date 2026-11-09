@@ -15,6 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import java.util.Objects;
 
 /**
@@ -27,19 +30,19 @@ public class BaseUiModel {
   /**
    * The SP UI info.
    */
-  private SpInfo spInfo;
+  private @Nullable SpInfo spInfo;
 
   /**
    * The accessibility report URL.
    */
-  private String accessibilityUrl;
+  private @Nullable String accessibilityUrl;
 
   /**
    * Gets the SP UI info.
    *
    * @return the SP UI info
    */
-  public SpInfo getSpInfo() {
+  public @Nullable SpInfo getSpInfo() {
     return this.spInfo;
   }
 
@@ -48,7 +51,7 @@ public class BaseUiModel {
    *
    * @param spInfo the SP UI info
    */
-  public void setSpInfo(final SpInfo spInfo) {
+  public void setSpInfo(final @Nullable SpInfo spInfo) {
     this.spInfo = spInfo;
   }
 
@@ -57,7 +60,7 @@ public class BaseUiModel {
    *
    * @return the accessibility report URL
    */
-  public String getAccessibilityUrl() {
+  public @Nullable String getAccessibilityUrl() {
     return this.accessibilityUrl;
   }
 
@@ -66,13 +69,13 @@ public class BaseUiModel {
    *
    * @param accessibilityUrl the accessibility report URL
    */
-  public void setAccessibilityUrl(final String accessibilityUrl) {
+  public void setAccessibilityUrl(final @Nullable String accessibilityUrl) {
     this.accessibilityUrl = accessibilityUrl;
   }
 
   /** {@inheritDoc} */
   @Override
-  public boolean equals(final Object o) {
+  public boolean equals(final @Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -91,7 +94,7 @@ public class BaseUiModel {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return "spInfo=[" + this.spInfo + "], accessibilityUrl=" + this.accessibilityUrl;
   }
 
@@ -103,19 +106,19 @@ public class BaseUiModel {
     /**
      * The SP display name.
      */
-    private String displayName;
+    private @Nullable String displayName;
 
     /**
      * The SP logotype URL.
      */
-    private String logoUrl;
+    private @Nullable String logoUrl;
 
     /**
      * Gets the SP display name.
      *
      * @return the SP display name
      */
-    public String getDisplayName() {
+    public @Nullable String getDisplayName() {
       return this.displayName;
     }
 
@@ -124,7 +127,7 @@ public class BaseUiModel {
      *
      * @param displayName the SP display name
      */
-    public void setDisplayName(final String displayName) {
+    public void setDisplayName(final @Nullable String displayName) {
       this.displayName = displayName;
     }
 
@@ -133,7 +136,7 @@ public class BaseUiModel {
      *
      * @return the SP logotype URL
      */
-    public String getLogoUrl() {
+    public @Nullable String getLogoUrl() {
       return this.logoUrl;
     }
 
@@ -142,13 +145,13 @@ public class BaseUiModel {
      *
      * @param logoUrl the SP logotype URL
      */
-    public void setLogoUrl(final String logoUrl) {
+    public void setLogoUrl(final @Nullable String logoUrl) {
       this.logoUrl = logoUrl;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -167,7 +170,7 @@ public class BaseUiModel {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "displayName=" + this.displayName + ", logoUrl=" + this.logoUrl;
     }
   }

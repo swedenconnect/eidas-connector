@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Scoping;
@@ -61,22 +63,22 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
   private static final Logger log = LoggerFactory.getLogger(EidasAuthnRequestGenerator.class);
 
   /** The SP metadata. */
-  private final EntityDescriptor spMetadata;
+  private final @NonNull EntityDescriptor spMetadata;
 
   /** Works out the eIDAS requested attributes. */
-  private final EidasRequestedAttributesBuilder requestedAttributesBuilder;
+  private final @NonNull EidasRequestedAttributesBuilder requestedAttributesBuilder;
 
   /** The name to add to the field {@code providerName}. */
-  private final String providerName;
+  private final @NonNull String providerName;
 
   /** Some countries can not handle the Scoping element. */
-  private List<String> skipScopingElementFor = Collections.emptyList();
+  private @NonNull List<String> skipScopingElementFor = Collections.emptyList();
 
   /** Preferred binding to use for authentication requests. */
-  private String preferredBinding;
+  private @Nullable String preferredBinding;
 
   /** The security configuration we use for signing. */
-  private final SecurityConfiguration securityConfiguration;
+  private final @NonNull SecurityConfiguration securityConfiguration;
 
   /**
    * Constructor.
@@ -87,9 +89,9 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    * @param requestedAttributesBuilder works out the eIDAS requested attributes
    * @param providerName the provider name to use in generated requests
    */
-  public EidasAuthnRequestGenerator(final EntityDescriptor spMetadata, final PkiCredential signatureCredential,
-      final SecurityConfiguration securityConfiguration,
-      final EidasRequestedAttributesBuilder requestedAttributesBuilder, final String providerName) {
+  public EidasAuthnRequestGenerator(final @NonNull EntityDescriptor spMetadata,
+      final @NonNull PkiCredential signatureCredential, final @NonNull SecurityConfiguration securityConfiguration,
+      final @NonNull EidasRequestedAttributesBuilder requestedAttributesBuilder, final @Nullable String providerName) {
     super(Objects.requireNonNull(spMetadata, "spMetadata must not be null").getEntityID(),
         new OpenSamlCredential(Objects.requireNonNull(signatureCredential, "signatureCredential must not be null")));
     this.securityConfiguration =
@@ -109,8 +111,9 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    * @return a {@link RequestHttpObject}
    * @throws RequestGenerationException for errors generating the {@code AuthnRequest}
    */
-  public RequestHttpObject<AuthnRequest> generateAuthnRequest(final CountryMetadata country,
-      final UserAuthenticationInputToken token, final String relayState) throws RequestGenerationException {
+  public @NonNull RequestHttpObject<AuthnRequest> generateAuthnRequest(final @NonNull CountryMetadata country,
+      final @NonNull UserAuthenticationInputToken token, final @Nullable String relayState)
+      throws RequestGenerationException {
 
     // Is this a public or private SP?
     //
@@ -143,8 +146,8 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    * Adds a Scoping element containing a RequesterID for the Swedish SP.
    */
   @Override
-  protected void addScoping(final AuthnRequestBuilder builder, final AuthnRequestGeneratorContext context,
-      final EntityDescriptor idpMetadata) {
+  protected void addScoping(final @NonNull AuthnRequestBuilder builder,
+      final @NonNull AuthnRequestGeneratorContext context, final @NonNull EntityDescriptor idpMetadata) {
 
     final EidasAuthnRequestGeneratorContext eidasContext = (EidasAuthnRequestGeneratorContext) context;
     final String country = eidasContext.getCountryCode();
@@ -160,8 +163,8 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    * Adds the {@code SPType} extension and the requested attributes.
    */
   @Override
-  protected void addExtensions(final AuthnRequestBuilder builder, final AuthnRequestGeneratorContext context,
-      final EntityDescriptor idpMetadata) {
+  protected void addExtensions(final @NonNull AuthnRequestBuilder builder,
+      final @NonNull AuthnRequestGeneratorContext context, final @NonNull EntityDescriptor idpMetadata) {
 
     final EidasAuthnRequestGeneratorContext eidasContext = (EidasAuthnRequestGeneratorContext) context;
 
@@ -184,14 +187,14 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
 
   /** {@inheritDoc} */
   @Override
-  protected List<String> getAssuranceCertificationUris(final EntityDescriptor idpMetadata,
-      final AuthnRequestGeneratorContext context) {
+  protected @NonNull List<String> getAssuranceCertificationUris(final @NonNull EntityDescriptor idpMetadata,
+      final @NonNull AuthnRequestGeneratorContext context) {
     return MetadataFunctions.getAssuranceLevels(idpMetadata);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected EntityDescriptor getSpMetadata() {
+  protected @NonNull EntityDescriptor getSpMetadata() {
     return this.spMetadata;
   }
 
@@ -201,7 +204,7 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    *
    * @param skipScopingElementFor list of countries
    */
-  public void setSkipScopingElementFor(final List<String> skipScopingElementFor) {
+  public void setSkipScopingElementFor(final @Nullable List<String> skipScopingElementFor) {
     this.skipScopingElementFor = Optional.ofNullable(skipScopingElementFor)
         .orElseGet(Collections::emptyList);
   }
@@ -211,7 +214,7 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    *
    * @param preferredBinding URI
    */
-  public void setPreferredBinding(final String preferredBinding) {
+  public void setPreferredBinding(final @Nullable String preferredBinding) {
     if (preferredBinding != null) {
       this.preferredBinding = preferredBinding;
     }

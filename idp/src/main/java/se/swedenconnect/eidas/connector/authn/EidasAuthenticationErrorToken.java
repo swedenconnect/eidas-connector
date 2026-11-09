@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
@@ -36,14 +37,14 @@ public class EidasAuthenticationErrorToken extends AbstractAuthenticationToken {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The error to report to the Swedish Service Provider. */
-  private final SamlErrorStatusException error;
+  private final @NonNull SamlErrorStatusException error;
 
   /**
    * Constructor.
    *
    * @param error the error to report to the Swedish Service Provider
    */
-  public EidasAuthenticationErrorToken(final SamlErrorStatusException error) {
+  public EidasAuthenticationErrorToken(final @NonNull SamlErrorStatusException error) {
     super(Collections.emptyList());
     this.error = Objects.requireNonNull(error, "error must not be null");
   }
@@ -53,7 +54,7 @@ public class EidasAuthenticationErrorToken extends AbstractAuthenticationToken {
    *
    * @return a {@link SamlErrorStatusException}
    */
-  public SamlErrorStatusException getError() {
+  public @NonNull SamlErrorStatusException getError() {
     return this.error;
   }
 
@@ -61,7 +62,7 @@ public class EidasAuthenticationErrorToken extends AbstractAuthenticationToken {
    * Returns the description of the error.
    */
   @Override
-  public Object getPrincipal() {
+  public @NonNull Object getPrincipal() {
     return this.error.getDescription();
   }
 
@@ -69,7 +70,7 @@ public class EidasAuthenticationErrorToken extends AbstractAuthenticationToken {
    * Returns an empty string.
    */
   @Override
-  public Object getCredentials() {
+  public @NonNull Object getCredentials() {
     return "";
   }
 

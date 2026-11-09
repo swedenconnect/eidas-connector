@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.authn.metadata;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
 import se.swedenconnect.opensaml.eidas.common.EidasConstants;
@@ -34,26 +36,26 @@ import java.util.Set;
 public class CountryMetadata implements Comparable<CountryMetadata> {
 
   /** The metadata entry for the country. */
-  private final EntityDescriptor entityDescriptor;
+  private final @NonNull EntityDescriptor entityDescriptor;
 
   /** The ISO code for the country. */
-  private String countryCode;
+  private @Nullable String countryCode;
 
   /** The assurance levels. */
-  private List<String> assuranceLevels;
+  private @Nullable List<String> assuranceLevels;
 
   /** The swedish LoA URI:s that are supported. */
-  private List<String> supportedSwedishAssuranceLevels;
+  private @Nullable List<String> supportedSwedishAssuranceLevels;
 
   /** Hide from discovery? */
-  private Boolean hideFromDiscovery;
+  private @Nullable Boolean hideFromDiscovery;
 
   /**
    * Constructor.
    *
    * @param entityDescriptor the metadata entry for the country (eIDAS proxy service)
    */
-  public CountryMetadata(final EntityDescriptor entityDescriptor) {
+  public CountryMetadata(final @NonNull EntityDescriptor entityDescriptor) {
     this.entityDescriptor = Objects.requireNonNull(entityDescriptor, "entityDescriptor must not be null");
   }
 
@@ -62,7 +64,7 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
    *
    * @return the entity descriptor
    */
-  public EntityDescriptor getEntityDescriptor() {
+  public @NonNull EntityDescriptor getEntityDescriptor() {
     return this.entityDescriptor;
   }
 
@@ -71,7 +73,7 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
    *
    * @return the country code
    */
-  public String getCountryCode() {
+  public @Nullable String getCountryCode() {
     if (this.countryCode == null) {
       this.countryCode = MetadataFunctions.getNodeCountry(this.entityDescriptor);
       if (this.countryCode != null) {
@@ -86,7 +88,7 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
    *
    * @return the SAML entityID
    */
-  public String getEntityID() {
+  public @NonNull String getEntityID() {
     return this.entityDescriptor.getEntityID();
   }
 
@@ -95,7 +97,7 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
    *
    * @return the assurance levels
    */
-  public List<String> getAssuranceLevels() {
+  public @NonNull List<String> getAssuranceLevels() {
     if (this.assuranceLevels == null) {
       this.assuranceLevels = MetadataFunctions.getAssuranceLevels(this.entityDescriptor);
     }
@@ -109,7 +111,7 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
    * @param requestedAuthnContextClassRefs the requested authentication context class reference URI:s
    * @return {@code true} if authentication is possible and {@code false} otherwise
    */
-  public boolean canAuthenticate(final List<String> requestedAuthnContextClassRefs) {
+  public boolean canAuthenticate(final @NonNull List<String> requestedAuthnContextClassRefs) {
     if (requestedAuthnContextClassRefs.isEmpty()
         || requestedAuthnContextClassRefs.contains(EidasAuthenticationProvider.EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF)) {
       return true; // Special case
@@ -188,7 +190,7 @@ public class CountryMetadata implements Comparable<CountryMetadata> {
 
   /** {@inheritDoc} */
   @Override
-  public int compareTo(final CountryMetadata o) {
+  public int compareTo(final @NonNull CountryMetadata o) {
     final String code = Optional.ofNullable(this.getCountryCode()).orElse("");
     return code.compareTo(Optional.ofNullable(o.getCountryCode()).orElse(""));
   }

@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.NameID;
 import org.springframework.beans.factory.InitializingBean;
@@ -37,59 +39,59 @@ public class EidasAuthenticationProperties implements InitializingBean {
   /**
    * The default name to use for the SAML attribute {@code ProviderName}.
    */
-  public static final String DEFAULT_PROVIDER_NAME = "Swedish eIDAS Connector";
+  public static final @NonNull String DEFAULT_PROVIDER_NAME = "Swedish eIDAS Connector";
 
   /**
    * The entityID for the eIDAS SP.
    */
-  private String entityId;
+  private @Nullable String entityId;
 
   /**
    * The "provider name" to use in our AuthnRequest:s sent.
    */
-  private String providerName;
+  private @Nullable String providerName;
 
   /**
    * Whether we require signed eIDAS assertions.
    */
-  private Boolean requiresSignedAssertions;
+  private @Nullable Boolean requiresSignedAssertions;
 
   /**
    * The preferred binding to use when sending authentication requests. Default is
    * {@code urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST}. For redirect, use
    * {@code urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect}.
    */
-  private String preferredBinding;
+  private @Nullable String preferredBinding;
 
   /**
    * An ordered list of supported NameID formats.
    */
-  private final List<String> supportedNameIds = new ArrayList<>();
+  private final @NonNull List<String> supportedNameIds = new ArrayList<>();
 
   /**
    * Some eIDAS countries can not handle the {@code Scoping} element in {@code AuthnRequest} messages. This setting
    * contains the country codes for those countries that we should not include this element for.
    */
-  private final List<String> skipScopingFor = new ArrayList<>();
+  private final @NonNull List<String> skipScopingFor = new ArrayList<>();
 
   /**
    * The credentials for the SP part of the eIDAS Connector. If not assigned, the keys configured for the SAML IdP will
    * be used also for the SP.
    */
-  private final SpCredentialProperties credentials = new SpCredentialProperties();
+  private final @NonNull SpCredentialProperties credentials = new SpCredentialProperties();
 
   /**
    * Metadata configuration for the eIDAS SP.
    */
   @NestedConfigurationProperty
-  private EidasSpMetadataProperties metadata;
+  private @Nullable EidasSpMetadataProperties metadata;
 
   /**
    * Gets the entityID for the eIDAS SP.
    *
    * @return the entityID for the eIDAS SP
    */
-  public String getEntityId() {
+  public @Nullable String getEntityId() {
     return this.entityId;
   }
 
@@ -98,7 +100,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @param entityId the entityID for the eIDAS SP
    */
-  public void setEntityId(final String entityId) {
+  public void setEntityId(final @Nullable String entityId) {
     this.entityId = entityId;
   }
 
@@ -107,7 +109,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @return the "provider name" to use in our AuthnRequest:s sent
    */
-  public String getProviderName() {
+  public @Nullable String getProviderName() {
     return this.providerName;
   }
 
@@ -116,7 +118,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @param providerName the "provider name" to use in our AuthnRequest:s sent
    */
-  public void setProviderName(final String providerName) {
+  public void setProviderName(final @Nullable String providerName) {
     this.providerName = providerName;
   }
 
@@ -125,7 +127,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @return whether we require signed eIDAS assertions
    */
-  public Boolean getRequiresSignedAssertions() {
+  public @Nullable Boolean getRequiresSignedAssertions() {
     return this.requiresSignedAssertions;
   }
 
@@ -134,7 +136,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @param requiresSignedAssertions whether we require signed eIDAS assertions
    */
-  public void setRequiresSignedAssertions(final Boolean requiresSignedAssertions) {
+  public void setRequiresSignedAssertions(final @Nullable Boolean requiresSignedAssertions) {
     this.requiresSignedAssertions = requiresSignedAssertions;
   }
 
@@ -143,7 +145,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @return the preferred binding to use when sending authentication requests
    */
-  public String getPreferredBinding() {
+  public @Nullable String getPreferredBinding() {
     return this.preferredBinding;
   }
 
@@ -152,7 +154,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @param preferredBinding the preferred binding to use when sending authentication requests
    */
-  public void setPreferredBinding(final String preferredBinding) {
+  public void setPreferredBinding(final @Nullable String preferredBinding) {
     this.preferredBinding = preferredBinding;
   }
 
@@ -161,7 +163,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @return an ordered list of supported NameID formats
    */
-  public List<String> getSupportedNameIds() {
+  public @NonNull List<String> getSupportedNameIds() {
     return this.supportedNameIds;
   }
 
@@ -170,7 +172,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @return the country codes for which the {@code Scoping} element should not be included
    */
-  public List<String> getSkipScopingFor() {
+  public @NonNull List<String> getSkipScopingFor() {
     return this.skipScopingFor;
   }
 
@@ -179,7 +181,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @return the credentials for the SP part of the eIDAS Connector
    */
-  public SpCredentialProperties getCredentials() {
+  public @NonNull SpCredentialProperties getCredentials() {
     return this.credentials;
   }
 
@@ -188,7 +190,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @return the metadata configuration for the eIDAS SP
    */
-  public EidasSpMetadataProperties getMetadata() {
+  public @Nullable EidasSpMetadataProperties getMetadata() {
     return this.metadata;
   }
 
@@ -197,7 +199,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
    *
    * @param metadata the metadata configuration for the eIDAS SP
    */
-  public void setMetadata(final EidasSpMetadataProperties metadata) {
+  public void setMetadata(final @Nullable EidasSpMetadataProperties metadata) {
     this.metadata = metadata;
   }
 
@@ -236,39 +238,39 @@ public class EidasAuthenticationProperties implements InitializingBean {
     /**
      * The SP default credential.
      */
-    private PkiCredentialConfigurationProperties defaultCredential;
+    private @Nullable PkiCredentialConfigurationProperties defaultCredential;
 
     /**
      * The SP signing credential.
      */
-    private PkiCredentialConfigurationProperties sign;
+    private @Nullable PkiCredentialConfigurationProperties sign;
 
     /**
      * A certificate that will be the future SP signing certificate. Is set before a key-rollover is performed.
      */
-    private X509Certificate futureSign;
+    private @Nullable X509Certificate futureSign;
 
     /**
      * The SP encryption credential.
      */
-    private PkiCredentialConfigurationProperties encrypt;
+    private @Nullable PkiCredentialConfigurationProperties encrypt;
 
     /**
      * The previous SP encryption credential. Assigned after a key-rollover.
      */
-    private PkiCredentialConfigurationProperties previousEncrypt;
+    private @Nullable PkiCredentialConfigurationProperties previousEncrypt;
 
     /**
      * The SP SAML metadata signing credential.
      */
-    private PkiCredentialConfigurationProperties metadataSign;
+    private @Nullable PkiCredentialConfigurationProperties metadataSign;
 
     /**
      * Gets the SP default credential.
      *
      * @return the SP default credential
      */
-    public PkiCredentialConfigurationProperties getDefaultCredential() {
+    public @Nullable PkiCredentialConfigurationProperties getDefaultCredential() {
       return this.defaultCredential;
     }
 
@@ -277,7 +279,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
      *
      * @param defaultCredential the SP default credential
      */
-    public void setDefaultCredential(final PkiCredentialConfigurationProperties defaultCredential) {
+    public void setDefaultCredential(final @Nullable PkiCredentialConfigurationProperties defaultCredential) {
       this.defaultCredential = defaultCredential;
     }
 
@@ -286,7 +288,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
      *
      * @return the SP signing credential
      */
-    public PkiCredentialConfigurationProperties getSign() {
+    public @Nullable PkiCredentialConfigurationProperties getSign() {
       return this.sign;
     }
 
@@ -295,7 +297,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
      *
      * @param sign the SP signing credential
      */
-    public void setSign(final PkiCredentialConfigurationProperties sign) {
+    public void setSign(final @Nullable PkiCredentialConfigurationProperties sign) {
       this.sign = sign;
     }
 
@@ -304,7 +306,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
      *
      * @return a certificate that will be the future SP signing certificate
      */
-    public X509Certificate getFutureSign() {
+    public @Nullable X509Certificate getFutureSign() {
       return this.futureSign;
     }
 
@@ -313,7 +315,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
      *
      * @param futureSign a certificate that will be the future SP signing certificate
      */
-    public void setFutureSign(final X509Certificate futureSign) {
+    public void setFutureSign(final @Nullable X509Certificate futureSign) {
       this.futureSign = futureSign;
     }
 
@@ -322,7 +324,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
      *
      * @return the SP encryption credential
      */
-    public PkiCredentialConfigurationProperties getEncrypt() {
+    public @Nullable PkiCredentialConfigurationProperties getEncrypt() {
       return this.encrypt;
     }
 
@@ -331,7 +333,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
      *
      * @param encrypt the SP encryption credential
      */
-    public void setEncrypt(final PkiCredentialConfigurationProperties encrypt) {
+    public void setEncrypt(final @Nullable PkiCredentialConfigurationProperties encrypt) {
       this.encrypt = encrypt;
     }
 
@@ -340,7 +342,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
      *
      * @return the previous SP encryption credential
      */
-    public PkiCredentialConfigurationProperties getPreviousEncrypt() {
+    public @Nullable PkiCredentialConfigurationProperties getPreviousEncrypt() {
       return this.previousEncrypt;
     }
 
@@ -349,7 +351,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
      *
      * @param previousEncrypt the previous SP encryption credential
      */
-    public void setPreviousEncrypt(final PkiCredentialConfigurationProperties previousEncrypt) {
+    public void setPreviousEncrypt(final @Nullable PkiCredentialConfigurationProperties previousEncrypt) {
       this.previousEncrypt = previousEncrypt;
     }
 
@@ -358,7 +360,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
      *
      * @return the SP SAML metadata signing credential
      */
-    public PkiCredentialConfigurationProperties getMetadataSign() {
+    public @Nullable PkiCredentialConfigurationProperties getMetadataSign() {
       return this.metadataSign;
     }
 
@@ -367,7 +369,7 @@ public class EidasAuthenticationProperties implements InitializingBean {
      *
      * @param metadataSign the SP SAML metadata signing credential
      */
-    public void setMetadataSign(final PkiCredentialConfigurationProperties metadataSign) {
+    public void setMetadataSign(final @Nullable PkiCredentialConfigurationProperties metadataSign) {
       this.metadataSign = metadataSign;
     }
   }

@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.prid.service;
 
+import org.jspecify.annotations.NonNull;
+
 import java.io.Serial;
 
 /**
@@ -31,7 +33,7 @@ public class CountryPolicyNotFoundException extends Exception {
    *
    * @param message the message
    */
-  public CountryPolicyNotFoundException(final String message) {
+  public CountryPolicyNotFoundException(final @NonNull String message) {
     super(message);
   }
 

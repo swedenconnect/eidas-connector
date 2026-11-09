@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 
 import java.io.Serial;
@@ -34,7 +35,7 @@ public class IdmException extends Exception {
    *
    * @param message the error message
    */
-  public IdmException(final String message) {
+  public IdmException(final @NonNull String message) {
     super(message);
   }
 
@@ -44,7 +45,7 @@ public class IdmException extends Exception {
    * @param message the error message
    * @param cause the cause of the error
    */
-  public IdmException(final String message, final Throwable cause) {
+  public IdmException(final @NonNull String message, final @NonNull Throwable cause) {
     super(message, cause);
   }
 

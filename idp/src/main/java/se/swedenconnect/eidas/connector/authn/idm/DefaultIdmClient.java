@@ -30,6 +30,8 @@ import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.ssl.TrustStrategy;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ssl.SslBundle;
@@ -61,22 +63,23 @@ public class DefaultIdmClient implements IdmClient {
   private static final Logger log = LoggerFactory.getLogger(DefaultIdmClient.class);
 
   /** The base path to IdM. */
-  public static final String IDM_BASE_PATH = "/api/v1/mrecord";
+  public static final @NonNull String IDM_BASE_PATH = "/api/v1/mrecord";
 
   /** The API path. */
-  public static final String IDM_API_PATH = IDM_BASE_PATH + "/{prid}";
+  public static final @NonNull String IDM_API_PATH = IDM_BASE_PATH + "/{prid}";
 
   /** The PING path. */
-  public static final String IDM_PING_PATH = IDM_BASE_PATH + "/ping";
+  public static final @NonNull String IDM_PING_PATH = IDM_BASE_PATH + "/ping";
 
   /** The OAuth2 handler. */
-  private final OAuth2Handler oauth2;
+  private final @NonNull OAuth2Handler oauth2;
 
   /** The RestClient. */
-  private final RestClient restClient;
+  private final @NonNull RestClient restClient;
 
   /** Constant for binding URI that we should not receive ... */
-  private static final String REGISTERED_USER_BINDING = "http://id.swedenconnect.se/id-binding/process/registered";
+  private static final @NonNull String REGISTERED_USER_BINDING =
+      "http://id.swedenconnect.se/id-binding/process/registered";
 
   /**
    * Constructor.
@@ -85,7 +88,8 @@ public class DefaultIdmClient implements IdmClient {
    * @param oauth2 the OAuth2 handler
    * @param trustBundle SSL Bundle holding the trust configuration for TLS-calls against the IdM server (optional)
    */
-  public DefaultIdmClient(final String idmApiBaseUrl, final OAuth2Handler oauth2, final SslBundle trustBundle) {
+  public DefaultIdmClient(final @NonNull String idmApiBaseUrl, final @NonNull OAuth2Handler oauth2,
+      final @Nullable SslBundle trustBundle) {
 
     Objects.requireNonNull(idmApiBaseUrl, "idmApiBaseUrl must not be null");
     this.oauth2 = Objects.requireNonNull(oauth2, "oauth2 must not be null");
@@ -136,7 +140,7 @@ public class DefaultIdmClient implements IdmClient {
 
   /** {@inheritDoc} */
   @Override
-  public boolean hasRecord(final EidasAuthenticationToken token) throws IdmException {
+  public boolean hasRecord(final @NonNull EidasAuthenticationToken token) throws IdmException {
 
     final String prid = this.getPridAttribute(token);
 
@@ -175,7 +179,7 @@ public class DefaultIdmClient implements IdmClient {
 
   /** {@inheritDoc} */
   @Override
-  public IdmRecord getRecord(final EidasAuthenticationToken token) throws IdmException {
+  public @NonNull IdmRecord getRecord(final @NonNull EidasAuthenticationToken token) throws IdmException {
 
     final String prid = this.getPridAttribute(token);
 

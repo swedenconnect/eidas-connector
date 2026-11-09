@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.actuate.info.Info.Builder;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
@@ -33,14 +34,14 @@ import java.util.Optional;
 public class PridPolicyInfoContributor implements InfoContributor {
 
   /** The PRID service. */
-  private final PridService pridService;
+  private final @NonNull PridService pridService;
 
   /**
    * Constructor.
    *
    * @param pridService the PRID service
    */
-  public PridPolicyInfoContributor(final PridService pridService) {
+  public PridPolicyInfoContributor(final @NonNull PridService pridService) {
     this.pridService =
         Objects.requireNonNull(pridService, "pridService must not be null");
   }
@@ -49,7 +50,7 @@ public class PridPolicyInfoContributor implements InfoContributor {
    * Adds the PRID policy configuration to the information released by the Spring Boot actuator info-endpoint.
    */
   @Override
-  public void contribute(final Builder builder) {
+  public void contribute(final @NonNull Builder builder) {
     final PridPolicy policy = this.pridService.getPolicy();
     Optional.ofNullable(policy.getPolicy())
         .ifPresent(p -> builder.withDetail("prid-policy", p));

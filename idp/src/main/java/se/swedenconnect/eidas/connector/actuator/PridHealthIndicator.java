@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.health.contributor.Health;
@@ -43,10 +44,10 @@ public class PridHealthIndicator implements HealthIndicator {
   private static final Logger log = LoggerFactory.getLogger(PridHealthIndicator.class);
 
   /** The PRID service. */
-  private final PridService pridService;
+  private final @NonNull PridService pridService;
 
   /** The EU metadata. */
-  private final EuMetadataProvider euMetadata;
+  private final @NonNull EuMetadataProvider euMetadata;
 
   /**
    * Constructor.
@@ -54,7 +55,7 @@ public class PridHealthIndicator implements HealthIndicator {
    * @param pridService the PRID service
    * @param euMetadata the EU metadata
    */
-  public PridHealthIndicator(final PridService pridService, final EuMetadataProvider euMetadata) {
+  public PridHealthIndicator(final @NonNull PridService pridService, final @NonNull EuMetadataProvider euMetadata) {
     this.pridService = Objects.requireNonNull(pridService, "pridService must not be null");
     this.euMetadata = Objects.requireNonNull(euMetadata, "euMetadata must not be null");
   }
@@ -63,7 +64,7 @@ public class PridHealthIndicator implements HealthIndicator {
    * Calculates the health status of the PRID service.
    */
   @Override
-  public Health health() {
+  public @NonNull Health health() {
 
     final PridPolicy pridPolicy = this.pridService.getPolicy();
 

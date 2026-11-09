@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +37,7 @@ public abstract class AbstractPridGenerator implements PridGenerator {
   private static final Logger log = LoggerFactory.getLogger(AbstractPridGenerator.class);
 
   /** Regexp pattern for checking if the supplied identifier can be processed. */
-  private final Pattern personIdentifierPrefixPattern;
+  private final @NonNull Pattern personIdentifierPrefixPattern;
 
   /**
    * Constructor (using "SE" as destination country).
@@ -50,7 +51,7 @@ public abstract class AbstractPridGenerator implements PridGenerator {
    *
    * @param destinationCountry country code to which the eIDAS person identifiers are issued for
    */
-  public AbstractPridGenerator(final String destinationCountry) {
+  public AbstractPridGenerator(final @NonNull String destinationCountry) {
     Objects.requireNonNull(destinationCountry, "destinationCountry must not be null");
     this.personIdentifierPrefixPattern = Pattern.compile(
         "^[A-Za-z]{2}[\\/](%s|%s)[\\/]".formatted(
@@ -62,7 +63,8 @@ public abstract class AbstractPridGenerator implements PridGenerator {
    * {@link #calculatePridIdentifier(String, String)}.
    */
   @Override
-  public final String getPridIdentifierComponent(final String personIdentifier, final String countryCode)
+  public final @NonNull String getPridIdentifierComponent(
+      final @NonNull String personIdentifier, final @NonNull String countryCode)
       throws PridGeneratorException, IllegalArgumentException {
 
     log.trace("{}: Calculating PRID for '{}' ...", this.getAlgorithmName(), personIdentifier);
@@ -110,7 +112,8 @@ public abstract class AbstractPridGenerator implements PridGenerator {
    * @return the generated PRID
    * @throws PridGeneratorException for PRID calculation errors
    */
-  protected abstract String calculatePridIdentifier(final String checkedStrippedInput, final String originalInput)
+  protected abstract @NonNull String calculatePridIdentifier(
+      final @NonNull String checkedStrippedInput, final @NonNull String originalInput)
       throws PridGeneratorException;
 
   /**
@@ -123,7 +126,7 @@ public abstract class AbstractPridGenerator implements PridGenerator {
    * @throws IndexOutOfBoundsException for wrong length
    * @throws NullPointerException if idSource is null
    */
-  protected static String getID(final String idSource, final int radix, final int length)
+  protected static @NonNull String getID(final @NonNull String idSource, final int radix, final int length)
       throws IndexOutOfBoundsException, NullPointerException {
     try {
       final MessageDigest md = MessageDigest.getInstance("SHA-256");
