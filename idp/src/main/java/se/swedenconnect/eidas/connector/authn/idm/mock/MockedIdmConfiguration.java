@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm.mock;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -34,7 +35,7 @@ public class MockedIdmConfiguration {
 
   @Bean
   @Order(3)
-  SecurityFilterChain mockedIdmSecurityFilterChain(final HttpSecurity http) throws Exception {
+  @NonNull SecurityFilterChain mockedIdmSecurityFilterChain(final @NonNull HttpSecurity http) throws Exception {
     http.authorizeHttpRequests((authorize) -> authorize
         .requestMatchers(HttpMethod.GET, "/api/v1/mrecord/**").permitAll()
         .requestMatchers(HttpMethod.HEAD, "/api/v1/mrecord/**").permitAll()

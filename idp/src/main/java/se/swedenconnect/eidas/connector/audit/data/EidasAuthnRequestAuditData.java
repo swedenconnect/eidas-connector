@@ -18,6 +18,8 @@ package se.swedenconnect.eidas.connector.audit.data;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.AuthnRequest;
@@ -48,42 +50,42 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
 
   /** The receiving country. */
   @JsonProperty("country")
-  private String country;
+  private @Nullable String country;
 
   /** The ID for the AuthnRequest. */
   @JsonProperty("authn-request-id")
-  private String authnRequestId;
+  private @Nullable String authnRequestId;
 
   /** The relay state. */
   @JsonProperty("relay-state")
-  private String relayState;
+  private @Nullable String relayState;
 
   /** The URL to which the authentication request is sent. */
   @JsonProperty("destination-url")
-  private String destinationUrl;
+  private @Nullable String destinationUrl;
 
   /** GET or POST. */
   @JsonProperty("method")
-  private String method;
+  private @Nullable String method;
 
   /** The requested authentication context. */
   @JsonProperty("requested-authn-context")
-  private RequestedAuthnContextData requestedAuthnContext;
+  private @Nullable RequestedAuthnContextData requestedAuthnContext;
 
   /** The type of SP - public or private. */
   @JsonProperty("eidas-sp-type")
-  private String eidasSpType;
+  private @Nullable String eidasSpType;
 
   /** The requested attributes. */
   @JsonProperty("requested-attributes")
-  private List<RequestedAttributeData> requestedAttributes;
+  private @Nullable List<RequestedAttributeData> requestedAttributes;
 
   /**
    * Gets the receiving country.
    *
    * @return the receiving country
    */
-  public String getCountry() {
+  public @Nullable String getCountry() {
     return this.country;
   }
 
@@ -92,7 +94,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @param country the receiving country
    */
-  public void setCountry(final String country) {
+  public void setCountry(final @Nullable String country) {
     this.country = country;
   }
 
@@ -101,7 +103,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @return the ID for the AuthnRequest
    */
-  public String getAuthnRequestId() {
+  public @Nullable String getAuthnRequestId() {
     return this.authnRequestId;
   }
 
@@ -110,7 +112,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @param authnRequestId the ID for the AuthnRequest
    */
-  public void setAuthnRequestId(final String authnRequestId) {
+  public void setAuthnRequestId(final @Nullable String authnRequestId) {
     this.authnRequestId = authnRequestId;
   }
 
@@ -119,7 +121,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @return the relay state
    */
-  public String getRelayState() {
+  public @Nullable String getRelayState() {
     return this.relayState;
   }
 
@@ -128,7 +130,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @param relayState the relay state
    */
-  public void setRelayState(final String relayState) {
+  public void setRelayState(final @Nullable String relayState) {
     this.relayState = relayState;
   }
 
@@ -137,7 +139,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @return the URL to which the authentication request is sent
    */
-  public String getDestinationUrl() {
+  public @Nullable String getDestinationUrl() {
     return this.destinationUrl;
   }
 
@@ -146,7 +148,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @param destinationUrl the URL to which the authentication request is sent
    */
-  public void setDestinationUrl(final String destinationUrl) {
+  public void setDestinationUrl(final @Nullable String destinationUrl) {
     this.destinationUrl = destinationUrl;
   }
 
@@ -155,7 +157,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @return the HTTP method (GET or POST)
    */
-  public String getMethod() {
+  public @Nullable String getMethod() {
     return this.method;
   }
 
@@ -164,7 +166,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @param method the HTTP method (GET or POST)
    */
-  public void setMethod(final String method) {
+  public void setMethod(final @Nullable String method) {
     this.method = method;
   }
 
@@ -173,7 +175,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @return the requested authentication context
    */
-  public RequestedAuthnContextData getRequestedAuthnContext() {
+  public @Nullable RequestedAuthnContextData getRequestedAuthnContext() {
     return this.requestedAuthnContext;
   }
 
@@ -182,7 +184,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @param requestedAuthnContext the requested authentication context
    */
-  public void setRequestedAuthnContext(final RequestedAuthnContextData requestedAuthnContext) {
+  public void setRequestedAuthnContext(final @Nullable RequestedAuthnContextData requestedAuthnContext) {
     this.requestedAuthnContext = requestedAuthnContext;
   }
 
@@ -191,7 +193,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @return the type of SP (public or private)
    */
-  public String getEidasSpType() {
+  public @Nullable String getEidasSpType() {
     return this.eidasSpType;
   }
 
@@ -200,7 +202,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @param eidasSpType the type of SP (public or private)
    */
-  public void setEidasSpType(final String eidasSpType) {
+  public void setEidasSpType(final @Nullable String eidasSpType) {
     this.eidasSpType = eidasSpType;
   }
 
@@ -209,7 +211,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @return the requested attributes
    */
-  public List<RequestedAttributeData> getRequestedAttributes() {
+  public @Nullable List<RequestedAttributeData> getRequestedAttributes() {
     return this.requestedAttributes;
   }
 
@@ -218,13 +220,13 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    *
    * @param requestedAttributes the requested attributes
    */
-  public void setRequestedAttributes(final List<RequestedAttributeData> requestedAttributes) {
+  public void setRequestedAttributes(final @Nullable List<RequestedAttributeData> requestedAttributes) {
     this.requestedAttributes = requestedAttributes;
   }
 
   /** {@inheritDoc} */
   @Override
-  public String getName() {
+  public @NonNull String getName() {
     return "eidas-authn-request";
   }
 
@@ -234,7 +236,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
    * @param event the {@link BeforeEidasAuthenticationEvent}
    * @return an {@link EidasAuthnRequestAuditData}
    */
-  public static EidasAuthnRequestAuditData of(final BeforeEidasAuthenticationEvent event) {
+  public static @Nullable EidasAuthnRequestAuditData of(final @Nullable BeforeEidasAuthenticationEvent event) {
     if (event == null) {
       return null;
     }
@@ -272,7 +274,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
   }
 
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return String.format(
         "country='%s', authn-request-id='%s', relay-state='%s', destination-url='%s', method='%s', "
             + "requested-authn-context=[%s], eidas-sp-type='%s', requested-attributes=%s",
@@ -288,18 +290,18 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
 
     /** The attribute name. */
     @JsonProperty("name")
-    private String name;
+    private @Nullable String name;
 
     /** Whether the attribute is required. */
     @JsonProperty("is-required")
-    private Boolean isRequired;
+    private @Nullable Boolean isRequired;
 
     /**
      * Gets the attribute name.
      *
      * @return the attribute name
      */
-    public String getName() {
+    public @Nullable String getName() {
       return this.name;
     }
 
@@ -308,7 +310,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
      *
      * @param name the attribute name
      */
-    public void setName(final String name) {
+    public void setName(final @Nullable String name) {
       this.name = name;
     }
 
@@ -317,7 +319,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
      *
      * @return whether the attribute is required
      */
-    public Boolean getIsRequired() {
+    public @Nullable Boolean getIsRequired() {
       return this.isRequired;
     }
 
@@ -326,7 +328,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
      *
      * @param isRequired whether the attribute is required
      */
-    public void setIsRequired(final Boolean isRequired) {
+    public void setIsRequired(final @Nullable Boolean isRequired) {
       this.isRequired = isRequired;
     }
 
@@ -336,7 +338,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
      * @param requestedAttribute the {@link RequestedAttribute}
      * @return a {@link RequestedAttributeData}
      */
-    public static RequestedAttributeData of(final RequestedAttribute requestedAttribute) {
+    public static @NonNull RequestedAttributeData of(final @NonNull RequestedAttribute requestedAttribute) {
       final RequestedAttributeData rad = new RequestedAttributeData();
       rad.setName(requestedAttribute.getName());
       rad.setIsRequired(requestedAttribute.isRequired());
@@ -344,7 +346,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return String.format("name='%s', is-required='%s'", this.name, this.isRequired);
     }
 
@@ -361,18 +363,18 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
 
     /** Comparison flag. */
     @JsonProperty("comparison")
-    private String comparison;
+    private @Nullable String comparison;
 
     /** URI:s for AuthnContextClassRef. */
     @JsonProperty("authn-context-class-refs")
-    private List<String> authnContextClassRefs;
+    private @Nullable List<String> authnContextClassRefs;
 
     /**
      * Gets the comparison flag.
      *
      * @return the comparison flag
      */
-    public String getComparison() {
+    public @Nullable String getComparison() {
       return this.comparison;
     }
 
@@ -381,7 +383,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
      *
      * @param comparison the comparison flag
      */
-    public void setComparison(final String comparison) {
+    public void setComparison(final @Nullable String comparison) {
       this.comparison = comparison;
     }
 
@@ -390,7 +392,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
      *
      * @return the URI:s for AuthnContextClassRef
      */
-    public List<String> getAuthnContextClassRefs() {
+    public @Nullable List<String> getAuthnContextClassRefs() {
       return this.authnContextClassRefs;
     }
 
@@ -399,7 +401,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
      *
      * @param authnContextClassRefs the URI:s for AuthnContextClassRef
      */
-    public void setAuthnContextClassRefs(final List<String> authnContextClassRefs) {
+    public void setAuthnContextClassRefs(final @Nullable List<String> authnContextClassRefs) {
       this.authnContextClassRefs = authnContextClassRefs;
     }
 
@@ -409,7 +411,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
      * @param authnRequest the authentication request
      * @return a {@link RequestedAuthnContext}
      */
-    public static RequestedAuthnContextData of(final AuthnRequest authnRequest) {
+    public static @Nullable RequestedAuthnContextData of(final @NonNull AuthnRequest authnRequest) {
       if (authnRequest.getRequestedAuthnContext() == null) {
         return null;
       }
@@ -432,7 +434,7 @@ public class EidasAuthnRequestAuditData extends ConnectorAuditData {
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return String.format("comparison='%s', authn-context-class-refs=%s", this.comparison, this.authnContextClassRefs);
     }
 

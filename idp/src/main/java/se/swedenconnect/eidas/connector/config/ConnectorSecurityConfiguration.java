@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import org.jspecify.annotations.NonNull;
 import org.opensaml.xmlsec.DecryptionConfiguration;
 import org.opensaml.xmlsec.SignatureValidationConfiguration;
 import se.swedenconnect.opensaml.eidas.xmlsec.Eidas_1_4_SecurityConfiguration;
@@ -29,33 +30,33 @@ import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 public class ConnectorSecurityConfiguration extends Eidas_1_4_SecurityConfiguration {
 
   /** Relaxed configuration for what we receive. */
-  private final RelaxedConfiguration relaxedConfiguration = new RelaxedConfiguration();
+  private final @NonNull RelaxedConfiguration relaxedConfiguration = new RelaxedConfiguration();
 
   /** {@inheritDoc} */
   @Override
-  public String getProfileName() {
+  public @NonNull String getProfileName() {
     return "eidas-connector";
   }
 
   /** {@inheritDoc} */
   @Override
-  protected DecryptionConfiguration createDefaultDecryptionConfiguration() {
+  protected @NonNull DecryptionConfiguration createDefaultDecryptionConfiguration() {
     return this.relaxedConfiguration.createDecryptionConfiguration();
   }
 
   /** {@inheritDoc} */
   @Override
-  protected SignatureValidationConfiguration createDefaultSignatureValidationConfiguration() {
+  protected @NonNull SignatureValidationConfiguration createDefaultSignatureValidationConfiguration() {
     return this.relaxedConfiguration.createSignatureValidationConfiguration();
   }
 
   private static class RelaxedConfiguration extends RelaxedEidasSecurityConfiguration {
 
-    public DecryptionConfiguration createDecryptionConfiguration() {
+    public @NonNull DecryptionConfiguration createDecryptionConfiguration() {
       return this.createDefaultDecryptionConfiguration();
     }
 
-    public SignatureValidationConfiguration createSignatureValidationConfiguration() {
+    public @NonNull SignatureValidationConfiguration createSignatureValidationConfiguration() {
       return this.createDefaultSignatureValidationConfiguration();
     }
 

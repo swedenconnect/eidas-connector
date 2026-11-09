@@ -15,7 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import jakarta.annotation.Nonnull;
 import net.shibboleth.shared.component.ComponentInitializationException;
 import net.shibboleth.shared.httpclient.HttpClientBuilder;
 import net.shibboleth.shared.httpclient.HttpClientSupport;
@@ -23,6 +22,7 @@ import net.shibboleth.shared.httpclient.TLSSocketFactoryBuilder;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.jspecify.annotations.NonNull;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.slf4j.Logger;
@@ -69,9 +69,8 @@ public class MetadataProviderUtils {
    * @return a {@link MetadataResolver}
    * @throws Exception for setup errors
    */
-  @Nonnull
-  public static MetadataProvider createMetadataProvider(
-      @Nonnull final EuMetadataProperties config, @Nonnull final SslBundles sslBundles) throws Exception {
+  public static @NonNull MetadataProvider createMetadataProvider(
+      final @NonNull EuMetadataProperties config, final @NonNull SslBundles sslBundles) throws Exception {
 
     final AbstractMetadataProvider provider;
     if (config.getLocation() instanceof final UrlResource urlResource && !urlResource.isFile()) {
@@ -119,9 +118,8 @@ public class MetadataProviderUtils {
    * @param sslBundles SSL bundles
    * @return a HttpClient
    */
-  @Nonnull
-  private static HttpClient createHttpClient(
-      @Nonnull final EuMetadataProperties config, @Nonnull final SslBundles sslBundles) {
+  private static @NonNull HttpClient createHttpClient(
+      final @NonNull EuMetadataProperties config, final @NonNull SslBundles sslBundles) {
     try {
       final List<TrustManager> managers;
 

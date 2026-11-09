@@ -18,6 +18,8 @@ package se.swedenconnect.eidas.connector.audit.data;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
 import org.opensaml.saml.saml2.core.StatusCode;
@@ -42,23 +44,23 @@ public class SamlResponseAuditData extends ConnectorAuditData {
 
   /** The Response ID. */
   @JsonProperty(value = "id")
-  private String id;
+  private @Nullable String id;
 
   /** The ID matching the AuthnRequest ID. */
   @JsonProperty(value = "in-response-to")
-  private String inResponseTo;
+  private @Nullable String inResponseTo;
 
   /** The status. */
   @JsonProperty(value = "status")
-  private SamlStatus status;
+  private @Nullable SamlStatus status;
 
   /** The response issuance time. */
   @JsonProperty(value = "issued-at")
-  private Instant issuedAt;
+  private @Nullable Instant issuedAt;
 
   /** The destination, i.e., where the response is being sent. */
   @JsonProperty(value = "destination")
-  private String destination;
+  private @Nullable String destination;
 
   /** Tells whether the response is signed. */
   @JsonProperty(value = "is-signed")
@@ -69,7 +71,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
    *
    * @return the Response ID
    */
-  public String getId() {
+  public @Nullable String getId() {
     return this.id;
   }
 
@@ -78,7 +80,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
    *
    * @param id the Response ID
    */
-  public void setId(final String id) {
+  public void setId(final @Nullable String id) {
     this.id = id;
   }
 
@@ -87,7 +89,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
    *
    * @return the ID matching the AuthnRequest ID
    */
-  public String getInResponseTo() {
+  public @Nullable String getInResponseTo() {
     return this.inResponseTo;
   }
 
@@ -96,7 +98,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
    *
    * @param inResponseTo the ID matching the AuthnRequest ID
    */
-  public void setInResponseTo(final String inResponseTo) {
+  public void setInResponseTo(final @Nullable String inResponseTo) {
     this.inResponseTo = inResponseTo;
   }
 
@@ -105,7 +107,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
    *
    * @return the status
    */
-  public SamlStatus getStatus() {
+  public @Nullable SamlStatus getStatus() {
     return this.status;
   }
 
@@ -114,7 +116,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
    *
    * @param status the status
    */
-  public void setStatus(final SamlStatus status) {
+  public void setStatus(final @Nullable SamlStatus status) {
     this.status = status;
   }
 
@@ -123,7 +125,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
    *
    * @return the response issuance time
    */
-  public Instant getIssuedAt() {
+  public @Nullable Instant getIssuedAt() {
     return this.issuedAt;
   }
 
@@ -132,7 +134,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
    *
    * @param issuedAt the response issuance time
    */
-  public void setIssuedAt(final Instant issuedAt) {
+  public void setIssuedAt(final @Nullable Instant issuedAt) {
     this.issuedAt = issuedAt;
   }
 
@@ -141,7 +143,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
    *
    * @return the destination, i.e., where the response is being sent
    */
-  public String getDestination() {
+  public @Nullable String getDestination() {
     return this.destination;
   }
 
@@ -150,7 +152,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
    *
    * @param destination the destination, i.e., where the response is being sent
    */
-  public void setDestination(final String destination) {
+  public void setDestination(final @Nullable String destination) {
     this.destination = destination;
   }
 
@@ -174,7 +176,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
 
   /** {@inheritDoc} */
   @Override
-  public String getName() {
+  public @NonNull String getName() {
     return "saml-response";
   }
 
@@ -184,7 +186,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
    * @param response the SAML response
    * @return a {@link SamlResponseAuditData}, or {@code null} if no response is given
    */
-  public static SamlResponseAuditData of(final Response response) {
+  public static @Nullable SamlResponseAuditData of(final @Nullable Response response) {
     if (response == null) {
       return null;
     }
@@ -212,7 +214,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return String.format(
         "id='%s', in-response-to='%s', status=[%s], issued-at='%s', destination='%s', signed='%s']", this.id,
         this.inResponseTo, this.status, this.issuedAt, this.destination, this.signed);
@@ -229,22 +231,22 @@ public class SamlResponseAuditData extends ConnectorAuditData {
 
     /** The main status code. */
     @JsonProperty(value = "code")
-    private String statusCode;
+    private @Nullable String statusCode;
 
     /** The subordinate status code. */
     @JsonProperty(value = "subordinate-code")
-    private String subordinateStatusCode;
+    private @Nullable String subordinateStatusCode;
 
     /** The status message. */
     @JsonProperty(value = "message")
-    private String statusMessage;
+    private @Nullable String statusMessage;
 
     /**
      * Gets the main status code.
      *
      * @return the main status code
      */
-    public String getStatusCode() {
+    public @Nullable String getStatusCode() {
       return this.statusCode;
     }
 
@@ -253,7 +255,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
      *
      * @param statusCode the main status code
      */
-    public void setStatusCode(final String statusCode) {
+    public void setStatusCode(final @Nullable String statusCode) {
       this.statusCode = statusCode;
     }
 
@@ -262,7 +264,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
      *
      * @return the subordinate status code
      */
-    public String getSubordinateStatusCode() {
+    public @Nullable String getSubordinateStatusCode() {
       return this.subordinateStatusCode;
     }
 
@@ -271,7 +273,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
      *
      * @param subordinateStatusCode the subordinate status code
      */
-    public void setSubordinateStatusCode(final String subordinateStatusCode) {
+    public void setSubordinateStatusCode(final @Nullable String subordinateStatusCode) {
       this.subordinateStatusCode = subordinateStatusCode;
     }
 
@@ -280,7 +282,7 @@ public class SamlResponseAuditData extends ConnectorAuditData {
      *
      * @return the status message
      */
-    public String getStatusMessage() {
+    public @Nullable String getStatusMessage() {
       return this.statusMessage;
     }
 
@@ -289,13 +291,13 @@ public class SamlResponseAuditData extends ConnectorAuditData {
      *
      * @param statusMessage the status message
      */
-    public void setStatusMessage(final String statusMessage) {
+    public void setStatusMessage(final @Nullable String statusMessage) {
       this.statusMessage = statusMessage;
     }
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       final StringBuilder sb = new StringBuilder("code='");
       sb.append(this.statusCode).append("'");
       if (this.subordinateStatusCode != null) {

@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -42,68 +44,68 @@ public class ConnectorConfigurationProperties implements InitializingBean {
   private static final Logger log = LoggerFactory.getLogger(ConnectorConfigurationProperties.class);
 
   @Value("${server.servlet.context-path:/}")
-  private String contextPath;
+  private @Nullable String contextPath;
 
   /**
    * The domain for the eIDAS Connector.
    */
-  private String domain;
+  private @Nullable String domain;
 
   /**
    * The base URL of the Connector, including protocol, domain and context path.
    */
-  private String baseUrl;
+  private @Nullable String baseUrl;
 
   /**
    * Directory where caches and backup files are stored during execution.
    */
-  private File backupDirectory;
+  private @Nullable File backupDirectory;
 
   /**
    * Tells whether we are running the connector in "development mode". This can mean that we allow any TLS server
    * certificates or that other settings are set up with less security.
    */
-  private Boolean developmentMode;
+  private @Nullable Boolean developmentMode;
 
   /**
    * The country code for the eIDAS Connector. Defaults to "SE".
    */
-  private String country;
+  private @Nullable String country;
 
   /**
    * Configuration for the IdP part of the eIDAS Connector.
    */
   @NestedConfigurationProperty
-  private final ConnectorIdpProperties idp = new ConnectorIdpProperties();
+  private final @NonNull ConnectorIdpProperties idp = new ConnectorIdpProperties();
 
   /**
    * Configuration for eIDAS authentication.
    */
   @NestedConfigurationProperty
-  private final EidasAuthenticationProperties eidas = new EidasAuthenticationProperties();
+  private final @NonNull EidasAuthenticationProperties eidas = new EidasAuthenticationProperties();
 
   /**
    * The configuration for retrieval of aggregated EU metadata.
    */
-  private final EuMetadataProperties euMetadata = new EuMetadataProperties();
+  private final @NonNull EuMetadataProperties euMetadata = new EuMetadataProperties();
 
   /**
    * The PRID service configuration.
    */
-  private final PridServiceProperties prid = new PridServiceProperties();
+  private final @NonNull PridServiceProperties prid = new PridServiceProperties();
 
   /**
    * Identity Matching configuration.
    */
   @NestedConfigurationProperty
-  private final IdmProperties idm = new IdmProperties();
+  private final @NonNull IdmProperties idm = new IdmProperties();
 
   /**
    * Gets the domain for the eIDAS Connector.
    *
    * @return the domain for the eIDAS Connector
    */
-  public String getDomain() {
+  public @Nullable String getDomain() {
     return this.domain;
   }
 
@@ -112,7 +114,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @param domain the domain for the eIDAS Connector
    */
-  public void setDomain(final String domain) {
+  public void setDomain(final @Nullable String domain) {
     this.domain = domain;
   }
 
@@ -121,7 +123,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @return the base URL of the Connector, including protocol, domain and context path
    */
-  public String getBaseUrl() {
+  public @Nullable String getBaseUrl() {
     return this.baseUrl;
   }
 
@@ -130,7 +132,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @param baseUrl the base URL of the Connector, including protocol, domain and context path
    */
-  public void setBaseUrl(final String baseUrl) {
+  public void setBaseUrl(final @Nullable String baseUrl) {
     this.baseUrl = baseUrl;
   }
 
@@ -139,7 +141,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @return the directory where caches and backup files are stored
    */
-  public File getBackupDirectory() {
+  public @Nullable File getBackupDirectory() {
     return this.backupDirectory;
   }
 
@@ -148,7 +150,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @param backupDirectory the directory where caches and backup files are stored
    */
-  public void setBackupDirectory(final File backupDirectory) {
+  public void setBackupDirectory(final @Nullable File backupDirectory) {
     this.backupDirectory = backupDirectory;
   }
 
@@ -157,7 +159,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @return whether the connector is running in "development mode"
    */
-  public Boolean getDevelopmentMode() {
+  public @Nullable Boolean getDevelopmentMode() {
     return this.developmentMode;
   }
 
@@ -166,7 +168,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @param developmentMode whether the connector is running in "development mode"
    */
-  public void setDevelopmentMode(final Boolean developmentMode) {
+  public void setDevelopmentMode(final @Nullable Boolean developmentMode) {
     this.developmentMode = developmentMode;
   }
 
@@ -175,7 +177,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @return the country code for the eIDAS Connector
    */
-  public String getCountry() {
+  public @Nullable String getCountry() {
     return this.country;
   }
 
@@ -184,7 +186,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @param country the country code for the eIDAS Connector
    */
-  public void setCountry(final String country) {
+  public void setCountry(final @Nullable String country) {
     this.country = country;
   }
 
@@ -193,7 +195,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @return the configuration for the IdP part of the eIDAS Connector
    */
-  public ConnectorIdpProperties getIdp() {
+  public @NonNull ConnectorIdpProperties getIdp() {
     return this.idp;
   }
 
@@ -202,7 +204,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @return the configuration for eIDAS authentication
    */
-  public EidasAuthenticationProperties getEidas() {
+  public @NonNull EidasAuthenticationProperties getEidas() {
     return this.eidas;
   }
 
@@ -211,7 +213,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @return the configuration for retrieval of aggregated EU metadata
    */
-  public EuMetadataProperties getEuMetadata() {
+  public @NonNull EuMetadataProperties getEuMetadata() {
     return this.euMetadata;
   }
 
@@ -220,7 +222,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @return the PRID service configuration
    */
-  public PridServiceProperties getPrid() {
+  public @NonNull PridServiceProperties getPrid() {
     return this.prid;
   }
 
@@ -229,7 +231,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
    *
    * @return the Identity Matching configuration
    */
-  public IdmProperties getIdm() {
+  public @NonNull IdmProperties getIdm() {
     return this.idm;
   }
 
@@ -270,7 +272,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
     /**
      * The location of the metadata. Can be a URL, a file, or even a classpath resource.
      */
-    private Resource location;
+    private @Nullable Resource location;
 
     /**
      * If the {@code location} is an HTTPS resource, this setting may be used to specify a
@@ -278,35 +280,35 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      * that gives the {@link javax.net.ssl.TrustManager}s to use during TLS verification. If no bundle is given, the
      * Java trust default will be used.
      */
-    private String httpsTrustBundle;
+    private @Nullable String httpsTrustBundle;
 
     /**
      * If the {@code location} setting is a URL, a "backup location" may be assigned to store downloaded metadata.
      */
-    private File backupLocation;
+    private @Nullable File backupLocation;
 
     /**
      * The certificate used to validate the metadata.
      */
-    private X509Certificate validationCertificate;
+    private @Nullable X509Certificate validationCertificate;
 
     /**
      * If the {@code location} is an HTTPS resource, this setting tells whether to skip hostname verification in the TLS
      * connection (useful during testing).
      */
-    private Boolean skipHostnameVerification;
+    private @Nullable Boolean skipHostnameVerification;
 
     /**
      * If the {@code location} setting is a URL and an HTTP proxy is required this setting configures this proxy.
      */
-    private HttpProxy httpProxy;
+    private @Nullable HttpProxy httpProxy;
 
     /**
      * Gets the location of the metadata.
      *
      * @return the location of the metadata
      */
-    public Resource getLocation() {
+    public @Nullable Resource getLocation() {
       return this.location;
     }
 
@@ -315,7 +317,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @param location the location of the metadata
      */
-    public void setLocation(final Resource location) {
+    public void setLocation(final @Nullable Resource location) {
       this.location = location;
     }
 
@@ -324,7 +326,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @return the SSL bundle to use for TLS verification of an HTTPS location
      */
-    public String getHttpsTrustBundle() {
+    public @Nullable String getHttpsTrustBundle() {
       return this.httpsTrustBundle;
     }
 
@@ -333,7 +335,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @param httpsTrustBundle the SSL bundle to use for TLS verification of an HTTPS location
      */
-    public void setHttpsTrustBundle(final String httpsTrustBundle) {
+    public void setHttpsTrustBundle(final @Nullable String httpsTrustBundle) {
       this.httpsTrustBundle = httpsTrustBundle;
     }
 
@@ -342,7 +344,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @return the backup location for downloaded metadata
      */
-    public File getBackupLocation() {
+    public @Nullable File getBackupLocation() {
       return this.backupLocation;
     }
 
@@ -351,7 +353,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @param backupLocation the backup location for downloaded metadata
      */
-    public void setBackupLocation(final File backupLocation) {
+    public void setBackupLocation(final @Nullable File backupLocation) {
       this.backupLocation = backupLocation;
     }
 
@@ -360,7 +362,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @return the certificate used to validate the metadata
      */
-    public X509Certificate getValidationCertificate() {
+    public @Nullable X509Certificate getValidationCertificate() {
       return this.validationCertificate;
     }
 
@@ -369,7 +371,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @param validationCertificate the certificate used to validate the metadata
      */
-    public void setValidationCertificate(final X509Certificate validationCertificate) {
+    public void setValidationCertificate(final @Nullable X509Certificate validationCertificate) {
       this.validationCertificate = validationCertificate;
     }
 
@@ -378,7 +380,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @return whether to skip hostname verification in the TLS connection
      */
-    public Boolean getSkipHostnameVerification() {
+    public @Nullable Boolean getSkipHostnameVerification() {
       return this.skipHostnameVerification;
     }
 
@@ -387,7 +389,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @param skipHostnameVerification whether to skip hostname verification in the TLS connection
      */
-    public void setSkipHostnameVerification(final Boolean skipHostnameVerification) {
+    public void setSkipHostnameVerification(final @Nullable Boolean skipHostnameVerification) {
       this.skipHostnameVerification = skipHostnameVerification;
     }
 
@@ -396,7 +398,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @return the HTTP proxy settings
      */
-    public HttpProxy getHttpProxy() {
+    public @Nullable HttpProxy getHttpProxy() {
       return this.httpProxy;
     }
 
@@ -405,7 +407,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @param httpProxy the HTTP proxy settings
      */
-    public void setHttpProxy(final HttpProxy httpProxy) {
+    public void setHttpProxy(final @Nullable HttpProxy httpProxy) {
       this.httpProxy = httpProxy;
     }
 
@@ -417,29 +419,29 @@ public class ConnectorConfigurationProperties implements InitializingBean {
       /**
        * The proxy host.
        */
-      private String host;
+      private @Nullable String host;
 
       /**
        * The proxy port.
        */
-      private Integer port;
+      private @Nullable Integer port;
 
       /**
        * The proxy password (optional).
        */
-      private String password;
+      private @Nullable String password;
 
       /**
        * The proxy user name (optional).
        */
-      private String userName;
+      private @Nullable String userName;
 
       /**
        * Gets the proxy host.
        *
        * @return the proxy host
        */
-      public String getHost() {
+      public @Nullable String getHost() {
         return this.host;
       }
 
@@ -448,7 +450,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
        *
        * @param host the proxy host
        */
-      public void setHost(final String host) {
+      public void setHost(final @Nullable String host) {
         this.host = host;
       }
 
@@ -457,7 +459,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
        *
        * @return the proxy port
        */
-      public Integer getPort() {
+      public @Nullable Integer getPort() {
         return this.port;
       }
 
@@ -466,7 +468,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
        *
        * @param port the proxy port
        */
-      public void setPort(final Integer port) {
+      public void setPort(final @Nullable Integer port) {
         this.port = port;
       }
 
@@ -475,7 +477,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
        *
        * @return the proxy password (optional)
        */
-      public String getPassword() {
+      public @Nullable String getPassword() {
         return this.password;
       }
 
@@ -484,7 +486,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
        *
        * @param password the proxy password (optional)
        */
-      public void setPassword(final String password) {
+      public void setPassword(final @Nullable String password) {
         this.password = password;
       }
 
@@ -493,7 +495,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
        *
        * @return the proxy user name (optional)
        */
-      public String getUserName() {
+      public @Nullable String getUserName() {
         return this.userName;
       }
 
@@ -502,13 +504,13 @@ public class ConnectorConfigurationProperties implements InitializingBean {
        *
        * @param userName the proxy user name (optional)
        */
-      public void setUserName(final String userName) {
+      public void setUserName(final @Nullable String userName) {
         this.userName = userName;
       }
 
       /** {@inheritDoc} */
       @Override
-      public boolean equals(final Object o) {
+      public boolean equals(final @Nullable Object o) {
         if (this == o) {
           return true;
         }
@@ -530,7 +532,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
 
       /** {@inheritDoc} */
       @Override
-      public String toString() {
+      public @NonNull String toString() {
         return "host=" + this.host
             + ", port=" + this.port
             + ", userName=" + this.userName;
@@ -548,7 +550,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -573,7 +575,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "location=" + this.location
           + ", httpsTrustBundle=" + this.httpsTrustBundle
           + ", backupLocation=" + this.backupLocation
@@ -594,19 +596,19 @@ public class ConnectorConfigurationProperties implements InitializingBean {
     /**
      * A Resource pointing at the file containing the PRID configuration.
      */
-    private Resource policyResource;
+    private @Nullable Resource policyResource;
 
     /**
      * Indicates how often the policy should be re-loaded (value is given in seconds).
      */
-    private Integer updateInterval;
+    private @Nullable Integer updateInterval;
 
     /**
      * Gets the resource pointing at the file containing the PRID configuration.
      *
      * @return the resource pointing at the file containing the PRID configuration
      */
-    public Resource getPolicyResource() {
+    public @Nullable Resource getPolicyResource() {
       return this.policyResource;
     }
 
@@ -615,7 +617,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @param policyResource the resource pointing at the file containing the PRID configuration
      */
-    public void setPolicyResource(final Resource policyResource) {
+    public void setPolicyResource(final @Nullable Resource policyResource) {
       this.policyResource = policyResource;
     }
 
@@ -624,7 +626,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @return how often the policy should be re-loaded (in seconds)
      */
-    public Integer getUpdateInterval() {
+    public @Nullable Integer getUpdateInterval() {
       return this.updateInterval;
     }
 
@@ -633,7 +635,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
      *
      * @param updateInterval how often the policy should be re-loaded (in seconds)
      */
-    public void setUpdateInterval(final Integer updateInterval) {
+    public void setUpdateInterval(final @Nullable Integer updateInterval) {
       this.updateInterval = updateInterval;
     }
 
@@ -648,7 +650,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -668,7 +670,7 @@ public class ConnectorConfigurationProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "policyResource=" + this.policyResource
           + ", updateInterval=" + this.updateInterval;
     }

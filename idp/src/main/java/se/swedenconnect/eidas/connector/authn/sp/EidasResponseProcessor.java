@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.xmlsec.signature.support.SignaturePrevalidator;
 import org.opensaml.xmlsec.signature.support.SignatureTrustEngine;
@@ -43,10 +44,12 @@ public class EidasResponseProcessor extends ResponseProcessorImpl {
    * @param securityConfiguration the security configuration
    * @param decrypter for decrypting assertions
    * @param messageReplayChecker for protecting against replay attacks
+   * @param validationSettings the response validation settings
    */
-  public EidasResponseProcessor(final MetadataResolver metadataResolver,
-      final SecurityConfiguration securityConfiguration, final SAMLObjectDecrypter decrypter,
-      final MessageReplayChecker messageReplayChecker, final ResponseValidationSettings validationSettings) {
+  public EidasResponseProcessor(final @NonNull MetadataResolver metadataResolver,
+      final @NonNull SecurityConfiguration securityConfiguration, final @NonNull SAMLObjectDecrypter decrypter,
+      final @NonNull MessageReplayChecker messageReplayChecker,
+      final @NonNull ResponseValidationSettings validationSettings) {
     this.setMetadataResolver(metadataResolver);
     this.setSecurityConfiguration(securityConfiguration);
     this.setDecrypter(decrypter);
@@ -56,15 +59,17 @@ public class EidasResponseProcessor extends ResponseProcessorImpl {
 
   /** {@inheritDoc} */
   @Override
-  protected ResponseValidator createResponseValidator(final SignatureTrustEngine signatureTrustEngine,
-      final SignaturePrevalidator signatureProfileValidator) {
+  protected @NonNull ResponseValidator createResponseValidator(
+      final @NonNull SignatureTrustEngine signatureTrustEngine,
+      final @NonNull SignaturePrevalidator signatureProfileValidator) {
     return new EidasResponseValidator(signatureTrustEngine, signatureProfileValidator);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected AssertionValidator createAssertionValidator(final SignatureTrustEngine signatureTrustEngine,
-      final SignaturePrevalidator signatureProfileValidator) {
+  protected @NonNull AssertionValidator createAssertionValidator(
+      final @NonNull SignatureTrustEngine signatureTrustEngine,
+      final @NonNull SignaturePrevalidator signatureProfileValidator) {
     return new EidasAssertionValidator(signatureTrustEngine, signatureProfileValidator);
   }
 

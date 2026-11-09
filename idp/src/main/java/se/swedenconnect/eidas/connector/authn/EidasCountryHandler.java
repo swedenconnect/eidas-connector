@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.saml2.core.StatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,17 +43,17 @@ public class EidasCountryHandler {
   private static final Logger log = LoggerFactory.getLogger(EidasCountryHandler.class);
 
   /** Prefix URI for country representation. */
-  public static final String COUNTRY_URI_PREFIX = "http://id.swedenconnect.se/eidas/1.0/proxy-service/";
+  public static final @NonNull String COUNTRY_URI_PREFIX = "http://id.swedenconnect.se/eidas/1.0/proxy-service/";
 
   /** The metadata provider. */
-  private final EuMetadataProvider euMetadataProvider;
+  private final @NonNull EuMetadataProvider euMetadataProvider;
 
   /**
    * Constructor.
    *
    * @param euMetadataProvider the metadata provider
    */
-  public EidasCountryHandler(final EuMetadataProvider euMetadataProvider) {
+  public EidasCountryHandler(final @NonNull EuMetadataProvider euMetadataProvider) {
     this.euMetadataProvider = euMetadataProvider;
   }
 
@@ -60,7 +61,7 @@ public class EidasCountryHandler {
    * Represents a "selectable country" where {@code canAuthenticate} tells whether the country can authenticate the call
    * (i.e., whether the requested/supported authn context match).
    */
-  public record SelectableCountry(String country, boolean canAuthenticate) {
+  public record SelectableCountry(@NonNull String country, boolean canAuthenticate) {
   }
 
   /**
@@ -68,7 +69,7 @@ public class EidasCountryHandler {
    * should be displayed. Otherwise, the {@code countries} will only contain one country (known in advance by the SP)
    * and we may skip the selection UI.
    */
-  public record SelectableCountries(List<SelectableCountry> countries, boolean displaySelection) {
+  public record SelectableCountries(@NonNull List<SelectableCountry> countries, boolean displaySelection) {
   }
 
   /**
@@ -79,7 +80,7 @@ public class EidasCountryHandler {
    * @return a {@link SelectableCountries}
    * @throws SamlErrorStatusException for SAML error responses
    */
-  public SelectableCountries getSelectableCountries(final UserAuthenticationInputToken token)
+  public @NonNull SelectableCountries getSelectableCountries(final @NonNull UserAuthenticationInputToken token)
       throws SamlErrorStatusException {
 
     // First see if the authentication request pointed out specific country/countries.
@@ -136,7 +137,7 @@ public class EidasCountryHandler {
    * @param token the input
    * @return a list of country codes (possibly empty)
    */
-  public static List<String> getRequestedCountries(final UserAuthenticationInputToken token) {
+  public static @NonNull List<String> getRequestedCountries(final @NonNull UserAuthenticationInputToken token) {
 
     // First check PrincipalSelection extension. A country given there is a requested c attribute holding values.
     //

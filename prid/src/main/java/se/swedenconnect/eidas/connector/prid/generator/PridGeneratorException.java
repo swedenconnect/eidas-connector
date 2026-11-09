@@ -15,6 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import java.io.Serial;
 
 /**
@@ -31,7 +34,7 @@ public class PridGeneratorException extends Exception {
    *
    * @param message the error message
    */
-  public PridGeneratorException(final String message) {
+  public PridGeneratorException(final @NonNull String message) {
     super(message);
   }
 
@@ -41,7 +44,7 @@ public class PridGeneratorException extends Exception {
    * @param message the error message
    * @param cause the underlying cause
    */
-  public PridGeneratorException(final String message, final Throwable cause) {
+  public PridGeneratorException(final @NonNull String message, final @Nullable Throwable cause) {
     super(message, cause);
   }
 

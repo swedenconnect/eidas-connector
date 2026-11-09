@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.support.RequestContextUtils;
@@ -41,14 +42,14 @@ public class UiLanguageHandler {
   private static final Logger log = LoggerFactory.getLogger(UiLanguageHandler.class);
 
   /** Supported languages. */
-  private final List<Language> languages;
+  private final @NonNull List<Language> languages;
 
   /**
    * Constructor.
    *
    * @param languages the supported languages
    */
-  public UiLanguageHandler(final List<Language> languages) {
+  public UiLanguageHandler(final @NonNull List<Language> languages) {
     this.languages = Optional.ofNullable(languages)
         .filter(l -> !l.isEmpty())
         .orElseThrow(() -> new IllegalArgumentException("languages must not be null or empty"));
@@ -60,7 +61,7 @@ public class UiLanguageHandler {
    *
    * @return a list of language model objects
    */
-  public List<Language> getOtherLanguages() {
+  public @NonNull List<Language> getOtherLanguages() {
     final Locale locale = LocaleContextHolder.getLocale();
 
     return this.languages.stream()
@@ -76,7 +77,8 @@ public class UiLanguageHandler {
    * @param language the language tag
    */
   public void setUiLanguage(
-      final HttpServletRequest request, final HttpServletResponse response, final String language) {
+      final @NonNull HttpServletRequest request, final @NonNull HttpServletResponse response,
+      final @NonNull String language) {
 
     try {
       final Locale locale = Locale.forLanguageTag(language);

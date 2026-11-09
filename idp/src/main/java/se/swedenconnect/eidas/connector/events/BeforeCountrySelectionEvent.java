@@ -19,6 +19,8 @@ import java.io.Serial;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEvent;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
@@ -36,13 +38,13 @@ public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** A list of countries that was displayed for the user to select from. */
-  private List<String> selectableCountries;
+  private @Nullable List<String> selectableCountries;
 
   /** A pre-selected country. */
-  private String preSelectedCountry;
+  private @Nullable String preSelectedCountry;
 
   /** The reason that no country selection view was displayed. */
-  private NoDisplayReason noDisplayReason;
+  private @Nullable NoDisplayReason noDisplayReason;
 
   /**
    * Constructor used when the user was directed to the country selection view.
@@ -51,7 +53,7 @@ public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
    * @param countries a list of countries that was displayed for the user to select from
    */
   public BeforeCountrySelectionEvent(
-      final UserAuthenticationInputToken token, final List<String> countries) {
+      final @NonNull UserAuthenticationInputToken token, final @NonNull List<String> countries) {
     super(token);
     this.selectableCountries = Objects.requireNonNull(countries, "countries must not be null");
   }
@@ -64,7 +66,8 @@ public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
    * @param reason the reason why no country selection view was displayed
    */
   public BeforeCountrySelectionEvent(
-      final UserAuthenticationInputToken token, final String country, final NoDisplayReason reason) {
+      final @NonNull UserAuthenticationInputToken token, final @NonNull String country,
+      final @NonNull NoDisplayReason reason) {
     super(token);
     this.preSelectedCountry = Objects.requireNonNull(country, "country must not be null");
     this.noDisplayReason = Objects.requireNonNull(reason, "reason must not be null");
@@ -75,7 +78,7 @@ public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
    *
    * @return the {@link UserAuthenticationInputToken}
    */
-  public UserAuthenticationInputToken getInputToken() {
+  public @NonNull UserAuthenticationInputToken getInputToken() {
     return (UserAuthenticationInputToken) this.getSource();
   }
 
@@ -88,7 +91,7 @@ public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
    *
    * @return a list of countries or {@code null}
    */
-  public List<String> getSelectableCountries() {
+  public @Nullable List<String> getSelectableCountries() {
     return this.selectableCountries;
   }
 
@@ -98,7 +101,7 @@ public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
    *
    * @return the pre-selected country, or {@code null} if the country selection view was displayed
    */
-  public String getPreSelectedCountry() {
+  public @Nullable String getPreSelectedCountry() {
     return this.preSelectedCountry;
   }
 
@@ -108,7 +111,7 @@ public class BeforeCountrySelectionEvent extends AbstractEidasConnectorEvent {
    *
    * @return a {@link NoDisplayReason}, or {@code null} if the country selection view was displayed
    */
-  public NoDisplayReason getNoDisplayReason() {
+  public @Nullable NoDisplayReason getNoDisplayReason() {
     return this.noDisplayReason;
   }
 

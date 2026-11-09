@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 import se.swedenconnect.eidas.connector.authn.idm.IdmRecord;
@@ -32,10 +33,10 @@ public class IdentityMatchingRecordEvent extends AbstractConnectorAuthnEvent {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The eIDAS authentication token. */
-  private final EidasAuthenticationToken eidasToken;
+  private final @NonNull EidasAuthenticationToken eidasToken;
 
   /** The Identity Matching record obtained. */
-  private final IdmRecord idmRecord;
+  private final @NonNull IdmRecord idmRecord;
 
   /**
    * Constructor.
@@ -44,8 +45,8 @@ public class IdentityMatchingRecordEvent extends AbstractConnectorAuthnEvent {
    * @param eidasToken the eIDAS authentication token
    * @param idmRecord the Identity Matching record
    */
-  public IdentityMatchingRecordEvent(final UserAuthenticationInputToken token,
-      final EidasAuthenticationToken eidasToken, final IdmRecord idmRecord) {
+  public IdentityMatchingRecordEvent(final @NonNull UserAuthenticationInputToken token,
+      final @NonNull EidasAuthenticationToken eidasToken, final @NonNull IdmRecord idmRecord) {
     super(token);
     this.eidasToken = eidasToken;
     this.idmRecord = idmRecord;
@@ -56,7 +57,7 @@ public class IdentityMatchingRecordEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the {@link EidasAuthenticationToken}
    */
-  public EidasAuthenticationToken getEidasToken() {
+  public @NonNull EidasAuthenticationToken getEidasToken() {
     return this.eidasToken;
   }
 
@@ -65,7 +66,7 @@ public class IdentityMatchingRecordEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the Identity Matching record
    */
-  public IdmRecord getIdmRecord() {
+  public @NonNull IdmRecord getIdmRecord() {
     return this.idmRecord;
   }
 

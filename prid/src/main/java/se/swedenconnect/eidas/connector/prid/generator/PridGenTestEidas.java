@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Generator for test cases (especially when running against the EU software locally).
  *
@@ -23,7 +25,7 @@ package se.swedenconnect.eidas.connector.prid.generator;
 public class PridGenTestEidas extends PridGenDefaultEidas {
 
   /** The algorithm name that this instance implements. */
-  public static final String ALGORITHM_NAME = "test-eIDAS";
+  public static final @NonNull String ALGORITHM_NAME = "test-eIDAS";
 
   /**
    * Constructor (using "SE" as destination country).
@@ -37,13 +39,13 @@ public class PridGenTestEidas extends PridGenDefaultEidas {
    *
    * @param destinationCountry country code to which the eIDAS person identifiers are issued for
    */
-  public PridGenTestEidas(final String destinationCountry) {
+  public PridGenTestEidas(final @NonNull String destinationCountry) {
     super(destinationCountry);
   }
 
   /** {@inheritDoc} */
   @Override
-  public String getAlgorithmName() {
+  public @NonNull String getAlgorithmName() {
     return ALGORITHM_NAME;
   }
 
@@ -51,7 +53,8 @@ public class PridGenTestEidas extends PridGenDefaultEidas {
    * Removes the length citerion on received identifiers.
    */
   @Override
-  protected String calculatePridIdentifier(String checkedStrippedInput, final String originalInput)
+  protected @NonNull String calculatePridIdentifier(
+      @NonNull String checkedStrippedInput, final @NonNull String originalInput)
       throws PridGeneratorException {
     if (checkedStrippedInput.length() < 10) {
       checkedStrippedInput = "0000000000".substring(checkedStrippedInput.length()) + checkedStrippedInput;

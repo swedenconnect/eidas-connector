@@ -17,6 +17,8 @@ package se.swedenconnect.eidas.connector.config;
 
 import java.time.Duration;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseCookie.ResponseCookieBuilder;
@@ -30,9 +32,9 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class CookieGenerator {
 
-  private final ResponseCookieBuilder cookieBuilder;
+  private final @NonNull ResponseCookieBuilder cookieBuilder;
 
-  private final String name;
+  private final @NonNull String name;
 
   /**
    * Constructor.
@@ -42,7 +44,8 @@ public class CookieGenerator {
    * @param path cookie path
    * @param maxAge max age
    */
-  public CookieGenerator(final String name, final String domain, final String path, final Duration maxAge) {
+  public CookieGenerator(final @NonNull String name, final @Nullable String domain, final @Nullable String path,
+      final @NonNull Duration maxAge) {
     this.name = name;
     this.cookieBuilder = ResponseCookie.from(name)
         .domain(domain)
@@ -60,7 +63,7 @@ public class CookieGenerator {
    * @param domain cookie domain
    * @param path cookie path
    */
-  public CookieGenerator(final String name, final String domain, final String path) {
+  public CookieGenerator(final @NonNull String name, final @Nullable String domain, final @Nullable String path) {
     this.name = name;
     this.cookieBuilder = ResponseCookie.from(name)
         .domain(domain)
@@ -76,7 +79,7 @@ public class CookieGenerator {
    *
    * @return the cookie name
    */
-  public String getName() {
+  public @NonNull String getName() {
     return this.name;
   }
 
@@ -86,7 +89,7 @@ public class CookieGenerator {
    * @param value the value of the cookie
    * @param response the HTTP servlet response
    */
-  public void addCookie(final String value, final HttpServletResponse response) {
+  public void addCookie(final @NonNull String value, final @NonNull HttpServletResponse response) {
     response.addHeader(HttpHeaders.SET_COOKIE,
         this.cookieBuilder.value(value).build().toString());
   }
@@ -96,7 +99,7 @@ public class CookieGenerator {
    *
    * @param response the HTTP servlet response
    */
-  public void clearCookie(final HttpServletResponse response) {
+  public void clearCookie(final @NonNull HttpServletResponse response) {
     response.setHeader(HttpHeaders.SET_COOKIE,
         this.cookieBuilder.maxAge(0).build().toString());
   }

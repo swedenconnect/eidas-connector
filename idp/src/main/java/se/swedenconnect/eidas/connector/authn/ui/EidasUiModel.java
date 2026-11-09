@@ -15,6 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -28,19 +31,19 @@ public class EidasUiModel extends BaseUiModel {
   /**
    * Identity Matching info.
    */
-  private IdmInfo idm;
+  private @Nullable IdmInfo idm;
 
   /**
    * The countries to display.
    */
-  private List<UiCountry> countries;
+  private @Nullable List<UiCountry> countries;
 
   /**
    * Gets the Identity Matching info.
    *
    * @return the Identity Matching info
    */
-  public IdmInfo getIdm() {
+  public @Nullable IdmInfo getIdm() {
     return this.idm;
   }
 
@@ -49,7 +52,7 @@ public class EidasUiModel extends BaseUiModel {
    *
    * @param idm the Identity Matching info
    */
-  public void setIdm(final IdmInfo idm) {
+  public void setIdm(final @Nullable IdmInfo idm) {
     this.idm = idm;
   }
 
@@ -58,7 +61,7 @@ public class EidasUiModel extends BaseUiModel {
    *
    * @return the countries to display
    */
-  public List<UiCountry> getCountries() {
+  public @Nullable List<UiCountry> getCountries() {
     return this.countries;
   }
 
@@ -67,7 +70,7 @@ public class EidasUiModel extends BaseUiModel {
    *
    * @param countries the countries to display
    */
-  public void setCountries(final List<UiCountry> countries) {
+  public void setCountries(final @Nullable List<UiCountry> countries) {
     this.countries = countries;
   }
 
@@ -85,7 +88,7 @@ public class EidasUiModel extends BaseUiModel {
 
   /** {@inheritDoc} */
   @Override
-  public boolean equals(final Object o) {
+  public boolean equals(final @Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -107,7 +110,7 @@ public class EidasUiModel extends BaseUiModel {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return "idm=[" + this.idm + "], countries=" + this.countries;
   }
 
@@ -129,7 +132,7 @@ public class EidasUiModel extends BaseUiModel {
     /**
      * The URL to the IdM service.
      */
-    private String serviceUrl;
+    private @Nullable String serviceUrl;
 
     /**
      * Default constructor.
@@ -144,7 +147,7 @@ public class EidasUiModel extends BaseUiModel {
      * @param showBanner whether the banner should be displayed
      * @param serviceUrl the URL to the IdM service
      */
-    public IdmInfo(final boolean active, final boolean showBanner, final String serviceUrl) {
+    public IdmInfo(final boolean active, final boolean showBanner, final @Nullable String serviceUrl) {
       this.active = active;
       this.showBanner = showBanner;
       this.serviceUrl = serviceUrl;
@@ -191,7 +194,7 @@ public class EidasUiModel extends BaseUiModel {
      *
      * @return the URL to the IdM service
      */
-    public String getServiceUrl() {
+    public @Nullable String getServiceUrl() {
       return this.serviceUrl;
     }
 
@@ -200,13 +203,13 @@ public class EidasUiModel extends BaseUiModel {
      *
      * @param serviceUrl the URL to the IdM service
      */
-    public void setServiceUrl(final String serviceUrl) {
+    public void setServiceUrl(final @Nullable String serviceUrl) {
       this.serviceUrl = serviceUrl;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -226,7 +229,7 @@ public class EidasUiModel extends BaseUiModel {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "active=" + this.active + ", showBanner=" + this.showBanner + ", serviceUrl="
           + this.serviceUrl;
     }

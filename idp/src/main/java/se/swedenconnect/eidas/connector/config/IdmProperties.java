@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.util.Assert;
@@ -33,35 +34,35 @@ public class IdmProperties implements InitializingBean {
   /**
    * Whether the IdM feature is active or not.
    */
-  private Boolean active;
+  private @Nullable Boolean active;
 
   /**
    * The URL to the Identity Matching service (for inclusion in views).
    */
-  private String serviceUrl;
+  private @Nullable String serviceUrl;
 
   /**
    * The base URL for the eIDAS Identity Matching API.
    */
-  private String apiBaseUrl;
+  private @Nullable String apiBaseUrl;
 
   /**
    * A reference to a Spring Boot SSL Bundle holding the trust configuration for TLS-calls against the IdM server. If no
    * bundle is set, the system defaults are used.
    */
-  private String trustBundle;
+  private @Nullable String trustBundle;
 
   /**
    * Connector OAuth2 client settings.
    */
-  private OAuth2Properties oauth2;
+  private @Nullable OAuth2Properties oauth2;
 
   /**
    * Gets whether the IdM feature is active or not.
    *
    * @return whether the IdM feature is active or not
    */
-  public Boolean getActive() {
+  public @Nullable Boolean getActive() {
     return this.active;
   }
 
@@ -70,7 +71,7 @@ public class IdmProperties implements InitializingBean {
    *
    * @param active whether the IdM feature is active or not
    */
-  public void setActive(final Boolean active) {
+  public void setActive(final @Nullable Boolean active) {
     this.active = active;
   }
 
@@ -79,7 +80,7 @@ public class IdmProperties implements InitializingBean {
    *
    * @return the URL to the Identity Matching service (for inclusion in views)
    */
-  public String getServiceUrl() {
+  public @Nullable String getServiceUrl() {
     return this.serviceUrl;
   }
 
@@ -88,7 +89,7 @@ public class IdmProperties implements InitializingBean {
    *
    * @param serviceUrl the URL to the Identity Matching service (for inclusion in views)
    */
-  public void setServiceUrl(final String serviceUrl) {
+  public void setServiceUrl(final @Nullable String serviceUrl) {
     this.serviceUrl = serviceUrl;
   }
 
@@ -97,7 +98,7 @@ public class IdmProperties implements InitializingBean {
    *
    * @return the base URL for the eIDAS Identity Matching API
    */
-  public String getApiBaseUrl() {
+  public @Nullable String getApiBaseUrl() {
     return this.apiBaseUrl;
   }
 
@@ -106,7 +107,7 @@ public class IdmProperties implements InitializingBean {
    *
    * @param apiBaseUrl the base URL for the eIDAS Identity Matching API
    */
-  public void setApiBaseUrl(final String apiBaseUrl) {
+  public void setApiBaseUrl(final @Nullable String apiBaseUrl) {
     this.apiBaseUrl = apiBaseUrl;
   }
 
@@ -115,7 +116,7 @@ public class IdmProperties implements InitializingBean {
    *
    * @return the SSL bundle holding the trust configuration for TLS calls against the IdM server
    */
-  public String getTrustBundle() {
+  public @Nullable String getTrustBundle() {
     return this.trustBundle;
   }
 
@@ -124,7 +125,7 @@ public class IdmProperties implements InitializingBean {
    *
    * @param trustBundle the SSL bundle holding the trust configuration for TLS calls against the IdM server
    */
-  public void setTrustBundle(final String trustBundle) {
+  public void setTrustBundle(final @Nullable String trustBundle) {
     this.trustBundle = trustBundle;
   }
 
@@ -133,7 +134,7 @@ public class IdmProperties implements InitializingBean {
    *
    * @return the Connector OAuth2 client settings
    */
-  public OAuth2Properties getOauth2() {
+  public @Nullable OAuth2Properties getOauth2() {
     return this.oauth2;
   }
 
@@ -142,7 +143,7 @@ public class IdmProperties implements InitializingBean {
    *
    * @param oauth2 the Connector OAuth2 client settings
    */
-  public void setOauth2(final OAuth2Properties oauth2) {
+  public void setOauth2(final @Nullable OAuth2Properties oauth2) {
     this.oauth2 = oauth2;
   }
 
@@ -176,22 +177,22 @@ public class IdmProperties implements InitializingBean {
     /**
      * The Connector OAuth2 client ID.
      */
-    private String clientId;
+    private @Nullable String clientId;
 
     /**
      * The scope(s) to request for making check calls to the IdM Query API.
      */
-    private List<String> checkScopes;
+    private @Nullable List<String> checkScopes;
 
     /**
      * The scope(s) to request for making get calls to the IdM Query API.
      */
-    private List<String> getScopes;
+    private @Nullable List<String> getScopes;
 
     /**
      * The ID for the resource we are sending our access tokens to (the IdM-service).
      */
-    private String resourceId;
+    private @Nullable String resourceId;
 
     /**
      * The credential to use for authentication against the Authorization Server (if the connector acts as an OAuth2
@@ -199,25 +200,25 @@ public class IdmProperties implements InitializingBean {
      * not assigned, the connector default credential will be used.
      */
     @NestedConfigurationProperty
-    private PkiCredentialConfigurationProperties credential;
+    private @Nullable PkiCredentialConfigurationProperties credential;
 
     /**
      * Settings if the eIDAS connector should act as an OAuth2 client. Mutually exclusive with 'server'.
      */
-    private OAuth2ClientProperties client;
+    private @Nullable OAuth2ClientProperties client;
 
     /**
      * Settings if the eIDAS connector should act as an OAuth2 Authorization Server and issue access token for itself.
      * Mutually exclusive with 'client'.
      */
-    private OAuth2ServerProperties server;
+    private @Nullable OAuth2ServerProperties server;
 
     /**
      * Gets the Connector OAuth2 client ID.
      *
      * @return the Connector OAuth2 client ID
      */
-    public String getClientId() {
+    public @Nullable String getClientId() {
       return this.clientId;
     }
 
@@ -226,7 +227,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @param clientId the Connector OAuth2 client ID
      */
-    public void setClientId(final String clientId) {
+    public void setClientId(final @Nullable String clientId) {
       this.clientId = clientId;
     }
 
@@ -235,7 +236,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @return the scope(s) to request for making check calls to the IdM Query API
      */
-    public List<String> getCheckScopes() {
+    public @Nullable List<String> getCheckScopes() {
       return this.checkScopes;
     }
 
@@ -244,7 +245,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @param checkScopes the scope(s) to request for making check calls to the IdM Query API
      */
-    public void setCheckScopes(final List<String> checkScopes) {
+    public void setCheckScopes(final @Nullable List<String> checkScopes) {
       this.checkScopes = checkScopes;
     }
 
@@ -253,7 +254,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @return the scope(s) to request for making get calls to the IdM Query API
      */
-    public List<String> getGetScopes() {
+    public @Nullable List<String> getGetScopes() {
       return this.getScopes;
     }
 
@@ -262,7 +263,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @param getScopes the scope(s) to request for making get calls to the IdM Query API
      */
-    public void setGetScopes(final List<String> getScopes) {
+    public void setGetScopes(final @Nullable List<String> getScopes) {
       this.getScopes = getScopes;
     }
 
@@ -271,7 +272,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @return the ID for the resource we are sending our access tokens to (the IdM-service)
      */
-    public String getResourceId() {
+    public @Nullable String getResourceId() {
       return this.resourceId;
     }
 
@@ -280,7 +281,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @param resourceId the ID for the resource we are sending our access tokens to (the IdM-service)
      */
-    public void setResourceId(final String resourceId) {
+    public void setResourceId(final @Nullable String resourceId) {
       this.resourceId = resourceId;
     }
 
@@ -289,7 +290,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @return the credential for OAuth2 authentication or access token signing
      */
-    public PkiCredentialConfigurationProperties getCredential() {
+    public @Nullable PkiCredentialConfigurationProperties getCredential() {
       return this.credential;
     }
 
@@ -298,7 +299,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @param credential the credential for OAuth2 authentication or access token signing
      */
-    public void setCredential(final PkiCredentialConfigurationProperties credential) {
+    public void setCredential(final @Nullable PkiCredentialConfigurationProperties credential) {
       this.credential = credential;
     }
 
@@ -307,7 +308,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @return the OAuth2 client settings
      */
-    public OAuth2ClientProperties getClient() {
+    public @Nullable OAuth2ClientProperties getClient() {
       return this.client;
     }
 
@@ -316,7 +317,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @param client the OAuth2 client settings
      */
-    public void setClient(final OAuth2ClientProperties client) {
+    public void setClient(final @Nullable OAuth2ClientProperties client) {
       this.client = client;
     }
 
@@ -325,7 +326,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @return the OAuth2 Authorization Server settings
      */
-    public OAuth2ServerProperties getServer() {
+    public @Nullable OAuth2ServerProperties getServer() {
       return this.server;
     }
 
@@ -334,7 +335,7 @@ public class IdmProperties implements InitializingBean {
      *
      * @param server the OAuth2 Authorization Server settings
      */
-    public void setServer(final OAuth2ServerProperties server) {
+    public void setServer(final @Nullable OAuth2ServerProperties server) {
       this.server = server;
     }
 
@@ -370,20 +371,20 @@ public class IdmProperties implements InitializingBean {
       /**
        * The Authorization Server Token endpoint.
        */
-      private String tokenEndpoint;
+      private @Nullable String tokenEndpoint;
 
       /**
        * When running in development mode we set the audience of our private_key_jwt objects to the AS issuer id instead
        * of the token endpoint. Needed if running in development mode.
        */
-      private String asIssuerId;
+      private @Nullable String asIssuerId;
 
       /**
        * Gets the Authorization Server Token endpoint.
        *
        * @return the Authorization Server Token endpoint
        */
-      public String getTokenEndpoint() {
+      public @Nullable String getTokenEndpoint() {
         return this.tokenEndpoint;
       }
 
@@ -392,7 +393,7 @@ public class IdmProperties implements InitializingBean {
        *
        * @param tokenEndpoint the Authorization Server Token endpoint
        */
-      public void setTokenEndpoint(final String tokenEndpoint) {
+      public void setTokenEndpoint(final @Nullable String tokenEndpoint) {
         this.tokenEndpoint = tokenEndpoint;
       }
 
@@ -401,7 +402,7 @@ public class IdmProperties implements InitializingBean {
        *
        * @return the AS issuer ID (used as audience in development mode)
        */
-      public String getAsIssuerId() {
+      public @Nullable String getAsIssuerId() {
         return this.asIssuerId;
       }
 
@@ -410,7 +411,7 @@ public class IdmProperties implements InitializingBean {
        *
        * @param asIssuerId the AS issuer ID (used as audience in development mode)
        */
-      public void setAsIssuerId(final String asIssuerId) {
+      public void setAsIssuerId(final @Nullable String asIssuerId) {
         this.asIssuerId = asIssuerId;
       }
 
@@ -430,19 +431,19 @@ public class IdmProperties implements InitializingBean {
       /**
        * The issuer ID to use for the issued access tokens.
        */
-      private String issuer;
+      private @Nullable String issuer;
 
       /**
        * The duration (lifetime) for issued access tokens. The default is one hour.
        */
-      private Duration lifetime;
+      private @Nullable Duration lifetime;
 
       /**
        * Gets the issuer ID to use for the issued access tokens.
        *
        * @return the issuer ID to use for the issued access tokens
        */
-      public String getIssuer() {
+      public @Nullable String getIssuer() {
         return this.issuer;
       }
 
@@ -451,7 +452,7 @@ public class IdmProperties implements InitializingBean {
        *
        * @param issuer the issuer ID to use for the issued access tokens
        */
-      public void setIssuer(final String issuer) {
+      public void setIssuer(final @Nullable String issuer) {
         this.issuer = issuer;
       }
 
@@ -460,7 +461,7 @@ public class IdmProperties implements InitializingBean {
        *
        * @return the duration (lifetime) for issued access tokens
        */
-      public Duration getLifetime() {
+      public @Nullable Duration getLifetime() {
         return this.lifetime;
       }
 
@@ -469,7 +470,7 @@ public class IdmProperties implements InitializingBean {
        *
        * @param lifetime the duration (lifetime) for issued access tokens
        */
-      public void setLifetime(final Duration lifetime) {
+      public void setLifetime(final @Nullable Duration lifetime) {
         this.lifetime = lifetime;
       }
 

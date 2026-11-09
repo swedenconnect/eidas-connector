@@ -17,6 +17,8 @@ package se.swedenconnect.eidas.connector.authn;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Status;
@@ -103,55 +105,55 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   private static final Logger log = LoggerFactory.getLogger(EidasAuthenticationProvider.class);
 
   /** The authentication path, i.e., where the SAML engine should direct the user for authentication. */
-  public static final String AUTHN_PATH = "/extauth";
+  public static final @NonNull String AUTHN_PATH = "/extauth";
 
   /** The path where we redirect the user to leave the control back to the SAML engine. */
-  public static final String RESUME_PATH = "/resume";
+  public static final @NonNull String RESUME_PATH = "/resume";
 
   /** Special purpose AuthnContext Class Ref for eIDAS test. */
-  public static final String EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF = "http://eidas.europa.eu/LoA/test";
+  public static final @NonNull String EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF = "http://eidas.europa.eu/LoA/test";
 
   /** The session key where we store the eIDAS AuthnRequest. */
-  public static final String EIDAS_AUTHNREQUEST_SESSION_KEY = EidasAuthnRequest.class.getName();
+  public static final @NonNull String EIDAS_AUTHNREQUEST_SESSION_KEY = EidasAuthnRequest.class.getName();
 
   /** The session key prefix for where we store the eIDAS authentication token. */
-  public static final String EIDAS_AUTHNTOKEN_SESSION_KEY = EidasAuthenticationToken.class.getName();
+  public static final @NonNull String EIDAS_AUTHNTOKEN_SESSION_KEY = EidasAuthenticationToken.class.getName();
 
   /** The event publisher. */
-  private final ApplicationEventPublisher eventPublisher;
+  private final @NonNull ApplicationEventPublisher eventPublisher;
 
   /** SAML SP metadata. */
-  private final EntityDescriptor spMetadata;
+  private final @NonNull EntityDescriptor spMetadata;
 
   /** For generating AuthnRequests. */
-  private final EidasAuthnRequestGenerator authnRequestGenerator;
+  private final @NonNull EidasAuthnRequestGenerator authnRequestGenerator;
 
   /** The processor handling the SAML responses received from the foreign eIDAS proxy services. */
-  private final ResponseProcessor responseProcessor;
+  private final @NonNull ResponseProcessor responseProcessor;
 
   /** For converting eIDAS attributes into the attributes released to the Swedish SP. */
-  private final EidasAttributeConverter attributeConverter;
+  private final @NonNull EidasAttributeConverter attributeConverter;
 
   /** The URL where we receive SAML responses. */
-  private final String samlResponseUrl;
+  private final @NonNull String samlResponseUrl;
 
   /** The metadata provider. */
-  private final EuMetadataProvider metadataProvider;
+  private final @NonNull EuMetadataProvider metadataProvider;
 
   /** The PRID service bean. */
-  private final PridService pridService;
+  private final @NonNull PridService pridService;
 
   /** The Identity Matching client. */
-  private final IdmClient idmClient;
+  private final @NonNull IdmClient idmClient;
 
   /** Supported LoA URI:s. */
-  private final List<String> supportedLoas;
+  private final @NonNull List<String> supportedLoas;
 
   /** The entity categories. */
-  private final List<String> entityCategories;
+  private final @NonNull List<String> entityCategories;
 
   /** Whitelisted SP:s that are allowed to send "ping" requests. */
-  private final List<String> pingWhitelist;
+  private final @NonNull List<String> pingWhitelist;
 
   /**
    * Constructor.
@@ -170,18 +172,18 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param entityCategories the entity categories
    * @param pingWhitelist the whitelisted SP:s that are allowed to send ping requests
    */
-  public EidasAuthenticationProvider(final String baseUrl,
-      final ApplicationEventPublisher eventPublisher,
-      final EntityDescriptor spMetadata,
-      final EidasAuthnRequestGenerator authnRequestGenerator,
-      final ResponseProcessor responseProcessor,
-      final EuMetadataProvider metadataProvider,
-      final EidasAttributeConverter attributeConverter,
-      final PridService pridService,
-      final IdmClient idmClient,
-      final List<String> supportedLoas,
-      final List<String> entityCategories,
-      final List<String> pingWhitelist) {
+  public EidasAuthenticationProvider(final @NonNull String baseUrl,
+      final @NonNull ApplicationEventPublisher eventPublisher,
+      final @NonNull EntityDescriptor spMetadata,
+      final @NonNull EidasAuthnRequestGenerator authnRequestGenerator,
+      final @NonNull ResponseProcessor responseProcessor,
+      final @NonNull EuMetadataProvider metadataProvider,
+      final @NonNull EidasAttributeConverter attributeConverter,
+      final @NonNull PridService pridService,
+      final @NonNull IdmClient idmClient,
+      final @NonNull List<String> supportedLoas,
+      final @NonNull List<String> entityCategories,
+      final @Nullable List<String> pingWhitelist) {
 
     super(AUTHN_PATH, RESUME_PATH);
 
@@ -214,8 +216,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * Refuses a sign message that the connector cannot display before the user is sent to the pages of the connector.
    */
   @Override
-  protected Authentication authenticate(final UserAuthenticationInputToken token,
-      final List<String> authnContextUris) throws AuthenticationErrorException {
+  protected @NonNull Authentication authenticate(final @NonNull UserAuthenticationInputToken token,
+      final @NonNull List<String> authnContextUris) throws AuthenticationErrorException {
     SignMessageProcessor.assertSupported(token.getAuthnRequirements().getSignMessage());
     return super.authenticate(token, authnContextUris);
   }
@@ -225,7 +227,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * country.
    */
   @Override
-  protected UserAuthentication createUserAuthentication(final ResumedAuthenticationToken token)
+  protected @NonNull UserAuthentication createUserAuthentication(final @NonNull ResumedAuthenticationToken token)
       throws AuthenticationErrorException {
 
     if (token.getAuthnToken() instanceof final EidasAuthenticationErrorToken errorToken) {
@@ -272,8 +274,9 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @throws SamlErrorStatusException for errors that are reported to the Swedish SP
    * @throws UnrecoverableErrorException if there is no matching authentication request in the session
    */
-  public EidasAuthenticationToken processSamlResponse(final HttpServletRequest httpRequest,
-      final UserAuthenticationInputToken inputToken, final String samlResponse, final String relayState)
+  public @NonNull EidasAuthenticationToken processSamlResponse(final @NonNull HttpServletRequest httpRequest,
+      final @NonNull UserAuthenticationInputToken inputToken, final @Nullable String samlResponse,
+      final @Nullable String relayState)
       throws SamlErrorStatusException, UnrecoverableErrorException {
 
     try {
@@ -406,7 +409,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     return new ResponseProcessingInput() {
 
       @Override
-      public AuthnRequest getAuthnRequest(final String id) {
+      public @Nullable AuthnRequest getAuthnRequest(final @NonNull String id) {
         return Optional.ofNullable(eidasAuthnRequest)
             .map(EidasAuthnRequest::getAuthnRequest)
             .filter(a -> Objects.equals(id, a.getID()))
@@ -414,29 +417,29 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       }
 
       @Override
-      public String getRequestRelayState(final String id) {
+      public @Nullable String getRequestRelayState(final @NonNull String id) {
         return Optional.ofNullable(eidasAuthnRequest)
             .map(EidasAuthnRequest::getRelayState)
             .orElse(null);
       }
 
       @Override
-      public String getReceiveURL() {
+      public @NonNull String getReceiveURL() {
         return EidasAuthenticationProvider.this.samlResponseUrl;
       }
 
       @Override
-      public Instant getReceiveInstant() {
+      public @NonNull Instant getReceiveInstant() {
         return Instant.now();
       }
 
       @Override
-      public String getClientIpAddress() {
+      public @NonNull String getClientIpAddress() {
         return httpServletRequest.getRemoteAddr();
       }
 
       @Override
-      public X509Certificate getClientCertificate() {
+      public @Nullable X509Certificate getClientCertificate() {
         return null;
       }
 
@@ -453,7 +456,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @throws SamlErrorStatusException for assertion errors
    */
   public void assertPrincipalSelection(
-      final UserAuthenticationInputToken inputToken, final EidasAuthenticationToken token)
+      final @NonNull UserAuthenticationInputToken inputToken, final @NonNull EidasAuthenticationToken token)
       throws SamlErrorStatusException {
 
     // Only assert for signing user ...
@@ -523,7 +526,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param inputToken the authentication input token
    * @return {@code true} if the user has a record and {@code false} otherwise
    */
-  public boolean hasIdmRecord(final EidasAuthenticationToken token, final UserAuthenticationInputToken inputToken) {
+  public boolean hasIdmRecord(final @NonNull EidasAuthenticationToken token,
+      final @NonNull UserAuthenticationInputToken inputToken) {
     try {
       return this.idmClient.hasRecord(token);
     }
@@ -540,7 +544,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param token the token to update
    * @param inputToken the input token
    */
-  public void obtainIdmRecord(final EidasAuthenticationToken token, final UserAuthenticationInputToken inputToken) {
+  public void obtainIdmRecord(final @NonNull EidasAuthenticationToken token,
+      final @NonNull UserAuthenticationInputToken inputToken) {
     try {
       final IdmRecord idmRecord = this.idmClient.getRecord(token);
 
@@ -596,8 +601,9 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @return an {@code AuthnRequest}
    * @throws SamlErrorStatusException for errors generating the request
    */
-  public RequestHttpObject<AuthnRequest> generateAuthnRequest(final HttpServletRequest httpServletRequest,
-      final String country, final RedirectForAuthenticationToken token) throws SamlErrorStatusException {
+  public @NonNull RequestHttpObject<AuthnRequest> generateAuthnRequest(
+      final @NonNull HttpServletRequest httpServletRequest, final @NonNull String country,
+      final @NonNull RedirectForAuthenticationToken token) throws SamlErrorStatusException {
 
     final UserAuthenticationInputToken inputToken = token.getAuthnInputToken();
 
@@ -642,20 +648,20 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * Supports {@link EidasAuthenticationToken} and {@link EidasAuthenticationErrorToken}.
    */
   @Override
-  public boolean supportsUserAuthenticationToken(final Authentication authentication) {
+  public boolean supportsUserAuthenticationToken(final @Nullable Authentication authentication) {
     return authentication instanceof EidasAuthenticationToken
         || authentication instanceof EidasAuthenticationErrorToken;
   }
 
   /** {@inheritDoc} */
   @Override
-  public String getName() {
+  public @NonNull String getName() {
     return "eidas-authn";
   }
 
   /** {@inheritDoc} */
   @Override
-  public List<String> getSupportedAuthnContextUris() {
+  public @NonNull List<String> getSupportedAuthnContextUris() {
     return this.supportedLoas;
   }
 
@@ -663,7 +669,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * Special handling since we also may support the special URI {@code http://eidas.europa.eu/LoA/test}.
    */
   @Override
-  protected List<String> filterRequestedAuthnContextUris(final UserAuthenticationInputToken token) {
+  protected @NonNull List<String> filterRequestedAuthnContextUris(final @NonNull UserAuthenticationInputToken token) {
     final List<String> filtered = super.filterRequestedAuthnContextUris(token);
     if (this.pingWhitelist.isEmpty() || !this.pingWhitelist.contains(token.getRequester().identifier())) {
       return filtered;
@@ -682,13 +688,13 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param token the input token
    * @return {@code true} if it is a ping request and {@code false} otherwise
    */
-  public boolean isPingRequest(final UserAuthenticationInputToken token) {
+  public boolean isPingRequest(final @NonNull UserAuthenticationInputToken token) {
     return token.getAuthnRequirements().getAuthnContextRequirements().contains(EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF);
   }
 
   /** {@inheritDoc} */
   @Override
-  public List<String> getEntityCategories() {
+  public @NonNull List<String> getEntityCategories() {
     return this.entityCategories;
   }
 
@@ -698,7 +704,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param httpRequest the HTTP servlet request
    * @param token the token to save
    */
-  public void saveEidasAuthenticationToken(final HttpServletRequest httpRequest, final EidasAuthenticationToken token) {
+  public void saveEidasAuthenticationToken(final @NonNull HttpServletRequest httpRequest,
+      final @NonNull EidasAuthenticationToken token) {
     httpRequest.getSession().setAttribute(getTokenSessionKey(httpRequest), token);
   }
 
@@ -707,7 +714,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    *
    * @param httpRequest the HTTP servlet request
    */
-  public void removeEidasAuthenticationToken(final HttpServletRequest httpRequest) {
+  public void removeEidasAuthenticationToken(final @NonNull HttpServletRequest httpRequest) {
     final HttpSession session = httpRequest.getSession(false);
     if (session != null) {
       session.removeAttribute(getTokenSessionKey(httpRequest));
@@ -721,7 +728,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @return an {@link EidasAuthenticationToken}
    * @throws UnrecoverableErrorException for session errors
    */
-  public EidasAuthenticationToken getEidasAuthenticationToken(final HttpServletRequest httpRequest)
+  public @NonNull EidasAuthenticationToken getEidasAuthenticationToken(final @NonNull HttpServletRequest httpRequest)
       throws UnrecoverableErrorException {
 
     final HttpSession session = httpRequest.getSession();

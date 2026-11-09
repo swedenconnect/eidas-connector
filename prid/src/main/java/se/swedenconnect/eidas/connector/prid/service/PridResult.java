@@ -15,11 +15,13 @@
  */
 package se.swedenconnect.eidas.connector.prid.service;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Represents a PRID request result.
  *
  * @param prid the Provisional ID
  * @param pridPersistence the persistence class
  */
-public record PridResult(String prid, String pridPersistence) {
+public record PridResult(@NonNull String prid, @NonNull String pridPersistence) {
 }

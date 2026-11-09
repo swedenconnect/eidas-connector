@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * An interface defining the method that gets us an OAuth2 access token.
  *
@@ -27,7 +29,7 @@ public interface OAuth2Handler {
    * @return a serialized access token
    * @throws IdmException for errors getting the access token
    */
-  String getCheckAccessToken() throws IdmException;
+  @NonNull String getCheckAccessToken() throws IdmException;
 
   /**
    * Gets the OAuth2 access token needed for our GET call to the IdM Query API.
@@ -36,6 +38,6 @@ public interface OAuth2Handler {
    * @return a serialized access token
    * @throws IdmException for errors getting the access token
    */
-  String getGetAccessToken(final String prid) throws IdmException;
+  @NonNull String getGetAccessToken(final @NonNull String prid) throws IdmException;
 
 }

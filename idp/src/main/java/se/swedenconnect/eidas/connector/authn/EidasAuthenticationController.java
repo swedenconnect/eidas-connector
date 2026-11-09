@@ -18,6 +18,8 @@ package se.swedenconnect.eidas.connector.authn;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.StatusCode;
@@ -71,52 +73,52 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
   private static final Logger log = LoggerFactory.getLogger(EidasAuthenticationController.class);
 
   /** The path for receiving eIDAS assertions. */
-  public static final String ASSERTION_CONSUMER_PATH = "/extauth/saml2/post";
+  public static final @NonNull String ASSERTION_CONSUMER_PATH = "/extauth/saml2/post";
 
   /** Symbolic name for the action parameter value of "ok". */
-  public static final String ACTION_OK = "ok";
+  public static final @NonNull String ACTION_OK = "ok";
 
   /** Symbolic name for the action parameter value of "cancel". */
-  public static final String ACTION_CANCEL = "cancel";
+  public static final @NonNull String ACTION_CANCEL = "cancel";
 
   /** The name of the model attribute holding the identifier of the authentication. */
-  public static final String AUTHN_ID_MODEL_ATTRIBUTE = "authnId";
+  public static final @NonNull String AUTHN_ID_MODEL_ATTRIBUTE = "authnId";
 
   /** The authentication provider. */
-  private final EidasAuthenticationProvider provider;
+  private final @NonNull EidasAuthenticationProvider provider;
 
   /** The UI language handler. */
-  private final UiLanguageHandler uiLanguageHandler;
+  private final @NonNull UiLanguageHandler uiLanguageHandler;
 
   /** Factory for UI model. */
-  private final EidasUiModelFactory eidasUiModelFactory;
+  private final @NonNull EidasUiModelFactory eidasUiModelFactory;
 
   /** Factory for sign consent UI model. */
-  private final SignUiModelFactory signUiModelFactory;
+  private final @NonNull SignUiModelFactory signUiModelFactory;
 
   /** Factory for IdM consent UI model. */
-  private final IdmUiModelFactory idmUiModelFactory;
+  private final @NonNull IdmUiModelFactory idmUiModelFactory;
 
   /** Cookie generator for saving selected country. */
-  private final CookieGenerator selectedCountryCookieGenerator;
+  private final @NonNull CookieGenerator selectedCountryCookieGenerator;
 
   /** Session cookie generator for saving selected country. */
-  private final CookieGenerator selectedCountrySessionCookieGenerator;
+  private final @NonNull CookieGenerator selectedCountrySessionCookieGenerator;
 
   /** Session cookie generator for IdM consents. */
-  private final CookieGenerator idmConsentCookieGenerator;
+  private final @NonNull CookieGenerator idmConsentCookieGenerator;
 
   /** Cookie generator for controlling whether the IdM banner should be hidden. */
-  private final CookieGenerator idmHideBannerCookieGenerator;
+  private final @NonNull CookieGenerator idmHideBannerCookieGenerator;
 
   /** For assisting us in selecting possible countries (to display). */
-  private final EidasCountryHandler countryHandler;
+  private final @NonNull EidasCountryHandler countryHandler;
 
   /** The event publisher. */
-  private final ApplicationEventPublisher eventPublisher;
+  private final @NonNull ApplicationEventPublisher eventPublisher;
 
   /** For auditing errors that cannot be reported to the Swedish SP. */
-  private final AuthnEventPublisher authnEventPublisher;
+  private final @NonNull AuthnEventPublisher authnEventPublisher;
 
   /**
    * Constructor.
@@ -133,17 +135,18 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @param countryHandler for assisting us in selecting possible countries (to display)
    * @param eventPublisher the event publisher
    */
-  public EidasAuthenticationController(final EidasAuthenticationProvider provider,
-      final UiLanguageHandler uiLanguageHandler,
-      final EidasUiModelFactory eidasUiModelFactory,
-      final SignUiModelFactory signUiModelFactory,
-      final IdmUiModelFactory idmUiModelFactory,
-      @Qualifier("selectedCountryCookieGenerator") final CookieGenerator selectedCountryCookieGenerator,
-      @Qualifier("selectedCountrySessionCookieGenerator") final CookieGenerator selectedCountrySessionCookieGenerator,
-      @Qualifier("idmConsentSessionCookieGenerator") final CookieGenerator idmConsentCookieGenerator,
-      @Qualifier("idmHideBannerCookieGenerator") final CookieGenerator idmHideBannerCookieGenerator,
-      final EidasCountryHandler countryHandler,
-      final ApplicationEventPublisher eventPublisher) {
+  public EidasAuthenticationController(final @NonNull EidasAuthenticationProvider provider,
+      final @NonNull UiLanguageHandler uiLanguageHandler,
+      final @NonNull EidasUiModelFactory eidasUiModelFactory,
+      final @NonNull SignUiModelFactory signUiModelFactory,
+      final @NonNull IdmUiModelFactory idmUiModelFactory,
+      @Qualifier("selectedCountryCookieGenerator") final @NonNull CookieGenerator selectedCountryCookieGenerator,
+      @Qualifier("selectedCountrySessionCookieGenerator")
+      final @NonNull CookieGenerator selectedCountrySessionCookieGenerator,
+      @Qualifier("idmConsentSessionCookieGenerator") final @NonNull CookieGenerator idmConsentCookieGenerator,
+      @Qualifier("idmHideBannerCookieGenerator") final @NonNull CookieGenerator idmHideBannerCookieGenerator,
+      final @NonNull EidasCountryHandler countryHandler,
+      final @NonNull ApplicationEventPublisher eventPublisher) {
     this.provider = provider;
     this.uiLanguageHandler = uiLanguageHandler;
     this.eidasUiModelFactory = eidasUiModelFactory;
@@ -160,7 +163,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
   /** {@inheritDoc} */
   @Override
-  protected EidasAuthenticationProvider getProvider() {
+  protected @NonNull EidasAuthenticationProvider getProvider() {
     return this.provider;
   }
 
@@ -173,8 +176,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @return a {@link ModelAndView}
    */
   @GetMapping(EidasAuthenticationProvider.AUTHN_PATH)
-  public ModelAndView authenticate(final HttpServletRequest request, final HttpServletResponse response,
-      @RequestParam(name = "lang", required = false) final String language) {
+  public @NonNull ModelAndView authenticate(final @NonNull HttpServletRequest request,
+      final @NonNull HttpServletResponse response,
+      @RequestParam(name = "lang", required = false) final @Nullable String language) {
 
     final RedirectForAuthenticationToken redirectToken = this.getInputToken(request);
     final UserAuthenticationInputToken token = redirectToken.getAuthnInputToken();
@@ -266,9 +270,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @return a model and view for POST or redirect of the request
    */
   @PostMapping(value = EidasAuthenticationProvider.AUTHN_PATH + "/proxyauth")
-  public ModelAndView initiateAuthentication(
-      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
-      @RequestParam(name = "selectedCountry") final String selectedCountry) {
+  public @NonNull ModelAndView initiateAuthentication(
+      final @NonNull HttpServletRequest httpRequest, final @NonNull HttpServletResponse httpResponse,
+      @RequestParam(name = "selectedCountry") final @NonNull String selectedCountry) {
 
     final RedirectForAuthenticationToken redirectToken = this.getInputToken(httpRequest);
     final UserAuthenticationInputToken inputToken = redirectToken.getAuthnInputToken();
@@ -323,10 +327,10 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @return a {@link ModelAndView}
    */
   @PostMapping(value = ASSERTION_CONSUMER_PATH)
-  public ModelAndView foreignResponse(
-      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
-      @RequestParam(name = "SAMLResponse", required = false) final String samlResponse,
-      @RequestParam(name = "RelayState", required = false) final String relayState) {
+  public @NonNull ModelAndView foreignResponse(
+      final @NonNull HttpServletRequest httpRequest, final @NonNull HttpServletResponse httpResponse,
+      @RequestParam(name = "SAMLResponse", required = false) final @Nullable String samlResponse,
+      @RequestParam(name = "RelayState", required = false) final @Nullable String relayState) {
 
     log.debug("Received SAML response [client-ip-address='{}']", httpRequest.getRemoteAddr());
 
@@ -357,8 +361,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @param signConsentProcessed if the Sign consent step has been completed
    * @return a {@link ModelAndView} instance
    */
-  private ModelAndView completeAuthentication(final HttpServletRequest httpRequest,
-      final HttpServletResponse httpResponse, final EidasAuthenticationToken token,
+  private @NonNull ModelAndView completeAuthentication(final @NonNull HttpServletRequest httpRequest,
+      final @NonNull HttpServletResponse httpResponse, final @NonNull EidasAuthenticationToken token,
       final boolean idmProcessed, final boolean signConsentProcessed) {
 
     final UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
@@ -446,9 +450,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @return a ModelAndView object representing the IdM consent page
    */
   @GetMapping(EidasAuthenticationProvider.AUTHN_PATH + "/idmconsent")
-  public ModelAndView idmConsentPage(
-      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
-      @RequestParam(name = "lang", required = false) final String language) {
+  public @NonNull ModelAndView idmConsentPage(
+      final @NonNull HttpServletRequest httpRequest, final @NonNull HttpServletResponse httpResponse,
+      @RequestParam(name = "lang", required = false) final @Nullable String language) {
 
     if (language != null) {
       this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
@@ -472,9 +476,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @return a {@link ModelAndView}
    */
   @PostMapping(EidasAuthenticationProvider.AUTHN_PATH + "/idmresult")
-  public ModelAndView idmConsentResult(
-      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
-      @RequestParam(name = "action") final String action) {
+  public @NonNull ModelAndView idmConsentResult(
+      final @NonNull HttpServletRequest httpRequest, final @NonNull HttpServletResponse httpResponse,
+      @RequestParam(name = "action") final @NonNull String action) {
 
     final UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
     final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest);
@@ -509,9 +513,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @return a ModelAndView object representing the sign consent page
    */
   @GetMapping(EidasAuthenticationProvider.AUTHN_PATH + "/consent")
-  public ModelAndView signConsentPage(
-      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
-      @RequestParam(name = "lang", required = false) final String language) {
+  public @NonNull ModelAndView signConsentPage(
+      final @NonNull HttpServletRequest httpRequest, final @NonNull HttpServletResponse httpResponse,
+      @RequestParam(name = "lang", required = false) final @Nullable String language) {
 
     if (language != null) {
       this.uiLanguageHandler.setUiLanguage(httpRequest, httpResponse, language);
@@ -541,9 +545,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @return a {@link ModelAndView}
    */
   @PostMapping(EidasAuthenticationProvider.AUTHN_PATH + "/signed")
-  public ModelAndView signConsentResult(
-      final HttpServletRequest httpRequest, final HttpServletResponse httpResponse,
-      @RequestParam(name = "action") final String action) {
+  public @NonNull ModelAndView signConsentResult(
+      final @NonNull HttpServletRequest httpRequest, final @NonNull HttpServletResponse httpResponse,
+      @RequestParam(name = "action") final @NonNull String action) {
 
     final UserAuthenticationInputToken inputToken = this.getInputToken(httpRequest).getAuthnInputToken();
     final EidasAuthenticationToken token = this.getProvider().getEidasAuthenticationToken(httpRequest);
@@ -572,7 +576,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
   /** {@inheritDoc} */
   @Override
-  protected ModelAndView complete(final HttpServletRequest request, final Authentication authentication) {
+  protected @NonNull ModelAndView complete(final @NonNull HttpServletRequest request,
+      final @NonNull Authentication authentication) {
     this.getProvider().removeEidasAuthenticationToken(request);
     return super.complete(request, authentication);
   }
@@ -584,13 +589,14 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @param error the error
    * @return a redirect to the resume path
    */
-  protected ModelAndView completeWithError(final HttpServletRequest request, final SamlErrorStatusException error) {
+  protected @NonNull ModelAndView completeWithError(final @NonNull HttpServletRequest request,
+      final @NonNull SamlErrorStatusException error) {
     return this.complete(request, new EidasAuthenticationErrorToken(error));
   }
 
   /** {@inheritDoc} */
   @Override
-  protected ModelAndView cancel(final HttpServletRequest request) {
+  protected @NonNull ModelAndView cancel(final @NonNull HttpServletRequest request) {
     this.getProvider().removeEidasAuthenticationToken(request);
     return super.cancel(request);
   }
@@ -603,7 +609,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
    * @return a {@link ModelAndView}
    */
   @ExceptionHandler(Exception.class)
-  public ModelAndView handleException(final HttpServletRequest request, final Exception e) {
+  public @NonNull ModelAndView handleException(final @NonNull HttpServletRequest request, final @NonNull Exception e) {
 
     if (e instanceof final UnrecoverableErrorException unrecoverable) {
       log.info("Error that cannot be reported to the Service Provider - {}", e.getMessage());
@@ -632,11 +638,11 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     DENIED_CONSENT("denied-consent"),
     GAVE_CONSENT("gave-consent");
 
-    public String getValue() {
+    public @NonNull String getValue() {
       return this.value;
     }
 
-    public static IdmSessionState fromString(final String value) {
+    public static @Nullable IdmSessionState fromString(final @Nullable String value) {
       for (final IdmSessionState state : IdmSessionState.values()) {
         if (state.getValue().equals(value)) {
           return state;
@@ -645,9 +651,9 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       return null;
     }
 
-    private final String value;
+    private final @NonNull String value;
 
-    IdmSessionState(final String value) {
+    IdmSessionState(final @NonNull String value) {
       this.value = value;
     }
   }

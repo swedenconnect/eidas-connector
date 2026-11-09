@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.Response;
 
 import se.swedenconnect.eidas.connector.ApplicationVersion;
@@ -34,10 +36,10 @@ public class ResponseProcessingErrorEvent extends AbstractConnectorAuthnEvent {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The error message. */
-  private final String errorMsg;
+  private final @Nullable String errorMsg;
 
   /** The SAML response */
-  private final SerializableOpenSamlObject<Response> response;
+  private final @Nullable SerializableOpenSamlObject<Response> response;
 
   /**
    * Constructor.
@@ -45,7 +47,8 @@ public class ResponseProcessingErrorEvent extends AbstractConnectorAuthnEvent {
    * @param token the input token
    * @param errorMsg the error message
    */
-  public ResponseProcessingErrorEvent(final UserAuthenticationInputToken token, final String errorMsg) {
+  public ResponseProcessingErrorEvent(
+      final @NonNull UserAuthenticationInputToken token, final @Nullable String errorMsg) {
     this(token, errorMsg, null);
   }
 
@@ -56,8 +59,8 @@ public class ResponseProcessingErrorEvent extends AbstractConnectorAuthnEvent {
    * @param errorMsg the error message
    * @param response the SAML response
    */
-  public ResponseProcessingErrorEvent(final UserAuthenticationInputToken token, final String errorMsg,
-      final Response response) {
+  public ResponseProcessingErrorEvent(final @NonNull UserAuthenticationInputToken token,
+      final @Nullable String errorMsg, final @Nullable Response response) {
     super(token);
     this.errorMsg = errorMsg;
     this.response = response != null ? new SerializableOpenSamlObject<>(response) : null;
@@ -68,7 +71,7 @@ public class ResponseProcessingErrorEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the error message
    */
-  public String getErrorMsg() {
+  public @Nullable String getErrorMsg() {
     return this.errorMsg;
   }
 
@@ -77,7 +80,7 @@ public class ResponseProcessingErrorEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the {@link Response} or {@code null} if it is not available
    */
-  public Response getResponse() {
+  public @Nullable Response getResponse() {
     return this.response != null ? this.response.get() : null;
   }
 

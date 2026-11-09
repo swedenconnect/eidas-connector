@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryConstants;
 import se.swedenconnect.spring.authnserver.authentication.AuthenticationRequirements;
 import se.swedenconnect.spring.authnserver.authentication.Requester;
@@ -36,9 +37,9 @@ public class SignServiceSsoVoter implements SsoVoter {
 
   /** {@inheritDoc} */
   @Override
-  public SsoDecision vote(final UserAuthentication previousAuthentication,
-      final AuthenticationRequirements requirements, final Requester requester,
-      final List<String> allowedAuthnContexts) {
+  public @NonNull SsoDecision vote(final @NonNull UserAuthentication previousAuthentication,
+      final @NonNull AuthenticationRequirements requirements, final @NonNull Requester requester,
+      final @NonNull List<String> allowedAuthnContexts) {
     return isSignatureService(requirements)
         ? SsoDecision.deny(SsoDenialReason.NOT_ALLOWED)
         : SsoDecision.abstain();
@@ -51,7 +52,7 @@ public class SignServiceSsoVoter implements SsoVoter {
    * @param requirements the authentication requirements
    * @return {@code true} if the requester is a signature service, and {@code false} otherwise
    */
-  public static boolean isSignatureService(final AuthenticationRequirements requirements) {
+  public static boolean isSignatureService(final @NonNull AuthenticationRequirements requirements) {
     return requirements instanceof final SamlAuthenticationRequirements samlRequirements
         && samlRequirements.getEntityCategories()
         .contains(EntityCategoryConstants.SERVICE_TYPE_CATEGORY_SIGSERVICE.getUri());

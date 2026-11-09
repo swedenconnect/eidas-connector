@@ -15,7 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp.validators;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.common.assertion.AssertionValidationException;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.common.assertion.ValidationResult;
@@ -42,7 +42,7 @@ public class EidasAttributeStatementValidator extends SwedishEidAttributeStateme
   private static final Logger log = LoggerFactory.getLogger(EidasAttributeStatementValidator.class);
 
   /** Attribute names for the eIDAS minimum dataset. */
-  private static final List<String> EIDAS_MINIMUM_DATASET = List.of(
+  private static final @NonNull List<String> EIDAS_MINIMUM_DATASET = List.of(
       se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME,
       se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_DATE_OF_BIRTH_ATTRIBUTE_NAME,
       se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants.EIDAS_CURRENT_GIVEN_NAME_ATTRIBUTE_NAME,
@@ -53,9 +53,8 @@ public class EidasAttributeStatementValidator extends SwedishEidAttributeStateme
    * attributes.
    */
   @Override
-  @Nonnull
-  public ValidationResult validate(final Statement statement, final Assertion assertion,
-      final ValidationContext context) throws AssertionValidationException {
+  public @NonNull ValidationResult validate(final @NonNull Statement statement, final @NonNull Assertion assertion,
+      final @NonNull ValidationContext context) throws AssertionValidationException {
 
     final ValidationResult result = super.validate(statement, assertion, context);
     if (result == ValidationResult.INVALID) {
@@ -76,7 +75,7 @@ public class EidasAttributeStatementValidator extends SwedishEidAttributeStateme
 
   /** {@inheritDoc} */
   @Override
-  protected Collection<String> getRequiredAttributes(final ValidationContext context) {
+  protected @NonNull Collection<String> getRequiredAttributes(final @NonNull ValidationContext context) {
     return EIDAS_MINIMUM_DATASET;
   }
 

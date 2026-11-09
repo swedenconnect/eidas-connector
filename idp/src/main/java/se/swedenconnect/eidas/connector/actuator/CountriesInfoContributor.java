@@ -17,6 +17,8 @@ package se.swedenconnect.eidas.connector.actuator;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.actuate.info.Info.Builder;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
@@ -35,20 +37,20 @@ import java.util.Objects;
 public class CountriesInfoContributor implements InfoContributor {
 
   /** The EU metadata. */
-  private final EuMetadataProvider euMetadata;
+  private final @NonNull EuMetadataProvider euMetadata;
 
   /**
    * Constructor.
    *
    * @param euMetadata the EU metadata
    */
-  public CountriesInfoContributor(final EuMetadataProvider euMetadata) {
+  public CountriesInfoContributor(final @NonNull EuMetadataProvider euMetadata) {
     this.euMetadata = Objects.requireNonNull(euMetadata, "euMetadata must not be null");
   }
 
   /** {@inheritDoc} */
   @Override
-  public void contribute(final Builder builder) {
+  public void contribute(final @NonNull Builder builder) {
     builder.withDetail("countries", this.euMetadata.getAllCountries().stream()
         .map(CountryInfo::new)
         .toList());
@@ -61,15 +63,15 @@ public class CountriesInfoContributor implements InfoContributor {
   private static class CountryInfo {
 
     @JsonProperty("country-code")
-    private String countryCode;
+    private @Nullable String countryCode;
 
     @JsonProperty("entity-id")
-    private String entityId;
+    private @Nullable String entityId;
 
     @JsonProperty("assurance-levels")
-    private List<String> assuranceLevels;
+    private @Nullable List<String> assuranceLevels;
 
-    private Boolean hidden;
+    private @Nullable Boolean hidden;
 
     /**
      * Default constructor.
@@ -82,7 +84,7 @@ public class CountriesInfoContributor implements InfoContributor {
      *
      * @param metadata the country metadata
      */
-    public CountryInfo(final CountryMetadata metadata) {
+    public CountryInfo(final @NonNull CountryMetadata metadata) {
       this.countryCode = metadata.getCountryCode();
       this.entityId = metadata.getEntityID();
       this.assuranceLevels = metadata.getAssuranceLevels();
@@ -96,7 +98,7 @@ public class CountriesInfoContributor implements InfoContributor {
      *
      * @return the country code
      */
-    public String getCountryCode() {
+    public @Nullable String getCountryCode() {
       return this.countryCode;
     }
 
@@ -105,7 +107,7 @@ public class CountriesInfoContributor implements InfoContributor {
      *
      * @param countryCode the country code
      */
-    public void setCountryCode(final String countryCode) {
+    public void setCountryCode(final @Nullable String countryCode) {
       this.countryCode = countryCode;
     }
 
@@ -114,7 +116,7 @@ public class CountriesInfoContributor implements InfoContributor {
      *
      * @return the entityID
      */
-    public String getEntityId() {
+    public @Nullable String getEntityId() {
       return this.entityId;
     }
 
@@ -123,7 +125,7 @@ public class CountriesInfoContributor implements InfoContributor {
      *
      * @param entityId the entityID
      */
-    public void setEntityId(final String entityId) {
+    public void setEntityId(final @Nullable String entityId) {
       this.entityId = entityId;
     }
 
@@ -132,7 +134,7 @@ public class CountriesInfoContributor implements InfoContributor {
      *
      * @return the assurance levels
      */
-    public List<String> getAssuranceLevels() {
+    public @Nullable List<String> getAssuranceLevels() {
       return this.assuranceLevels;
     }
 
@@ -141,7 +143,7 @@ public class CountriesInfoContributor implements InfoContributor {
      *
      * @param assuranceLevels the assurance levels
      */
-    public void setAssuranceLevels(final List<String> assuranceLevels) {
+    public void setAssuranceLevels(final @Nullable List<String> assuranceLevels) {
       this.assuranceLevels = assuranceLevels;
     }
 
@@ -150,7 +152,7 @@ public class CountriesInfoContributor implements InfoContributor {
      *
      * @return whether the country is hidden from discovery
      */
-    public Boolean getHidden() {
+    public @Nullable Boolean getHidden() {
       return this.hidden;
     }
 
@@ -159,13 +161,13 @@ public class CountriesInfoContributor implements InfoContributor {
      *
      * @param hidden whether the country is hidden from discovery
      */
-    public void setHidden(final Boolean hidden) {
+    public void setHidden(final @Nullable Boolean hidden) {
       this.hidden = hidden;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -184,7 +186,7 @@ public class CountriesInfoContributor implements InfoContributor {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "countryCode=" + this.countryCode + ", entityId=" + this.entityId
           + ", assuranceLevels=" + this.assuranceLevels + ", hidden=" + this.hidden;
     }

@@ -17,6 +17,8 @@ package se.swedenconnect.eidas.connector.authn.ui;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -41,13 +43,13 @@ import java.util.Optional;
 public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
 
   /** The message source. */
-  private final MessageSource messageSource;
+  private final @NonNull MessageSource messageSource;
 
   /** The IdM Service URL. */
-  private final String idmServiceUrl;
+  private final @Nullable String idmServiceUrl;
 
   /** Cookie generator for controlling whether the IdM banner should be hidden. */
-  private final CookieGenerator idmHideBannerCookieGenerator;
+  private final @NonNull CookieGenerator idmHideBannerCookieGenerator;
 
   /**
    * Constructor.
@@ -57,9 +59,9 @@ public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
    * @param messageSource the message source
    * @param idmServiceUrl the IdM service URL
    */
-  public EidasUiModelFactory(final UiLanguageHandler languageHandler, final String accessibilityUrl,
-      final MessageSource messageSource, final String idmServiceUrl,
-      final CookieGenerator idmHideBannerCookieGenerator) {
+  public EidasUiModelFactory(final @NonNull UiLanguageHandler languageHandler, final @NonNull String accessibilityUrl,
+      final @NonNull MessageSource messageSource, final @Nullable String idmServiceUrl,
+      final @NonNull CookieGenerator idmHideBannerCookieGenerator) {
     super(languageHandler, accessibilityUrl);
     this.messageSource = messageSource;
     this.idmServiceUrl = idmServiceUrl;
@@ -74,9 +76,9 @@ public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
    * @param selectableCountries available countries
    * @return an {@link EidasUiModel}
    */
-  public EidasUiModel createUiModel(final HttpServletRequest request,
-      final UserAuthenticationInputToken token,
-      final List<SelectableCountry> selectableCountries) {
+  public @NonNull EidasUiModel createUiModel(final @NonNull HttpServletRequest request,
+      final @NonNull UserAuthenticationInputToken token,
+      final @Nullable List<SelectableCountry> selectableCountries) {
 
     final EidasUiModel uiModel = new EidasUiModel();
     this.initModel(uiModel, token);

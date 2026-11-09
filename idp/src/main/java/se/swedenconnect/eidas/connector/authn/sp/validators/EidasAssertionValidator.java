@@ -15,7 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp.validators;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.common.assertion.ValidationResult;
 import org.opensaml.saml.saml2.assertion.ConditionValidator;
@@ -56,8 +56,8 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
    * @param trustEngine the trust used to validate the object's signature
    * @param signaturePrevalidator the signature pre-validator used to pre-validate the object's signature
    */
-  public EidasAssertionValidator(final SignatureTrustEngine trustEngine,
-      final SignaturePrevalidator signaturePrevalidator) {
+  public EidasAssertionValidator(final @NonNull SignatureTrustEngine trustEngine,
+      final @NonNull SignaturePrevalidator signaturePrevalidator) {
     super(trustEngine, signaturePrevalidator,
         List.of(new BearerSubjectConfirmationValidator()),
         List.of(new AudienceRestrictionConditionValidator(), new OneTimeUseDummyConditionValidator()),
@@ -69,7 +69,8 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
    * at their respective issue instants. We can tolerate a few milliseconds.
    */
   @Override
-  protected ValidationResult validateIssueInstant(final Assertion assertion, final ValidationContext context) {
+  protected @NonNull ValidationResult validateIssueInstant(final @NonNull Assertion assertion,
+      final @NonNull ValidationContext context) {
 
     final Instant responseIssueInstant = this.getResponseIssueInstant(context);
     if (responseIssueInstant != null) {
@@ -100,15 +101,13 @@ public class EidasAssertionValidator extends SwedishEidAssertionValidator {
   private static class OneTimeUseDummyConditionValidator implements ConditionValidator {
 
     @Override
-    @Nonnull
-    public QName getServicedCondition() {
+    public @NonNull QName getServicedCondition() {
       return OneTimeUse.DEFAULT_ELEMENT_NAME;
     }
 
     @Override
-    @Nonnull
-    public ValidationResult validate(@Nonnull final Condition condition, @Nonnull final Assertion assertion,
-        @Nonnull final ValidationContext context) {
+    public @NonNull ValidationResult validate(final @NonNull Condition condition,
+        final @NonNull Assertion assertion, final @NonNull ValidationContext context) {
       return ValidationResult.VALID;
     }
 

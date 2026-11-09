@@ -17,6 +17,8 @@ package se.swedenconnect.eidas.connector.config;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.webmvc.autoconfigure.error.ErrorViewResolver;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
@@ -35,12 +37,12 @@ import java.util.Map;
 public class UnrecoverableErrorViewResolver implements ErrorViewResolver, Ordered {
 
   /** The name of the view. */
-  public static final String VIEW_NAME = "error/idp";
+  public static final @NonNull String VIEW_NAME = "error/idp";
 
   /** {@inheritDoc} */
   @Override
-  public ModelAndView resolveErrorView(
-      final HttpServletRequest request, final HttpStatus status, final Map<String, Object> model) {
+  public @Nullable ModelAndView resolveErrorView(final @NonNull HttpServletRequest request,
+      final @NonNull HttpStatus status, final @NonNull Map<String, Object> model) {
     final UnrecoverableErrorException error = findError(request.getAttribute(RequestDispatcher.ERROR_EXCEPTION));
     if (error == null) {
       return null;
@@ -63,7 +65,7 @@ public class UnrecoverableErrorViewResolver implements ErrorViewResolver, Ordere
    * @param exception the exception, may be {@code null}
    * @return the error, or {@code null} if there is none
    */
-  static UnrecoverableErrorException findError(final Object exception) {
+  static @Nullable UnrecoverableErrorException findError(final @Nullable Object exception) {
     Throwable t = exception instanceof final Throwable throwable ? throwable : null;
     while (t != null) {
       if (t instanceof final UnrecoverableErrorException error) {

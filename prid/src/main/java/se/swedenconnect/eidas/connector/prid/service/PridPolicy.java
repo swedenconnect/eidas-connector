@@ -15,6 +15,9 @@
  */
 package se.swedenconnect.eidas.connector.prid.service;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import java.util.Map;
 
 /**
@@ -25,7 +28,7 @@ import java.util.Map;
 public class PridPolicy {
 
   /** The policy map. */
-  private Map<String, CountryPolicy> policy;
+  private @Nullable Map<String, CountryPolicy> policy;
 
   /**
    * Default constructor.
@@ -38,7 +41,7 @@ public class PridPolicy {
    *
    * @param policy the policy
    */
-  public PridPolicy(final Map<String, CountryPolicy> policy) {
+  public PridPolicy(final @Nullable Map<String, CountryPolicy> policy) {
     this.policy = policy;
   }
 
@@ -47,7 +50,7 @@ public class PridPolicy {
    *
    * @return the policy map
    */
-  public Map<String, CountryPolicy> getPolicy() {
+  public @Nullable Map<String, CountryPolicy> getPolicy() {
     return this.policy;
   }
 
@@ -56,7 +59,7 @@ public class PridPolicy {
    *
    * @param policy the policy map
    */
-  public void setPolicy(final Map<String, CountryPolicy> policy) {
+  public void setPolicy(final @Nullable Map<String, CountryPolicy> policy) {
     this.policy = policy;
   }
 
@@ -66,7 +69,7 @@ public class PridPolicy {
    * @param countryCode the country code
    * @return the policy for the given country, or {@code null} if no match is found
    */
-  public CountryPolicy getPolicy(final String countryCode) {
+  public @Nullable CountryPolicy getPolicy(final @NonNull String countryCode) {
     return this.policy.get(countryCode);
   }
 
@@ -81,7 +84,7 @@ public class PridPolicy {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return "policy=" + this.getPolicy();
   }
 

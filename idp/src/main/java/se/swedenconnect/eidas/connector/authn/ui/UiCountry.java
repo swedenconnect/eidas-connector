@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Represents a country when used in views.
  *
@@ -22,19 +24,19 @@ package se.swedenconnect.eidas.connector.authn.ui;
  */
 public class UiCountry implements Comparable<UiCountry> {
 
-  private final String code;
+  private final @NonNull String code;
 
-  private final String name;
+  private final @NonNull String name;
 
   private final boolean realCountry;
 
   private boolean disabled = false;
 
-  public UiCountry(final String code, final String name) {
+  public UiCountry(final @NonNull String code, final @NonNull String name) {
     this(code, name, true);
   }
 
-  public UiCountry(final String code, final String name, final boolean realCountry) {
+  public UiCountry(final @NonNull String code, final @NonNull String name, final boolean realCountry) {
     this.code = code;
     this.name = name;
     this.realCountry = realCountry;
@@ -45,7 +47,7 @@ public class UiCountry implements Comparable<UiCountry> {
    *
    * @return the country code
    */
-  public String getCode() {
+  public @NonNull String getCode() {
     return this.code;
   }
 
@@ -54,7 +56,7 @@ public class UiCountry implements Comparable<UiCountry> {
    *
    * @return the country name
    */
-  public String getName() {
+  public @NonNull String getName() {
     return this.name;
   }
 
@@ -85,7 +87,7 @@ public class UiCountry implements Comparable<UiCountry> {
     this.disabled = disabled;
   }
 
-  public String getFlag() {
+  public @NonNull String getFlag() {
     if (this.realCountry) {
       return this.code.toLowerCase();
     }
@@ -95,7 +97,7 @@ public class UiCountry implements Comparable<UiCountry> {
   }
 
   @Override
-  public int compareTo(final UiCountry otherCountry) {
+  public int compareTo(final @NonNull UiCountry otherCountry) {
     return this.name.compareTo(otherCountry.name);
   }
 

@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
@@ -32,7 +33,7 @@ public class IdentityMatchingConsentEvent extends AbstractConnectorAuthnEvent {
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The authentication token. */
-  private final EidasAuthenticationToken eidasToken;
+  private final @NonNull EidasAuthenticationToken eidasToken;
 
   /** Whether the user consented to sharing IdM record. */
   private final boolean consented;
@@ -45,7 +46,7 @@ public class IdentityMatchingConsentEvent extends AbstractConnectorAuthnEvent {
    * @param consented whether the user consented to sharing IdM record
    */
   public IdentityMatchingConsentEvent(
-      final UserAuthenticationInputToken inputToken, final EidasAuthenticationToken eidasToken,
+      final @NonNull UserAuthenticationInputToken inputToken, final @NonNull EidasAuthenticationToken eidasToken,
       final boolean consented) {
     super(inputToken);
     this.eidasToken = eidasToken;
@@ -57,7 +58,7 @@ public class IdentityMatchingConsentEvent extends AbstractConnectorAuthnEvent {
    *
    * @return the {@link EidasAuthenticationToken}
    */
-  public EidasAuthenticationToken getEidasToken() {
+  public @NonNull EidasAuthenticationToken getEidasToken() {
     return this.eidasToken;
   }
 

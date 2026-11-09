@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 
 import java.io.Serial;
@@ -43,7 +45,8 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
    * @param addedCountries a (possibly empty) list of added countries
    */
   public EuMetadataEvent(
-      final Instant instant, final List<String> removedCountries, final List<String> addedCountries) {
+      final @NonNull Instant instant, final @Nullable List<String> removedCountries,
+      final @Nullable List<String> addedCountries) {
     super(new EuMetadataUpdateData(instant, removedCountries, addedCountries));
   }
 
@@ -53,7 +56,7 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
    * @param instant the update instant
    * @param error the error that occurred
    */
-  public EuMetadataEvent(final Instant instant, final Exception error) {
+  public EuMetadataEvent(final @NonNull Instant instant, final @NonNull Exception error) {
     super(new EuMetadataUpdateData(instant, error));
   }
 
@@ -62,7 +65,7 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
    *
    * @return an {@link EuMetadataUpdateData} object
    */
-  public EuMetadataUpdateData getEuMetadataUpdateData() {
+  public @NonNull EuMetadataUpdateData getEuMetadataUpdateData() {
     return (EuMetadataUpdateData) this.getSource();
   }
 
@@ -71,7 +74,7 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
    *
    * @param info the information string
    */
-  public void addInformation(final String info) {
+  public void addInformation(final @Nullable String info) {
     this.getEuMetadataUpdateData().setInfo(info);
   }
 
@@ -84,19 +87,19 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
     private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
     /** The update instant. */
-    private final Instant instant;
+    private final @NonNull Instant instant;
 
     /** A list of country codes for countries that was previously present in the metadata, but now are not. */
-    private final List<String> removedCountries;
+    private final @NonNull List<String> removedCountries;
 
     /** A list of country codes for countries that have been added since the last update. */
-    private final List<String> addedCountries;
+    private final @NonNull List<String> addedCountries;
 
     /** For errors updating the metadata. */
-    private final Exception error;
+    private final @Nullable Exception error;
 
     /** Additional information string. */
-    private String info;
+    private @Nullable String info;
 
     /**
      * Constructor.
@@ -105,8 +108,8 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
      * @param removedCountries a (possibly empty) list of removed countries
      * @param addedCountries a (possibly empty) list of added countries
      */
-    public EuMetadataUpdateData(final Instant instant, final List<String> removedCountries,
-        final List<String> addedCountries) {
+    public EuMetadataUpdateData(final @NonNull Instant instant, final @Nullable List<String> removedCountries,
+        final @Nullable List<String> addedCountries) {
       this.instant = Objects.requireNonNull(instant, "instant must not be null");
       this.removedCountries = Optional.ofNullable(removedCountries).orElse(Collections.emptyList());
       this.addedCountries = Optional.ofNullable(addedCountries).orElse(Collections.emptyList());
@@ -119,7 +122,7 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
      * @param instant the update instant
      * @param error the error that occurred
      */
-    public EuMetadataUpdateData(final Instant instant, final Exception error) {
+    public EuMetadataUpdateData(final @NonNull Instant instant, final @NonNull Exception error) {
       this.instant = Objects.requireNonNull(instant, "instant must not be null");
       this.removedCountries = Collections.emptyList();
       this.addedCountries = Collections.emptyList();
@@ -131,7 +134,7 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
      *
      * @return the update instant
      */
-    public Instant getInstant() {
+    public @NonNull Instant getInstant() {
       return this.instant;
     }
 
@@ -140,7 +143,7 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
      *
      * @return the list of country codes for countries that were previously present in the metadata, but now are not
      */
-    public List<String> getRemovedCountries() {
+    public @NonNull List<String> getRemovedCountries() {
       return this.removedCountries;
     }
 
@@ -149,7 +152,7 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
      *
      * @return the list of country codes for countries that have been added since the last update
      */
-    public List<String> getAddedCountries() {
+    public @NonNull List<String> getAddedCountries() {
       return this.addedCountries;
     }
 
@@ -158,7 +161,7 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
      *
      * @return the error that occurred when updating the metadata
      */
-    public Exception getError() {
+    public @Nullable Exception getError() {
       return this.error;
     }
 
@@ -167,7 +170,7 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
      *
      * @return the additional information string
      */
-    public String getInfo() {
+    public @Nullable String getInfo() {
       return this.info;
     }
 
@@ -176,13 +179,13 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
      *
      * @param info the additional information string
      */
-    public void setInfo(final String info) {
+    public void setInfo(final @Nullable String info) {
       this.info = info;
     }
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return String.format("instant='%s', removed=%s, added=%s, info='%s', error=%s",
           this.instant, this.removedCountries, this.addedCountries, this.info != null ? this.info : "not-set",
           this.error != null ? String.format("%s (%s)", this.error.getClass().getSimpleName(), this.error.getMessage())

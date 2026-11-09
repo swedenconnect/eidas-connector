@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.audit;
 
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Response;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
@@ -36,10 +37,10 @@ public class EidasSuccessResponseAuditEvent extends AbstractEidasConnectorEvent 
   private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
   /** The SAML response. */
-  private final SerializableOpenSamlObject<Response> response;
+  private final @NonNull SerializableOpenSamlObject<Response> response;
 
   /** The SAML assertion, before it was encrypted. */
-  private final SerializableOpenSamlObject<Assertion> assertion;
+  private final @NonNull SerializableOpenSamlObject<Assertion> assertion;
 
   /**
    * Constructor.
@@ -48,7 +49,8 @@ public class EidasSuccessResponseAuditEvent extends AbstractEidasConnectorEvent 
    * @param response the SAML response
    * @param assertion the SAML assertion, before it was encrypted
    */
-  public EidasSuccessResponseAuditEvent(final String spEntityId, final Response response, final Assertion assertion) {
+  public EidasSuccessResponseAuditEvent(
+      final @NonNull String spEntityId, final @NonNull Response response, final @NonNull Assertion assertion) {
     super(Objects.requireNonNull(spEntityId, "spEntityId must not be null"));
     this.response = new SerializableOpenSamlObject<>(Objects.requireNonNull(response, "response must not be null"));
     this.assertion = new SerializableOpenSamlObject<>(Objects.requireNonNull(assertion, "assertion must not be null"));
@@ -59,7 +61,7 @@ public class EidasSuccessResponseAuditEvent extends AbstractEidasConnectorEvent 
    *
    * @return the entityID
    */
-  public String getSpEntityId() {
+  public @NonNull String getSpEntityId() {
     return (String) this.getSource();
   }
 
@@ -68,7 +70,7 @@ public class EidasSuccessResponseAuditEvent extends AbstractEidasConnectorEvent 
    *
    * @return the {@link Response}
    */
-  public Response getResponse() {
+  public @NonNull Response getResponse() {
     return this.response.get();
   }
 
@@ -77,7 +79,7 @@ public class EidasSuccessResponseAuditEvent extends AbstractEidasConnectorEvent 
    *
    * @return the {@link Assertion}
    */
-  public Assertion getAssertion() {
+  public @NonNull Assertion getAssertion() {
     return this.assertion.get();
   }
 

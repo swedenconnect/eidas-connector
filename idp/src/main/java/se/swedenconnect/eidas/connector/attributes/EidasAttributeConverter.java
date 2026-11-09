@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.attributes;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.saml.saml2.core.Attribute;
@@ -81,7 +83,7 @@ public class EidasAttributeConverter {
    * @param eidasAttributes the attributes of the eIDAS assertion
    * @return the generic attributes
    */
-  public List<GenericAttribute<?>> toGenericAttributes(final List<Attribute> eidasAttributes) {
+  public @NonNull List<GenericAttribute<?>> toGenericAttributes(final @NonNull List<Attribute> eidasAttributes) {
     final List<GenericAttribute<?>> attributes = new ArrayList<>();
 
     final boolean hasPlaceOfBirth = eidasAttributes.stream()
@@ -155,7 +157,7 @@ public class EidasAttributeConverter {
    * @param attribute the eIDAS attribute
    * @return the value, or {@code null} if the attribute has no value that can be read
    */
-  public static String getValue(final Attribute attribute) {
+  public static @Nullable String getValue(final @NonNull Attribute attribute) {
     final List<XMLObject> values = attribute.getAttributeValues();
     if (values.isEmpty()) {
       log.info("No attribute value present for eIDAS attribute '{}' - no conversion will be made",
@@ -181,7 +183,7 @@ public class EidasAttributeConverter {
    * @param attribute the eIDAS attribute
    * @return the values
    */
-  public static List<String> getValues(final Attribute attribute) {
+  public static @NonNull List<String> getValues(final @NonNull Attribute attribute) {
     return attribute.getAttributeValues().stream()
         .map(v -> toString(attribute, v))
         .filter(Objects::nonNull)

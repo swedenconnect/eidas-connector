@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.prid.service;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Country policy.
  *
@@ -23,10 +25,10 @@ package se.swedenconnect.eidas.connector.prid.service;
 public class CountryPolicy {
 
   /** The algorithm. */
-  private String algorithm;
+  private @Nullable String algorithm;
 
   /** The persistence class. */
-  private String persistenceClass;
+  private @Nullable String persistenceClass;
 
   /**
    * Default constructor.
@@ -40,7 +42,7 @@ public class CountryPolicy {
    * @param algorithm the algorithm
    * @param persistenceClass the persistence class
    */
-  public CountryPolicy(final String algorithm, final String persistenceClass) {
+  public CountryPolicy(final @Nullable String algorithm, final @Nullable String persistenceClass) {
     this.algorithm = algorithm;
     this.setPersistenceClass(persistenceClass);
   }
@@ -50,7 +52,7 @@ public class CountryPolicy {
    *
    * @return the algorithm
    */
-  public String getAlgorithm() {
+  public @Nullable String getAlgorithm() {
     return this.algorithm;
   }
 
@@ -59,7 +61,7 @@ public class CountryPolicy {
    *
    * @param algorithm the algorithm
    */
-  public void setAlgorithm(final String algorithm) {
+  public void setAlgorithm(final @Nullable String algorithm) {
     this.algorithm = algorithm;
   }
 
@@ -68,7 +70,7 @@ public class CountryPolicy {
    *
    * @return the persistence class
    */
-  public String getPersistenceClass() {
+  public @Nullable String getPersistenceClass() {
     return this.persistenceClass;
   }
 
@@ -77,7 +79,7 @@ public class CountryPolicy {
    *
    * @param persistenceClass the persistence class
    */
-  public void setPersistenceClass(final String persistenceClass) {
+  public void setPersistenceClass(final @Nullable String persistenceClass) {
     if (persistenceClass != null) {
       this.persistenceClass = persistenceClass.toUpperCase();
     }

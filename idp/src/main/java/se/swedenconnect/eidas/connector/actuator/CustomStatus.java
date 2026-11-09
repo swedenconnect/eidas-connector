@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.health.contributor.Status;
 
 /**
@@ -27,7 +28,7 @@ public class CustomStatus {
   /**
    * For warnings.
    */
-  public static final Status WARNING = new Status("WARNING");
+  public static final @NonNull Status WARNING = new Status("WARNING");
 
   // Hidden constructor
   private CustomStatus() {

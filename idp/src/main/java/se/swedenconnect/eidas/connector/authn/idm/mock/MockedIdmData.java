@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm.mock;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
@@ -35,19 +36,19 @@ import java.util.Objects;
 @ConfigurationProperties("idmmock")
 public class MockedIdmData {
 
-  private List<IdmQueryResponse> records;
+  private @Nullable List<IdmQueryResponse> records;
 
-  private X509Certificate asCertificate;
+  private @Nullable X509Certificate asCertificate;
 
   @Value("${connector.idm.oauth2.client-id}")
-  private String connectorId;
+  private @Nullable String connectorId;
 
   /**
    * Gets the mocked IdM records.
    *
    * @return the mocked IdM records
    */
-  public List<IdmQueryResponse> getRecords() {
+  public @Nullable List<IdmQueryResponse> getRecords() {
     return this.records;
   }
 
@@ -56,7 +57,7 @@ public class MockedIdmData {
    *
    * @param records the mocked IdM records
    */
-  public void setRecords(final List<IdmQueryResponse> records) {
+  public void setRecords(final @Nullable List<IdmQueryResponse> records) {
     this.records = records;
   }
 
@@ -65,7 +66,7 @@ public class MockedIdmData {
    *
    * @return the certificate of the authorization server issuing access tokens
    */
-  public X509Certificate getAsCertificate() {
+  public @Nullable X509Certificate getAsCertificate() {
     return this.asCertificate;
   }
 
@@ -74,7 +75,7 @@ public class MockedIdmData {
    *
    * @param asCertificate the certificate of the authorization server issuing access tokens
    */
-  public void setAsCertificate(final X509Certificate asCertificate) {
+  public void setAsCertificate(final @Nullable X509Certificate asCertificate) {
     this.asCertificate = asCertificate;
   }
 
@@ -83,7 +84,7 @@ public class MockedIdmData {
    *
    * @return the OAuth2 client ID of the connector
    */
-  public String getConnectorId() {
+  public @Nullable String getConnectorId() {
     return this.connectorId;
   }
 
@@ -92,7 +93,7 @@ public class MockedIdmData {
    *
    * @param connectorId the OAuth2 client ID of the connector
    */
-  public void setConnectorId(final String connectorId) {
+  public void setConnectorId(final @Nullable String connectorId) {
     this.connectorId = connectorId;
   }
 
@@ -102,7 +103,7 @@ public class MockedIdmData {
    * @param prid the PRID
    * @return the record, or {@code null} if no record exists
    */
-  public IdmQueryResponse getRecord(final String prid) {
+  public @Nullable IdmQueryResponse getRecord(final @Nullable String prid) {
     if (this.records == null) {
       return null;
     }

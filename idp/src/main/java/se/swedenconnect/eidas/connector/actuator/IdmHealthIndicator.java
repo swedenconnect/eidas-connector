@@ -15,7 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
@@ -32,14 +33,14 @@ import java.util.Optional;
 @Component("idm")
 public class IdmHealthIndicator implements HealthIndicator {
 
-  private final IdmClient idmClient;
+  private final @NonNull IdmClient idmClient;
 
   /**
    * Constructor assigning the {@link IdmClient}.
    *
    * @param idmClient the IDM client
    */
-  public IdmHealthIndicator(@Nonnull final IdmClient idmClient) {
+  public IdmHealthIndicator(final @NonNull IdmClient idmClient) {
     this.idmClient = idmClient;
   }
 
@@ -47,7 +48,7 @@ public class IdmHealthIndicator implements HealthIndicator {
    * Checks that the IDM API is responsive.
    */
   @Override
-  public Health health() {
+  public @Nullable Health health() {
     if (!this.idmClient.isActive()) {
       return null;
     }

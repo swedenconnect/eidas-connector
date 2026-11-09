@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.metadata.IterableMetadataSource;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
@@ -48,7 +49,7 @@ public class SamlMetadataHealthIndicator implements HealthIndicator {
   private static final Logger log = LoggerFactory.getLogger(SamlMetadataHealthIndicator.class);
 
   /** Gives the metadata resolvers for the federation. */
-  private final Supplier<List<MetadataResolver>> metadataResolvers;
+  private final @NonNull Supplier<List<MetadataResolver>> metadataResolvers;
 
   /**
    * Constructor.
@@ -56,7 +57,7 @@ public class SamlMetadataHealthIndicator implements HealthIndicator {
    * @param authnServer gives the metadata sources of the authentication server
    */
   @Autowired
-  public SamlMetadataHealthIndicator(final ConfiguredAuthnServer authnServer) {
+  public SamlMetadataHealthIndicator(final @NonNull ConfiguredAuthnServer authnServer) {
     Objects.requireNonNull(authnServer, "authnServer must not be null");
     this.metadataResolvers = () -> authnServer.getClientRegistryBackends(SamlMetadataBackend.class).stream()
         .flatMap(b -> b.getMetadataSources().stream())
@@ -69,14 +70,14 @@ public class SamlMetadataHealthIndicator implements HealthIndicator {
    *
    * @param metadataResolver the metadata resolver
    */
-  public SamlMetadataHealthIndicator(final MetadataResolver metadataResolver) {
+  public SamlMetadataHealthIndicator(final @NonNull MetadataResolver metadataResolver) {
     Objects.requireNonNull(metadataResolver, "metadataResolver must not be null");
     this.metadataResolvers = () -> List.of(metadataResolver);
   }
 
   /** {@inheritDoc} */
   @Override
-  public Health health() {
+  public @NonNull Health health() {
 
     final List<MetadataResolver> resolvers = this.metadataResolvers.get();
     final Health.Builder builder = new Health.Builder();

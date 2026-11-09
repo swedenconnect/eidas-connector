@@ -17,6 +17,8 @@ package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.SignatureConsentEvent;
 
@@ -38,7 +40,7 @@ public class SignatureConsentAuditData extends ConnectorAuditData {
 
   /** The user identity (personal identifier) of the user that consented/rejected the signature. */
   @JsonProperty("user")
-  private String user;
+  private @Nullable String user;
 
   /**
    * Gets whether the user consented to the signature.
@@ -63,7 +65,7 @@ public class SignatureConsentAuditData extends ConnectorAuditData {
    *
    * @return the user identity (personal identifier) of the user that consented/rejected the signature
    */
-  public String getUser() {
+  public @Nullable String getUser() {
     return this.user;
   }
 
@@ -72,13 +74,13 @@ public class SignatureConsentAuditData extends ConnectorAuditData {
    *
    * @param user the user identity (personal identifier) of the user that consented/rejected the signature
    */
-  public void setUser(final String user) {
+  public void setUser(final @Nullable String user) {
     this.user = user;
   }
 
   /** {@inheritDoc} */
   @Override
-  public String getName() {
+  public @NonNull String getName() {
     return "signature-consent-result";
   }
 
@@ -88,7 +90,7 @@ public class SignatureConsentAuditData extends ConnectorAuditData {
    * @param event a {@link SignatureConsentEvent}
    * @return a {@link SignatureConsentAuditData}
    */
-  public static SignatureConsentAuditData of(final SignatureConsentEvent event) {
+  public static @NonNull SignatureConsentAuditData of(final @NonNull SignatureConsentEvent event) {
     final SignatureConsentAuditData data = new SignatureConsentAuditData();
     data.setSignatureConsented(event.isSignatureConsented());
     data.setUser((String) event.getEidasToken().getPrincipal());
@@ -97,7 +99,7 @@ public class SignatureConsentAuditData extends ConnectorAuditData {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return String.format("signature-consented='%s', user='%s'", this.signatureConsented, this.user);
   }
 

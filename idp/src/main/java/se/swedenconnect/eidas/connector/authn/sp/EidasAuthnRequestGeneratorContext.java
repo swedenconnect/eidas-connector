@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.core.xml.Namespace;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.NameID;
@@ -41,28 +43,28 @@ import java.util.Optional;
 class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext {
 
   /** The country code. */
-  private final String country;
+  private final @NonNull String country;
 
   /** The entityID of the national SP that requested authentication. */
-  private final String nationalSpEntityId;
+  private final @NonNull String nationalSpEntityId;
 
   /** The type of SP that makes the request. */
-  private final SPTypeEnumeration spType;
+  private final @NonNull SPTypeEnumeration spType;
 
   /** The requested attributes. */
-  private final List<RequestedAttribute> requestedAttributes;
+  private final @NonNull List<RequestedAttribute> requestedAttributes;
 
   /** The requested authentication context class ref URI:s (Swedish). */
-  private final List<String> requestedAuthnContextClassRefs;
+  private final @NonNull List<String> requestedAuthnContextClassRefs;
 
   /** The name to add to the SAML attribute {@code ProviderName}. */
-  private final String providerName;
+  private final @NonNull String providerName;
 
   /** Preferred binding to use for authentication requests. */
-  private final String preferredBinding;
+  private final @NonNull String preferredBinding;
 
   /** The security configuration we use for signing. */
-  private final SecurityConfiguration securityConfiguration;
+  private final @NonNull SecurityConfiguration securityConfiguration;
 
   /**
    * Constructor.
@@ -76,10 +78,10 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    * @param preferredBinding the preferred binding
    * @param securityConfiguration the security configuration
    */
-  public EidasAuthnRequestGeneratorContext(final String country, final String nationalSpEntityId,
-      final SPTypeEnumeration spType, final List<RequestedAttribute> requestedAttributes,
-      final List<String> requestedAuthnContextClassRefs, final String providerName,
-      final String preferredBinding, final SecurityConfiguration securityConfiguration) {
+  public EidasAuthnRequestGeneratorContext(final @NonNull String country, final @NonNull String nationalSpEntityId,
+      final @Nullable SPTypeEnumeration spType, final @Nullable List<RequestedAttribute> requestedAttributes,
+      final @NonNull List<String> requestedAuthnContextClassRefs, final @Nullable String providerName,
+      final @Nullable String preferredBinding, final @NonNull SecurityConfiguration securityConfiguration) {
     this.country = Objects.requireNonNull(country, "country must not be null");
     this.nationalSpEntityId = Objects.requireNonNull(nationalSpEntityId, "nationalSpEntityId must not be null");
     this.spType = Optional.ofNullable(spType).orElse(SPTypeEnumeration.PUBLIC);
@@ -98,7 +100,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    *
    * @return the country code
    */
-  public String getCountryCode() {
+  public @NonNull String getCountryCode() {
     return this.country;
   }
 
@@ -106,7 +108,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    * The preferred binding.
    */
   @Override
-  public String getPreferredBinding() {
+  public @NonNull String getPreferredBinding() {
     return this.preferredBinding;
   }
 
@@ -115,7 +117,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    *
    * @return SAML entityID
    */
-  public String getNationalSpEntityId() {
+  public @NonNull String getNationalSpEntityId() {
     return this.nationalSpEntityId;
   }
 
@@ -124,7 +126,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    *
    * @return the SP type
    */
-  public SPTypeEnumeration getSpType() {
+  public @NonNull SPTypeEnumeration getSpType() {
     return this.spType;
   }
 
@@ -133,7 +135,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    *
    * @return the requested SAML attributes
    */
-  public List<RequestedAttribute> getRequestedAttributes() {
+  public @NonNull List<RequestedAttribute> getRequestedAttributes() {
     return this.requestedAttributes;
   }
 
@@ -142,7 +144,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    *
    * @return a list of URI:s
    */
-  public List<String> getRequestedAuthnContextClassRefs() {
+  public @NonNull List<String> getRequestedAuthnContextClassRefs() {
     return this.requestedAuthnContextClassRefs;
   }
 
@@ -150,7 +152,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    * Always set {@code isPassive} to {@code false}.
    */
   @Override
-  public Boolean getIsPassiveAttribute() {
+  public @NonNull Boolean getIsPassiveAttribute() {
     return Boolean.FALSE;
   }
 
@@ -158,7 +160,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    * Calculates which URI:s to request based on the SP request and the IdP capabilities.
    */
   @Override
-  public RequestedAuthnContextBuilderFunction getRequestedAuthnContextBuilderFunction() {
+  public @NonNull RequestedAuthnContextBuilderFunction getRequestedAuthnContextBuilderFunction() {
 
     return (supported, hok) -> AuthnContextClassRefMapper.calculateRequestedAuthnContext(
         supported, this.requestedAuthnContextClassRefs);
@@ -169,7 +171,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    * Delivers a configuration suitable for eIDAS.
    */
   @Override
-  public SignatureSigningConfiguration getSignatureSigningConfiguration() {
+  public @NonNull SignatureSigningConfiguration getSignatureSigningConfiguration() {
     return this.securityConfiguration.getSignatureSigningConfiguration();
   }
 
@@ -177,15 +179,18 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    * Hardwires the {@code NameIDPolicy} to persistent.
    */
   @Override
-  public NameIDPolicyBuilderFunction getNameIDPolicyBuilderFunction() {
+  public @NonNull NameIDPolicyBuilderFunction getNameIDPolicyBuilderFunction() {
     return _list -> NameIDPolicyBuilder.builder()
         .allowCreate(true)
         .format(NameID.PERSISTENT)
         .build();
   }
 
+  /**
+   * Adds the eIDAS namespace, consent and provider name, and removes the protocol binding.
+   */
   @Override
-  public AuthnRequestCustomizer getAuthnRequestCustomizer() {
+  public @NonNull AuthnRequestCustomizer getAuthnRequestCustomizer() {
     return (authnRequest) -> {
       authnRequest.getNamespaceManager().registerNamespaceDeclaration(
           new Namespace(EidasConstants.EIDAS_NS, EidasConstants.EIDAS_PREFIX));

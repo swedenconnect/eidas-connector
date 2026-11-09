@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.audit;
 
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.saml2.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,10 +65,10 @@ public class ConnectorAuditEventTransformer implements EventTransformer {
   private static final Logger log = LoggerFactory.getLogger(ConnectorAuditEventTransformer.class);
 
   /** The principal of system events. */
-  public static final String DEFAULT_PRINCIPAL = "eidas-connector";
+  public static final @NonNull String DEFAULT_PRINCIPAL = "eidas-connector";
 
   /** Used when the SP or the ID of the authentication request is not known. */
-  public static final String UNKNOWN = "unknown";
+  public static final @NonNull String UNKNOWN = "unknown";
 
   /** The events that are transformed. */
   private static final List<Class<? extends ApplicationEvent>> SUPPORTED_EVENTS = List.of(
@@ -81,7 +82,7 @@ public class ConnectorAuditEventTransformer implements EventTransformer {
    * the foreign country is only supported if it gives any audit data.
    */
   @Override
-  public boolean supports(final ApplicationEvent event) {
+  public boolean supports(final @NonNull ApplicationEvent event) {
     return switch (event) {
       case final EuMetadataEvent e -> EuMetadataChangeAuditData.of(e.getEuMetadataUpdateData()) != null;
       case final BeforeEidasAuthenticationEvent e -> EidasAuthnRequestAuditData.of(e) != null;
@@ -91,7 +92,8 @@ public class ConnectorAuditEventTransformer implements EventTransformer {
 
   /** {@inheritDoc} */
   @Override
-  public AuditEvent transform(final ApplicationEvent event, final AuditEventContext context)
+  public @NonNull AuditEvent transform(
+      final @NonNull ApplicationEvent event, final @NonNull AuditEventContext context)
       throws UnsupportedOperationException {
 
     final AuditEvent auditEvent = switch (event) {

@@ -18,6 +18,7 @@ package se.swedenconnect.eidas.connector.audit.data;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.spring.audit.value.AuditValue;
 
@@ -41,14 +42,14 @@ public abstract class ConnectorAuditData implements Serializable {
    * @return the audit data name
    */
   @JsonIgnore
-  public abstract String getName();
+  public abstract @NonNull String getName();
 
   /**
    * Gets this data element as an {@link AuditValue} with the name of the element.
    *
    * @return an {@link AuditValue}
    */
-  public AuditValue<ConnectorAuditData> toAuditValue() {
+  public @NonNull AuditValue<ConnectorAuditData> toAuditValue() {
     return new AuditValue<>(this.getName(), this);
   }
 

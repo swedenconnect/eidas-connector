@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -35,63 +37,63 @@ import java.util.Objects;
 public class UiConfigurationProperties implements InitializingBean {
 
   /** Default cookie name for the selected country cookie. */
-  public static final String DEFAULT_SELECTED_COUNTRY_COOKIE_NAME = "selectedCountry";
+  public static final @NonNull String DEFAULT_SELECTED_COUNTRY_COOKIE_NAME = "selectedCountry";
 
   /** Default cookie name for the selected country session cookie. */
-  public static final String DEFAULT_SELECTED_COUNTRY_SESSION_COOKIE_NAME = "selectedCountrySession";
+  public static final @NonNull String DEFAULT_SELECTED_COUNTRY_SESSION_COOKIE_NAME = "selectedCountrySession";
 
   /** Default cookie name for storing the IdM consent session cookie. */
-  public static final String DEFAULT_IDM_CONSENT_COOKIE_NAME = "idmConsentSession";
+  public static final @NonNull String DEFAULT_IDM_CONSENT_COOKIE_NAME = "idmConsentSession";
 
   /** Default cookie name for the cookie that controls displaying of the IdM banner. */
-  public static final String DEFAULT_IDM_HIDE_BANNER_COOKIE_NAME = "idmHideBanner";
+  public static final @NonNull String DEFAULT_IDM_HIDE_BANNER_COOKIE_NAME = "idmHideBanner";
 
   @Value("${server.servlet.context-path:/}")
-  private String contextPath;
+  private @Nullable String contextPath;
 
   @Value("${connector.domain:#{null}}")
-  private String domain;
+  private @Nullable String domain;
 
   /**
    * The UI language settings.
    */
-  private final List<Language> languages = new ArrayList<>();
+  private final @NonNull List<Language> languages = new ArrayList<>();
 
   /**
    * The cookie for storing the selected country (in between sessions).
    */
   @NestedConfigurationProperty
-  private final Cookie selectedCountryCookie = new Cookie();
+  private final @NonNull Cookie selectedCountryCookie = new Cookie();
 
   /**
    * The cookie for storing the selected country (during session).
    */
   @NestedConfigurationProperty
-  private final Cookie selectedCountrySessionCookie = new Cookie();
+  private final @NonNull Cookie selectedCountrySessionCookie = new Cookie();
 
   /**
    * The cookie for remembering consent to access IdM record (during session).
    */
   @NestedConfigurationProperty
-  private final Cookie idmConsentSessionCookie = new Cookie();
+  private final @NonNull Cookie idmConsentSessionCookie = new Cookie();
 
   /**
    * The cookie that controls whether the IdM banner (at the country selection page) should be hidden.
    */
   @NestedConfigurationProperty
-  private final Cookie idmHideBannerCookie = new Cookie();
+  private final @NonNull Cookie idmHideBannerCookie = new Cookie();
 
   /**
    * The accessibility report URL.
    */
-  private String accessibilityUrl;
+  private @Nullable String accessibilityUrl;
 
   /**
    * Gets the UI language settings.
    *
    * @return the UI language settings
    */
-  public List<Language> getLanguages() {
+  public @NonNull List<Language> getLanguages() {
     return this.languages;
   }
 
@@ -100,7 +102,7 @@ public class UiConfigurationProperties implements InitializingBean {
    *
    * @return the cookie for storing the selected country (in between sessions)
    */
-  public Cookie getSelectedCountryCookie() {
+  public @NonNull Cookie getSelectedCountryCookie() {
     return this.selectedCountryCookie;
   }
 
@@ -109,7 +111,7 @@ public class UiConfigurationProperties implements InitializingBean {
    *
    * @return the cookie for storing the selected country (during session)
    */
-  public Cookie getSelectedCountrySessionCookie() {
+  public @NonNull Cookie getSelectedCountrySessionCookie() {
     return this.selectedCountrySessionCookie;
   }
 
@@ -118,7 +120,7 @@ public class UiConfigurationProperties implements InitializingBean {
    *
    * @return the cookie for remembering consent to access IdM record (during session)
    */
-  public Cookie getIdmConsentSessionCookie() {
+  public @NonNull Cookie getIdmConsentSessionCookie() {
     return this.idmConsentSessionCookie;
   }
 
@@ -127,7 +129,7 @@ public class UiConfigurationProperties implements InitializingBean {
    *
    * @return the cookie that controls whether the IdM banner (at the country selection page) should be hidden
    */
-  public Cookie getIdmHideBannerCookie() {
+  public @NonNull Cookie getIdmHideBannerCookie() {
     return this.idmHideBannerCookie;
   }
 
@@ -136,7 +138,7 @@ public class UiConfigurationProperties implements InitializingBean {
    *
    * @return the accessibility report URL
    */
-  public String getAccessibilityUrl() {
+  public @Nullable String getAccessibilityUrl() {
     return this.accessibilityUrl;
   }
 
@@ -145,7 +147,7 @@ public class UiConfigurationProperties implements InitializingBean {
    *
    * @param accessibilityUrl the accessibility report URL
    */
-  public void setAccessibilityUrl(final String accessibilityUrl) {
+  public void setAccessibilityUrl(final @Nullable String accessibilityUrl) {
     this.accessibilityUrl = accessibilityUrl;
   }
 
@@ -201,19 +203,19 @@ public class UiConfigurationProperties implements InitializingBean {
     /**
      * The language tag.
      */
-    private String tag;
+    private @Nullable String tag;
 
     /**
      * The text associated with the language tag, e.g. English.
      */
-    private String text;
+    private @Nullable String text;
 
     /**
      * Gets the language tag.
      *
      * @return the language tag
      */
-    public String getTag() {
+    public @Nullable String getTag() {
       return this.tag;
     }
 
@@ -222,7 +224,7 @@ public class UiConfigurationProperties implements InitializingBean {
      *
      * @param tag the language tag
      */
-    public void setTag(final String tag) {
+    public void setTag(final @Nullable String tag) {
       this.tag = tag;
     }
 
@@ -231,7 +233,7 @@ public class UiConfigurationProperties implements InitializingBean {
      *
      * @return the text associated with the language tag
      */
-    public String getText() {
+    public @Nullable String getText() {
       return this.text;
     }
 
@@ -240,7 +242,7 @@ public class UiConfigurationProperties implements InitializingBean {
      *
      * @param text the text associated with the language tag
      */
-    public void setText(final String text) {
+    public void setText(final @Nullable String text) {
       this.text = text;
     }
 
@@ -253,7 +255,7 @@ public class UiConfigurationProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -272,7 +274,7 @@ public class UiConfigurationProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "tag=" + this.tag + ", text=" + this.text;
     }
 
@@ -286,24 +288,24 @@ public class UiConfigurationProperties implements InitializingBean {
     /**
      * Cookie name.
      */
-    private String name;
+    private @Nullable String name;
 
     /**
      * Cookie domain.
      */
-    private String domain;
+    private @Nullable String domain;
 
     /**
      * Cookie path.
      */
-    private String path;
+    private @Nullable String path;
 
     /**
      * Gets the cookie name.
      *
      * @return the cookie name
      */
-    public String getName() {
+    public @Nullable String getName() {
       return this.name;
     }
 
@@ -312,7 +314,7 @@ public class UiConfigurationProperties implements InitializingBean {
      *
      * @param name the cookie name
      */
-    public void setName(final String name) {
+    public void setName(final @Nullable String name) {
       this.name = name;
     }
 
@@ -321,7 +323,7 @@ public class UiConfigurationProperties implements InitializingBean {
      *
      * @return the cookie domain
      */
-    public String getDomain() {
+    public @Nullable String getDomain() {
       return this.domain;
     }
 
@@ -330,7 +332,7 @@ public class UiConfigurationProperties implements InitializingBean {
      *
      * @param domain the cookie domain
      */
-    public void setDomain(final String domain) {
+    public void setDomain(final @Nullable String domain) {
       this.domain = domain;
     }
 
@@ -339,7 +341,7 @@ public class UiConfigurationProperties implements InitializingBean {
      *
      * @return the cookie path
      */
-    public String getPath() {
+    public @Nullable String getPath() {
       return this.path;
     }
 
@@ -348,13 +350,13 @@ public class UiConfigurationProperties implements InitializingBean {
      *
      * @param path the cookie path
      */
-    public void setPath(final String path) {
+    public void setPath(final @Nullable String path) {
       this.path = path;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -375,7 +377,7 @@ public class UiConfigurationProperties implements InitializingBean {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "name=" + this.name
           + ", domain=" + this.domain
           + ", path=" + this.path;

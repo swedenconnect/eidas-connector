@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Internal class used for serialization across application classes.
  *
@@ -36,7 +38,7 @@ public final class ApplicationVersion {
    *
    * @return the version string
    */
-  public static String getVersion() {
+  public static @NonNull String getVersion() {
     return MAJOR + "." + MINOR + "." + PATCH;
   }
 

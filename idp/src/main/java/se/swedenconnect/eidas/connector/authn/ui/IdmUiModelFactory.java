@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
+import org.jspecify.annotations.NonNull;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 /**
@@ -30,7 +31,7 @@ public class IdmUiModelFactory extends AbstractUiModelFactory<IdmUiModel> {
    * @param languageHandler the UI language handler
    * @param accessibilityUrl the accessibility URL
    */
-  public IdmUiModelFactory(final UiLanguageHandler languageHandler, final String accessibilityUrl) {
+  public IdmUiModelFactory(final @NonNull UiLanguageHandler languageHandler, final @NonNull String accessibilityUrl) {
     super(languageHandler, accessibilityUrl);
   }
 
@@ -40,7 +41,7 @@ public class IdmUiModelFactory extends AbstractUiModelFactory<IdmUiModel> {
    * @param inputToken the input token
    * @return an {@link IdmUiModel}
    */
-  public IdmUiModel createUiModel(final UserAuthenticationInputToken inputToken) {
+  public @NonNull IdmUiModel createUiModel(final @NonNull UserAuthenticationInputToken inputToken) {
     final IdmUiModel model = new IdmUiModel();
     this.initModel(model, inputToken);
     return model;

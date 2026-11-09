@@ -16,6 +16,8 @@
 package se.swedenconnect.eidas.connector.idp;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.StatusCode;
 import se.swedenconnect.eidas.connector.authn.SamlErrors;
 import se.swedenconnect.spring.authnserver.message.GenericSignMessage;
@@ -38,7 +40,7 @@ public final class SignMessageProcessor {
    * @throws SamlErrorStatusException {@code Requester} / {@code RequestUnsupported} if the message is not plain
    *     text
    */
-  public static void assertSupported(final GenericSignMessage signMessage) throws SamlErrorStatusException {
+  public static void assertSupported(final @Nullable GenericSignMessage signMessage) throws SamlErrorStatusException {
     if (signMessage != null && signMessage.getMimeType() != MessageMimeType.TEXT_PLAIN) {
       throw SamlErrors.errorWithMessageCode(StatusCode.REQUESTER, StatusCode.REQUEST_UNSUPPORTED,
           SamlErrors.SIGN_MESSAGE_MESSAGE_CODE,
@@ -55,7 +57,8 @@ public final class SignMessageProcessor {
    * @return the message to display, or {@code null} if there is no message
    * @throws SamlErrorStatusException if the message is not plain text
    */
-  public static String toDisplayMessage(final GenericSignMessage signMessage, final String language)
+  public static @Nullable String toDisplayMessage(
+      final @Nullable GenericSignMessage signMessage, final @NonNull String language)
       throws SamlErrorStatusException {
     if (signMessage == null) {
       return null;

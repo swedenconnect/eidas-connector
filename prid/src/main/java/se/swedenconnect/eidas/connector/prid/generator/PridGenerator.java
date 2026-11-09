@@ -15,6 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Interface for Provisional ID (prid) generation.
  *
@@ -31,7 +33,8 @@ public interface PridGenerator {
    * @throws PridGeneratorException for errors during generation
    * @throws IllegalArgumentException for bad input
    */
-  String getPridIdentifierComponent(final String personIdentifier, final String countryCode)
+  @NonNull String getPridIdentifierComponent(
+      final @NonNull String personIdentifier, final @NonNull String countryCode)
       throws PridGeneratorException, IllegalArgumentException;
 
   /**
@@ -39,6 +42,6 @@ public interface PridGenerator {
    *
    * @return algorithm name
    */
-  String getAlgorithmName();
+  @NonNull String getAlgorithmName();
 
 }

@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
@@ -44,14 +46,14 @@ public class PridPolicyRefreshEndpoint {
   private static final Logger log = LoggerFactory.getLogger(PridPolicyRefreshEndpoint.class);
 
   /** The PRID service. */
-  private final PridService pridService;
+  private final @NonNull PridService pridService;
 
   /**
    * Constructor.
    *
    * @param pridService the PRID service
    */
-  public PridPolicyRefreshEndpoint(final PridService pridService) {
+  public PridPolicyRefreshEndpoint(final @NonNull PridService pridService) {
     this.pridService = Objects.requireNonNull(pridService, "pridService must not be null");
   }
 
@@ -61,7 +63,7 @@ public class PridPolicyRefreshEndpoint {
    * @return the refresh status
    */
   @ReadOperation
-  public RefreshStatus refresh() {
+  public @NonNull RefreshStatus refresh() {
     log.debug("Request to refresh PRID policy configuration received");
     final PridPolicyValidation result = this.pridService.updatePolicy();
     final RefreshStatus status = new RefreshStatus(result);
@@ -79,13 +81,13 @@ public class PridPolicyRefreshEndpoint {
   public static class RefreshStatus {
 
     /** The overall status string. */
-    private String status;
+    private @Nullable String status;
 
     /** Validation errors. */
-    private List<String> errors;
+    private @Nullable List<String> errors;
 
     /** The policy. */
-    private Map<String, CountryPolicy> policy;
+    private @Nullable Map<String, CountryPolicy> policy;
 
     /**
      * Default constructor.
@@ -98,7 +100,7 @@ public class PridPolicyRefreshEndpoint {
      *
      * @param validationResult validation result
      */
-    public RefreshStatus(final PridPolicyValidation validationResult) {
+    public RefreshStatus(final @NonNull PridPolicyValidation validationResult) {
       if (validationResult.hasErrors()) {
         this.status = "ERROR";
         this.errors = validationResult.getErrors();
@@ -113,7 +115,7 @@ public class PridPolicyRefreshEndpoint {
      *
      * @return the overall status string
      */
-    public String getStatus() {
+    public @Nullable String getStatus() {
       return this.status;
     }
 
@@ -122,7 +124,7 @@ public class PridPolicyRefreshEndpoint {
      *
      * @param status the overall status string
      */
-    public void setStatus(final String status) {
+    public void setStatus(final @Nullable String status) {
       this.status = status;
     }
 
@@ -131,7 +133,7 @@ public class PridPolicyRefreshEndpoint {
      *
      * @return the validation errors
      */
-    public List<String> getErrors() {
+    public @Nullable List<String> getErrors() {
       return this.errors;
     }
 
@@ -140,7 +142,7 @@ public class PridPolicyRefreshEndpoint {
      *
      * @param errors the validation errors
      */
-    public void setErrors(final List<String> errors) {
+    public void setErrors(final @Nullable List<String> errors) {
       this.errors = errors;
     }
 
@@ -149,7 +151,7 @@ public class PridPolicyRefreshEndpoint {
      *
      * @return the policy
      */
-    public Map<String, CountryPolicy> getPolicy() {
+    public @Nullable Map<String, CountryPolicy> getPolicy() {
       return this.policy;
     }
 
@@ -158,13 +160,13 @@ public class PridPolicyRefreshEndpoint {
      *
      * @param policy the policy
      */
-    public void setPolicy(final Map<String, CountryPolicy> policy) {
+    public void setPolicy(final @Nullable Map<String, CountryPolicy> policy) {
       this.policy = policy;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final @Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -183,7 +185,7 @@ public class PridPolicyRefreshEndpoint {
 
     /** {@inheritDoc} */
     @Override
-    public String toString() {
+    public @NonNull String toString() {
       return "status=" + this.status + ", errors=" + this.errors
           + ", policy=" + this.policy;
     }

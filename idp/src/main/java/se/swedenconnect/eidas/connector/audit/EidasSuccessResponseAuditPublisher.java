@@ -16,6 +16,7 @@
 package se.swedenconnect.eidas.connector.audit;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.jspecify.annotations.NonNull;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Response;
 import org.springframework.context.ApplicationEventPublisher;
@@ -47,14 +48,14 @@ public class EidasSuccessResponseAuditPublisher {
   private static final String RESPONSE_ATTRIBUTE = EidasSuccessResponseAuditPublisher.class.getName() + ".Response";
 
   /** The event publisher. */
-  private final ApplicationEventPublisher eventPublisher;
+  private final @NonNull ApplicationEventPublisher eventPublisher;
 
   /**
    * Constructor.
    *
    * @param eventPublisher the event publisher
    */
-  public EidasSuccessResponseAuditPublisher(final ApplicationEventPublisher eventPublisher) {
+  public EidasSuccessResponseAuditPublisher(final @NonNull ApplicationEventPublisher eventPublisher) {
     this.eventPublisher = Objects.requireNonNull(eventPublisher, "eventPublisher must not be null");
   }
 
@@ -63,7 +64,7 @@ public class EidasSuccessResponseAuditPublisher {
    *
    * @return a {@link Customizer} for assertions
    */
-  public Customizer<Assertion> assertionCustomizer() {
+  public @NonNull Customizer<Assertion> assertionCustomizer() {
     return assertion -> getCurrentRequest().ifPresent(r -> r.setAttribute(ASSERTION_ATTRIBUTE, assertion));
   }
 
@@ -72,7 +73,7 @@ public class EidasSuccessResponseAuditPublisher {
    *
    * @return a {@link Customizer} for responses
    */
-  public Customizer<Response> responseCustomizer() {
+  public @NonNull Customizer<Response> responseCustomizer() {
     return response -> getCurrentRequest().ifPresent(r -> r.setAttribute(RESPONSE_ATTRIBUTE, response));
   }
 
@@ -82,7 +83,7 @@ public class EidasSuccessResponseAuditPublisher {
    * @param event the event from the authentication server
    */
   @EventListener
-  public void onSuccessResponse(final AuthnSuccessResponseEvent event) {
+  public void onSuccessResponse(final @NonNull AuthnSuccessResponseEvent event) {
     final HttpServletRequest request = getCurrentRequest().orElse(null);
     if (request == null) {
       return;

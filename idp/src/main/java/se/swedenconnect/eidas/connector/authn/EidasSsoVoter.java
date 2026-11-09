@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.util.StringUtils;
 import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
 import se.swedenconnect.spring.authnserver.attributes.GenericAttribute;
@@ -39,9 +40,9 @@ public class EidasSsoVoter implements SsoVoter {
 
   /** {@inheritDoc} */
   @Override
-  public SsoDecision vote(final UserAuthentication previousAuthentication,
-      final AuthenticationRequirements requirements, final Requester requester,
-      final List<String> allowedAuthnContexts) {
+  public @NonNull SsoDecision vote(final @NonNull UserAuthentication previousAuthentication,
+      final @NonNull AuthenticationRequirements requirements, final @NonNull Requester requester,
+      final @NonNull List<String> allowedAuthnContexts) {
 
     final List<String> requestedCountries = requirements.getRequestedAuthnProviders().stream()
         .filter(Objects::nonNull)

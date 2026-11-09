@@ -17,6 +17,8 @@ package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.ResponseProcessingErrorEvent;
 
@@ -34,14 +36,14 @@ public class ProcessingErrorAuditData extends ConnectorAuditData {
 
   /** The error message. */
   @JsonProperty("error-message")
-  private String errorMessage;
+  private @Nullable String errorMessage;
 
   /**
    * Gets the error message.
    *
    * @return the error message
    */
-  public String getErrorMessage() {
+  public @Nullable String getErrorMessage() {
     return this.errorMessage;
   }
 
@@ -50,13 +52,13 @@ public class ProcessingErrorAuditData extends ConnectorAuditData {
    *
    * @param errorMessage the error message
    */
-  public void setErrorMessage(final String errorMessage) {
+  public void setErrorMessage(final @Nullable String errorMessage) {
     this.errorMessage = errorMessage;
   }
 
   /** {@inheritDoc} */
   @Override
-  public String getName() {
+  public @NonNull String getName() {
     return "processing-error";
   }
 
@@ -66,7 +68,7 @@ public class ProcessingErrorAuditData extends ConnectorAuditData {
    * @param event a {@link ResponseProcessingErrorEvent}
    * @return a {@link ProcessingErrorAuditData}
    */
-  public static ProcessingErrorAuditData of(final ResponseProcessingErrorEvent event) {
+  public static @Nullable ProcessingErrorAuditData of(final @Nullable ResponseProcessingErrorEvent event) {
     if (event == null || event.getErrorMsg() == null) {
       return null;
     }
@@ -77,7 +79,7 @@ public class ProcessingErrorAuditData extends ConnectorAuditData {
 
   /** {@inheritDoc} */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return String.format("error-message='%s'", this.errorMessage);
   }
 

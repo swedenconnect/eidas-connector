@@ -16,6 +16,7 @@
 package se.swedenconnect.eidas.connector.config;
 
 import net.shibboleth.shared.component.ComponentInitializationException;
+import org.jspecify.annotations.NonNull;
 import org.opensaml.core.config.ConfigurationService;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.util.XMLObjectSupport;
@@ -105,16 +106,16 @@ public class EidasAuthenticationConfiguration {
   private static final Duration DEFAULT_MAX_MESSAGE_AGE = Duration.ofMinutes(3);
 
   /** The connector properties. */
-  private final ConnectorConfigurationProperties properties;
+  private final @NonNull ConnectorConfigurationProperties properties;
 
   /** The time that clocks of other parties may differ from ours. */
-  private final Duration clockSkew;
+  private final @NonNull Duration clockSkew;
 
   /** The maximum age of a received message. */
-  private final Duration maxMessageAge;
+  private final @NonNull Duration maxMessageAge;
 
   /** The connector credentials. */
-  private final ConnectorCredentials credentials;
+  private final @NonNull ConnectorCredentials credentials;
 
   /**
    * Constructor.
@@ -124,9 +125,10 @@ public class EidasAuthenticationConfiguration {
    * @param samlProperties the SAML properties of the authentication server
    * @param credentials the connector credentials
    */
-  public EidasAuthenticationConfiguration(final ConnectorConfigurationProperties properties,
-      final AuthnServerConfigurationProperties serverProperties, final SamlConfigurationProperties samlProperties,
-      final ConnectorCredentials credentials) {
+  public EidasAuthenticationConfiguration(final @NonNull ConnectorConfigurationProperties properties,
+      final @NonNull AuthnServerConfigurationProperties serverProperties,
+      final @NonNull SamlConfigurationProperties samlProperties,
+      final @NonNull ConnectorCredentials credentials) {
     this.properties = properties;
     this.clockSkew = Optional.ofNullable(samlProperties.getClockSkew())
         .or(() -> Optional.ofNullable(serverProperties.getClockSkew()))
@@ -141,7 +143,7 @@ public class EidasAuthenticationConfiguration {
    * @return a {@link SecurityConfiguration}
    */
   @Bean("connector.sp.SecurityConfiguration")
-  SecurityConfiguration eidasSecurityConfiguration() {
+  @NonNull SecurityConfiguration eidasSecurityConfiguration() {
     return new ConnectorSecurityConfiguration();
   }
 
@@ -153,9 +155,9 @@ public class EidasAuthenticationConfiguration {
    * @return {@link EidasAuthnRequestGenerator}
    */
   @Bean
-  EidasAuthnRequestGenerator eidasAuthnRequestGenerator(
-      @Qualifier("connector.sp.metadata") final EntityDescriptor metadata,
-      @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration) {
+  @NonNull EidasAuthnRequestGenerator eidasAuthnRequestGenerator(
+      @Qualifier("connector.sp.metadata") final @NonNull EntityDescriptor metadata,
+      @Qualifier("connector.sp.SecurityConfiguration") final @NonNull SecurityConfiguration securityConfiguration) {
 
     final EidasAuthnRequestGenerator generator = new EidasAuthnRequestGenerator(
         metadata, this.credentials.getSpSigningCredential(), securityConfiguration,
@@ -173,7 +175,7 @@ public class EidasAuthenticationConfiguration {
    * @return an {@link EidasAttributeConverter}
    */
   @Bean
-  EidasAttributeConverter eidasAttributeConverter() {
+  @NonNull EidasAttributeConverter eidasAttributeConverter() {
     return new EidasAttributeConverter();
   }
 
@@ -184,8 +186,8 @@ public class EidasAuthenticationConfiguration {
    * @return a {@link SAMLObjectDecrypter}
    */
   @Bean("connector.sp.SAMLObjectDecrypter")
-  SAMLObjectDecrypter samlObjectDecrypter(
-      @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration) {
+  @NonNull SAMLObjectDecrypter samlObjectDecrypter(
+      @Qualifier("connector.sp.SecurityConfiguration") final @NonNull SecurityConfiguration securityConfiguration) {
     final List<PkiCredential> credentials = this.credentials.getSpEncryptCredentials();
 
     final List<Credential> creds = new ArrayList<>(credentials.size());
@@ -242,10 +244,10 @@ public class EidasAuthenticationConfiguration {
    * @throws ComponentInitializationException for init errors
    */
   @Bean
-  EidasResponseProcessor eidasResponseProcessor(final EuMetadataProvider euMetadataProvider,
-      @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration,
-      @Qualifier("connector.sp.SAMLObjectDecrypter") final SAMLObjectDecrypter decrypter,
-      final ObjectProvider<ReplayCache> replayCache) throws ComponentInitializationException {
+  @NonNull EidasResponseProcessor eidasResponseProcessor(final @NonNull EuMetadataProvider euMetadataProvider,
+      @Qualifier("connector.sp.SecurityConfiguration") final @NonNull SecurityConfiguration securityConfiguration,
+      @Qualifier("connector.sp.SAMLObjectDecrypter") final @NonNull SAMLObjectDecrypter decrypter,
+      final @NonNull ObjectProvider<ReplayCache> replayCache) throws ComponentInitializationException {
 
     final ResponseValidationSettings validationSettings = new ResponseValidationSettings();
     validationSettings.setRequireSignedAssertions(
@@ -278,9 +280,9 @@ public class EidasAuthenticationConfiguration {
    * @return an {@link EntityDescriptorContainer}
    */
   @Bean("connector.sp.EntityDescriptorContainer")
-  EntityDescriptorContainer spEntityDescriptorContainer(
-      @Qualifier("connector.sp.SecurityConfiguration") final SecurityConfiguration securityConfiguration,
-      @Qualifier("connector.sp.metadata") final EntityDescriptor metadata) {
+  @NonNull EntityDescriptorContainer spEntityDescriptorContainer(
+      @Qualifier("connector.sp.SecurityConfiguration") final @NonNull SecurityConfiguration securityConfiguration,
+      @Qualifier("connector.sp.metadata") final @NonNull EntityDescriptor metadata) {
 
     final EntityDescriptorContainer container = new EntityDescriptorContainer(
         metadata, Optional.ofNullable(this.credentials.getSpMetadataSigningCredential())
@@ -299,7 +301,7 @@ public class EidasAuthenticationConfiguration {
    * @throws Exception for OpenSAML errors
    */
   @Bean("connector.sp.metadata")
-  EntityDescriptor spMetadata() throws Exception {
+  @NonNull EntityDescriptor spMetadata() throws Exception {
 
     final EidasSpMetadataProperties mprop = this.properties.getEidas().getMetadata();
 

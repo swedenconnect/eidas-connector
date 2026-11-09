@@ -20,6 +20,7 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.servlet.http.HttpServletRequest;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -55,21 +56,21 @@ public class MockedIdmApi {
   private static final Logger log = LoggerFactory.getLogger(MockedIdmApi.class);
 
   /** The mocked IdM data. */
-  private final MockedIdmData mockData;
+  private final @NonNull MockedIdmData mockData;
 
   /**
    * Constructs a new MockedIdmApi object.
    *
    * @param mockData the mocked Idm data object
    */
-  public MockedIdmApi(final MockedIdmData mockData) {
+  public MockedIdmApi(final @NonNull MockedIdmData mockData) {
     this.mockData = mockData;
   }
 
   @RequestMapping(path = "/{prid}", method = RequestMethod.HEAD)
-  ResponseEntity<Void> checkRecord(final HttpServletRequest request,
-      @RequestHeader(HttpHeaders.AUTHORIZATION) final String authorizationHeader,
-      @PathVariable(name = "prid") final String prid) {
+  @NonNull ResponseEntity<Void> checkRecord(final @NonNull HttpServletRequest request,
+      @RequestHeader(HttpHeaders.AUTHORIZATION) final @NonNull String authorizationHeader,
+      @PathVariable(name = "prid") final @NonNull String prid) {
 
     if (!authorizationHeader.startsWith("Bearer ")) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid");
@@ -88,10 +89,10 @@ public class MockedIdmApi {
 
   @GetMapping(path = "/{prid}", produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
-  public IdmQueryResponse getRecord(
-      final HttpServletRequest request,
-      @RequestHeader(HttpHeaders.AUTHORIZATION) final String authorizationHeader,
-      @PathVariable(name = "prid") final String prid) {
+  public @NonNull IdmQueryResponse getRecord(
+      final @NonNull HttpServletRequest request,
+      @RequestHeader(HttpHeaders.AUTHORIZATION) final @NonNull String authorizationHeader,
+      @PathVariable(name = "prid") final @NonNull String prid) {
 
     if (!authorizationHeader.startsWith("Bearer ")) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid");

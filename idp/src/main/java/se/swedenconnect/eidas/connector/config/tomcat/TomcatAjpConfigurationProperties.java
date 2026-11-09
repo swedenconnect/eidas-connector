@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.config.tomcat;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.Assert;
@@ -41,7 +42,7 @@ public class TomcatAjpConfigurationProperties implements InitializingBean {
   /**
    * AJP secret.
    */
-  private String secret;
+  private @Nullable String secret;
 
   /**
    * Is AJP secret required?
@@ -89,7 +90,7 @@ public class TomcatAjpConfigurationProperties implements InitializingBean {
    *
    * @return the AJP secret
    */
-  public String getSecret() {
+  public @Nullable String getSecret() {
     return this.secret;
   }
 
@@ -98,7 +99,7 @@ public class TomcatAjpConfigurationProperties implements InitializingBean {
    *
    * @param secret the AJP secret
    */
-  public void setSecret(final String secret) {
+  public void setSecret(final @Nullable String secret) {
     this.secret = secret;
   }
 

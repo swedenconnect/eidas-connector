@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.attributes;
 
+import org.jspecify.annotations.NonNull;
 import org.opensaml.core.xml.schema.XSString;
 import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeTemplate;
@@ -42,26 +43,27 @@ import se.swedenconnect.spring.authnserver.saml.attributes.mapping.SamlToProtoco
 public final class ConnectorAttributes {
 
   /** The eIDAS {@code eJusticeNaturalPersonRole} attribute. */
-  public static final String EJUSTICE_NATURAL_PERSON_ROLE = "attribute.ejustice-natural-person-role";
+  public static final @NonNull String EJUSTICE_NATURAL_PERSON_ROLE = "attribute.ejustice-natural-person-role";
 
   /** The eIDAS {@code TownOfBirth} attribute, released as received. */
-  public static final String EIDAS_TOWN_OF_BIRTH = "attribute.eidas-town-of-birth";
+  public static final @NonNull String EIDAS_TOWN_OF_BIRTH = "attribute.eidas-town-of-birth";
 
   /** The eIDAS {@code CountryOfBirth} attribute, released as received. */
-  public static final String EIDAS_COUNTRY_OF_BIRTH = "attribute.eidas-country-of-birth";
+  public static final @NonNull String EIDAS_COUNTRY_OF_BIRTH = "attribute.eidas-country-of-birth";
 
   /** The eIDAS template for {@code eJusticeNaturalPersonRole}. */
-  public static final EidasAttributeTemplate EJUSTICE_NATURAL_PERSON_ROLE_TEMPLATE = new EidasAttributeTemplate(
-      AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_NAME,
-      AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_FRIENDLY_NAME,
-      XSString.TYPE_NAME, XSString.class);
+  public static final @NonNull EidasAttributeTemplate EJUSTICE_NATURAL_PERSON_ROLE_TEMPLATE =
+      new EidasAttributeTemplate(
+          AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_NAME,
+          AttributeConstants.EJUSTICE_NATURAL_PERSON_ROLE_ATTRIBUTE_FRIENDLY_NAME,
+          XSString.TYPE_NAME, XSString.class);
 
   /**
    * Creates an attribute definition registry holding the built-in definitions and those of the connector.
    *
    * @return an {@link AttributeDefinitionRegistry}
    */
-  public static AttributeDefinitionRegistry createAttributeDefinitionRegistry() {
+  public static @NonNull AttributeDefinitionRegistry createAttributeDefinitionRegistry() {
     final DefaultAttributeDefinitionRegistry registry = new DefaultAttributeDefinitionRegistry();
     registry.register(new AttributeDefinition(EJUSTICE_NATURAL_PERSON_ROLE, String.class, true,
         "The eIDAS eJusticeNaturalPersonRole attribute."));
@@ -78,7 +80,7 @@ public final class ConnectorAttributes {
    *
    * @return a {@link SamlAttributeMapping}
    */
-  public static SamlAttributeMapping createSamlAttributeMapping() {
+  public static @NonNull SamlAttributeMapping createSamlAttributeMapping() {
     final SamlAttributeMapping mapping = new SamlAttributeMapping(createAttributeDefinitionRegistry());
 
     mapping.getFromProtocolMapping().register(new SamlFromProtocolMapper(
