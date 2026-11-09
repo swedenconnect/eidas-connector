@@ -15,8 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.config.tomcat;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.Assert;
@@ -27,8 +25,6 @@ import org.springframework.util.Assert;
  * @author Martin Lindström
  * @author Felix Hellman
  */
-@Setter
-@Getter
 @ConfigurationProperties("server.tomcat.ajp")
 public class TomcatAjpConfigurationProperties implements InitializingBean {
 
@@ -51,6 +47,78 @@ public class TomcatAjpConfigurationProperties implements InitializingBean {
    * Is AJP secret required?
    */
   private boolean secretRequired = false;
+
+  /**
+   * Gets whether AJP is enabled.
+   *
+   * @return whether AJP is enabled
+   */
+  public boolean isEnabled() {
+    return this.enabled;
+  }
+
+  /**
+   * Assigns whether AJP is enabled.
+   *
+   * @param enabled whether AJP is enabled
+   */
+  public void setEnabled(final boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  /**
+   * Gets the Tomcat AJP port.
+   *
+   * @return the Tomcat AJP port
+   */
+  public int getPort() {
+    return this.port;
+  }
+
+  /**
+   * Assigns the Tomcat AJP port.
+   *
+   * @param port the Tomcat AJP port
+   */
+  public void setPort(final int port) {
+    this.port = port;
+  }
+
+  /**
+   * Gets the AJP secret.
+   *
+   * @return the AJP secret
+   */
+  public String getSecret() {
+    return this.secret;
+  }
+
+  /**
+   * Assigns the AJP secret.
+   *
+   * @param secret the AJP secret
+   */
+  public void setSecret(final String secret) {
+    this.secret = secret;
+  }
+
+  /**
+   * Gets whether the AJP secret is required.
+   *
+   * @return whether the AJP secret is required
+   */
+  public boolean isSecretRequired() {
+    return this.secretRequired;
+  }
+
+  /**
+   * Assigns whether the AJP secret is required.
+   *
+   * @param secretRequired whether the AJP secret is required
+   */
+  public void setSecretRequired(final boolean secretRequired) {
+    this.secretRequired = secretRequired;
+  }
 
   /** {@inheritDoc} */
   @Override

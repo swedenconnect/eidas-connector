@@ -19,16 +19,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.eidas.connector.prid.service.CountryPolicy;
 import se.swedenconnect.eidas.connector.prid.service.PridService;
 import se.swedenconnect.eidas.connector.prid.service.PridService.PridPolicyValidation;
@@ -40,8 +38,10 @@ import se.swedenconnect.eidas.connector.prid.service.PridService.PridPolicyValid
  */
 @Component
 @Endpoint(id = "refreshprid")
-@Slf4j
 public class PridPolicyRefreshEndpoint {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(PridPolicyRefreshEndpoint.class);
 
   /** The PRID service. */
   private final PridService pridService;
@@ -76,9 +76,6 @@ public class PridPolicyRefreshEndpoint {
    * Represents the status of the refresh operation.
    */
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  @NoArgsConstructor
-  @Data
-  @ToString
   public static class RefreshStatus {
 
     /** The overall status string. */
@@ -89,6 +86,12 @@ public class PridPolicyRefreshEndpoint {
 
     /** The policy. */
     private Map<String, CountryPolicy> policy;
+
+    /**
+     * Default constructor.
+     */
+    public RefreshStatus() {
+    }
 
     /**
      * Constructor setting up the status based on a validation result.
@@ -103,6 +106,86 @@ public class PridPolicyRefreshEndpoint {
       else {
         this.status = "OK";
       }
+    }
+
+    /**
+     * Gets the overall status string.
+     *
+     * @return the overall status string
+     */
+    public String getStatus() {
+      return this.status;
+    }
+
+    /**
+     * Assigns the overall status string.
+     *
+     * @param status the overall status string
+     */
+    public void setStatus(final String status) {
+      this.status = status;
+    }
+
+    /**
+     * Gets the validation errors.
+     *
+     * @return the validation errors
+     */
+    public List<String> getErrors() {
+      return this.errors;
+    }
+
+    /**
+     * Assigns the validation errors.
+     *
+     * @param errors the validation errors
+     */
+    public void setErrors(final List<String> errors) {
+      this.errors = errors;
+    }
+
+    /**
+     * Gets the policy.
+     *
+     * @return the policy
+     */
+    public Map<String, CountryPolicy> getPolicy() {
+      return this.policy;
+    }
+
+    /**
+     * Assigns the policy.
+     *
+     * @param policy the policy
+     */
+    public void setPolicy(final Map<String, CountryPolicy> policy) {
+      this.policy = policy;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(final Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof final RefreshStatus that)) {
+        return false;
+      }
+      return Objects.equals(this.status, that.status) && Objects.equals(this.errors, that.errors)
+          && Objects.equals(this.policy, that.policy);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+      return Objects.hash(this.status, this.errors, this.policy);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+      return "status=" + this.status + ", errors=" + this.errors
+          + ", policy=" + this.policy;
     }
   }
 

@@ -16,8 +16,6 @@
 package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.IdentityMatchingErrorEvent;
 
@@ -28,8 +26,6 @@ import java.io.Serial;
  *
  * @author Martin Lindström
  */
-@Getter
-@Setter
 public class IdmErrorAuditData extends ConnectorAuditData {
 
   @Serial
@@ -42,6 +38,42 @@ public class IdmErrorAuditData extends ConnectorAuditData {
   /** The error message. */
   @JsonProperty("error-message")
   private String errorMessage;
+
+  /**
+   * Gets the user identity (eIDAS personal identifier) of the user.
+   *
+   * @return the user identity (eIDAS personal identifier) of the user
+   */
+  public String getUser() {
+    return this.user;
+  }
+
+  /**
+   * Assigns the user identity (eIDAS personal identifier) of the user.
+   *
+   * @param user the user identity (eIDAS personal identifier) of the user
+   */
+  public void setUser(final String user) {
+    this.user = user;
+  }
+
+  /**
+   * Gets the error message.
+   *
+   * @return the error message
+   */
+  public String getErrorMessage() {
+    return this.errorMessage;
+  }
+
+  /**
+   * Assigns the error message.
+   *
+   * @param errorMessage the error message
+   */
+  public void setErrorMessage(final String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
 
   /** {@inheritDoc} */
   @Override

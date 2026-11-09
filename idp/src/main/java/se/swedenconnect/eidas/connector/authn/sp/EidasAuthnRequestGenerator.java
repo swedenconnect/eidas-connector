@@ -15,11 +15,12 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
-import lombok.extern.slf4j.Slf4j;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Scoping;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.swedenconnect.eidas.connector.attributes.EidasRequestedAttributesBuilder;
 import se.swedenconnect.eidas.connector.authn.SamlRequestData;
 import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
@@ -54,8 +55,10 @@ import java.util.Optional;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(EidasAuthnRequestGenerator.class);
 
   /** The SP metadata. */
   private final EntityDescriptor spMetadata;

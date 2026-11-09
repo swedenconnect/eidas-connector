@@ -15,7 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the "default-eIDAS" PRID calculation algorithm as described in section 2.3.1 of the <a href=
@@ -24,8 +25,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class PridGenDefaultEidas extends AbstractPridGenerator {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(PridGenDefaultEidas.class);
 
   /** The algorithm name that this instance implements. */
   public static final String ALGORITHM_NAME = "default-eIDAS";

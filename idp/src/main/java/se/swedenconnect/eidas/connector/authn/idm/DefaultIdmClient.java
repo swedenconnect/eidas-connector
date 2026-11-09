@@ -15,7 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -31,6 +30,8 @@ import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.ssl.TrustStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -54,8 +55,10 @@ import java.util.Optional;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class DefaultIdmClient implements IdmClient {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(DefaultIdmClient.class);
 
   /** The base path to IdM. */
   public static final String IDM_BASE_PATH = "/api/v1/mrecord";

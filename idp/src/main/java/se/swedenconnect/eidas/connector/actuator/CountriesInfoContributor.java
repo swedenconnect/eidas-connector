@@ -17,8 +17,6 @@ package se.swedenconnect.eidas.connector.actuator;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.boot.actuate.info.Info.Builder;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
@@ -56,8 +54,9 @@ public class CountriesInfoContributor implements InfoContributor {
         .toList());
   }
 
-  @Data
-  @NoArgsConstructor
+  /**
+   * Information about a country.
+   */
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private static class CountryInfo {
 
@@ -72,6 +71,17 @@ public class CountriesInfoContributor implements InfoContributor {
 
     private Boolean hidden;
 
+    /**
+     * Default constructor.
+     */
+    public CountryInfo() {
+    }
+
+    /**
+     * Constructor setting up the country information from the country metadata.
+     *
+     * @param metadata the country metadata
+     */
     public CountryInfo(final CountryMetadata metadata) {
       this.countryCode = metadata.getCountryCode();
       this.entityId = metadata.getEntityID();
@@ -79,6 +89,104 @@ public class CountriesInfoContributor implements InfoContributor {
       if (metadata.isHideFromDiscovery()) {
         this.hidden = Boolean.TRUE;
       }
+    }
+
+    /**
+     * Gets the country code.
+     *
+     * @return the country code
+     */
+    public String getCountryCode() {
+      return this.countryCode;
+    }
+
+    /**
+     * Assigns the country code.
+     *
+     * @param countryCode the country code
+     */
+    public void setCountryCode(final String countryCode) {
+      this.countryCode = countryCode;
+    }
+
+    /**
+     * Gets the entityID.
+     *
+     * @return the entityID
+     */
+    public String getEntityId() {
+      return this.entityId;
+    }
+
+    /**
+     * Assigns the entityID.
+     *
+     * @param entityId the entityID
+     */
+    public void setEntityId(final String entityId) {
+      this.entityId = entityId;
+    }
+
+    /**
+     * Gets the assurance levels.
+     *
+     * @return the assurance levels
+     */
+    public List<String> getAssuranceLevels() {
+      return this.assuranceLevels;
+    }
+
+    /**
+     * Assigns the assurance levels.
+     *
+     * @param assuranceLevels the assurance levels
+     */
+    public void setAssuranceLevels(final List<String> assuranceLevels) {
+      this.assuranceLevels = assuranceLevels;
+    }
+
+    /**
+     * Gets whether the country is hidden from discovery.
+     *
+     * @return whether the country is hidden from discovery
+     */
+    public Boolean getHidden() {
+      return this.hidden;
+    }
+
+    /**
+     * Assigns whether the country is hidden from discovery.
+     *
+     * @param hidden whether the country is hidden from discovery
+     */
+    public void setHidden(final Boolean hidden) {
+      this.hidden = hidden;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(final Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof final CountryInfo that)) {
+        return false;
+      }
+      return Objects.equals(this.countryCode, that.countryCode) && Objects.equals(this.entityId, that.entityId)
+          && Objects.equals(this.assuranceLevels, that.assuranceLevels) && Objects.equals(this.hidden, that.hidden);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+      return Objects.hash(this.countryCode, this.entityId, this.assuranceLevels, this.hidden);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+      return "countryCode=" + this.countryCode + ", entityId=" + this.entityId
+          + ", assuranceLevels=" + this.assuranceLevels + ", hidden=" + this.hidden;
     }
 
   }

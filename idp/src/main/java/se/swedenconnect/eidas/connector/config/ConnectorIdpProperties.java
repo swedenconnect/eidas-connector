@@ -15,8 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
 
@@ -28,27 +28,53 @@ import java.util.List;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class ConnectorIdpProperties implements InitializingBean {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(ConnectorIdpProperties.class);
 
   /**
    * The supported LoA:s.
    */
-  @Getter
   private List<String> supportedLoas = new ArrayList<>();
 
   /**
    * The SAML entity categories this IdP declares.
    */
-  @Getter
   private final List<String> entityCategories = new ArrayList<>();
 
   /**
    * A list of SAML entityID:s for the SP:s that are allowed to send special "eIDAS ping" authentication requests to the
    * connector. If the list is empty, no ping requests will be served.
    */
-  @Getter
   private final List<String> pingWhitelist = new ArrayList<>();
+
+  /**
+   * Gets the supported LoA:s.
+   *
+   * @return the supported LoA:s
+   */
+  public List<String> getSupportedLoas() {
+    return this.supportedLoas;
+  }
+
+  /**
+   * Gets the SAML entity categories this IdP declares.
+   *
+   * @return the SAML entity categories this IdP declares
+   */
+  public List<String> getEntityCategories() {
+    return this.entityCategories;
+  }
+
+  /**
+   * Gets the entityID:s for the SP:s that are allowed to send "eIDAS ping" requests.
+   *
+   * @return the entityID:s for the SP:s that are allowed to send "eIDAS ping" requests
+   */
+  public List<String> getPingWhitelist() {
+    return this.pingWhitelist;
+  }
 
   /** {@inheritDoc} */
   @Override

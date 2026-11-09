@@ -15,10 +15,11 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
-import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.metadata.IterableMetadataSource;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.HealthIndicator;
@@ -41,8 +42,10 @@ import java.util.function.Supplier;
  * @author Martin Lindström
  */
 @Component("saml-metadata")
-@Slf4j
 public class SamlMetadataHealthIndicator implements HealthIndicator {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(SamlMetadataHealthIndicator.class);
 
   /** Gives the metadata resolvers for the federation. */
   private final Supplier<List<MetadataResolver>> metadataResolvers;

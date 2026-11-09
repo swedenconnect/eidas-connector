@@ -17,8 +17,6 @@ package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.EuMetadataEvent.EuMetadataUpdateData;
 
@@ -30,8 +28,6 @@ import java.util.List;
  *
  * @author Martin Lindström
  */
-@Setter
-@Getter
 public class EuMetadataChangeAuditData extends ConnectorAuditData {
 
   @Serial
@@ -62,6 +58,78 @@ public class EuMetadataChangeAuditData extends ConnectorAuditData {
    */
   @JsonProperty(value = "error-info")
   private String errorInfo;
+
+  /**
+   * Gets the list of country codes for countries that were removed in the last update.
+   *
+   * @return the list of country codes for countries that were removed in the last update
+   */
+  public List<String> getRemovedCountries() {
+    return this.removedCountries;
+  }
+
+  /**
+   * Assigns the list of country codes for countries that were removed in the last update.
+   *
+   * @param removedCountries the list of country codes for countries that were removed in the last update
+   */
+  public void setRemovedCountries(final List<String> removedCountries) {
+    this.removedCountries = removedCountries;
+  }
+
+  /**
+   * Gets the list of country codes for countries that were added in the last update.
+   *
+   * @return the list of country codes for countries that were added in the last update
+   */
+  public List<String> getAddedCountries() {
+    return this.addedCountries;
+  }
+
+  /**
+   * Assigns the list of country codes for countries that were added in the last update.
+   *
+   * @param addedCountries the list of country codes for countries that were added in the last update
+   */
+  public void setAddedCountries(final List<String> addedCountries) {
+    this.addedCountries = addedCountries;
+  }
+
+  /**
+   * Gets the textual information from the update.
+   *
+   * @return the textual information from the update
+   */
+  public String getInfo() {
+    return this.info;
+  }
+
+  /**
+   * Assigns the textual information from the update.
+   *
+   * @param info the textual information from the update
+   */
+  public void setInfo(final String info) {
+    this.info = info;
+  }
+
+  /**
+   * Gets the textual error information from the update.
+   *
+   * @return the textual error information from the update
+   */
+  public String getErrorInfo() {
+    return this.errorInfo;
+  }
+
+  /**
+   * Assigns the textual error information from the update.
+   *
+   * @param errorInfo the textual error information from the update
+   */
+  public void setErrorInfo(final String errorInfo) {
+    this.errorInfo = errorInfo;
+  }
 
   /** {@inheritDoc} */
   @Override

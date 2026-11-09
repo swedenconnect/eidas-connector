@@ -16,10 +16,11 @@
 package se.swedenconnect.eidas.connector.authn.sp;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
 import net.shibboleth.shared.xml.SerializeSupport;
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.xmlsec.signature.support.SignatureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -42,8 +43,10 @@ import java.util.Objects;
  * @author Martin Lindström
  */
 @Controller
-@Slf4j
 public class EidasSpMetadataController {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(EidasSpMetadataController.class);
 
   /** The path for publishing the SP metadata. */
   public static final String METADATA_PATH = "/metadata/sp";

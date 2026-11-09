@@ -17,7 +17,8 @@ package se.swedenconnect.eidas.connector.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.thymeleaf.context.WebContext;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -33,8 +34,10 @@ import java.util.Objects;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class ThymeleafResponsePage implements ResponsePage {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(ThymeleafResponsePage.class);
 
   /** The content type of the page. */
   private static final MediaType TEXT_HTML_UTF8 = new MediaType("text", "html", StandardCharsets.UTF_8);

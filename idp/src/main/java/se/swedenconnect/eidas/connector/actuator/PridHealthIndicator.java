@@ -15,7 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.actuator;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
@@ -36,8 +37,10 @@ import java.util.Objects;
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  */
 @Component("prid")
-@Slf4j
 public class PridHealthIndicator implements HealthIndicator {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(PridHealthIndicator.class);
 
   /** The PRID service. */
   private final PridService pridService;

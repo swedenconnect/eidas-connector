@@ -17,8 +17,6 @@ package se.swedenconnect.eidas.connector.audit.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Getter;
-import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 import se.swedenconnect.eidas.connector.events.ResponseProcessingErrorEvent;
 
@@ -29,8 +27,6 @@ import java.io.Serial;
  *
  * @author Martin Lindström
  */
-@Setter
-@Getter
 public class ProcessingErrorAuditData extends ConnectorAuditData {
 
   @Serial
@@ -39,6 +35,24 @@ public class ProcessingErrorAuditData extends ConnectorAuditData {
   /** The error message. */
   @JsonProperty("error-message")
   private String errorMessage;
+
+  /**
+   * Gets the error message.
+   *
+   * @return the error message
+   */
+  public String getErrorMessage() {
+    return this.errorMessage;
+  }
+
+  /**
+   * Assigns the error message.
+   *
+   * @param errorMessage the error message
+   */
+  public void setErrorMessage(final String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
 
   /** {@inheritDoc} */
   @Override

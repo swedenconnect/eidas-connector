@@ -15,9 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.prid.service;
 
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * Country policy.
  *
@@ -26,12 +23,9 @@ import lombok.Setter;
 public class CountryPolicy {
 
   /** The algorithm. */
-  @Setter
-  @Getter
   private String algorithm;
 
   /** The persistence class. */
-  @Getter
   private String persistenceClass;
 
   /**
@@ -49,6 +43,33 @@ public class CountryPolicy {
   public CountryPolicy(final String algorithm, final String persistenceClass) {
     this.algorithm = algorithm;
     this.setPersistenceClass(persistenceClass);
+  }
+
+  /**
+   * Gets the algorithm.
+   *
+   * @return the algorithm
+   */
+  public String getAlgorithm() {
+    return this.algorithm;
+  }
+
+  /**
+   * Assigns the algorithm.
+   *
+   * @param algorithm the algorithm
+   */
+  public void setAlgorithm(final String algorithm) {
+    this.algorithm = algorithm;
+  }
+
+  /**
+   * Gets the persistence class.
+   *
+   * @return the persistence class
+   */
+  public String getPersistenceClass() {
+    return this.persistenceClass;
   }
 
   /**

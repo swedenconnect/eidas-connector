@@ -15,8 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.events;
 
-import lombok.Getter;
-import lombok.Setter;
 import se.swedenconnect.eidas.connector.ApplicationVersion;
 
 import java.io.Serial;
@@ -86,24 +84,18 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
     private static final long serialVersionUID = ApplicationVersion.SERIAL_VERSION_UID;
 
     /** The update instant. */
-    @Getter
     private final Instant instant;
 
     /** A list of country codes for countries that was previously present in the metadata, but now are not. */
-    @Getter
     private final List<String> removedCountries;
 
     /** A list of country codes for countries that have been added since the last update. */
-    @Getter
     private final List<String> addedCountries;
 
     /** For errors updating the metadata. */
-    @Getter
     private final Exception error;
 
     /** Additional information string. */
-    @Getter
-    @Setter
     private String info;
 
     /**
@@ -132,6 +124,60 @@ public class EuMetadataEvent extends AbstractEidasConnectorEvent {
       this.removedCountries = Collections.emptyList();
       this.addedCountries = Collections.emptyList();
       this.error = Objects.requireNonNull(error, "error must not be null");
+    }
+
+    /**
+     * Gets the update instant.
+     *
+     * @return the update instant
+     */
+    public Instant getInstant() {
+      return this.instant;
+    }
+
+    /**
+     * Gets the list of country codes for countries that were previously present in the metadata, but now are not.
+     *
+     * @return the list of country codes for countries that were previously present in the metadata, but now are not
+     */
+    public List<String> getRemovedCountries() {
+      return this.removedCountries;
+    }
+
+    /**
+     * Gets the list of country codes for countries that have been added since the last update.
+     *
+     * @return the list of country codes for countries that have been added since the last update
+     */
+    public List<String> getAddedCountries() {
+      return this.addedCountries;
+    }
+
+    /**
+     * Gets the error that occurred when updating the metadata.
+     *
+     * @return the error that occurred when updating the metadata
+     */
+    public Exception getError() {
+      return this.error;
+    }
+
+    /**
+     * Gets the additional information string.
+     *
+     * @return the additional information string
+     */
+    public String getInfo() {
+      return this.info;
+    }
+
+    /**
+     * Assigns the additional information string.
+     *
+     * @param info the additional information string
+     */
+    public void setInfo(final String info) {
+      this.info = info;
     }
 
     /** {@inheritDoc} */

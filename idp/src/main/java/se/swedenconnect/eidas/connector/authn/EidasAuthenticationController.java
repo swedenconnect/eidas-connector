@@ -18,10 +18,11 @@ package se.swedenconnect.eidas.connector.authn;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.StatusCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
@@ -64,8 +65,10 @@ import java.util.Optional;
  * @author Martin Lindström
  */
 @Controller
-@Slf4j
 public class EidasAuthenticationController extends AbstractAuthenticationController<EidasAuthenticationProvider> {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(EidasAuthenticationController.class);
 
   /** The path for receiving eIDAS assertions. */
   public static final String ASSERTION_CONSUMER_PATH = "/extauth/saml2/post";

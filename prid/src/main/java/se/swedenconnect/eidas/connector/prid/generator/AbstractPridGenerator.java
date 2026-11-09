@@ -15,7 +15,8 @@
  */
 package se.swedenconnect.eidas.connector.prid.generator;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -29,8 +30,10 @@ import java.util.regex.Pattern;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public abstract class AbstractPridGenerator implements PridGenerator {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(AbstractPridGenerator.class);
 
   /** Regexp pattern for checking if the supplied identifier can be processed. */
   private final Pattern personIdentifierPrefixPattern;

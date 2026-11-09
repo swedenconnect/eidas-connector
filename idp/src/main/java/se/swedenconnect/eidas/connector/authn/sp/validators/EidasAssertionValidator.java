@@ -16,7 +16,6 @@
 package se.swedenconnect.eidas.connector.authn.sp.validators;
 
 import jakarta.annotation.Nonnull;
-import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.common.assertion.ValidationContext;
 import org.opensaml.saml.common.assertion.ValidationResult;
 import org.opensaml.saml.saml2.assertion.ConditionValidator;
@@ -27,6 +26,8 @@ import org.opensaml.saml.saml2.core.Condition;
 import org.opensaml.saml.saml2.core.OneTimeUse;
 import org.opensaml.xmlsec.signature.support.SignaturePrevalidator;
 import org.opensaml.xmlsec.signature.support.SignatureTrustEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.swedenconnect.opensaml.saml2.assertion.validation.AssertionValidator;
 import se.swedenconnect.opensaml.sweid.saml2.validation.SwedishEidAssertionValidator;
 
@@ -39,8 +40,10 @@ import java.util.List;
  *
  * @author Martin Lindström (martin.lindstrom@litsec.se)
  */
-@Slf4j
 public class EidasAssertionValidator extends SwedishEidAssertionValidator {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(EidasAssertionValidator.class);
 
   /**
    * Constructor setting up the validator with the following validators:

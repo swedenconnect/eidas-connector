@@ -15,11 +15,12 @@
  */
 package se.swedenconnect.eidas.connector.authn.sp;
 
-import lombok.extern.slf4j.Slf4j;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
 import org.opensaml.saml.saml2.core.StatusCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.swedenconnect.eidas.connector.authn.SamlErrors;
 import se.swedenconnect.opensaml.eidas.common.EidasConstants;
 import se.swedenconnect.opensaml.saml2.core.build.RequestedAuthnContextBuilder;
@@ -38,8 +39,10 @@ import java.util.function.Function;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class AuthnContextClassRefMapper {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(AuthnContextClassRefMapper.class);
 
   /** Special purpose AuthnContext Class Ref for eIDAS test. */
   public static final String EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF = "http://eidas.europa.eu/LoA/test";

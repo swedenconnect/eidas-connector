@@ -22,7 +22,8 @@ import org.opensaml.saml.saml2.core.StatusCode;
 import org.opensaml.xmlsec.signature.support.SignaturePrevalidator;
 import org.opensaml.xmlsec.signature.support.SignatureTrustEngine;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.swedenconnect.opensaml.sweid.saml2.validation.SwedishEidResponseValidator;
 
 /**
@@ -30,8 +31,10 @@ import se.swedenconnect.opensaml.sweid.saml2.validation.SwedishEidResponseValida
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class EidasResponseValidator extends SwedishEidResponseValidator {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(EidasResponseValidator.class);
 
   /**
    * Constructor.

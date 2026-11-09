@@ -15,17 +15,20 @@
  */
 package se.swedenconnect.eidas.connector.config;
 
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.Optional;
 
 /**
  * A singleton that can be used to find out whether the Connector is running in "development mode".
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class DevelopmentMode {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(DevelopmentMode.class);
 
   /** The singleton instance. */
   private static final DevelopmentMode INSTANCE = new DevelopmentMode();

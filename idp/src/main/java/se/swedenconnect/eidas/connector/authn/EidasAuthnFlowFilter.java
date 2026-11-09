@@ -21,7 +21,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequest;
 import se.swedenconnect.spring.authnserver.audit.AuditFlowData;
@@ -49,8 +50,10 @@ import java.util.Objects;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class EidasAuthnFlowFilter extends OncePerRequestFilter {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(EidasAuthnFlowFilter.class);
 
   /** The authentication provider. */
   private final EidasAuthenticationProvider provider;

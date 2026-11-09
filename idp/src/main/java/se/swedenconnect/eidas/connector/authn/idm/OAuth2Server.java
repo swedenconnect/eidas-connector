@@ -20,8 +20,8 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.Scope;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.swedenconnect.security.credential.PkiCredential;
 
 import java.time.Duration;
@@ -37,8 +37,10 @@ import java.util.UUID;
  *
  * @author Martin Lindström
  */
-@Slf4j
 public class OAuth2Server extends AbstractOAuth2Handler {
+
+  /** Logger instance. */
+  private static final Logger log = LoggerFactory.getLogger(OAuth2Server.class);
 
   /** The issuer of the access tokens. */
   private final String issuer;
@@ -47,7 +49,6 @@ public class OAuth2Server extends AbstractOAuth2Handler {
   private final String audience;
 
   /** The duration for issued access tokens. */
-  @Setter
   private Duration lifeTime = Duration.ofSeconds(3600);
 
   /**
@@ -65,6 +66,15 @@ public class OAuth2Server extends AbstractOAuth2Handler {
     super(clientId, checkScopes, getScopes, oauth2Credential);
     this.issuer = Objects.requireNonNull(issuer, "issuer must not be null");
     this.audience = Objects.requireNonNull(audience, "audience must not be null");
+  }
+
+  /**
+   * Assigns the duration for issued access tokens.
+   *
+   * @param lifeTime the duration for issued access tokens
+   */
+  public void setLifeTime(final Duration lifeTime) {
+    this.lifeTime = lifeTime;
   }
 
   /** {@inheritDoc} */

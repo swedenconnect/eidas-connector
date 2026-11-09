@@ -15,8 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.authn.idm.mock;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Profile;
@@ -37,19 +35,73 @@ import java.util.Objects;
 @ConfigurationProperties("idmmock")
 public class MockedIdmData {
 
-  @Getter
-  @Setter
   private List<IdmQueryResponse> records;
 
-  @Getter
-  @Setter
   private X509Certificate asCertificate;
 
-  @Setter
-  @Getter
   @Value("${connector.idm.oauth2.client-id}")
   private String connectorId;
 
+  /**
+   * Gets the mocked IdM records.
+   *
+   * @return the mocked IdM records
+   */
+  public List<IdmQueryResponse> getRecords() {
+    return this.records;
+  }
+
+  /**
+   * Assigns the mocked IdM records.
+   *
+   * @param records the mocked IdM records
+   */
+  public void setRecords(final List<IdmQueryResponse> records) {
+    this.records = records;
+  }
+
+  /**
+   * Gets the certificate of the authorization server issuing access tokens.
+   *
+   * @return the certificate of the authorization server issuing access tokens
+   */
+  public X509Certificate getAsCertificate() {
+    return this.asCertificate;
+  }
+
+  /**
+   * Assigns the certificate of the authorization server issuing access tokens.
+   *
+   * @param asCertificate the certificate of the authorization server issuing access tokens
+   */
+  public void setAsCertificate(final X509Certificate asCertificate) {
+    this.asCertificate = asCertificate;
+  }
+
+  /**
+   * Gets the OAuth2 client ID of the connector.
+   *
+   * @return the OAuth2 client ID of the connector
+   */
+  public String getConnectorId() {
+    return this.connectorId;
+  }
+
+  /**
+   * Assigns the OAuth2 client ID of the connector.
+   *
+   * @param connectorId the OAuth2 client ID of the connector
+   */
+  public void setConnectorId(final String connectorId) {
+    this.connectorId = connectorId;
+  }
+
+  /**
+   * Gets the mocked IdM record for the given PRID.
+   *
+   * @param prid the PRID
+   * @return the record, or {@code null} if no record exists
+   */
   public IdmQueryResponse getRecord(final String prid) {
     if (this.records == null) {
       return null;
