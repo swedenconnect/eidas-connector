@@ -14,6 +14,8 @@
 
 * Releases are published to GitHub Packages instead of Maven Central.
 
+* The Identity Matching consent audit event always reported that the user did not consent. This has been fixed. See [#256](https://github.com/swedenconnect/eidas-connector/issues/256).
+
 ### Version 2.1.0
 
 **Release date:** 2026-05-05
