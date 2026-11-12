@@ -16,10 +16,15 @@
 package se.swedenconnect.eidas.connector.audit;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import se.swedenconnect.eidas.connector.OpenSamlTestBase;
+import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
 import se.swedenconnect.eidas.connector.events.BeforeEidasAuthenticationEvent;
 import se.swedenconnect.eidas.connector.events.EuMetadataEvent;
+import se.swedenconnect.eidas.connector.events.IdentityMatchingConsentEvent;
 import se.swedenconnect.eidas.connector.events.ResponseProcessingErrorEvent;
 import se.swedenconnect.opensaml.saml2.core.build.AuthnRequestBuilder;
 import se.swedenconnect.spring.audit.AuditEvent;
@@ -93,6 +98,21 @@ class ConnectorAuditEventTransformerTest extends OpenSamlTestBase {
     assertThat(request.get("relay-state").asString()).isEqualTo("relay");
     assertThat(request.get("destination-url").asString()).isEqualTo("https://idp.example.de/sso");
     assertThat(request.get("method").asString()).isEqualTo("POST");
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = { true, false })
+  void testIdmConsent(final boolean consented) {
+    final EidasAuthenticationToken eidasToken = Mockito.mock(EidasAuthenticationToken.class);
+    Mockito.when(eidasToken.getPrincipal()).thenReturn("DE/SE/12345");
+    final IdentityMatchingConsentEvent event = new IdentityMatchingConsentEvent(inputToken(), eidasToken, consented);
+    assertThat(this.transformer.supports(event)).isTrue();
+
+    final JsonNode json = this.toJson(this.transformer.transform(event, context()));
+    assertThat(json.get("type").asString()).isEqualTo(ConnectorAuditEvents.CONNECTOR_IDM_CONSENT_RESULT);
+    final JsonNode data = json.get("data").get("idm-consent-result");
+    assertThat(data.get("idm-consented").asBoolean()).isEqualTo(consented);
+    assertThat(data.get("user").asString()).isEqualTo("DE/SE/12345");
   }
 
   @Test

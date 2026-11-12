@@ -50,7 +50,7 @@ public class IdentityMatchingConsentEvent extends AbstractConnectorAuthnEvent {
       final boolean consented) {
     super(inputToken);
     this.eidasToken = eidasToken;
-    this.consented = false;
+    this.consented = consented;
   }
 
   /**
