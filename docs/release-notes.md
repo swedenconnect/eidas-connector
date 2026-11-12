@@ -16,6 +16,8 @@
 
 * The Identity Matching consent audit event always reported that the user did not consent. This has been fixed. See [#256](https://github.com/swedenconnect/eidas-connector/issues/256).
 
+* With AJP enabled, the startup check required an AJP secret when `secret-required` was `false`, and not when it was `true`. This has been fixed. See [#255](https://github.com/swedenconnect/eidas-connector/issues/255).
+
 ### Version 2.1.0
 
 **Release date:** 2026-05-05
