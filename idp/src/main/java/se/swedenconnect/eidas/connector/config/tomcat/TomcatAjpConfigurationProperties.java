@@ -124,7 +124,7 @@ public class TomcatAjpConfigurationProperties implements InitializingBean {
   /** {@inheritDoc} */
   @Override
   public void afterPropertiesSet() {
-    if (this.enabled && !this.secretRequired) {
+    if (this.enabled && this.secretRequired) {
       Assert.hasText(this.secret, "server.tomcat.ajp.secret must be assigned since secret-required is set");
     }
   }
