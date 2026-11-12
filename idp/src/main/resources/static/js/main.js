@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-$(document).ready(function() {
+$(function() {
 
 	$('.noscripthide').show();
 
 
 	// Not to be used in production
-	$('#headertoggle').click(function() {
+	$('#headertoggle').on('click', function() {
 		$('.header').toggleClass('hide');
 	});
 
-	$('#elemtoggle').click(function() {
+	$('#elemtoggle').on('click', function() {
 		$('.ns-providers').toggleClass('hide');
 	});
 
