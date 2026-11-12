@@ -16,7 +16,7 @@
     
     2.2. [Getting the Source](#getting-the-source)
 
-3. [**Maven Central**](#maven-central)
+3. [**GitHub Packages**](#github-packages)
 
 4. [**Building a Docker Image**](#building-a-docker-image)
 
@@ -48,7 +48,7 @@ This document discusses how the eIDAS Connector is built and gives examples of h
 <a name="building-from-source"></a>
 ## 2. Building from Source
 
-The eIDAS Connector can be built from source, but also downloaded from [Maven Central](#maven-central).
+The eIDAS Connector can be built from source, but also downloaded from [GitHub Packages](#github-packages).
 
 <a name="prerequisites-for-building"></a>
 ### 2.1. Prerequisites for Building
@@ -87,12 +87,16 @@ $ mvn clean compile
 
 The resulting jar-file containing the eIDAS Connector Spring Boot-application (with a bundled Tomcat) is found under `idp/target`, and named `eidas-connector-<version>.jar`.
 
-<a name="maven-central"></a>
-## 3. Maven Central
+<a name="github-packages"></a>
+## 3. GitHub Packages
 
-As an alternative to building the eIDAS Connector from source, it can be downloaded from [Maven Central](https://central.sonatype.com).
+As an alternative to building the eIDAS Connector from source, it can be downloaded from the [GitHub Packages Maven registry](https://github.com/swedenconnect/eidas-connector/packages) of the eIDAS Connector repository.
 
-Go to https://repo1.maven.org/maven2/se/swedenconnect/eidas/eidas-connector and download the version you need.
+The jar-file for a given version is found at `https://maven.pkg.github.com/swedenconnect/eidas-connector/se/swedenconnect/eidas/eidas-connector/<version>/eidas-connector-<version>.jar`.
+
+GitHub Packages does not allow anonymous downloads, also not for public packages. A GitHub user name and a classic personal access token with the `read:packages` scope are needed.
+
+Versions up to 2.1.0 are found on Maven Central, at https://repo1.maven.org/maven2/se/swedenconnect/eidas/eidas-connector.
 
 <a name="building-a-docker-image"></a>
 ## 4. Building a Docker Image

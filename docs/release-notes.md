@@ -12,6 +12,8 @@
 
 * Moved to the Spring Authentication Server library. The configuration has changed, see [Migration from eIDAS Connector 2.1.0](migration-from-2.1.0.html). See [#249](https://github.com/swedenconnect/eidas-connector/issues/249).
 
+* Releases are published to GitHub Packages instead of Maven Central.
+
 ### Version 2.1.0
 
 **Release date:** 2026-05-05
