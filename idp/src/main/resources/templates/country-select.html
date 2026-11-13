@@ -25,7 +25,7 @@
   </symbol>
 </svg>
 
-<header th:replace="~{fragments/header :: splogotype(url = ${ui.getSpInfo().getLogoUrl()})}"></header>
+<header th:replace="~{fragments/header :: splogotype(url = ${ui.getSpInfo().getLogoUrl()}, name = ${ui.getSpInfo().getDisplayName()})}"></header>
 
 <main class="container main" id="main">
   <div th:replace="~{fragments/header :: language(languages = ${languages}, path='/extauth')}"></div>

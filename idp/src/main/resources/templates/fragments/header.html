@@ -21,20 +21,19 @@
   <div class="container">
     <div class="row">
       <div class="col-sm-12 top-logo">
-        <img class="top-logo-dim float-left" th:src="@{/images/idp-logo.svg}" src="/images/idp-logo.svg" alt="Logo"/>
+        <img class="top-logo-dim float-left" th:src="@{/images/idp-logo.svg}" src="/images/idp-logo.svg"
+             alt="Sweden Connect"/>
       </div>
     </div>
   </div>
 </header>
 
-<header class="container-fluid header" th:fragment="splogotype(url)">
+<header class="container-fluid header" th:fragment="splogotype(url, name)">
   <div class="container">
     <div class="row">
       <div class="col-sm-12 top-logo" th:if="${url != null}">
-        <img class="top-logo-dim float-left" th:src="${url}" src="/images/logo.svg" alt="Logo"/>
-      </div>
-      <div class="col-sm-12 top-logo" th:unless="${url != null}">
-        <img class="top-logo-dim float-left" th:src="@{/images/logo.svg}" src="/images/logo.svg" alt="Logo"/>
+        <img class="top-logo-dim float-left" th:src="${url}" src="/images/idp-logo.svg"
+             alt="Logo" th:alt="${name} ?: #{connector.ui.sp-logo-alt}"/>
       </div>
     </div>
   </div>
