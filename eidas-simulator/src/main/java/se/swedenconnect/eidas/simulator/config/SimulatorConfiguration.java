@@ -17,6 +17,7 @@ package se.swedenconnect.eidas.simulator.config;
 
 import net.shibboleth.shared.component.ComponentInitializationException;
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,7 @@ import se.swedenconnect.eidas.simulator.authn.AttributeReleaser;
 import se.swedenconnect.eidas.simulator.authn.AuthnRequestDecoder;
 import se.swedenconnect.eidas.simulator.authn.AuthnRequestProcessor;
 import se.swedenconnect.eidas.simulator.authn.ResponseFactory;
+import se.swedenconnect.eidas.simulator.authn.SavedUsersCookie;
 import se.swedenconnect.eidas.simulator.country.CountryRepository;
 import se.swedenconnect.eidas.simulator.metadata.ConnectorMetadataResolver;
 import se.swedenconnect.eidas.simulator.metadata.CountryMetadataFactory;
@@ -201,6 +203,18 @@ public class SimulatorConfiguration {
   @NonNull
   ResponseFactory responseFactory() throws ComponentInitializationException {
     return new ResponseFactory(new AlgorithmSelector());
+  }
+
+  /**
+   * Creates the cookie that keeps the users that the tester has added.
+   *
+   * @param contextPath the servlet context path
+   * @return the cookie handler
+   */
+  @Bean
+  @NonNull
+  SavedUsersCookie savedUsersCookie(@Value("${server.servlet.context-path:}") final @NonNull String contextPath) {
+    return new SavedUsersCookie(contextPath);
   }
 
   /**

@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.simulator.authn;
 
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -178,7 +179,7 @@ class SimulatorControllerTest extends OpenSamlTestBase {
     final MockHttpSession session = new MockHttpSession();
     final String requestPage = this.sendRequest("pt", session);
 
-    this.mvc.perform(post(requestPage).session(session)
+    final MvcResult result = this.mvc.perform(post(requestPage).session(session)
             .param("action", "authenticate")
             .param("userId", "new")
             .param("saveUser", "true")
@@ -187,14 +188,26 @@ class SimulatorControllerTest extends OpenSamlTestBase {
             .param("user.familyName", "Rocha")
             .param("user.dateOfBirth", "1999-12-31")
             .param("loa", "http://eidas.europa.eu/LoA/high"))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andReturn();
+    final Cookie cookie = result.getResponse().getCookie(SavedUsersCookie.getCookieName("pt"));
+    assertThat(cookie).isNotNull();
+    assertThat(cookie.getMaxAge()).isPositive();
 
-    // The saved user can be selected for the next request
-    final String next = this.sendRequest("pt", session);
-    final String page = this.mvc.perform(get(next).session(session))
+    // The saved user can be selected for the next request, also in a new session
+    final MockHttpSession newSession = new MockHttpSession();
+    final String next = this.sendRequest("pt", newSession);
+    final String page = this.mvc.perform(get(next).session(newSession).cookie(cookie))
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
     assertThat(page).contains("Inês Rocha");
+
+    // But not for another country
+    final String other = this.sendRequest("es", newSession);
+    final String otherPage = this.mvc.perform(get(other).session(newSession).cookie(cookie))
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    assertThat(otherPage).doesNotContain("Inês Rocha");
   }
 
   @Test

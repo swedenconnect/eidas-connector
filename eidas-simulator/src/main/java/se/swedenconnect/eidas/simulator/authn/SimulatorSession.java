@@ -18,17 +18,12 @@ package se.swedenconnect.eidas.simulator.authn;
 import jakarta.servlet.http.HttpSession;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import se.swedenconnect.eidas.simulator.country.SimulatedUser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * The state of the simulator for one browser: the requests waiting for the tester, and the users that the tester
- * has added. It is kept in the HTTP session.
+ * The state of the simulator for one browser: the requests waiting for the tester. It is kept in the HTTP session.
  *
  * @author Martin Lindström
  */
@@ -42,9 +37,6 @@ public class SimulatorSession {
 
   /** The requests waiting for the tester, keyed by their identity, oldest first. */
   private final Map<String, ProcessedRequest> requests = new LinkedHashMap<>();
-
-  /** The users added by the tester, keyed by country code. */
-  private final Map<String, List<SimulatedUser>> customUsers = new HashMap<>();
 
   /**
    * Gets the simulator state of an HTTP session, creating it if needed.
@@ -92,28 +84,6 @@ public class SimulatorSession {
    */
   public synchronized void removeRequest(final @NonNull String id) {
     this.requests.remove(id);
-  }
-
-  /**
-   * Gets the users that the tester has added for a country.
-   *
-   * @param country the country code
-   * @return the users
-   */
-  public synchronized @NonNull List<SimulatedUser> getCustomUsers(final @NonNull String country) {
-    return List.copyOf(this.customUsers.getOrDefault(country, List.of()));
-  }
-
-  /**
-   * Saves a user added by the tester. A user with the same identity is replaced.
-   *
-   * @param country the country code
-   * @param user the user
-   */
-  public synchronized void saveCustomUser(final @NonNull String country, final @NonNull SimulatedUser user) {
-    final List<SimulatedUser> users = this.customUsers.computeIfAbsent(country, c -> new ArrayList<>());
-    users.removeIf(u -> u.getId() != null && u.getId().equals(user.getId()));
-    users.add(user);
   }
 
 }

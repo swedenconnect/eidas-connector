@@ -126,7 +126,7 @@ The released attributes are the requested attributes that the country supports a
 When a request has been accepted, a page shows which country is simulated and which service the request came from. The tester can:
 
 - pick one of the country's users, or enter a user of their own,
-- change the attribute values of the user before the response is sent, and save them as a user of their own (kept for the browser session),
+- change the attribute values of the user before the response is sent, and save them as a user of their own (kept in a cookie in the browser, one per country, for a year),
 - pick the level of assurance, among those the country supports and the request allows,
 - send an error response instead: a cancelled authentication, a failed authentication, no consent, a level of assurance that cannot be delivered, an unknown user, an attribute that cannot be delivered, an unsupported request or an internal error, with a status message of their own.
 

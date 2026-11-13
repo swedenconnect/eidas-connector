@@ -84,6 +84,9 @@ public class SimulatorController {
   /** Creates responses. */
   private final @NonNull ResponseFactory responseFactory;
 
+  /** Keeps the users that the tester has added. */
+  private final @NonNull SavedUsersCookie savedUsersCookie;
+
   /**
    * Constructor.
    *
@@ -92,15 +95,17 @@ public class SimulatorController {
    * @param processor processes requests
    * @param attributeReleaser releases attributes
    * @param responseFactory creates responses
+   * @param savedUsersCookie keeps the users that the tester has added
    */
   public SimulatorController(final @NonNull CountryRepository countries, final @NonNull AuthnRequestDecoder decoder,
       final @NonNull AuthnRequestProcessor processor, final @NonNull AttributeReleaser attributeReleaser,
-      final @NonNull ResponseFactory responseFactory) {
+      final @NonNull ResponseFactory responseFactory, final @NonNull SavedUsersCookie savedUsersCookie) {
     this.countries = countries;
     this.decoder = decoder;
     this.processor = processor;
     this.attributeReleaser = attributeReleaser;
     this.responseFactory = responseFactory;
+    this.savedUsersCookie = savedUsersCookie;
   }
 
   /**
@@ -155,6 +160,7 @@ public class SimulatorController {
    * @param country the country code
    * @param id the identity of the request
    * @param userId the selected user, or {@code null} for the first user
+   * @param httpRequest the HTTP request
    * @param response the HTTP response
    * @param session the HTTP session
    * @return the page
@@ -162,7 +168,8 @@ public class SimulatorController {
   @GetMapping("/{country}/authn/{id}")
   public @NonNull ModelAndView showRequest(final @PathVariable("country") @NonNull String country,
       final @PathVariable("id") @NonNull String id, final @RequestParam(value = "user", required = false)
-      @Nullable String userId, final @NonNull HttpServletResponse response, final @NonNull HttpSession session) {
+      @Nullable String userId, final @NonNull HttpServletRequest httpRequest,
+      final @NonNull HttpServletResponse response, final @NonNull HttpSession session) {
 
     final SimulatedCountry simulatedCountry = this.countries.getCountry(country);
     final SimulatorSession simulatorSession = SimulatorSession.get(session);
@@ -172,7 +179,7 @@ public class SimulatorController {
           "The request is not known. It may already have been answered.");
     }
 
-    final List<SimulatedUser> users = this.getUsers(simulatedCountry, simulatorSession);
+    final List<SimulatedUser> users = this.getUsers(simulatedCountry, httpRequest);
     final AuthnForm form = new AuthnForm();
     final SimulatedUser selected = NEW_USER.equals(userId)
         ? null
@@ -198,6 +205,7 @@ public class SimulatorController {
    * @param country the country code
    * @param id the identity of the request
    * @param form the form
+   * @param httpRequest the HTTP request
    * @param response the HTTP response
    * @param session the HTTP session
    * @return a page posting the response to the connector, or the authentication page if the form is not complete
@@ -205,7 +213,8 @@ public class SimulatorController {
   @PostMapping("/{country}/authn/{id}")
   public @NonNull ModelAndView answerRequest(final @PathVariable("country") @NonNull String country,
       final @PathVariable("id") @NonNull String id, final @ModelAttribute("form") @NonNull AuthnForm form,
-      final @NonNull HttpServletResponse response, final @NonNull HttpSession session) {
+      final @NonNull HttpServletRequest httpRequest, final @NonNull HttpServletResponse response,
+      final @NonNull HttpSession session) {
 
     final SimulatedCountry simulatedCountry = this.countries.getCountry(country);
     final SimulatorSession simulatorSession = SimulatorSession.get(session);
@@ -234,7 +243,7 @@ public class SimulatorController {
         .map(n -> "A value is required for " + n.substring(n.lastIndexOf('/') + 1))
         .forEach(problems::add);
     if (!problems.isEmpty()) {
-      return this.authnPage(simulatedCountry, request, this.getUsers(simulatedCountry, simulatorSession), form,
+      return this.authnPage(simulatedCountry, request, this.getUsers(simulatedCountry, httpRequest), form,
           problems);
     }
 
@@ -243,7 +252,7 @@ public class SimulatorController {
           || simulatedCountry.getUser(form.getUserId()) != null) {
         user.setId("custom-" + UUID.randomUUID().toString().substring(0, 8));
       }
-      simulatorSession.saveCustomUser(simulatedCountry.getCode(), user.copy());
+      this.savedUsersCookie.saveUser(simulatedCountry.getCode(), user.copy(), httpRequest, response);
     }
 
     final List<Attribute> attributes = this.attributeReleaser.releaseAttributes(simulatedCountry, request, user);
@@ -365,13 +374,15 @@ public class SimulatorController {
    * Gets the users of a country: the fixed users followed by the users added by the tester.
    *
    * @param country the simulated country
-   * @param session the simulator state
+   * @param request the HTTP request
    * @return the users
    */
   private @NonNull List<SimulatedUser> getUsers(final @NonNull SimulatedCountry country,
-      final @NonNull SimulatorSession session) {
+      final @NonNull HttpServletRequest request) {
     final List<SimulatedUser> users = new ArrayList<>(country.getUsers());
-    users.addAll(session.getCustomUsers(country.getCode()));
+    this.savedUsersCookie.getUsers(country.getCode(), request).stream()
+        .filter(u -> country.getUser(u.getId()) == null)
+        .forEach(users::add);
     return users;
   }
 
