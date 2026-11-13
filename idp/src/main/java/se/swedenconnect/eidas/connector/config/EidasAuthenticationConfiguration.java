@@ -165,6 +165,7 @@ public class EidasAuthenticationConfiguration {
         this.properties.getEidas().getProviderName());
     generator.setSkipScopingElementFor(this.properties.getEidas().getSkipScopingFor());
     generator.setPreferredBinding(this.properties.getEidas().getPreferredBinding());
+    generator.setSupportedNameIds(this.properties.getEidas().getSupportedNameIds());
 
     return generator;
   }

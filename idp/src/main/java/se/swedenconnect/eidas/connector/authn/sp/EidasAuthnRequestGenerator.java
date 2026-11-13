@@ -77,6 +77,9 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
   /** Preferred binding to use for authentication requests. */
   private @Nullable String preferredBinding;
 
+  /** An ordered list of the NameID formats that we support. */
+  private @NonNull List<String> supportedNameIds = Collections.emptyList();
+
   /** The security configuration we use for signing. */
   private final @NonNull SecurityConfiguration securityConfiguration;
 
@@ -135,7 +138,7 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
     final EidasAuthnRequestGeneratorContext context = new EidasAuthnRequestGeneratorContext(
         country.getCountryCode(), token.getRequester().identifier(), spType, requestedAttributes,
         token.getAuthnRequirements().getAuthnContextRequirements(), this.providerName, this.preferredBinding,
-        this.securityConfiguration);
+        this.securityConfiguration, this.supportedNameIds);
 
     // Generate AuthnRequest ...
     //
@@ -218,6 +221,16 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
     if (preferredBinding != null) {
       this.preferredBinding = preferredBinding;
     }
+  }
+
+  /**
+   * Sets the ordered list of the NameID formats that we support. The first of these that is listed in the metadata of
+   * the country is used in the {@code NameIDPolicy} element.
+   *
+   * @param supportedNameIds list of NameID format URI:s
+   */
+  public void setSupportedNameIds(final @Nullable List<String> supportedNameIds) {
+    this.supportedNameIds = Optional.ofNullable(supportedNameIds).orElseGet(Collections::emptyList);
   }
 
 }

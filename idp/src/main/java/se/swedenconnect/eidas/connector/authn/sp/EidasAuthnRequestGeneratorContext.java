@@ -21,6 +21,7 @@ import org.opensaml.core.xml.Namespace;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.StatusResponseType;
+import org.opensaml.saml.saml2.metadata.NameIDFormat;
 import org.opensaml.xmlsec.SignatureSigningConfiguration;
 import se.swedenconnect.eidas.connector.config.EidasAuthenticationProperties;
 import se.swedenconnect.opensaml.eidas.common.EidasConstants;
@@ -66,6 +67,9 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
   /** The security configuration we use for signing. */
   private final @NonNull SecurityConfiguration securityConfiguration;
 
+  /** An ordered list of the NameID formats that we support. */
+  private final @NonNull List<String> supportedNameIds;
+
   /**
    * Constructor.
    *
@@ -77,11 +81,13 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
    * @param providerName the name to add to the field {@code providerName}.
    * @param preferredBinding the preferred binding
    * @param securityConfiguration the security configuration
+   * @param supportedNameIds an ordered list of the NameID formats that we support
    */
   public EidasAuthnRequestGeneratorContext(final @NonNull String country, final @NonNull String nationalSpEntityId,
       final @Nullable SPTypeEnumeration spType, final @Nullable List<RequestedAttribute> requestedAttributes,
       final @NonNull List<String> requestedAuthnContextClassRefs, final @Nullable String providerName,
-      final @Nullable String preferredBinding, final @NonNull SecurityConfiguration securityConfiguration) {
+      final @Nullable String preferredBinding, final @NonNull SecurityConfiguration securityConfiguration,
+      final @Nullable List<String> supportedNameIds) {
     this.country = Objects.requireNonNull(country, "country must not be null");
     this.nationalSpEntityId = Objects.requireNonNull(nationalSpEntityId, "nationalSpEntityId must not be null");
     this.spType = Optional.ofNullable(spType).orElse(SPTypeEnumeration.PUBLIC);
@@ -93,6 +99,7 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
     this.preferredBinding = Optional.ofNullable(preferredBinding).orElse(SAMLConstants.SAML2_POST_BINDING_URI);
     this.securityConfiguration =
         Objects.requireNonNull(securityConfiguration, "securityConfiguration must not be null");
+    this.supportedNameIds = Optional.ofNullable(supportedNameIds).orElseGet(Collections::emptyList);
   }
 
   /**
@@ -176,14 +183,26 @@ class EidasAuthnRequestGeneratorContext implements AuthnRequestGeneratorContext 
   }
 
   /**
-   * Hardwires the {@code NameIDPolicy} to persistent.
+   * Uses the first of our supported NameID formats that is listed in the IdP metadata. If the IdP metadata does not
+   * list any NameID formats, or none of them are supported, persistent is used.
    */
   @Override
   public @NonNull NameIDPolicyBuilderFunction getNameIDPolicyBuilderFunction() {
-    return _list -> NameIDPolicyBuilder.builder()
-        .allowCreate(true)
-        .format(NameID.PERSISTENT)
-        .build();
+    return idpFormats -> {
+      final List<String> formats = Optional.ofNullable(idpFormats).orElseGet(Collections::emptyList).stream()
+          .map(NameIDFormat::getURI)
+          .filter(Objects::nonNull)
+          .map(String::trim)
+          .toList();
+      final String format = this.supportedNameIds.stream()
+          .filter(formats::contains)
+          .findFirst()
+          .orElse(NameID.PERSISTENT);
+      return NameIDPolicyBuilder.builder()
+          .allowCreate(true)
+          .format(format)
+          .build();
+    };
   }
 
   /**
