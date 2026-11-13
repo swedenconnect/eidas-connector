@@ -19,6 +19,7 @@ import net.shibboleth.shared.component.ComponentInitializationException;
 import net.shibboleth.shared.security.IdentifierGenerationStrategy;
 import net.shibboleth.shared.security.impl.RandomIdentifierGenerationStrategy;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.common.SAMLVersion;
 import org.opensaml.saml.common.SignableSAMLObject;
@@ -212,8 +213,8 @@ public class ResponseFactory {
    * @return the response
    */
   private @NonNull Response createResponse(final @NonNull SimulatedCountry country,
-      final @NonNull ResponseTarget target, final @NonNull String statusCode, final String subStatusCode,
-      final String message) {
+      final @NonNull ResponseTarget target, final @NonNull String statusCode, final @Nullable String subStatusCode,
+      final @Nullable String message) {
     final Response response = (Response) XMLObjectSupport.buildXMLObject(Response.DEFAULT_ELEMENT_NAME);
     response.setID(this.idGenerator.generateIdentifier());
     response.setVersion(SAMLVersion.VERSION_20);
