@@ -14,6 +14,8 @@ Go to <https://docs.swedenconnect.se/eidas-connector> for a set of resources for
 
 Also, see the [Release Notes](https://docs.swedenconnect.se/eidas-connector/release-notes.html).
 
+To test the connector locally against simulated foreign eIDAS nodes, see the [compose setup](compose/README.md) and the [eIDAS simulator](eidas-simulator/README.md).
+
 ---
 
 Copyright &copy; 2017-2026, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
