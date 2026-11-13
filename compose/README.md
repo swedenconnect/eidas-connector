@@ -190,12 +190,20 @@ The [Sweden Connect test client](https://github.com/swedenconnect/sweden-connect
 
 **Port:** `12040`
 
-**EntityID:** `https://local.eidas.swedenconnect.se/test-client/eidas`
+**SPs:**
+
+| EntityID | Description |
+| :--- | :--- |
+| `https://local.eidas.swedenconnect.se/test-client/eidas` | A public sector SP that requests the PRID attribute. |
+| `https://local.eidas.swedenconnect.se/test-client/eidas-private` | A private sector SP. The connector sends `SPType` private to the country. |
+| `https://local.eidas.swedenconnect.se/test-client/eidas-attributes` | A public sector SP that also requests attributes beyond the eIDAS minimum data set, such as birth name, place of birth, address, e-mail and phone number. |
 
 **URLs:**
 
 - https://local.eidas.swedenconnect.se:12040 – The application.
-- https://local.eidas.swedenconnect.se:12040/saml/metadata/eidas – The SP metadata.
+- https://local.eidas.swedenconnect.se:12040/saml/metadata/eidas – The metadata of the public sector SP.
+- https://local.eidas.swedenconnect.se:12040/saml/metadata/eidas-private – The metadata of the private sector SP.
+- https://local.eidas.swedenconnect.se:12040/saml/metadata/eidas-attributes – The metadata of the SP requesting more attributes.
 
 **Configuration:** `config/test-client`
 

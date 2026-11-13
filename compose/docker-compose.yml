@@ -102,7 +102,7 @@ services:
 
   test-my-eid:
     <<: *java-service
-    image: ${TEST_MY_EID_IMAGE:-ghcr.io/swedenconnect/test-my-eid:4.0.0}
+    image: ${TEST_MY_EID_IMAGE:-ghcr.io/swedenconnect/test-my-eid:latest}
     container_name: eidas-test-my-eid
     depends_on:
       metadata-aggregator:

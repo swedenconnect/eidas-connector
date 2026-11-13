@@ -75,6 +75,8 @@ refresh_test_my_eid() {
 
 refresh_test_client() {
   fetch 12040 /saml/metadata/eidas test-client-eidas.xml
+  fetch 12040 /saml/metadata/eidas-private test-client-eidas-private.xml
+  fetch 12040 /saml/metadata/eidas-attributes test-client-eidas-attributes.xml
 }
 
 services=("$@")
