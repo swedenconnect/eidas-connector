@@ -1,0 +1,84 @@
+#
+# Simulated eIDAS node: Germany (DE).
+#
+# The settings mirror the entry for DE in the production metadata,
+# https://md.eidas.swedenconnect.se/role/idp.xml, except for URLs and keys. Entity attributes that hold
+# hashes of production URLs or keys are left out.
+#
+simulator:
+  countries:
+    DE:
+      name: "Germany"
+      protocol-versions:
+        - "1.4.1"
+      application-identifier: "German eIDAS Middleware version: 4.1.0"
+      assurance-certifications:
+        - "http://eidas.europa.eu/LoA/high"
+      entity-categories:
+        - "http://eidas.europa.eu/entity-attributes/termsofaccess/requesterid"
+      digest-methods:
+        - "http://www.w3.org/2001/04/xmlenc#sha256"
+      signing-methods:
+        - algorithm: "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256"
+          min-key-size: 256
+        - algorithm: "http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1"
+          min-key-size: 3072
+          max-key-size: 4096
+      name-id-formats:
+        - "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
+      bindings:
+        - "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+        - "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+      # Production signing key: RSA 4096
+      attributes:
+        - name: "http://eidas.europa.eu/attributes/naturalperson/CurrentFamilyName"
+          friendly-name: "FamilyName"
+          name-format: ""
+        - name: "http://eidas.europa.eu/attributes/naturalperson/CurrentGivenName"
+          friendly-name: "FirstName"
+          name-format: ""
+        - name: "http://eidas.europa.eu/attributes/naturalperson/CurrentAddress"
+          friendly-name: "CurrentAddress"
+          name-format: ""
+        - name: "http://eidas.europa.eu/attributes/naturalperson/PersonIdentifier"
+          friendly-name: "PersonIdentifier"
+          name-format: ""
+        - name: "http://eidas.europa.eu/attributes/naturalperson/BirthName"
+          friendly-name: "BirthName"
+          name-format: ""
+        - name: "http://eidas.europa.eu/attributes/naturalperson/PlaceOfBirth"
+          friendly-name: "PlaceOfBirth"
+          name-format: ""
+        - name: "http://eidas.europa.eu/attributes/naturalperson/DateOfBirth"
+          friendly-name: "DateOfBirth"
+          name-format: ""
+        - name: "http://eidas.europa.eu/attributes/naturalperson/Nationality"
+          friendly-name: "Nationality"
+          name-format: ""
+      users:
+        - id: "max"
+          person-identifier: "aa8593fe0ef4ec9796ac6f1f00a122530af8c95a8f37ac6923566dbb3c17ef99"
+          given-name: "Max"
+          family-name: "Müller"
+          date-of-birth: "1983-08-08"
+          birth-name: "Max Müller"
+          place-of-birth: "Berlin"
+          address:
+            locator-designator: "42"
+            thoroughfare: "Unter den Linden"
+            post-code: "10117"
+            post-name: "Berlin"
+            admin-unit-first-line: "DE"
+          nationality: "DE"
+        - id: "anna"
+          person-identifier: "0c85e25c76e5da91878be64e11fc8f67246cdd82ca0163c6324390d65eb66684"
+          given-name: "Anna"
+          family-name: "Schmidt"
+          date-of-birth: "1996-02-19"
+          birth-name: "Anna Weber"
+          place-of-birth: "München"
+        - id: "jonas"
+          person-identifier: "abfd412b03b35e8da27628790e857498f48f47f0c312b4e3d9dbc3e6b5aeb278"
+          given-name: "Jonas"
+          family-name: "Schneider"
+          date-of-birth: "1974-11-02"

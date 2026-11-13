@@ -1,0 +1,79 @@
+#
+# Base configuration for the eIDAS simulator.
+#
+# The settings and users of the simulated countries are read from the files under countries/. Which of them are
+# active is given by simulator.active-countries (all when empty).
+#
+spring:
+  application:
+    name: eidas-simulator
+  config:
+    import:
+      - classpath:countries/at.yml
+      - classpath:countries/be.yml
+      - classpath:countries/cy.yml
+      - classpath:countries/cz.yml
+      - classpath:countries/de.yml
+      - classpath:countries/dk.yml
+      - classpath:countries/ee.yml
+      - classpath:countries/es.yml
+      - classpath:countries/fi.yml
+      - classpath:countries/fr.yml
+      - classpath:countries/hr.yml
+      - classpath:countries/it.yml
+      - classpath:countries/li.yml
+      - classpath:countries/lt.yml
+      - classpath:countries/lu.yml
+      - classpath:countries/lv.yml
+      - classpath:countries/mt.yml
+      - classpath:countries/nl.yml
+      - classpath:countries/pl.yml
+      - classpath:countries/pt.yml
+      - classpath:countries/ro.yml
+      - classpath:countries/si.yml
+      - classpath:countries/sk.yml
+  thymeleaf:
+    cache: true
+
+server:
+  port: 8443
+  servlet:
+    context-path: /simulator
+    session:
+      timeout: 60m
+      tracking-modes:
+        - cookie
+      cookie:
+        name: SIMULATORSESSION
+        http-only: true
+        secure: true
+      persistent: false
+  error:
+    include-message: always
+
+management:
+  server:
+    port: 8444
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: warn
+    se.swedenconnect: info
+
+simulator:
+  metadata:
+    signing-key-alias: metadata
+    validity: 7d
+    cache-duration: 1h
+  connector:
+    refresh-interval: 10m
+  request:
+    max-age: 5m
+    clock-skew: 30s

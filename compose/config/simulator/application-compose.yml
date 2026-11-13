@@ -1,0 +1,47 @@
+#
+# Configuration of the eIDAS simulator in the compose setup, active with the "compose" profile.
+#
+# The directories are given by the environment variables that docker-compose.yml sets:
+#   APP_CONFIG_DIR    - this directory
+#   COMMON_CONFIG_DIR - config/common
+#
+# TEST CREDENTIALS ONLY: the key stores are committed to the repository and the password is "secret".
+#
+
+spring:
+  ssl:
+    bundle:
+      jks:
+        tls:
+          keystore:
+            type: JKS
+            location: file:${COMMON_CONFIG_DIR}/tls.jks
+            password: secret
+          key:
+            alias: tls
+            password: secret
+
+server:
+  ssl:
+    enabled: true
+    bundle: tls
+
+simulator:
+  base-url: https://local.eidas.swedenconnect.se:12020/simulator
+  # The metadata signing key (alias metadata) and the keys of the countries (<country code>-sign and
+  # <country code>-encrypt).
+  keystore:
+    location: file:${APP_CONFIG_DIR}/simulator-keys.jks
+    type: JKS
+    password: secret
+  connector:
+    metadata-url: https://local.eidas.swedenconnect.se:12010/idp/metadata/sp
+    validation-certificate: file:${COMMON_CONFIG_DIR}/connector-metadata-signing.crt
+    refresh-interval: 1m
+  # All countries are active. List country codes here to simulate only some of them.
+  active-countries: []
+
+logging:
+  level:
+    se:
+      swedenconnect: INFO

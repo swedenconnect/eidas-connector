@@ -1,7 +1,7 @@
-# Publishes the Docker image of the eIDAS Connector when a version tag is pushed.
+# Publishes the Docker images of the eIDAS Connector and the eIDAS simulator when a version tag is pushed.
 #
 # The Maven version is set by internal/release.sh and committed before tagging, so the tag must match it: the tag
-# v3.0.0 requires the version 3.0.0 in the POMs. The image is tagged with the version and with latest. No image is
+# v3.0.0 requires the version 3.0.0 in the POMs. The images are tagged with the version and with latest. No image is
 # ever published for a snapshot version.
 name: Release Docker image
 
@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   publish:
-    name: Publish Docker image
+    name: Publish Docker images
     runs-on: ubuntu-latest
 
     steps:
@@ -43,13 +43,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # The image is built from the idp module alone, so the prid module it depends on has to be
+      # Each image is built from its own module, so the prid module that idp depends on has to be
       # installed first. The tests were run by internal/release.sh before the tag was pushed.
       - name: Install the reactor modules
         run: mvn clean install -DskipTests --no-transfer-progress
 
       # The Jib setup in the POM builds for linux/amd64 and linux/arm64 and pushes to
       # ghcr.io/swedenconnect/eidas-connector:<version>. latest is added here.
-      - name: Build and publish image
+      - name: Build and publish connector image
         working-directory: idp
+        run: mvn jib:build -Djib.to.tags=latest --no-transfer-progress
+
+      # Pushed to ghcr.io/swedenconnect/eidas-simulator:<version>, in the same way as the connector image.
+      - name: Build and publish simulator image
+        working-directory: eidas-simulator
         run: mvn jib:build -Djib.to.tags=latest --no-transfer-progress

@@ -1,0 +1,78 @@
+#
+# Simulated eIDAS node: Cyprus (CY).
+#
+# The settings mirror the entry for CY in the production metadata,
+# https://md.eidas.swedenconnect.se/role/idp.xml, except for URLs and keys. Entity attributes that hold
+# hashes of production URLs or keys are left out.
+#
+simulator:
+  countries:
+    CY:
+      name: "Cyprus"
+      protocol-versions:
+        - "1.4.1"
+        - "1.4"
+        - "1.3"
+        - "1.2"
+      application-identifier: "eIDAS-ref:3.0.0"
+      assurance-certifications:
+        - "http://eidas.europa.eu/LoA/high"
+        - "http://eidas.europa.eu/LoA/substantial"
+        - "http://eidas.europa.eu/LoA/low"
+      supported-encryption-algorithms:
+        - "http://www.w3.org/2009/xmlenc11#aes192-gcm"
+        - "http://www.w3.org/2009/xmlenc11#aes256-gcm"
+        - "http://www.w3.org/2009/xmlenc11#aes128-gcm"
+      digest-methods:
+        - "http://www.w3.org/2001/04/xmlenc#sha256"
+        - "http://www.w3.org/2001/04/xmldsig-more#sha384"
+        - "http://www.w3.org/2001/04/xmlenc#sha512"
+      signing-methods:
+        - algorithm: "http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1"
+        - algorithm: "http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1"
+        - algorithm: "http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1"
+        - algorithm: "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256"
+        - algorithm: "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384"
+        - algorithm: "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512"
+      name-id-formats:
+        - "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
+        - "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
+        - "urn:oasis:names:tc:SAML:2.0:nameid-format:transient"
+      bindings:
+        - "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+        - "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+      # Production signing key: RSA 4096
+      attributes:
+        - name: "http://eidas.europa.eu/attributes/legalperson/LegalName"
+        - name: "http://eidas.europa.eu/attributes/legalperson/LegalPersonIdentifier"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/CurrentFamilyName"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/CurrentGivenName"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/DateOfBirth"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/PersonIdentifier"
+      users:
+        - id: "georgios"
+          person-identifier: "1012345678"
+          given-name: "Giorgos"
+          family-name: "Papadopoulos"
+          date-of-birth: "1983-05-17"
+          gender: "Male"
+          given-name-non-latin: "Γιώργος"
+          family-name-non-latin: "Παπαδόπουλος"
+        - id: "eleni"
+          person-identifier: "1023456789"
+          given-name: "Eleni"
+          family-name: "Georgiou"
+          date-of-birth: "1990-10-04"
+          gender: "Female"
+          given-name-non-latin: "Ελένη"
+          family-name-non-latin: "Γεωργίου"
+        - id: "andreas"
+          person-identifier: "1034567890"
+          given-name: "Andreas"
+          family-name: "Christodoulou"
+          date-of-birth: "1968-08-29"
+        - id: "maria"
+          person-identifier: "1045678901"
+          given-name: "Maria"
+          family-name: "Ioannou"
+          date-of-birth: "2001-01-11"

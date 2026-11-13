@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2017-2026 Sweden Connect
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>eidas-simulator</artifactId>
+  <packaging>jar</packaging>
+
+  <parent>
+    <groupId>se.swedenconnect.eidas</groupId>
+    <artifactId>eidas-connector-parent</artifactId>
+    <version>3.0.0-SNAPSHOT</version>
+  </parent>
+
+  <name>Sweden Connect :: eIDAS :: Connector :: eIDAS Simulator</name>
+  <description>Simulated foreign eIDAS proxy services for testing the Swedish eIDAS Connector</description>
+  <url>https://docs.swedenconnect.se/eidas-connector</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:https://github.com/swedenconnect/eidas-connector.git</connection>
+    <developerConnection>scm:git:https://github.com/swedenconnect/eidas-connector.git</developerConnection>
+    <url>https://github.com/swedenconnect/eidas-connector/tree/master</url>
+  </scm>
+
+  <organization>
+    <name>Sweden Connect</name>
+    <url>https://www.swedenconnect.se</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <name>Martin Lindström</name>
+      <email>martin@idsec.se</email>
+      <organization>IDsec Solutions AB</organization>
+      <organizationUrl>https://www.idsec.se</organizationUrl>
+    </developer>
+  </developers>
+
+  <properties>
+    <!-- The simulator is a test tool. Only its Docker image is published, not the jar. -->
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>se.swedenconnect.opensaml</groupId>
+      <artifactId>opensaml-addons</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>se.swedenconnect.opensaml</groupId>
+      <artifactId>opensaml-eidas</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>se.swedenconnect.opensaml</groupId>
+      <artifactId>opensaml-security-ext</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>se.swedenconnect.security</groupId>
+      <artifactId>credentials-support</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>se.swedenconnect.security</groupId>
+      <artifactId>credentials-support-opensaml</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>bootstrap</artifactId>
+      <version>5.3.8</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.webjars</groupId>
+          <artifactId>popper.js</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring.boot.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+              <goal>build-info</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <!-- Ignore coverage for exception classes -->
+            <exclude>**/*Exception.class</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.google.cloud.tools</groupId>
+        <artifactId>jib-maven-plugin</artifactId>
+        <version>3.5.2</version>
+        <configuration>
+          <from>
+            <image>eclipse-temurin:21-jre-alpine</image>
+          </from>
+          <to>
+            <!-- Tagged with the version only, "latest" is added by the release workflow
+                 (-Djib.to.tags=latest) -->
+            <image>ghcr.io/swedenconnect/eidas-simulator:${project.version}</image>
+          </to>
+          <container>
+            <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+            <jvmFlags>
+              <jvmFlag>-Djava.net.preferIPv4Stack=true</jvmFlag>
+              <jvmFlag>-Dorg.apache.xml.security.ignoreLineBreaks=true</jvmFlag>
+            </jvmFlags>
+            <labels>
+              <org.opencontainers.image.source>
+                https://github.com/swedenconnect/eidas-connector
+              </org.opencontainers.image.source>
+              <org.opencontainers.image.description>Simulated eIDAS proxy services for testing the Swedish eIDAS Connector</org.opencontainers.image.description>
+              <org.opencontainers.image.licenses>Apache-2.0</org.opencontainers.image.licenses>
+            </labels>
+          </container>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>none</phase>
+            <id>local</id>
+            <goals>
+              <goal>dockerBuild</goal>
+            </goals>
+            <configuration>
+              <to>
+                <image>eidas-simulator</image>
+              </to>
+            </configuration>
+          </execution>
+          <execution>
+            <id>default-cli</id>
+            <phase>none</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+            <configuration>
+              <from>
+                <platforms>
+                  <platform>
+                    <os>linux</os>
+                    <architecture>amd64</architecture>
+                  </platform>
+                  <platform>
+                    <os>linux</os>
+                    <architecture>arm64</architecture>
+                  </platform>
+                </platforms>
+              </from>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+</project>

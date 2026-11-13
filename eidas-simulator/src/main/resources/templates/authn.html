@@ -1,0 +1,233 @@
+<!--
+  ~ Copyright 2017-2026 Sweden Connect
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/base :: headerFragment(title=|eIDAS Simulator - ${country.name}|)}"></head>
+<body>
+<header th:replace="~{fragments/base :: header(country=${country})}"></header>
+
+<main class="container main">
+  <div class="row">
+    <div class="col-sm-12 content-container">
+
+      <div class="content-heading">
+        <h1>Authentication request</h1>
+      </div>
+      <p class="info">
+        <span th:text="${connectorName}">Swedish eIDAS node</span> asks
+        <span th:text="${country.name}">Austria</span> to authenticate a user.
+      </p>
+
+      <div class="alert alert-danger" role="alert" th:if="${problems != null}">
+        <ul class="mb-0">
+          <li th:each="p : ${problems}" th:text="${p}">Problem</li>
+        </ul>
+      </div>
+
+      <!--/* The request */-->
+      <details class="simulator-section">
+        <summary>Details of the request</summary>
+        <dl class="row simulator-request mt-2">
+          <dt class="col-sm-4">Connector</dt>
+          <dd class="col-sm-8" th:text="${request.target.connectorEntityId}">entityID</dd>
+          <dt class="col-sm-4">Provider name</dt>
+          <dd class="col-sm-8" th:text="${request.providerName} ?: '-'">-</dd>
+          <dt class="col-sm-4">Requester ID</dt>
+          <dd class="col-sm-8" th:text="${request.requesterId} ?: '-'">-</dd>
+          <dt class="col-sm-4">SP type</dt>
+          <dd class="col-sm-8" th:text="${request.spType}">public</dd>
+          <dt class="col-sm-4">Request ID</dt>
+          <dd class="col-sm-8" th:text="${request.target.inResponseTo}">_id</dd>
+          <dt class="col-sm-4">NameID format</dt>
+          <dd class="col-sm-8" th:text="${request.nameIdFormat}">persistent</dd>
+          <dt class="col-sm-4">Requested attributes</dt>
+          <dd class="col-sm-8">
+            <div th:each="a : ${request.requestedAttributes}">
+              <span th:text="${#strings.substringAfter(a.name, 'attributes/')}">naturalperson/PersonIdentifier</span>
+              <span th:if="${a.required}" class="badge text-bg-secondary">required</span>
+            </div>
+          </dd>
+          <dt class="col-sm-4" th:if="${!ignoredAttributes.isEmpty()}">Not released</dt>
+          <dd class="col-sm-8" th:if="${!ignoredAttributes.isEmpty()}">
+            <span th:text="${#strings.listJoin(ignoredAttributes, ', ')}">BirthName</span>
+            <div class="small text-muted">Not supported by the country or not simulated.</div>
+          </dd>
+        </dl>
+      </details>
+
+      <!--/* User selection */-->
+      <section class="simulator-section">
+        <h2>User</h2>
+        <form method="GET" action="#" th:action="@{/{c}/authn/{id}(c=${#strings.toLowerCase(country.code)},id=${request.id})}">
+          <div class="row mb-3">
+            <label class="col-sm-4 col-form-label" for="userSelect">Select a user</label>
+            <div class="col-sm-8 d-flex">
+              <select class="form-select me-2" id="userSelect" name="user" onchange="this.form.submit()">
+                <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.displayName}"
+                        th:selected="${u.id == form.userId}">User</option>
+                <option th:value="${newUser}" th:selected="${form.userId == newUser}">New user ...</option>
+              </select>
+              <noscript><button type="submit" class="btn btn-secondary">Select</button></noscript>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!--/* Authentication */-->
+      <form method="POST" action="#" th:object="${form}"
+            th:action="@{/{c}/authn/{id}(c=${#strings.toLowerCase(country.code)},id=${request.id})}">
+        <input type="hidden" th:field="*{userId}"/>
+        <input type="hidden" th:field="*{user.id}"/>
+
+        <section class="simulator-section">
+          <h2>Attributes</h2>
+          <p class="small text-muted">
+            The values below are released to the connector. Change them to test other values. Fields marked * are
+            required by the request.
+          </p>
+
+          <div class="row mb-2" th:if="${fields.containsKey('PersonIdentifier')}">
+            <label class="col-sm-4 col-form-label" for="personIdentifier"
+                   th:classappend="${fields['PersonIdentifier']} ? 'simulator-required'">PersonIdentifier</label>
+            <div class="col-sm-8">
+              <div class="input-group">
+                <span class="input-group-text" th:text="${personIdentifierPrefix}">AT/SE/</span>
+                <input type="text" class="form-control" id="personIdentifier" th:field="*{user.personIdentifier}"/>
+              </div>
+            </div>
+          </div>
+
+          <th:block th:if="${fields.containsKey('CurrentGivenName')}">
+            <div th:replace="~{fragments/form :: text('Given name', 'user.givenName', ${fields['CurrentGivenName']})}"></div>
+            <div th:replace="~{fragments/form :: text('Given name (non-Latin)', 'user.givenNameNonLatin', false)}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('CurrentFamilyName')}">
+            <div th:replace="~{fragments/form :: text('Family name', 'user.familyName', ${fields['CurrentFamilyName']})}"></div>
+            <div th:replace="~{fragments/form :: text('Family name (non-Latin)', 'user.familyNameNonLatin', false)}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('DateOfBirth')}">
+            <div th:replace="~{fragments/form :: text('Date of birth (YYYY-MM-DD)', 'user.dateOfBirth', ${fields['DateOfBirth']})}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('BirthName')}">
+            <div th:replace="~{fragments/form :: text('Birth name', 'user.birthName', ${fields['BirthName']})}"></div>
+            <div th:replace="~{fragments/form :: text('Birth name (non-Latin)', 'user.birthNameNonLatin', false)}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('PlaceOfBirth')}">
+            <div th:replace="~{fragments/form :: text('Place of birth', 'user.placeOfBirth', ${fields['PlaceOfBirth']})}"></div>
+          </th:block>
+
+          <div class="row mb-2" th:if="${fields.containsKey('Gender')}">
+            <label class="col-sm-4 col-form-label" for="gender"
+                   th:classappend="${fields['Gender']} ? 'simulator-required'">Gender</label>
+            <div class="col-sm-8">
+              <select class="form-select" id="gender" th:field="*{user.gender}">
+                <option value="">-</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Unspecified">Unspecified</option>
+              </select>
+            </div>
+          </div>
+
+          <fieldset class="mb-2" th:if="${fields.containsKey('CurrentAddress')}">
+            <legend class="col-form-label" th:classappend="${fields['CurrentAddress']} ? 'simulator-required'">
+              Current address
+            </legend>
+            <div th:replace="~{fragments/form :: text('Street', 'user.address.thoroughfare', false)}"></div>
+            <div th:replace="~{fragments/form :: text('Number', 'user.address.locatorDesignator', false)}"></div>
+            <div th:replace="~{fragments/form :: text('Building', 'user.address.locatorName', false)}"></div>
+            <div th:replace="~{fragments/form :: text('PO box', 'user.address.poBox', false)}"></div>
+            <div th:replace="~{fragments/form :: text('Post code', 'user.address.postCode', false)}"></div>
+            <div th:replace="~{fragments/form :: text('Post name', 'user.address.postName', false)}"></div>
+            <div th:replace="~{fragments/form :: text('Area', 'user.address.cvAddressArea', false)}"></div>
+            <div th:replace="~{fragments/form :: text('Admin unit, first line', 'user.address.adminUnitFirstLine', false)}"></div>
+            <div th:replace="~{fragments/form :: text('Admin unit, second line', 'user.address.adminUnitSecondLine', false)}"></div>
+          </fieldset>
+
+          <th:block th:if="${fields.containsKey('Nationality')}">
+            <div th:replace="~{fragments/form :: text('Nationality (country code)', 'user.nationality', ${fields['Nationality']})}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('CountryOfBirth')}">
+            <div th:replace="~{fragments/form :: text('Country of birth (country code)', 'user.countryOfBirth', ${fields['CountryOfBirth']})}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('TownOfBirth')}">
+            <div th:replace="~{fragments/form :: text('Town of birth', 'user.townOfBirth', ${fields['TownOfBirth']})}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('CountryOfResidence')}">
+            <div th:replace="~{fragments/form :: text('Country of residence (country code)', 'user.countryOfResidence', ${fields['CountryOfResidence']})}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('EmailAddress')}">
+            <div th:replace="~{fragments/form :: text('E-mail address', 'user.emailAddress', ${fields['EmailAddress']})}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('PhoneNumber')}">
+            <div th:replace="~{fragments/form :: text('Phone number', 'user.phoneNumber', ${fields['PhoneNumber']})}"></div>
+          </th:block>
+
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="saveUser" th:field="*{saveUser}"/>
+            <label class="form-check-label" for="saveUser">
+              Save these values as a user of my own, so that I can select it again
+            </label>
+          </div>
+        </section>
+
+        <section class="simulator-section">
+          <h2>Level of assurance</h2>
+          <div class="form-check" th:each="loa : ${request.allowedLoas}">
+            <input class="form-check-input" type="radio" th:id="${'loa-' + loaStat.index}" th:value="${loa}"
+                   th:field="*{loa}"/>
+            <label class="form-check-label" th:for="${'loa-' + loaStat.index}" th:text="${loa}">high</label>
+          </div>
+        </section>
+
+        <div class="simulator-section">
+          <button type="submit" class="btn btn-primary" name="action" value="authenticate">Authenticate</button>
+        </div>
+
+        <hr class="full-width"/>
+
+        <section class="simulator-section">
+          <h2>Error response</h2>
+          <p class="small text-muted">Send an error response to the connector instead of authenticating.</p>
+          <div class="row mb-2">
+            <label class="col-sm-4 col-form-label" for="errorOption">Error</label>
+            <div class="col-sm-8">
+              <select class="form-select" id="errorOption" th:field="*{errorOption}">
+                <option th:each="e : ${errorOptions}" th:value="${e}"
+                        th:text="|${e.description} (${e.statusCodesText})|">Cancel</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <label class="col-sm-4 col-form-label" for="statusMessage">Status message</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" id="statusMessage" th:field="*{statusMessage}"
+                     placeholder="Default message of the error"/>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-outline-secondary" name="action" value="error">
+            Send error response
+          </button>
+        </section>
+      </form>
+
+    </div>
+  </div>
+</main>
+
+<footer th:replace="~{fragments/base :: footer}"></footer>
+</body>
+</html>

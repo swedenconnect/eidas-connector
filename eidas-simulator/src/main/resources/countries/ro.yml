@@ -1,0 +1,79 @@
+#
+# Simulated eIDAS node: Romania (RO).
+#
+# The settings mirror the entry for RO in the production metadata,
+# https://md.eidas.swedenconnect.se/role/idp.xml, except for URLs and keys. Entity attributes that hold
+# hashes of production URLs or keys are left out.
+#
+simulator:
+  countries:
+    RO:
+      name: "Romania"
+      protocol-versions:
+        - "1.4.1"
+        - "1.4"
+        - "1.3"
+        - "1.2"
+      application-identifier: "eIDAS-ref:3.1.0"
+      assurance-certifications:
+        - "http://eidas.europa.eu/LoA/substantial"
+        - "http://eidas.europa.eu/LoA/low"
+      supported-encryption-algorithms:
+        - "http://www.w3.org/2009/xmlenc11#aes192-gcm"
+        - "http://www.w3.org/2009/xmlenc11#aes256-gcm"
+        - "http://www.w3.org/2009/xmlenc11#aes128-gcm"
+      digest-methods:
+        - "http://www.w3.org/2001/04/xmlenc#sha256"
+        - "http://www.w3.org/2001/04/xmldsig-more#sha384"
+        - "http://www.w3.org/2001/04/xmlenc#sha512"
+      signing-methods:
+        - algorithm: "http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1"
+        - algorithm: "http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1"
+        - algorithm: "http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1"
+        - algorithm: "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256"
+        - algorithm: "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384"
+        - algorithm: "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512"
+      name-id-formats:
+        - "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
+        - "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
+        - "urn:oasis:names:tc:SAML:2.0:nameid-format:transient"
+      bindings:
+        - "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+        - "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+      # Production signing key: RSA 4096
+      attributes:
+        - name: "http://eidas.europa.eu/attributes/naturalperson/BirthName"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/CurrentAddress"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/CurrentFamilyName"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/CurrentGivenName"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/DateOfBirth"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/Gender"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/PersonIdentifier"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/PlaceOfBirth"
+      users:
+        - id: "andrei"
+          person-identifier: "eab0c5ef3bdd89cfcdc4bc0b726900a4c09dbb0b"
+          given-name: "Andrei"
+          family-name: "Popescu"
+          date-of-birth: "1986-11-11"
+          gender: "Male"
+          place-of-birth: "București"
+          address:
+            locator-designator: "5"
+            thoroughfare: "Calea Victoriei"
+            post-code: "010061"
+            post-name: "București"
+            admin-unit-first-line: "RO"
+        - id: "elena"
+          person-identifier: "512af6f52404b7a10adaafd4c7306fcdbd5ff4c0"
+          given-name: "Elena"
+          family-name: "Ionescu"
+          date-of-birth: "1993-04-25"
+          gender: "Female"
+          birth-name: "Elena Dumitrescu"
+          place-of-birth: "Cluj-Napoca"
+        - id: "mihai"
+          person-identifier: "7bdb135616af70f58658804f2fdb9c21edb1176b"
+          given-name: "Mihai"
+          family-name: "Popa"
+          date-of-birth: "1969-07-07"

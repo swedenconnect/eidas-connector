@@ -175,8 +175,9 @@ other. There is no approval step, publishing starts as soon as the tag is pushed
   connector to GitHub Packages. See [Publishing to GitHub Packages](#publishing-to-github-packages).
 - [`docker-release.yml`](../.github/workflows/docker-release.yml) checks that the tag matches the
   Maven version of every module and that the version is not a snapshot, and builds and pushes the
-  image of the `idp` module with Jib, for `linux/amd64` and `linux/arm64`, to
-  `ghcr.io/swedenconnect/eidas-connector`, tagged with the version and with `latest`. It logs in to
+  images of the `idp` and `eidas-simulator` modules with Jib, for `linux/amd64` and `linux/arm64`, to
+  `ghcr.io/swedenconnect/eidas-connector` and `ghcr.io/swedenconnect/eidas-simulator`, tagged with
+  the version and with `latest`. It logs in to
   ghcr.io with the token of the workflow. No workflow publishes an image of a snapshot version.
 - [`github-release.yml`](../.github/workflows/github-release.yml) creates a GitHub release from the
   tag, titled with the version and marked as the latest, that points at `docs/release-notes.md` at

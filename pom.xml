@@ -95,6 +95,7 @@
   <modules>
     <module>prid</module>
     <module>idp</module>
+    <module>eidas-simulator</module>
   </modules>
 
   <dependencyManagement>
