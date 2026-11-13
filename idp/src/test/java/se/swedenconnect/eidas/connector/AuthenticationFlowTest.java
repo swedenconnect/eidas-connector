@@ -271,6 +271,7 @@ class AuthenticationFlowTest {
         .param("authnId", authnId).with(session)).andDo(session).andReturn();
     assertThat(view(countrySelect).getViewName()).isEqualTo("country-select");
     assertThat(view(countrySelect).getModel()).containsEntry("authnId", authnId);
+    assertThat(countrySelect.getResponse().getContentAsString()).doesNotContain("alt=\"Logo\"");
 
     // ... and selects a country, which gives an eIDAS authentication request ...
     //

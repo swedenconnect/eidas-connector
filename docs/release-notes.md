@@ -18,6 +18,8 @@
 
 * With AJP enabled, the startup check required an AJP secret when `secret-required` was `false`, and not when it was `true`. This has been fixed. See [#255](https://github.com/swedenconnect/eidas-connector/issues/255).
 
+* The logotype at the top of the pages now has an alt text with the name of the requesting service, instead of the fixed text "Logo". See [#246](https://github.com/swedenconnect/eidas-connector/issues/246).
+
 ### Version 2.1.0
 
 **Release date:** 2026-05-05
