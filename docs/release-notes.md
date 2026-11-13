@@ -20,6 +20,8 @@
 
 * The logotype at the top of the pages now has an alt text with the name of the requesting service, instead of the fixed text "Logo". See [#246](https://github.com/swedenconnect/eidas-connector/issues/246).
 
+* The `NameIDPolicy` in requests sent to foreign eIDAS nodes now uses a NameID format that the country supports, instead of always requesting `persistent`. See [#266](https://github.com/swedenconnect/eidas-connector/issues/266).
+
 * Added an eIDAS simulator and a Docker Compose setup, so that the connector can be tested locally against simulated foreign eIDAS nodes. See [#263](https://github.com/swedenconnect/eidas-connector/issues/263).
 
 ### Version 2.1.0

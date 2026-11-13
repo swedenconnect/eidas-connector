@@ -80,7 +80,7 @@ By default the eIDAS Connector IdP will support the following authentication con
 | `provider-name` | The "provider name" that we should include in `AuthnRequest` messages being sent to the foreign country. | String | "Swedish eIDAS Connector" |
 | `requires-signed`<br />`-assertions` | Whether we require signed eIDAS assertions. | Boolean | `false` |
 | `preferred-binding` | The preferred binding to use when sending authentication requests. Possible values are `urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST` and `urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect` | String | `urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST` |
-| `supported-name-ids` | An ordered list of supported NameID formats. | List of strings | persistent, transient, unspecified<sup>*</sup> |
+| `supported-name-ids` | An ordered list of supported NameID formats. The first of these that is listed in the metadata of the country is used in the `NameIDPolicy` of `AuthnRequest` messages. If none is listed, persistent is used. | List of strings | persistent, transient, unspecified<sup>*</sup> |
 | `skip-scoping-for` | Some eIDAS countries can not handle the `Scoping` element in `AuthnRequest` messages. This setting contains the country codes for those countries that we should not include this element for. | List of strings | - |
 | `metadata.*` | Configuration for eIDAS SP SAML metadata. See [eIDAS SP Metadata Configuration](#eidas-sp-metadata-configuration) below. | [EidasSpMetadataProperties](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/java/se/swedenconnect/eidas/connector/config/EidasSpMetadataProperties.java) | - |
 
