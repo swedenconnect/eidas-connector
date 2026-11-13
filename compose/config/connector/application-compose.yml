@@ -1,0 +1,108 @@
+#
+# Configuration of the eIDAS connector in the compose setup, active with the "compose" profile.
+#
+# The directories are given by the environment variables that docker-compose.yml sets:
+#   APP_CONFIG_DIR    - this directory
+#   COMMON_CONFIG_DIR - config/common
+#
+# The connector keeps its state in memory, Redis is not used.
+#
+# TEST CREDENTIALS ONLY: the key stores are committed to the repository and the password is "secret".
+#
+
+spring:
+  ssl:
+    bundle:
+      jks:
+        tls:
+          keystore:
+            type: JKS
+            location: file:${COMMON_CONFIG_DIR}/tls.jks
+            password: secret
+          key:
+            alias: tls
+            password: secret
+
+server:
+  ssl:
+    enabled: true
+    bundle: tls
+
+credential:
+  bundles:
+    keystore:
+      connector-keys:
+        type: JKS
+        location: file:${APP_CONFIG_DIR}/connector-keys.jks
+        password: secret
+    jks:
+      idp-sign:
+        name: "Connector IdP Signing"
+        store-reference: connector-keys
+        key:
+          alias: idp-sign
+          key-password: secret
+      idp-encrypt:
+        name: "Connector IdP Encryption"
+        store-reference: connector-keys
+        key:
+          alias: idp-encrypt
+          key-password: secret
+      metadata-sign:
+        name: "Connector Metadata Signing"
+        store-reference: connector-keys
+        key:
+          alias: metadata-sign
+          key-password: secret
+      sp-sign:
+        name: "Connector SP Signing"
+        store-reference: connector-keys
+        key:
+          alias: sp-sign
+          key-password: secret
+      sp-encrypt:
+        name: "Connector SP Encryption"
+        store-reference: connector-keys
+        key:
+          alias: sp-encrypt
+          key-password: secret
+
+connector:
+  domain: local.eidas.swedenconnect.se
+  base-url: https://local.eidas.swedenconnect.se:12010/idp
+  backup-directory: /tmp/connector
+  # The EU metadata is the aggregated metadata of the eIDAS simulator.
+  eu-metadata:
+    location: https://local.eidas.swedenconnect.se:12020/simulator/metadata
+    validation-certificate: file:${COMMON_CONFIG_DIR}/simulator-metadata-signing.crt
+  eidas:
+    credentials:
+      sign:
+        bundle: sp-sign
+      encrypt:
+        bundle: sp-encrypt
+      metadata-sign:
+        bundle: metadata-sign
+  prid:
+    policy-resource: file:${APP_CONFIG_DIR}/prid-policy.yml
+
+authn-server:
+  saml:
+    entity-id: https://local.eidas.swedenconnect.se/eidas
+    # The Sweden Connect side: the SP metadata published by the metadata aggregator.
+    metadata-providers:
+      - location: https://local.eidas.swedenconnect.se:12000/metadata/mdx/role/sp.xml
+        validation-certificate: file:${COMMON_CONFIG_DIR}/aggregator-metadata-signing.crt
+        backup-location: /tmp/connector/metadata/sc-cache.xml
+    credentials:
+      sign:
+        bundle: idp-sign
+      encrypt:
+        bundle: idp-encrypt
+      metadata-sign:
+        bundle: metadata-sign
+
+logging:
+  level:
+    se:
+      swedenconnect: INFO

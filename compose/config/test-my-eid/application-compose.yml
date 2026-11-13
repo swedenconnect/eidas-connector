@@ -1,0 +1,88 @@
+#
+# Configuration of Test my eID in the compose setup, active with the "compose" profile.
+#
+# The directories are given by the environment variables that docker-compose.yml sets:
+#   APP_CONFIG_DIR    - this directory
+#   COMMON_CONFIG_DIR - config/common
+#   HOST_PORT         - the port the service is reached on from the browser
+#
+# Only SAML is used. The connector is the only Identity Provider in the metadata of the setup.
+#
+# TEST CREDENTIALS ONLY: the key stores are committed to the repository and the password is "secret".
+#
+
+spring:
+  ssl:
+    bundle:
+      jks:
+        tls:
+          keystore:
+            type: JKS
+            location: file:${COMMON_CONFIG_DIR}/tls.jks
+            password: secret
+          key:
+            alias: tls
+            password: secret
+
+credential:
+  bundles:
+    keystore:
+      sp-keys:
+        type: JKS
+        location: file:${APP_CONFIG_DIR}/sp-keys.jks
+        password: secret
+    jks:
+      sign:
+        name: "Test my eID SAML Signing"
+        store-reference: sp-keys
+        key:
+          alias: sign
+          key-password: secret
+      decrypt:
+        name: "Test my eID SAML Encryption"
+        store-reference: sp-keys
+        key:
+          alias: encrypt
+          key-password: secret
+      md-sign:
+        name: "Test my eID Metadata Signing"
+        store-reference: sp-keys
+        key:
+          alias: metadata-sign
+          key-password: secret
+
+server:
+  servlet:
+    context-path: /testmyeid
+  ssl:
+    enabled: true
+    bundle: tls
+
+sp:
+  base-uri: https://local.eidas.swedenconnect.se:${HOST_PORT}
+  entity-id: https://local.eidas.swedenconnect.se/testmyeid
+  sign-entity-id: https://local.eidas.swedenconnect.se/testmyeid-sign
+  credential:
+    sign:
+      bundle: sign
+    decrypt:
+      bundle: decrypt
+    md-sign:
+      bundle: md-sign
+  discovery:
+    include-only-static: false
+  eidas-connector:
+    entity-id: https://local.eidas.swedenconnect.se/eidas
+  federation:
+    metadata:
+      url: https://local.eidas.swedenconnect.se:12000/metadata/mdx/role/idp.xml
+      validation-certificate: file:${COMMON_CONFIG_DIR}/aggregator-metadata-signing.crt
+
+rp:
+  federation:
+    enabled: false
+
+logging:
+  level:
+    root: INFO
+    testmyeid: DEBUG

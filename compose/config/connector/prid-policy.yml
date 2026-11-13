@@ -1,0 +1,78 @@
+#
+# PRID policy of the connector in the compose setup.
+#
+# The persistence classes are the ones given in "Vägledning förlitande parter"
+# (https://www.swedenconnect.se/driftinformation-och-support/vagledning-forlitande-parter). Romania is not listed there
+# and is given class C. The algorithms are chosen from the format of the simulated PersonIdentifier values: Base64
+# values use special-characters-eIDAS, long hexadecimal hashes colresist-eIDAS and the others default-eIDAS.
+#
+policy:
+  AT:
+    algorithm: special-characters-eIDAS
+    persistenceClass: A
+  BE:
+    algorithm: special-characters-eIDAS
+    persistenceClass: A
+  CY:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  CZ:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  DE:
+    algorithm: colresist-eIDAS
+    persistenceClass: C
+  DK:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  EE:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  ES:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  FI:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  FR:
+    algorithm: colresist-eIDAS
+    persistenceClass: B
+  HR:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  IT:
+    algorithm: default-eIDAS
+    persistenceClass: C
+  LI:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  LT:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  LU:
+    algorithm: default-eIDAS
+    persistenceClass: C
+  LV:
+    algorithm: default-eIDAS
+    persistenceClass: B
+  MT:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  NL:
+    algorithm: colresist-eIDAS
+    persistenceClass: A
+  PL:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  PT:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  RO:
+    algorithm: default-eIDAS
+    persistenceClass: C
+  SI:
+    algorithm: default-eIDAS
+    persistenceClass: A
+  SK:
+    algorithm: default-eIDAS
+    persistenceClass: A

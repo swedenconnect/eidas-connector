@@ -1,0 +1,155 @@
+#
+# Compose setup for testing the eIDAS connector locally: the connector, the eIDAS simulator and the Sweden Connect
+# test services.
+#
+# All services are reached through the host name local.eidas.swedenconnect.se, which must be mapped to 127.0.0.1 in
+# the hosts file. The containers reach each other through the same name (extra_hosts with host-gateway), so that one
+# TLS certificate, config/common/tls.jks, works everywhere. See README.md for the ports and URLs.
+#
+# The images of the connector and the simulator are built from this repository, see README.md.
+#
+name: eidas-connector
+
+networks:
+  eidas-connector:
+    name: eidas-connector
+
+x-java-service: &java-service
+  restart: on-failure
+  networks:
+    - eidas-connector
+  extra_hosts:
+    - "local.eidas.swedenconnect.se:host-gateway"
+
+services:
+
+  #
+  # Applications: ports from 12000, in blocks of ten
+  #
+
+  metadata-aggregator:
+    <<: *java-service
+    image: ${METADATA_AGGREGATOR_IMAGE:-ghcr.io/swedenconnect/metadata-aggregator:latest}
+    container_name: eidas-metadata-aggregator
+    ports:
+      - "12000:8443"
+    volumes:
+      - ./config/metadata-aggregator:/opt/aggregator
+      - ./config/common:/opt/common:ro
+    environment:
+      SPRING_CONFIG_LOCATION: /opt/aggregator/
+      TZ: "Europe/Stockholm"
+      JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=/opt/common/trust.jks -Djavax.net.ssl.trustStorePassword=secret -Djava.net.preferIPv4Stack=true -Dorg.apache.xml.security.ignoreLineBreaks=true"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsk -o /dev/null https://localhost:8443/metadata/feed"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  eidas-connector:
+    <<: *java-service
+    image: ${CONNECTOR_IMAGE:-eidas-connector}
+    container_name: eidas-connector
+    depends_on:
+      metadata-aggregator:
+        condition: service_healthy
+      eidas-simulator:
+        condition: service_healthy
+    ports:
+      - "12010:8443"
+      - "12011:8444"
+    volumes:
+      - ./config/connector:/opt/connector
+      - ./config/common:/opt/common:ro
+    environment:
+      APP_CONFIG_DIR: /opt/connector
+      COMMON_CONFIG_DIR: /opt/common
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/opt/connector/
+      SPRING_PROFILES_ACTIVE: compose
+      TZ: "Europe/Stockholm"
+      JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=/opt/common/trust.jks -Djavax.net.ssl.trustStorePassword=secret"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --no-check-certificate -O /dev/null https://127.0.0.1:8444/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  eidas-simulator:
+    <<: *java-service
+    image: ${SIMULATOR_IMAGE:-eidas-simulator}
+    container_name: eidas-simulator
+    ports:
+      - "12020:8443"
+      - "12021:8444"
+    volumes:
+      - ./config/simulator:/opt/simulator:ro
+      - ./config/common:/opt/common:ro
+    environment:
+      APP_CONFIG_DIR: /opt/simulator
+      COMMON_CONFIG_DIR: /opt/common
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/opt/simulator/
+      SPRING_PROFILES_ACTIVE: compose
+      TZ: "Europe/Stockholm"
+      JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=/opt/common/trust.jks -Djavax.net.ssl.trustStorePassword=secret"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --no-check-certificate -O /dev/null https://127.0.0.1:8444/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  test-my-eid:
+    <<: *java-service
+    image: ${TEST_MY_EID_IMAGE:-ghcr.io/swedenconnect/test-my-eid:4.0.0}
+    container_name: eidas-test-my-eid
+    depends_on:
+      metadata-aggregator:
+        condition: service_healthy
+    ports:
+      - "12030:8443"
+    volumes:
+      - ./config/test-my-eid:/opt/test-my-eid
+      - ./config/common:/opt/common:ro
+    environment:
+      HOST_PORT: 12030
+      APP_CONFIG_DIR: /opt/test-my-eid
+      COMMON_CONFIG_DIR: /opt/common
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/opt/test-my-eid/
+      SPRING_PROFILES_ACTIVE: compose
+      TZ: "Europe/Stockholm"
+      JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=/opt/common/trust.jks -Djavax.net.ssl.trustStorePassword=secret"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsk -o /dev/null https://localhost:8443/testmyeid/"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  test-client:
+    <<: *java-service
+    image: ${TEST_CLIENT_IMAGE:-ghcr.io/swedenconnect/sweden-connect-test-client:latest}
+    container_name: eidas-test-client
+    depends_on:
+      metadata-aggregator:
+        condition: service_healthy
+    ports:
+      - "12040:8443"
+    volumes:
+      - ./config/test-client:/opt/test-client
+      - ./config/common:/opt/common:ro
+    environment:
+      HOST_PORT: 12040
+      APP_CONFIG_DIR: /opt/test-client
+      COMMON_CONFIG_DIR: /opt/common
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/opt/test-client/
+      SPRING_PROFILES_ACTIVE: compose
+      TZ: "Europe/Stockholm"
+      JAVA_TOOL_OPTIONS: "-Djavax.net.ssl.trustStore=/opt/common/trust.jks -Djavax.net.ssl.trustStorePassword=secret"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsk -o /dev/null https://localhost:8443/"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s

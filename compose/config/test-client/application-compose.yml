@@ -1,0 +1,106 @@
+#
+# Configuration of the Sweden Connect test client in the compose setup, active with the "compose" profile.
+# See https://github.com/swedenconnect/sweden-connect-test-client/blob/main/docs/configuration.md for the settings.
+#
+# The directories are given by the environment variables that docker-compose.yml sets:
+#   APP_CONFIG_DIR    - this directory
+#   COMMON_CONFIG_DIR - config/common
+#   HOST_PORT         - the port the service is reached on from the browser
+#
+# Only SAML is used. The test client has one SP that requests eIDAS authentication through the connector.
+#
+# TEST CREDENTIALS ONLY: the key stores are committed to the repository and the password is "secret".
+#
+
+spring:
+  ssl:
+    bundle:
+      jks:
+        tls:
+          keystore:
+            type: JKS
+            location: file:${COMMON_CONFIG_DIR}/tls.jks
+            password: secret
+          key:
+            alias: tls
+            password: secret
+
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    bundle: tls
+
+credential:
+  bundles:
+    keystore:
+      sp-keys:
+        type: JKS
+        location: file:${APP_CONFIG_DIR}/sp-keys.jks
+        password: secret
+    jks:
+      sp-sign:
+        name: "Test Client SAML Signing"
+        store-reference: sp-keys
+        key:
+          alias: sign
+          key-password: secret
+      sp-encrypt:
+        name: "Test Client SAML Encryption"
+        store-reference: sp-keys
+        key:
+          alias: encrypt
+          key-password: secret
+
+testclient:
+  base-url: https://local.eidas.swedenconnect.se:${HOST_PORT}
+  default-credential:
+    bundle: sp-sign
+  tls:
+    # The trust store of the JVM holds the TLS certificate of the setup.
+    default-tls-trust: JVM_TRUST
+
+  oidc:
+    enabled: false
+
+  saml:
+    enabled: true
+    federation:
+      description: "eIDAS Connector Compose Setup"
+      source:
+        - metadata-location: https://local.eidas.swedenconnect.se:12000/metadata/mdx/role/idp.xml
+          validation-certificate: file:${COMMON_CONFIG_DIR}/aggregator-metadata-signing.crt
+          backup-location: ${APP_CONFIG_DIR}/cache/idp-metadata-backup.xml
+      idp-sorting:
+        - https://local.eidas.swedenconnect.se/eidas
+    common-metadata:
+      metadata-template: classpath:saml-metadata-template.xml
+      default-entity-categories:
+        - http://id.elegnamnden.se/ec/1.0/eidas-naturalperson
+        - http://id.elegnamnden.se/st/1.0/public-sector-sp
+        - http://id.swedenconnect.se/contract/sc/sweden-connect
+        - http://id.swedenconnect.se/contract/sc/eid-choice-2017
+    sps:
+      - entity-id: https://local.eidas.swedenconnect.se/test-client/eidas
+        description: "Test SP - SP for eIDAS authentication"
+        path-suffix: "eidas"
+        metadata:
+          name-id-formats:
+            - urn:oasis:names:tc:SAML:2.0:nameid-format:persistent
+          wants-assertions-signed: true
+          ui-info:
+            display-name:
+              - "sv-Sweden Connect Test-SP eIDAS"
+              - "en-Sweden Connect Test SP eIDAS"
+          attribute-consuming-services:
+            - service-name:
+                - "sv-Legitimering med utländskt eID"
+                - "en-Authentication using foreign eID"
+              requested-attributes:
+                - attribute-name: urn:oid:1.2.752.201.3.4
+                  required: true
+        credentials:
+          signing:
+            bundle: sp-sign
+          encryption:
+            bundle: sp-encrypt

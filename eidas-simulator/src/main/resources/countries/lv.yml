@@ -1,0 +1,109 @@
+#
+# Simulated eIDAS node: Latvia (LV).
+#
+# The settings mirror the entry for LV in the production metadata,
+# https://md.eidas.swedenconnect.se/role/idp.xml, except for URLs and keys. Entity attributes that hold
+# hashes of production URLs or keys are left out.
+#
+simulator:
+  countries:
+    LV:
+      name: "Latvia"
+      protocol-versions:
+        - "1.2"
+        - "1.1"
+      application-identifier: "CEF:eIDAS-ref:2.5.0"
+      assurance-certifications:
+        - "http://eidas.europa.eu/LoA/high"
+      digest-methods:
+        - "http://www.w3.org/2001/04/xmlenc#sha256"
+        - "http://www.w3.org/2001/04/xmldsig-more#sha384"
+        - "http://www.w3.org/2001/04/xmlenc#sha512"
+      signing-methods:
+        - algorithm: "http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1"
+        - algorithm: "http://www.w3.org/2007/05/xmldsig-more#sha384-rsa-MGF1"
+        - algorithm: "http://www.w3.org/2007/05/xmldsig-more#sha512-rsa-MGF1"
+        - algorithm: "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256"
+        - algorithm: "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384"
+        - algorithm: "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512"
+      name-id-formats:
+        - "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
+        - "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
+        - "urn:oasis:names:tc:SAML:2.0:nameid-format:transient"
+      bindings:
+        - "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+        - "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+      # Production signing key: RSA 4096
+      # Production encryption key: RSA 4096
+      encryption-key:
+        encryption-methods:
+          - "http://www.w3.org/2009/xmlenc11#aes128-gcm"
+          - "http://www.w3.org/2009/xmlenc11#aes256-gcm"
+          - "http://www.w3.org/2009/xmlenc11#aes192-gcm"
+      attributes:
+        - name: "http://e-justice.europa.eu/attributes/naturalperson/eJusticeNaturalPersonRole"
+        - name: "http://eidas.europa.eu/attributes/legalperson/D-2012-17-EUIdentifier"
+        - name: "http://eidas.europa.eu/attributes/legalperson/EORI"
+        - name: "http://eidas.europa.eu/attributes/legalperson/LEI"
+        - name: "http://eidas.europa.eu/attributes/legalperson/LegalAdditionalAttribute"
+        - name: "http://eidas.europa.eu/attributes/legalperson/LegalName"
+        - name: "http://eidas.europa.eu/attributes/legalperson/LegalPersonAddress"
+        - name: "http://eidas.europa.eu/attributes/legalperson/LegalPersonIdentifier"
+        - name: "http://eidas.europa.eu/attributes/legalperson/SEED"
+        - name: "http://eidas.europa.eu/attributes/legalperson/SIC"
+        - name: "http://eidas.europa.eu/attributes/legalperson/TaxReference"
+        - name: "http://eidas.europa.eu/attributes/legalperson/VATRegistrationNumber"
+        - name: "http://eidas.europa.eu/attributes/legalperson/representative/D-2012-17-EUIdentifier"
+        - name: "http://eidas.europa.eu/attributes/legalperson/representative/EORI"
+        - name: "http://eidas.europa.eu/attributes/legalperson/representative/LEI"
+        - name: "http://eidas.europa.eu/attributes/legalperson/representative/LegalName"
+        - name: "http://eidas.europa.eu/attributes/legalperson/representative/LegalPersonAddress"
+        - name: "http://eidas.europa.eu/attributes/legalperson/representative/LegalPersonIdentifier"
+        - name: "http://eidas.europa.eu/attributes/legalperson/representative/SEED"
+        - name: "http://eidas.europa.eu/attributes/legalperson/representative/SIC"
+        - name: "http://eidas.europa.eu/attributes/legalperson/representative/TaxReference"
+        - name: "http://eidas.europa.eu/attributes/legalperson/representative/VATRegistrationNumber"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/BirthName"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/CurrentAddress"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/CurrentFamilyName"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/CurrentGivenName"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/DateOfBirth"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/EidasAdditionalAttribute"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/Gender"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/PersonIdentifier"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/PlaceOfBirth"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/representative/BirthName"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/representative/CurrentAddress"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/representative/CurrentFamilyName"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/representative/CurrentGivenName"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/representative/DateOfBirth"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/representative/Gender"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/representative/PersonIdentifier"
+        - name: "http://eidas.europa.eu/attributes/naturalperson/representative/PlaceOfBirth"
+      users:
+        - id: "janis"
+          person-identifier: "87cc01d210e0e4951a8ab36748f0177af0045c33"
+          given-name: "Jānis"
+          family-name: "Bērziņš"
+          date-of-birth: "1984-10-17"
+          gender: "Male"
+          place-of-birth: "Rīga"
+          address:
+            locator-designator: "3"
+            thoroughfare: "Brīvības iela"
+            post-code: "LV-1010"
+            post-name: "Rīga"
+            admin-unit-first-line: "LV"
+        - id: "anna"
+          person-identifier: "4fabb5cbf11de8d6bbb8186f581a1d6da2996fd8"
+          given-name: "Anna"
+          family-name: "Kalniņa"
+          date-of-birth: "1993-03-08"
+          gender: "Female"
+          birth-name: "Anna Liepiņa"
+          place-of-birth: "Daugavpils"
+        - id: "andris"
+          person-identifier: "0404b1a7d90f8b1fded270a59dc37c532b207381"
+          given-name: "Andris"
+          family-name: "Ozoliņš"
+          date-of-birth: "1967-06-25"

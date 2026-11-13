@@ -1,0 +1,62 @@
+<!--
+  ~ Copyright 2017-2026 Sweden Connect
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/base :: headerFragment(title='eIDAS Simulator')}"></head>
+<body>
+<header th:replace="~{fragments/base :: header(country=null)}"></header>
+
+<main class="container main">
+  <div class="row">
+    <div class="col-sm-12 content-container">
+      <div class="content-heading">
+        <h1>eIDAS Simulator</h1>
+      </div>
+      <p class="info">
+        The simulator acts as the eIDAS proxy services of the countries below. Each country has its own entityID,
+        endpoints and metadata.
+      </p>
+      <p>
+        <a th:href="@{/metadata}" href="#">Aggregated metadata of all countries</a>
+      </p>
+
+      <table class="table table-sm align-middle">
+        <thead>
+        <tr>
+          <th scope="col">Country</th>
+          <th scope="col">EntityID (metadata)</th>
+          <th scope="col">Users</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="c : ${countries}">
+          <td>
+            <img class="simulator-flag-small me-2" th:src="@{/images/flags/{f}.svg(f=${#strings.toLowerCase(c.code)})}"
+                 alt=""/>
+            <span th:text="|${c.name} (${c.code})|">Austria (AT)</span>
+          </td>
+          <td><a th:href="${c.entityId}" th:text="${c.entityId}" href="#">entityID</a></td>
+          <td th:text="${#lists.size(c.users)}">3</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer th:replace="~{fragments/base :: footer}"></footer>
+</body>
+</html>

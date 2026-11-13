@@ -1,0 +1,72 @@
+<!--
+  ~ Copyright 2017-2026 Sweden Connect
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="headerFragment(title)">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv='pragma' content='no-cache'/>
+  <meta http-equiv='cache-control' content='no-cache, no-store, must-revalidate'/>
+  <meta http-equiv="Expires" content="-1"/>
+
+  <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}"
+        href="webjars/bootstrap/5.3.8/css/bootstrap.min.css"/>
+  <link rel="stylesheet" th:href="@{/css/open-sans-fonts.css}" href="../static/css/open-sans-fonts.css"/>
+  <link rel="stylesheet" th:href="@{/css/main.css}" href="../static/css/main.css"/>
+  <link rel="stylesheet" th:href="@{/css/extra.css}" href="../static/css/extra.css"/>
+  <link rel="stylesheet" th:href="@{/css/simulator.css}" href="../static/css/simulator.css"/>
+
+  <link rel="icon" type="image/png" sizes="32x32" th:href="@{/images/favicons/favicon-32x32.png}"/>
+  <link rel="icon" type="image/png" sizes="16x16" th:href="@{/images/favicons/favicon-16x16.png}"/>
+
+  <title th:text="${title}">eIDAS Simulator</title>
+</head>
+
+<body>
+
+<header class="container-fluid header" th:fragment="header(country)">
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12 top-logo d-flex align-items-center">
+        <img th:if="${country != null}" class="simulator-flag me-3"
+             th:src="@{/images/flags/{c}.svg(c=${#strings.toLowerCase(country.code)})}" src="../static/images/flags/eu.svg"
+             alt="" />
+        <img th:if="${country == null}" class="simulator-flag me-3" th:src="@{/images/flags/eu.svg}" alt=""/>
+        <span class="simulator-title"
+              th:text="${country != null} ? |Simulated eIDAS node, ${country.name}| : 'eIDAS Simulator'">
+          Simulated eIDAS node
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="simulator-banner">Simulator for testing only. No real identities are used.</div>
+</header>
+
+<footer class="container copyright" th:fragment="footer">
+  <div class="row">
+    <div class="col-6">
+      <img class="float-left" th:src="@{/images/idp-logo.svg}" src="../static/images/idp-logo.svg" height="40"
+           alt="Sweden Connect"/>
+    </div>
+    <div class="col-6">
+      <p class="float-right">eIDAS Simulator &ndash; Sweden Connect</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
