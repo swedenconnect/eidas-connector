@@ -118,14 +118,16 @@
             <div th:replace="~{fragments/form :: text('Family name', 'user.familyName', ${fields['CurrentFamilyName']})}"></div>
             <div th:replace="~{fragments/form :: text('Family name (non-Latin)', 'user.familyNameNonLatin', false)}"></div>
           </th:block>
-          <div th:if="${fields.containsKey('DateOfBirth')}"
-               th:replace="~{fragments/form :: text('Date of birth (YYYY-MM-DD)', 'user.dateOfBirth', ${fields['DateOfBirth']})}"></div>
+          <th:block th:if="${fields.containsKey('DateOfBirth')}">
+            <div th:replace="~{fragments/form :: text('Date of birth (YYYY-MM-DD)', 'user.dateOfBirth', ${fields['DateOfBirth']})}"></div>
+          </th:block>
           <th:block th:if="${fields.containsKey('BirthName')}">
             <div th:replace="~{fragments/form :: text('Birth name', 'user.birthName', ${fields['BirthName']})}"></div>
             <div th:replace="~{fragments/form :: text('Birth name (non-Latin)', 'user.birthNameNonLatin', false)}"></div>
           </th:block>
-          <div th:if="${fields.containsKey('PlaceOfBirth')}"
-               th:replace="~{fragments/form :: text('Place of birth', 'user.placeOfBirth', ${fields['PlaceOfBirth']})}"></div>
+          <th:block th:if="${fields.containsKey('PlaceOfBirth')}">
+            <div th:replace="~{fragments/form :: text('Place of birth', 'user.placeOfBirth', ${fields['PlaceOfBirth']})}"></div>
+          </th:block>
 
           <div class="row mb-2" th:if="${fields.containsKey('Gender')}">
             <label class="col-sm-4 col-form-label" for="gender"
@@ -155,18 +157,24 @@
             <div th:replace="~{fragments/form :: text('Admin unit, second line', 'user.address.adminUnitSecondLine', false)}"></div>
           </fieldset>
 
-          <div th:if="${fields.containsKey('Nationality')}"
-               th:replace="~{fragments/form :: text('Nationality (country code)', 'user.nationality', ${fields['Nationality']})}"></div>
-          <div th:if="${fields.containsKey('CountryOfBirth')}"
-               th:replace="~{fragments/form :: text('Country of birth (country code)', 'user.countryOfBirth', ${fields['CountryOfBirth']})}"></div>
-          <div th:if="${fields.containsKey('TownOfBirth')}"
-               th:replace="~{fragments/form :: text('Town of birth', 'user.townOfBirth', ${fields['TownOfBirth']})}"></div>
-          <div th:if="${fields.containsKey('CountryOfResidence')}"
-               th:replace="~{fragments/form :: text('Country of residence (country code)', 'user.countryOfResidence', ${fields['CountryOfResidence']})}"></div>
-          <div th:if="${fields.containsKey('EmailAddress')}"
-               th:replace="~{fragments/form :: text('E-mail address', 'user.emailAddress', ${fields['EmailAddress']})}"></div>
-          <div th:if="${fields.containsKey('PhoneNumber')}"
-               th:replace="~{fragments/form :: text('Phone number', 'user.phoneNumber', ${fields['PhoneNumber']})}"></div>
+          <th:block th:if="${fields.containsKey('Nationality')}">
+            <div th:replace="~{fragments/form :: text('Nationality (country code)', 'user.nationality', ${fields['Nationality']})}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('CountryOfBirth')}">
+            <div th:replace="~{fragments/form :: text('Country of birth (country code)', 'user.countryOfBirth', ${fields['CountryOfBirth']})}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('TownOfBirth')}">
+            <div th:replace="~{fragments/form :: text('Town of birth', 'user.townOfBirth', ${fields['TownOfBirth']})}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('CountryOfResidence')}">
+            <div th:replace="~{fragments/form :: text('Country of residence (country code)', 'user.countryOfResidence', ${fields['CountryOfResidence']})}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('EmailAddress')}">
+            <div th:replace="~{fragments/form :: text('E-mail address', 'user.emailAddress', ${fields['EmailAddress']})}"></div>
+          </th:block>
+          <th:block th:if="${fields.containsKey('PhoneNumber')}">
+            <div th:replace="~{fragments/form :: text('Phone number', 'user.phoneNumber', ${fields['PhoneNumber']})}"></div>
+          </th:block>
 
           <div class="form-check mt-3">
             <input class="form-check-input" type="checkbox" id="saveUser" th:field="*{saveUser}"/>

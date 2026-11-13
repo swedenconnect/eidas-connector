@@ -142,6 +142,21 @@ class SimulatorControllerTest extends OpenSamlTestBase {
   }
 
   @Test
+  void testOnlyReleasableAttributesAreShown() throws Exception {
+    // BirthName is requested, but EE does not support it
+    final MockHttpSession session = new MockHttpSession();
+    final String page = this.mvc.perform(get(this.sendRequest("ee", session)).session(session))
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    assertThat(page).contains("PersonIdentifier").contains("Date of birth").doesNotContain("Birth name")
+        .doesNotContain("Place of birth");
+
+    final MockHttpSession hrSession = new MockHttpSession();
+    assertThat(this.mvc.perform(get(this.sendRequest("hr", hrSession)).session(hrSession))
+        .andReturn().getResponse().getContentAsString()).contains("Birth name").doesNotContain("Place of birth");
+  }
+
+  @Test
   void testMissingRequiredValueAndLoa() throws Exception {
     final MockHttpSession session = new MockHttpSession();
     final String requestPage = this.sendRequest("hr", session);
