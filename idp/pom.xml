@@ -74,6 +74,12 @@
     </dependency>
 
     <dependency>
+      <groupId>se.swedenconnect.spring.authnserver</groupId>
+      <artifactId>authn-server-oidc-spring-boot-starter</artifactId>
+      <version>${authn-server.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>se.swedenconnect.security</groupId>
       <artifactId>credentials-support</artifactId>
     </dependency>

@@ -75,7 +75,7 @@
     <spring.boot.version>4.1.2</spring.boot.version>
     <spring.version>7.0.10</spring.version>
     <bc.version>1.86</bc.version>
-    <authn-server.version>1.1.0</authn-server.version>
+    <authn-server.version>1.2.0-SNAPSHOT</authn-server.version>
     <credentials-support.version>2.3.0</credentials-support.version>
   </properties>
 

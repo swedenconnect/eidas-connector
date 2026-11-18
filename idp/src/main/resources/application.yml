@@ -275,6 +275,15 @@ authn-server:
         - "urn:oid:1.2.752.201.3.16"
         # c
         - "urn:oid:2.5.4.6"
+  #
+  # The OpenID Provider is turned off by default. A deployment that turns it on also supplies keys, clients and,
+  # for the Sweden Connect federation, the federation settings. The issuer defaults to the base URL.
+  #
+  oidc:
+    enabled: false
+    ui-locales:
+      - sv
+      - en
 
 #
 # Audit logging. See https://docs.swedenconnect.se/spring-audit-support/configuration.html.
