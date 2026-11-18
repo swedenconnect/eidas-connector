@@ -45,6 +45,7 @@ import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent;
 import se.swedenconnect.eidas.connector.events.BeforeCountrySelectionEvent.NoDisplayReason;
 import se.swedenconnect.eidas.connector.events.IdentityMatchingConsentEvent;
 import se.swedenconnect.eidas.connector.events.SignatureConsentEvent;
+import se.swedenconnect.eidas.connector.idp.UserMessageProcessor;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
 import se.swedenconnect.spring.authnserver.audit.AuthnEventPublisher;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
@@ -218,7 +219,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
               token, selectedCountry, NoDisplayReason.SIGN_SERVICE_COUNTRY_FROM_SESSION));
         }
 
-        return this.initiateAuthentication(request, response, selectedCountry);
+        return this.continueWithCountry(request, response, redirectToken, selectedCountry);
       }
 
       // Get a listing of all countries to display ...
@@ -236,7 +237,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
               selectableCountries.countries().getFirst().country(), NoDisplayReason.FROM_AUTHN_REQUEST));
         }
 
-        return this.initiateAuthentication(request, response, selectableCountries.countries().getFirst().country());
+        return this.continueWithCountry(
+            request, response, redirectToken, selectableCountries.countries().getFirst().country());
       }
 
       final ModelAndView modelAndView = new ModelAndView("country-select");
@@ -258,6 +260,34 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     catch (final SamlErrorStatusException e) {
       return this.completeWithError(request, e);
     }
+  }
+
+  /**
+   * Continues with an already selected country when the country selection page is skipped. If the request holds a user
+   * message, it is displayed on a page of its own before the user is sent to the country.
+   *
+   * @param request the HTTP servlet request
+   * @param response the HTTP servlet response
+   * @param redirectToken the redirect token
+   * @param country the country code of the selected country
+   * @return a {@link ModelAndView}
+   */
+  private @NonNull ModelAndView continueWithCountry(final @NonNull HttpServletRequest request,
+      final @NonNull HttpServletResponse response, final @NonNull RedirectForAuthenticationToken redirectToken,
+      final @NonNull String country) {
+
+    final UserAuthenticationInputToken token = redirectToken.getAuthnInputToken();
+    if (!UserMessageProcessor.isDisplayable(token.getAuthnRequirements().getUserMessage())) {
+      return this.initiateAuthentication(request, response, country);
+    }
+    log.debug("Displaying user message before directing user to '{}' [{}]", country, token.getLogString());
+
+    final ModelAndView modelAndView = new ModelAndView("user-message");
+    modelAndView.addObject(AUTHN_ID_MODEL_ATTRIBUTE, redirectToken.getAuthnId());
+    modelAndView.addObject("languages", this.uiLanguageHandler.getOtherLanguages());
+    modelAndView.addObject("selectedCountry", country);
+    modelAndView.addObject("ui", this.eidasUiModelFactory.createUserMessageUiModel(token));
+    return modelAndView;
   }
 
   /**

@@ -26,6 +26,7 @@ import org.springframework.web.util.WebUtils;
 import se.swedenconnect.eidas.connector.authn.EidasCountryHandler.SelectableCountry;
 import se.swedenconnect.eidas.connector.config.CookieGenerator;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
+import se.swedenconnect.eidas.connector.idp.UserMessageProcessor;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 
 import java.text.Collator;
@@ -98,7 +99,24 @@ public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
       uiModel.setIdm(new EidasUiModel.IdmInfo(false, false, null));
     }
     uiModel.setCountries(this.getUiCountries(selectableCountries, locale));
+    uiModel.setUserMessage(UserMessageProcessor.toDisplayMessage(
+        token.getAuthnRequirements().getUserMessage(), locale.getLanguage()));
 
+    return uiModel;
+  }
+
+  /**
+   * Creates an {@link EidasUiModel} for the page that displays the user message when the country selection is
+   * skipped.
+   *
+   * @param token the input token
+   * @return an {@link EidasUiModel}
+   */
+  public @NonNull EidasUiModel createUserMessageUiModel(final @NonNull UserAuthenticationInputToken token) {
+    final EidasUiModel uiModel = new EidasUiModel();
+    this.initModel(uiModel, token);
+    uiModel.setUserMessage(UserMessageProcessor.toDisplayMessage(
+        token.getAuthnRequirements().getUserMessage(), LocaleContextHolder.getLocale().getLanguage()));
     return uiModel;
   }
 

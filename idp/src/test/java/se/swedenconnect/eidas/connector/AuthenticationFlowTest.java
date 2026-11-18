@@ -37,9 +37,12 @@ import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.AuthnStatement;
 import org.opensaml.saml.saml2.core.Conditions;
 import org.opensaml.saml.saml2.core.EncryptedAssertion;
+import org.opensaml.saml.saml2.core.IDPEntry;
+import org.opensaml.saml.saml2.core.IDPList;
 import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.Response;
+import org.opensaml.saml.saml2.core.Scoping;
 import org.opensaml.saml.saml2.core.Status;
 import org.opensaml.saml.saml2.core.StatusCode;
 import org.opensaml.saml.saml2.core.Subject;
@@ -66,6 +69,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.servlet.ModelAndView;
 import se.swedenconnect.eidas.connector.audit.ConnectorAuditEvents;
+import se.swedenconnect.eidas.connector.authn.ui.EidasUiModel;
 import se.swedenconnect.eidas.connector.authn.ui.SignUiModel;
 import se.swedenconnect.eidas.connector.prid.service.PridService;
 import se.swedenconnect.opensaml.OpenSAMLInitializer;
@@ -95,6 +99,7 @@ import se.swedenconnect.opensaml.saml2.metadata.build.KeyDescriptorBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.RequestedAttributeBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.SPSSODescriptorBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.SingleSignOnServiceBuilder;
+import se.swedenconnect.opensaml.sweid.saml2.authn.umsg.UserMessage;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryConstants;
 import se.swedenconnect.opensaml.sweid.saml2.signservice.dss.Message;
 import se.swedenconnect.opensaml.sweid.saml2.signservice.dss.SignMessage;
@@ -127,6 +132,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -272,6 +278,8 @@ class AuthenticationFlowTest {
     assertThat(view(countrySelect).getViewName()).isEqualTo("country-select");
     assertThat(view(countrySelect).getModel()).containsEntry("authnId", authnId);
     assertThat(countrySelect.getResponse().getContentAsString()).doesNotContain("alt=\"Logo\"");
+    assertThat(((EidasUiModel) view(countrySelect).getModel().get("ui")).getUserMessage()).isNull();
+    assertThat(countrySelect.getResponse().getContentAsString()).doesNotContain("id=\"userMessage\"");
 
     // ... and selects a country, which gives an eIDAS authentication request ...
     //
@@ -429,7 +437,8 @@ class AuthenticationFlowTest {
     assertThat(view(consent).getViewName()).isEqualTo("sign-consent");
     assertThat(view(consent).getModel()).containsEntry("authnId", authnId);
     final SignUiModel model = (SignUiModel) view(consent).getModel().get("signMessageConsent");
-    assertThat(model.getTextMessage()).isEqualTo("I approve &lt;the&gt; contract<br />of today");
+    assertThat(model.getTextMessage())
+        .isEqualTo("<div class=\"message-text\">I approve &lt;the&gt; contract<br />of today</div>");
     assertThat(model.getUserInfo().getName()).isEqualTo("Kalle Kula");
     assertThat(model.getUserInfo().getInternationalId()).isEqualTo(PERSON_IDENTIFIER);
     assertThat(model.getUserInfo().getDateOfBirth()).isEqualTo("1969-03-17");
@@ -480,6 +489,161 @@ class AuthenticationFlowTest {
   }
 
   @Test
+  void testUserMessageOnCountrySelection() throws Exception {
+    final Browser session = new Browser();
+    final String authnId = authnId(this.postAuthnRequest(session, SP_ENTITY_ID, SP_ACS, null,
+        userMessage("text/markdown", Map.of("en", "Hello **you**", "sv", "Hej **du**")), r -> {
+        }));
+
+    final MvcResult countrySelect = this.mockMvc.perform(get(REQUEST_BASE_URL + "/extauth").contextPath("/idp")
+        .param("authnId", authnId).with(session)).andDo(session).andReturn();
+    assertThat(view(countrySelect).getViewName()).isEqualTo("country-select");
+    assertThat(((EidasUiModel) view(countrySelect).getModel().get("ui")).getUserMessage())
+        .isEqualTo("<div class=\"message-markdown\"><p>Hello <strong>you</strong></p></div>");
+    assertThat(countrySelect.getResponse().getContentAsString(StandardCharsets.UTF_8))
+        .contains("id=\"userMessage\"", "Hello <strong>you</strong>");
+
+    // The user changes language ...
+    //
+    final MvcResult swedish = this.mockMvc.perform(get(REQUEST_BASE_URL + "/extauth").contextPath("/idp")
+        .param("authnId", authnId).param("lang", "sv").with(session)).andDo(session).andReturn();
+    assertThat(((EidasUiModel) view(swedish).getModel().get("ui")).getUserMessage()).contains("Hej");
+
+    this.selectCountry(session, authnId);
+  }
+
+  @Test
+  void testUserMessagePageForRequestedCountry() throws Exception {
+    final Browser session = new Browser();
+    final String authnId = authnId(this.postAuthnRequest(session, SP_ENTITY_ID, SP_ACS, null,
+        userMessage("text/plain", "Hello\nyou"), requestCountry(COUNTRY)));
+
+    final MvcResult page = this.mockMvc.perform(get(REQUEST_BASE_URL + "/extauth").contextPath("/idp")
+        .param("authnId", authnId).with(session)).andDo(session).andReturn();
+    assertThat(view(page).getViewName()).isEqualTo("user-message");
+    assertThat(view(page).getModel()).containsEntry("authnId", authnId).containsEntry("selectedCountry", COUNTRY);
+    assertThat(((EidasUiModel) view(page).getModel().get("ui")).getUserMessage())
+        .isEqualTo("<div class=\"message-text\">Hello<br />you</div>");
+    assertThat(page.getResponse().getContentAsString(StandardCharsets.UTF_8))
+        .contains("id=\"userMessage\"", "Hello<br />you", "name=\"selectedCountry\" value=\"XA\"",
+            "value=\"cancel\"");
+
+    // Continue goes on to the requested country ...
+    //
+    this.selectCountry(session, authnId);
+  }
+
+  @Test
+  void testUserMessagePageCancel() throws Exception {
+    final Browser session = new Browser();
+    final String authnId = authnId(this.postAuthnRequest(session, SP_ENTITY_ID, SP_ACS, null,
+        userMessage("text/plain", "Hello"), requestCountry(COUNTRY)));
+    final MvcResult page = this.mockMvc.perform(get(REQUEST_BASE_URL + "/extauth").contextPath("/idp")
+        .param("authnId", authnId).with(session)).andDo(session).andReturn();
+    assertThat(view(page).getViewName()).isEqualTo("user-message");
+
+    final MvcResult result = this.mockMvc.perform(post(REQUEST_BASE_URL + "/extauth/proxyauth").contextPath("/idp")
+        .param("authnId", authnId).param("selectedCountry", "cancel").with(session)).andDo(session).andReturn();
+    final Response response = this.resume(session, result.getResponse().getRedirectedUrl());
+    assertThat(response.getStatus().getStatusCode().getStatusCode().getValue())
+        .isEqualTo("http://id.elegnamnden.se/status/1.0/cancel");
+  }
+
+  @Test
+  void testNoUserMessagePageForRequestedCountry() throws Exception {
+    final Browser session = new Browser();
+    final String authnId = authnId(this.postAuthnRequest(session, SP_ENTITY_ID, SP_ACS, null, null,
+        requestCountry(COUNTRY)));
+    final MvcResult result = this.mockMvc.perform(get(REQUEST_BASE_URL + "/extauth").contextPath("/idp")
+        .param("authnId", authnId).with(session)).andDo(session).andReturn();
+    assertThat(view(result).getViewName()).isEqualTo("post-request");
+  }
+
+  @Test
+  void testUserMessagePageForSignatureService() throws Exception {
+    final Browser session = new Browser();
+
+    // A first request from the signature service, where the user selects a country ...
+    //
+    final String firstAuthnId = authnId(this.postAuthnRequest(session, SIGN_SP_ENTITY_ID, SIGN_SP_ACS,
+        signMessage(SignMessageMimeTypeEnum.TEXT, "I approve")));
+    this.selectCountry(session, firstAuthnId);
+
+    // The next request holds a user message. The country is known from the session, so the message gets a page of
+    // its own ...
+    //
+    final String authnId = authnId(this.postAuthnRequest(session, SIGN_SP_ENTITY_ID, SIGN_SP_ACS, null,
+        userMessage("text/plain", "Hello"), r -> {
+        }));
+    final MvcResult page = this.mockMvc.perform(get(REQUEST_BASE_URL + "/extauth").contextPath("/idp")
+        .param("authnId", authnId).with(session)).andDo(session).andReturn();
+    assertThat(view(page).getViewName()).isEqualTo("user-message");
+    assertThat(view(page).getModel()).containsEntry("selectedCountry", COUNTRY);
+  }
+
+  @Test
+  void testHtmlUserMessageIsNotDisplayed() throws Exception {
+    final Browser session = new Browser();
+    final String authnId = authnId(this.postAuthnRequest(session, SP_ENTITY_ID, SP_ACS, null,
+        userMessage("text/html", "<p>Hello</p>"), requestCountry(COUNTRY)));
+
+    // No message page, the user is sent to the country ...
+    //
+    final MvcResult result = this.mockMvc.perform(get(REQUEST_BASE_URL + "/extauth").contextPath("/idp")
+        .param("authnId", authnId).with(session)).andDo(session).andReturn();
+    assertThat(view(result).getViewName()).isEqualTo("post-request");
+  }
+
+  @Test
+  void testUserMessageAndSignMessageIsRefused() throws Exception {
+    final Browser session = new Browser();
+    final MvcResult result = this.postAuthnRequest(session, SIGN_SP_ENTITY_ID, SIGN_SP_ACS,
+        signMessage(SignMessageMimeTypeEnum.TEXT, "I approve"), userMessage("text/plain", "Hello"), r -> {
+        });
+    final Response response = toResponse(result);
+    assertThat(response.getStatus().getStatusCode().getValue()).isEqualTo(StatusCode.REQUESTER);
+    assertThat(response.getStatus().getStatusCode().getStatusCode().getValue())
+        .isEqualTo(StatusCode.REQUEST_UNSUPPORTED);
+  }
+
+  @Test
+  void testPassiveRequestWithUserMessage() throws Exception {
+    final Browser session = new Browser();
+    final MvcResult result = this.postAuthnRequest(session, SP_ENTITY_ID, SP_ACS, null,
+        userMessage("text/plain", "Hello"), r -> r.setIsPassive(true));
+
+    // No page is shown for a passive request ...
+    //
+    final Response response = toResponse(result);
+    assertThat(response.getStatus().getStatusCode().getStatusCode().getValue()).isEqualTo(StatusCode.NO_PASSIVE);
+  }
+
+  @Test
+  void testMarkdownSignMessage() throws Exception {
+    final Browser session = new Browser();
+    final String authnId = authnId(this.postAuthnRequest(session, SIGN_SP_ENTITY_ID, SIGN_SP_ACS,
+        signMessage(SignMessageMimeTypeEnum.TEXT_MARKDOWN, "I *approve* <b>the</b> contract")));
+    final AuthnRequest eidasRequest = this.selectCountry(session, authnId);
+
+    final MvcResult consent = this.mockMvc.perform(post(REQUEST_BASE_URL + "/extauth/saml2/post")
+            .contextPath("/idp").with(session)
+            .param("SAMLResponse", encode(this.eidasResponse(eidasRequest, successStatus(), true)))
+            .param("RelayState", "sp-relay"))
+        .andDo(session).andReturn();
+    final SignUiModel model = (SignUiModel) view(consent).getModel().get("signMessageConsent");
+    assertThat(model.getTextMessage())
+        .isEqualTo("<div class=\"message-markdown\"><p>I <em>approve</em> the contract</p></div>");
+  }
+
+  @Test
+  void testMetadataDeclaresUserMessageSupport() throws Exception {
+    final MvcResult result = this.mockMvc.perform(get(REQUEST_BASE_URL + "/metadata/idp.xml").contextPath("/idp"))
+        .andReturn();
+    assertThat(result.getResponse().getContentAsString(StandardCharsets.UTF_8))
+        .contains(EntityCategoryConstants.GENERAL_CATEGORY_SUPPORTS_USER_MESSAGE.getUri());
+  }
+
+  @Test
   void testResponseWithoutSession() throws Exception {
     final MvcResult result = this.mockMvc.perform(post(REQUEST_BASE_URL + "/extauth/saml2/post").contextPath("/idp")
         .param("SAMLResponse", "foo")).andReturn();
@@ -496,6 +660,13 @@ class AuthenticationFlowTest {
 
   private MvcResult postAuthnRequest(final Browser session, final String issuer, final String acs,
       final SignMessage signMessage) throws Exception {
+    return this.postAuthnRequest(session, issuer, acs, signMessage, null, r -> {
+    });
+  }
+
+  private MvcResult postAuthnRequest(final Browser session, final String issuer, final String acs,
+      final SignMessage signMessage, final UserMessage userMessage, final Consumer<AuthnRequest> customizer)
+      throws Exception {
     final RequestedAttributes eidasAttributes =
         (RequestedAttributes) XMLObjectSupport.buildXMLObject(RequestedAttributes.DEFAULT_ELEMENT_NAME);
     for (final String name : List.of("http://eidas.europa.eu/attributes/naturalperson/TownOfBirth",
@@ -512,6 +683,9 @@ class AuthenticationFlowTest {
     if (signMessage != null) {
       extensions.extension(signMessage);
     }
+    if (userMessage != null) {
+      extensions.extension(userMessage);
+    }
 
     final AuthnRequest authnRequest = AuthnRequestBuilder.builder()
         .id("_" + UUID.randomUUID())
@@ -527,6 +701,7 @@ class AuthenticationFlowTest {
             .build())
         .extensions(extensions.build())
         .build();
+    customizer.accept(authnRequest);
     SAMLObjectSigner.sign(authnRequest, SP_CREDENTIAL);
 
     return this.mockMvc.perform(post(REQUEST_BASE_URL + "/profile/SAML2/POST/SSO").contextPath("/idp")
@@ -542,6 +717,41 @@ class AuthenticationFlowTest {
     message.setContent(text);
     signMessage.setMessage(message);
     return signMessage;
+  }
+
+  private static UserMessage userMessage(final String mimeType, final Map<String, String> texts) {
+    final UserMessage userMessage = (UserMessage) XMLObjectSupport.buildXMLObject(UserMessage.DEFAULT_ELEMENT_NAME);
+    userMessage.setMimeType(mimeType);
+    texts.forEach((language, text) -> {
+      final se.swedenconnect.opensaml.sweid.saml2.authn.umsg.Message message =
+          (se.swedenconnect.opensaml.sweid.saml2.authn.umsg.Message) XMLObjectSupport.buildXMLObject(
+              se.swedenconnect.opensaml.sweid.saml2.authn.umsg.Message.DEFAULT_ELEMENT_NAME);
+      message.setXMLLang(language);
+      message.setValue(Base64.getEncoder().encodeToString(text.getBytes(StandardCharsets.UTF_8)));
+      userMessage.getMessages().add(message);
+    });
+    return userMessage;
+  }
+
+  private static UserMessage userMessage(final String mimeType, final String text) {
+    return userMessage(mimeType, Map.of("en", text));
+  }
+
+  private static Consumer<AuthnRequest> requestCountry(final String country) {
+    return authnRequest -> {
+      final IDPEntry entry = (IDPEntry) XMLObjectSupport.buildXMLObject(IDPEntry.DEFAULT_ELEMENT_NAME);
+      entry.setProviderID("http://id.swedenconnect.se/eidas/1.0/proxy-service/" + country.toLowerCase());
+      final IDPList idpList = (IDPList) XMLObjectSupport.buildXMLObject(IDPList.DEFAULT_ELEMENT_NAME);
+      idpList.getIDPEntrys().add(entry);
+      final Scoping scoping = (Scoping) XMLObjectSupport.buildXMLObject(Scoping.DEFAULT_ELEMENT_NAME);
+      scoping.setIDPList(idpList);
+      authnRequest.setScoping(scoping);
+    };
+  }
+
+  private static String authnId(final MvcResult result) {
+    final String authnPath = Objects.requireNonNull(result.getResponse().getRedirectedUrl(), "Expected redirect");
+    return authnPath.substring(authnPath.indexOf('=') + 1);
   }
 
   private static Response toResponse(final MvcResult result) throws Exception {

@@ -15,7 +15,6 @@
  */
 package se.swedenconnect.eidas.connector.idp;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.StatusCode;
@@ -26,36 +25,35 @@ import se.swedenconnect.spring.authnserver.message.MessageMimeType;
 import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
 
 /**
- * Prepares sign messages for display. The connector only displays plain text sign messages. HTML and Markdown are
- * never displayed.
+ * Prepares sign messages for display. The connector displays plain text and Markdown sign messages. HTML is never
+ * displayed.
  *
  * @author Martin Lindström
  */
 public final class SignMessageProcessor {
 
   /**
-   * Asserts that a sign message can be displayed, that is, that it is plain text.
+   * Asserts that a sign message can be displayed, that is, that it is plain text or Markdown.
    *
    * @param signMessage the sign message, may be {@code null}
-   * @throws SamlErrorStatusException {@code Requester} / {@code RequestUnsupported} if the message is not plain
-   *     text
+   * @throws SamlErrorStatusException {@code Requester} / {@code RequestUnsupported} if the message is HTML
    */
   public static void assertSupported(final @Nullable GenericSignMessage signMessage) throws SamlErrorStatusException {
-    if (signMessage != null && signMessage.getMimeType() != MessageMimeType.TEXT_PLAIN) {
+    if (signMessage != null && signMessage.getMimeType() == MessageMimeType.TEXT_HTML) {
       throw SamlErrors.errorWithMessageCode(StatusCode.REQUESTER, StatusCode.REQUEST_UNSUPPORTED,
           SamlErrors.SIGN_MESSAGE_MESSAGE_CODE,
-          "eIDAS Connector does not support display of HTML or Markdown SignMessages");
+          "eIDAS Connector does not support display of HTML SignMessages");
     }
   }
 
   /**
-   * Prepares a plain text sign message for display. The text is HTML escaped, line breaks become {@code <br />} and
-   * tabs become {@code &emsp;}.
+   * Prepares a sign message for display. A plain text message is HTML escaped, and keeps its line breaks and tabs. A
+   * Markdown message is rendered into HTML, from which HTML in the Markdown is removed.
    *
    * @param signMessage the sign message, may be {@code null}
    * @param language the language of the page
-   * @return the message to display, or {@code null} if there is no message
-   * @throws SamlErrorStatusException if the message is not plain text
+   * @return the message to display as HTML, or {@code null} if there is no message
+   * @throws SamlErrorStatusException if the message is HTML
    */
   public static @Nullable String toDisplayMessage(
       final @Nullable GenericSignMessage signMessage, final @NonNull String language)
@@ -68,13 +66,7 @@ public final class SignMessageProcessor {
     if (message == null) {
       message = signMessage.getMessages().getFirst();
     }
-    String filteredMessage = StringEscapeUtils.escapeHtml4(message.getText());
-
-    // Replace NL with <br />
-    filteredMessage = filteredMessage.replaceAll("(\r\n|\n\r|\r|\n)", "<br />");
-
-    // Replace tabs with &emsp;
-    return filteredMessage.replaceAll("\t", "&emsp;");
+    return MessageHtmlConverter.toHtml(message.getText(), signMessage.getMimeType());
   }
 
   // Hidden constructor
