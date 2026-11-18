@@ -17,24 +17,54 @@ and the
 
 ## Table of Contents
 
-1. [**Endpoints**](#endpoints)
+1. [**Requirements on the Relying Party**](#requirements-on-the-relying-party)
 
-2. [**Scopes and Claims**](#scopes-and-claims)
+2. [**Endpoints**](#endpoints)
 
-3. [**Authentication Contexts**](#authentication-contexts)
+3. [**Scopes and Claims**](#scopes-and-claims)
 
-4. [**Requesting a Country**](#requesting-a-country)
+4. [**Authentication Contexts**](#authentication-contexts)
 
-5. [**User Messages**](#user-messages)
+5. [**Requesting a Country**](#requesting-a-country)
 
-6. [**Signature Approval**](#signature-approval)
+6. [**User Messages**](#user-messages)
 
-7. [**Single Sign-On**](#single-sign-on)
+7. [**Signature Approval**](#signature-approval)
+
+8. [**Single Sign-On**](#single-sign-on)
 
 ---
 
+<a name="requirements-on-the-relying-party"></a>
+## 1. Requirements on the Relying Party
+
+- **Membership of the federation.** The Relying Party must be registered in the Sweden Connect federation. How an
+organization joins Sweden Connect is described at [www.swedenconnect.se](https://www.swedenconnect.se/anslut), and
+how a Relying Party is registered in
+[Sweden Connect - OpenID Federation Rules](https://docs.swedenconnect.se/federation/oidf-rules.html), Section 7,
+"Joining the Federation".
+
+- **Scopes.** To get the identity of a user authenticated through eIDAS, request the scopes
+`https://id.swedenconnect.se/scope/eidasNaturalPersonIdentity` and `https://id.oidc.se/scope/naturalPersonInfo`, see
+[OpenID Connect Claims and Scopes Specification for Sweden Connect](https://docs.swedenconnect.se/technical-framework/latest/OpenID_Connect_Claims_and_Scopes_Specification.html),
+Section 3.1.3. A Swedish personal identity number is never delivered for an eIDAS user. A Relying Party that needs the
+Swedish identity that is bound to the user requests `https://id.swedenconnect.se/scope/eidasSwedishIdentity`, see
+Section 3.1.2 of the same specification.
+
+- **Public bodies.** The foreign country is told whether the request comes from a public sector or a private sector
+service. A Relying Party that is a public body must hold the trust mark
+`https://id.swedenconnect.se/tm-prop/public-body`, see
+[Sweden Connect - OpenID Federation Rules](https://docs.swedenconnect.se/federation/oidf-rules.html), Section 5.2.2.
+A Relying Party without it is presented as private sector. If the trust mark is not in the entity configuration of the
+Relying Party, the OpenID Provider asks the trust mark issuer for it.
+
+- **Name and logotype.** The name and logotype of the Relying Party are shown to the user. Publish `client_name` in
+Swedish and English, and a `logo_uri`, as the
+[OpenID Connect Profile for Sweden Connect](https://docs.swedenconnect.se/technical-framework/latest/OpenID_Connect_Profile_for_Sweden_Connect.html),
+Section 3.2, requires.
+
 <a name="endpoints"></a>
-## 1. Endpoints
+## 2. Endpoints
 
 The issuer is the base URL of the connector, for example `https://connector.eidas.swedenconnect.se/idp`. The discovery
 document is published at the issuer followed by `/.well-known/openid-configuration`, and the OpenID Federation entity
@@ -45,13 +75,13 @@ Only the authorization code flow is supported, and the client authenticates with
 endpoint.
 
 <a name="scopes-and-claims"></a>
-## 2. Scopes and Claims
+## 3. Scopes and Claims
 
 | Scope | Claims |
 | :--- | :--- |
 | `https://id.swedenconnect.se/scope/eidasNaturalPersonIdentity` | `https://id.swedenconnect.se/claim/prid`, `https://id.swedenconnect.se/claim/pridPersistence` and `http://eidas.europa.eu/attributes/naturalperson/PersonIdentifier`. |
-| `https://id.oidc.se/scope/naturalPersonInfo` | `family_name`, `given_name` and `birthdate`. `name` and `middle_name` are not delivered. |
-| `profile` | `family_name`, `given_name`, `birthdate` and `gender`. The other claims of the scope are not delivered. |
+| `https://id.oidc.se/scope/naturalPersonInfo` | `family_name`, `given_name`, `name` and `birthdate`. `name` is the given name followed by the family name. `middle_name` is not delivered. |
+| `profile` | `family_name`, `given_name`, `name`, `birthdate` and `gender`. The other claims of the scope are not delivered. |
 | `https://id.oidc.se/scope/signApproval` | See [Signature Approval](#signature-approval). |
 | `https://id.swedenconnect.se/scope/eidasSwedishIdentity` | `https://id.swedenconnect.se/claim/mappedPersonalIdentityNumber`, `https://id.swedenconnect.se/claim/mappedCoordinationNumber` and `https://id.swedenconnect.se/claim/identityBinding`, delivered from the UserInfo endpoint. Only offered when Identity Matching is active. |
 
@@ -77,7 +107,7 @@ The identity record of Identity Matching is only looked up, and the user only as
 Party asks for the claims of `https://id.swedenconnect.se/scope/eidasSwedishIdentity`.
 
 <a name="authentication-contexts"></a>
-## 3. Authentication Contexts
+## 4. Authentication Contexts
 
 The OpenID Provider delivers the eIDAS authentication contexts of the Sweden Connect registry, see
 `acr_values_supported` in the discovery document. Values in `acr_values` that are not supported are ignored. An
@@ -87,7 +117,7 @@ essential `acr` in the `claims` parameter that is not supported gives the error 
 for SAML Service Providers. It cannot be requested over OpenID Connect.
 
 <a name="requesting-a-country"></a>
-## 4. Requesting a Country
+## 5. Requesting a Country
 
 A Relying Party that knows the user's country can skip the country selection by giving it in the
 `https://id.oidc.se/param/authnProvider` parameter, as
@@ -98,7 +128,7 @@ A Relying Party that knows the user's country can skip the country selection by 
 The authentication fails with `access_denied` if the requested country is not available.
 
 <a name="user-messages"></a>
-## 5. User Messages
+## 6. User Messages
 
 A message in the `https://id.oidc.se/param/userMessage` parameter is displayed before the user is sent to the foreign
 country. Plain text and Markdown messages are displayed. A message for the language of the page is used, then a
@@ -106,7 +136,7 @@ message without a language, and last the first message. No message is displayed 
 holds both a user message and a signature request gets `invalid_request`.
 
 <a name="signature-approval"></a>
-## 6. Signature Approval
+## 7. Signature Approval
 
 A signature service requests the `https://id.oidc.se/scope/signApproval` scope and gives the sign message in the
 `https://id.oidc.se/param/signRequest` parameter, see
@@ -118,7 +148,7 @@ When the `claims` parameter holds essential values for the user's identity, the 
 authenticated user matches them.
 
 <a name="single-sign-on"></a>
-## 7. Single Sign-On
+## 8. Single Sign-On
 
 An authentication is reused for 60 minutes, only for the Relying Party that it was made for, and only when the same
 claims are requested. It is never reused for a signature approval, and never across SAML and OpenID Connect. A request
