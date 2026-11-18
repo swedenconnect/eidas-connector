@@ -24,6 +24,12 @@
 
 * Added an eIDAS simulator and a Docker Compose setup, so that the connector can be tested locally against simulated foreign eIDAS nodes. See [#263](https://github.com/swedenconnect/eidas-connector/issues/263).
 
+* User messages from the Service Provider are displayed, see [User Message Extension in SAML Authentication Requests](https://docs.swedenconnect.se/technical-framework/latest/18_-_User_Message_Extension_in_SAML_Authentication_Requests.html). See [#269](https://github.com/swedenconnect/eidas-connector/issues/269).
+
+* Sign messages in Markdown are displayed. Earlier, only plain text sign messages were accepted. See [#269](https://github.com/swedenconnect/eidas-connector/issues/269).
+
+* The Swedish texts for the "Continue" and "Return to the service" buttons were wrong. This has been fixed.
+
 ### Version 2.1.0
 
 **Release date:** 2026-05-05

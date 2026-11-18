@@ -505,6 +505,11 @@ The default IdP configuration can be viewed under the `authn-server`-key in the 
 issued by earlier versions of the connector. The authentication server logs a warning about this at startup. Do not
 assign a secret unless all Service Providers should get new `NameID`s for their users.
 
+:raised_hand: The base configuration sets `authn-server.supports-user-message` to `true`, so that the connector
+displays user messages, see [User Message Extension in SAML Authentication Requests](https://docs.swedenconnect.se/technical-framework/latest/18_-_User_Message_Extension_in_SAML_Authentication_Requests.html).
+Plain text and Markdown messages are displayed. HTML messages are not displayed. A request that holds both a user
+message and a sign message is rejected.
+
 <a name="idp-metadata-provider-configuration"></a>
 ### 3.1. Metadata Provider Configuration
 

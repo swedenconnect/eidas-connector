@@ -1,0 +1,65 @@
+<!--
+  ~ Copyright 2017-2026 Sweden Connect
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" th:xmllang="${#locale.language}">
+<head th:insert="~{fragments/base :: headerFragment}"></head>
+<body>
+<header th:replace="~{fragments/header :: splogotype(url = ${ui.getSpInfo().getLogoUrl()}, name = ${ui.getSpInfo().getDisplayName()})}"></header>
+
+<main class="container main" id="main">
+  <div th:replace="~{fragments/header :: language(languages = ${languages}, path='/extauth')}"></div>
+
+  <div class="row" id="mainRow">
+    <div class="col-sm-12 content-container">
+      <div class="content-heading">
+        <h1 th:text="#{connector.ui.user-message.title}">Message from the service</h1>
+      </div>
+      <p class="info content-heading-text">
+        <span th:text="${ui.getSpInfo().getDisplayName()} ?: #{connector.ui.sp-generic-a}"> Example organization </span>
+        <span th:text="#{connector.ui.user-message.info}">
+          has a message for you before you continue to authenticate with your eID.
+        </span>
+      </p>
+
+      <div th:replace="~{fragments/message :: userMessage(message = ${ui.getUserMessage()})}"></div>
+
+      <form method="POST" action="#" th:action="@{/extauth/proxyauth}" id="userMessageForm">
+        <input type="hidden" name="authnId" th:value="${authnId}" th:if="${authnId != null}"/>
+        <button type="submit" class="btn btn-primary" name="selectedCountry" th:value="${selectedCountry}"
+                id="continueButton">
+          <span th:text="#{connector.ui.button.continue}">Continue</span>
+        </button>
+      </form>
+    </div>
+
+    <div class="col-sm-12 return">
+      <form method="POST" action="#" th:action="@{/extauth/proxyauth}" id="userMessageForm2">
+        <input type="hidden" name="authnId" th:value="${authnId}" th:if="${authnId != null}"/>
+        <button class="btn btn-link" type="submit" name="selectedCountry" value="cancel">
+          <span th:text="#{connector.ui.button.cancel-return}">Cancel and return to the service</span>
+        </button>
+      </form>
+    </div>
+  </div>
+  <!-- mainRow -->
+</main>
+
+<footer th:replace="~{fragments/footer :: copyright(accessibilityUrl = ${ui.getAccessibilityUrl()})}"></footer>
+
+<th:block th:insert="~{fragments/base :: scriptFragment}"></th:block>
+<th:block th:insert="~{fragments/base :: scriptFragment2}"></th:block>
+</body>
+</html>

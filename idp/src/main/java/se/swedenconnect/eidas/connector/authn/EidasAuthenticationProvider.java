@@ -50,6 +50,7 @@ import se.swedenconnect.eidas.connector.events.IdentityMatchingRecordEvent;
 import se.swedenconnect.eidas.connector.events.ResponseProcessingErrorEvent;
 import se.swedenconnect.eidas.connector.events.SuccessEidasResponseEvent;
 import se.swedenconnect.eidas.connector.idp.SignMessageProcessor;
+import se.swedenconnect.eidas.connector.idp.UserMessageProcessor;
 import se.swedenconnect.eidas.connector.prid.generator.PridGeneratorException;
 import se.swedenconnect.eidas.connector.prid.service.CountryPolicyNotFoundException;
 import se.swedenconnect.eidas.connector.prid.service.PridResult;
@@ -76,6 +77,7 @@ import se.swedenconnect.spring.authnserver.error.AuthenticationErrorException;
 import se.swedenconnect.spring.authnserver.error.CommonUnrecoverableError;
 import se.swedenconnect.spring.authnserver.error.UnrecoverableErrorException;
 import se.swedenconnect.spring.authnserver.message.GenericSignMessage;
+import se.swedenconnect.spring.authnserver.message.GenericUserMessage;
 import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
 import se.swedenconnect.spring.authnserver.sso.RequestedAttributesSsoVoter;
 
@@ -213,12 +215,24 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   }
 
   /**
-   * Refuses a sign message that the connector cannot display before the user is sent to the pages of the connector.
+   * Refuses a sign message that the connector cannot display, and a request that holds both a user message and a sign
+   * message, before the user is sent to the pages of the connector.
    */
   @Override
   protected @NonNull Authentication authenticate(final @NonNull UserAuthenticationInputToken token,
       final @NonNull List<String> authnContextUris) throws AuthenticationErrorException {
-    SignMessageProcessor.assertSupported(token.getAuthnRequirements().getSignMessage());
+    final GenericUserMessage userMessage = token.getAuthnRequirements().getUserMessage();
+    final GenericSignMessage signMessage = token.getAuthnRequirements().getSignMessage();
+    if (userMessage != null && signMessage != null) {
+      log.info("Request holds both a UserMessage and a SignMessage - rejecting [{}]", token.getLogString());
+      throw SamlErrors.error(StatusCode.REQUESTER, StatusCode.REQUEST_UNSUPPORTED,
+          "UserMessage and SignMessage must not both be given");
+    }
+    SignMessageProcessor.assertSupported(signMessage);
+    if (userMessage != null && !UserMessageProcessor.isDisplayable(userMessage)) {
+      log.info("UserMessage of type {} is not displayed [{}]", userMessage.getMimeType().getMimeType(),
+          token.getLogString());
+    }
     return super.authenticate(token, authnContextUris);
   }
 

@@ -57,6 +57,8 @@
             </span>
       </p>
 
+      <div th:replace="~{fragments/message :: userMessage(message = ${ui.getUserMessage()})}"></div>
+
       <!--/* Identity matching */-->
       <aside th:if="${ui.getIdm().isShowBanner()}" class="card mb-4 bg-light">
         <div class="card-body">

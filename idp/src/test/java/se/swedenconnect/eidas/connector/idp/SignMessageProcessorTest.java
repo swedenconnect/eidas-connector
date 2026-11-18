@@ -49,11 +49,13 @@ class SignMessageProcessorTest {
   }
 
   @Test
-  void testMarkdownIsRefused() {
+  void testMarkdown() {
     final GenericSignMessage message = new GenericSignMessage(
-        List.of(LocalizedMessage.ofText(null, "*Hello*")), MessageMimeType.TEXT_MARKDOWN, true, null);
-    assertThatThrownBy(() -> SignMessageProcessor.assertSupported(message))
-        .isInstanceOf(SamlErrorStatusException.class);
+        List.of(LocalizedMessage.ofText(null, "I *approve* <b>the</b> contract")), MessageMimeType.TEXT_MARKDOWN,
+        true, null);
+    SignMessageProcessor.assertSupported(message);
+    assertThat(SignMessageProcessor.toDisplayMessage(message, "en"))
+        .isEqualTo("<div class=\"message-markdown\"><p>I <em>approve</em> the contract</p></div>");
   }
 
   @Test
@@ -61,7 +63,7 @@ class SignMessageProcessorTest {
     final GenericSignMessage message = GenericSignMessage.ofText(null, "I <approve>\nthe\tcontract");
     SignMessageProcessor.assertSupported(message);
     assertThat(SignMessageProcessor.toDisplayMessage(message, "en"))
-        .isEqualTo("I &lt;approve&gt;<br />the&emsp;contract");
+        .isEqualTo("<div class=\"message-text\">I &lt;approve&gt;<br />the&emsp;contract</div>");
   }
 
   @Test

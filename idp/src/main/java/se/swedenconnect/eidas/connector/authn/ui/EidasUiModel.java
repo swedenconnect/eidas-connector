@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Model object for the eiDAS Connector "choose country" UI view.
+ * Model object for the eIDAS Connector "choose country" and user message UI views.
  *
  * @author Martin Lindström
  */
@@ -37,6 +37,11 @@ public class EidasUiModel extends BaseUiModel {
    * The countries to display.
    */
   private @Nullable List<UiCountry> countries;
+
+  /**
+   * The user message from the Service Provider, as HTML.
+   */
+  private @Nullable String userMessage;
 
   /**
    * Gets the Identity Matching info.
@@ -75,6 +80,24 @@ public class EidasUiModel extends BaseUiModel {
   }
 
   /**
+   * Gets the user message from the Service Provider, as HTML.
+   *
+   * @return the user message, or {@code null} if there is no message to display
+   */
+  public @Nullable String getUserMessage() {
+    return this.userMessage;
+  }
+
+  /**
+   * Assigns the user message from the Service Provider, as HTML.
+   *
+   * @param userMessage the user message
+   */
+  public void setUserMessage(final @Nullable String userMessage) {
+    this.userMessage = userMessage;
+  }
+
+  /**
    * Predicate that tells whether we have any "disabled" countries.
    *
    * @return if at least one country is "disabled", i.e., can't be used for authentication, {@code true} is returned
@@ -99,19 +122,20 @@ public class EidasUiModel extends BaseUiModel {
       return false;
     }
     final EidasUiModel that = (EidasUiModel) o;
-    return Objects.equals(this.idm, that.idm) && Objects.equals(this.countries, that.countries);
+    return Objects.equals(this.idm, that.idm) && Objects.equals(this.countries, that.countries)
+        && Objects.equals(this.userMessage, that.userMessage);
   }
 
   /** {@inheritDoc} */
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), this.idm, this.countries);
+    return Objects.hash(super.hashCode(), this.idm, this.countries, this.userMessage);
   }
 
   /** {@inheritDoc} */
   @Override
   public @NonNull String toString() {
-    return "idm=[" + this.idm + "], countries=" + this.countries;
+    return "idm=[" + this.idm + "], countries=" + this.countries + ", userMessage=" + this.userMessage;
   }
 
   /**

@@ -86,6 +86,7 @@ connector:
       - http://id.elegnamnden.se/ec/1.0/eidas-naturalperson
       - http://id.elegnamnden.se/sprop/1.0/scal2
       - http://id.elegnamnden.se/sprop/1.0/mobile-auth
+      - http://id.swedenconnect.se/general-ec/1.0/supports-user-message
   eu-metadata:
     backup-location: ${connector.backup-directory}/metadata/eu-cache.xml
   eidas:
@@ -145,6 +146,7 @@ connector:
 
 authn-server:
   base-url: ${connector.base-url}
+  supports-user-message: true
   #
   # Single sign-on as in earlier versions of the connector: an authentication may be reused by any Service Provider
   # for 60 minutes.
