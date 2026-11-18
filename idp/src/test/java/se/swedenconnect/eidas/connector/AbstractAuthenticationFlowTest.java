@@ -445,6 +445,11 @@ abstract class AbstractAuthenticationFlowTest {
 
   protected Response eidasResponse(final AuthnRequest eidasRequest, final Status status, final boolean withAssertion)
       throws Exception {
+    return this.eidasResponse(eidasRequest, status, withAssertion, EIDAS_SUBSTANTIAL);
+  }
+
+  protected Response eidasResponse(final AuthnRequest eidasRequest, final Status status, final boolean withAssertion,
+      final String loa) throws Exception {
     final Instant now = Instant.now();
 
     final Response response = (Response) XMLObjectSupport.buildXMLObject(Response.DEFAULT_ELEMENT_NAME);
@@ -496,7 +501,7 @@ abstract class AbstractAuthenticationFlowTest {
       final AuthnContext context = (AuthnContext) XMLObjectSupport.buildXMLObject(AuthnContext.DEFAULT_ELEMENT_NAME);
       final AuthnContextClassRef classRef =
           (AuthnContextClassRef) XMLObjectSupport.buildXMLObject(AuthnContextClassRef.DEFAULT_ELEMENT_NAME);
-      classRef.setURI(EIDAS_SUBSTANTIAL);
+      classRef.setURI(loa);
       context.setAuthnContextClassRef(classRef);
       statement.setAuthnContext(context);
       assertion.getAuthnStatements().add(statement);

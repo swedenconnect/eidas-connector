@@ -234,6 +234,32 @@ class OidcAuthenticationFlowTest extends AbstractAuthenticationFlowTest {
   }
 
   @Test
+  void testEssentialAcrIsDowngraded() throws Exception {
+    // eidas-nf-sub is requested as essential, and the foreign country authenticates the user at eIDAS high. The ID
+    // token holds the requested value ...
+    //
+    final Browser session = new Browser();
+    final Map<String, String> params = defaultParams();
+    params.put("claims", """
+        {"id_token": {"acr": {"essential": true, "value": "http://id.elegnamnden.se/loa/1.0/eidas-nf-sub"}}}""");
+    final String authnId = authnId(this.authorize(session, params));
+    final EidasRequest eidasRequest = this.selectCountryForOidc(session, authnId);
+
+    final MvcResult foreignResponse = this.mockMvc.perform(post(REQUEST_BASE_URL + "/extauth/saml2/post")
+            .contextPath("/idp").with(session)
+            .param("SAMLResponse", encode(this.eidasResponse(eidasRequest.request(), successStatus(), true,
+                "http://eidas.europa.eu/LoA/high")))
+            .param("RelayState", eidasRequest.relayState()))
+        .andDo(session).andReturn();
+    final Map<String, String> response =
+        this.resumeOidc(session, foreignResponse.getResponse().getRedirectedUrl());
+
+    final Map<String, Object> tokens = this.token(RP_CLIENT_ID, RP_SECRET, RP_REDIRECT_URI, response.get("code"));
+    assertThat(SignedJWT.parse((String) tokens.get("id_token")).getJWTClaimsSet().getStringClaim("acr"))
+        .isEqualTo("http://id.elegnamnden.se/loa/1.0/eidas-nf-sub");
+  }
+
+  @Test
   void testUnsupportedAcrValues() throws Exception {
     final Browser session = new Browser();
     final Map<String, String> params = defaultParams();
