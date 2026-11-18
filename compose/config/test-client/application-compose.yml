@@ -7,10 +7,14 @@
 #   COMMON_CONFIG_DIR - config/common
 #   HOST_PORT         - the port the service is reached on from the browser
 #
-# Only SAML is used. The test client has three SPs that request eIDAS authentication through the connector:
+# The test client has three SAML SPs that request eIDAS authentication through the connector:
 #   eidas            - a public sector SP that requests the PRID attribute
 #   eidas-private    - a private sector SP (the connector sends SPType "private" and a RequesterID)
 #   eidas-attributes - a public sector SP that also requests attributes beyond the eIDAS minimum data set
+#
+# and two OpenID Connect RPs, configured as clients in the connector (OpenID Federation is not used):
+#   eidas-oidc         - a public sector RP (the connector configuration gives it the public-body trust mark)
+#   eidas-oidc-private - a private sector RP
 #
 # TEST CREDENTIALS ONLY: the key stores are committed to the repository and the password is "secret".
 #
@@ -64,7 +68,37 @@ testclient:
     default-tls-trust: JVM_TRUST
 
   oidc:
-    enabled: false
+    enabled: true
+    rps:
+      - path-suffix: "eidas-oidc"
+        description: "Test RP - RP for eIDAS authentication"
+        metadata: |
+          {
+            "response_types" : [ "code" ],
+            "grant_types" : [ "authorization_code" ],
+            "client_name#sv" : "Sweden Connect Test-RP eIDAS",
+            "client_name#en" : "Sweden Connect Test RP eIDAS",
+            "logo_uri" : "<logo>",
+            "token_endpoint_auth_method" : "private_key_jwt"
+          }
+      - path-suffix: "eidas-oidc-private"
+        description: "Private RP - private sector RP for eIDAS authentication"
+        metadata: |
+          {
+            "response_types" : [ "code" ],
+            "grant_types" : [ "authorization_code" ],
+            "client_name#sv" : "Sweden Connect Test-RP eIDAS (privat)",
+            "client_name#en" : "Sweden Connect Test RP eIDAS (private)",
+            "logo_uri" : "<logo>",
+            "token_endpoint_auth_method" : "private_key_jwt"
+          }
+    ops:
+      - entity-id: https://local.eidas.swedenconnect.se:12010/idp
+        display-name: "eIDAS Connector"
+        authorization-endpoint: https://local.eidas.swedenconnect.se:12010/idp/oidc/authorize
+        token-endpoint: https://local.eidas.swedenconnect.se:12010/idp/oidc/token
+        user-info-endpoint: https://local.eidas.swedenconnect.se:12010/idp/oidc/userinfo
+        metadata-endpoint: https://local.eidas.swedenconnect.se:12010/idp/.well-known/openid-configuration
 
   saml:
     enabled: true

@@ -97,6 +97,15 @@ The test client builds SAML authentication requests in detail and shows the resp
 3. Change the request if needed, for example the requested levels of assurance, and send it.
 4. Continue at the connector and the simulator as above. The test client then shows the response.
 
+### With OpenID Connect
+
+The connector is also an OpenID Provider, and the test client has two Relying Parties that are configured as clients in the connector. OpenID Federation is not used.
+
+1. Open the test client, https://local.eidas.swedenconnect.se:12040, and choose OpenID Connect.
+2. Select the RP "Test RP - RP for eIDAS authentication" and the OP "eIDAS Connector", and continue.
+3. Set the scope, for example `openid https://id.swedenconnect.se/scope/eidasNaturalPersonIdentity`, and change the request if needed, for example with a user message, a sign message (with the scope `https://id.oidc.se/scope/signApproval`) or `prompt=none`. Send it.
+4. Continue at the connector and the simulator as above. The test client then shows the ID token and the UserInfo.
+
 <a name="services"></a>
 ## 4. Services
 
@@ -142,8 +151,12 @@ The connector built from this repository (image `eidas-connector`). It uses the 
 
 - https://local.eidas.swedenconnect.se:12010/idp/metadata/idp.xml – The IdP metadata.
 - https://local.eidas.swedenconnect.se:12010/idp/metadata/sp – The eIDAS SP metadata, read by the simulator.
+- https://local.eidas.swedenconnect.se:12010/idp/.well-known/openid-configuration – The discovery document of the OpenID Provider. The issuer is `https://local.eidas.swedenconnect.se:12010/idp`.
 - https://local.eidas.swedenconnect.se:12011/actuator/health – Health.
 - https://local.eidas.swedenconnect.se:12011/actuator/info – Information, among others the countries of the EU metadata.
+- https://local.eidas.swedenconnect.se:12011/actuator/clients – The SAML SPs and the OpenID Connect clients that the connector knows.
+
+The OpenID Provider has the two RPs of the test client as configured clients, and reads their keys from the test client, which is why the connector starts after the test client.
 
 **Configuration:** `config/connector`, with the profile `compose` (`application-compose.yml`). The PRID policy is `config/connector/prid-policy.yml`.
 
@@ -186,7 +199,7 @@ The [eIDAS simulator](../eidas-simulator/README.md) (image `eidas-simulator`) ac
 <a name="test-client"></a>
 ### Sweden Connect test client
 
-The [Sweden Connect test client](https://github.com/swedenconnect/sweden-connect-test-client) (`ghcr.io/swedenconnect/sweden-connect-test-client`), with SAML only.
+The [Sweden Connect test client](https://github.com/swedenconnect/sweden-connect-test-client) (`ghcr.io/swedenconnect/sweden-connect-test-client`), with SAML and OpenID Connect.
 
 **Port:** `12040`
 
@@ -197,6 +210,13 @@ The [Sweden Connect test client](https://github.com/swedenconnect/sweden-connect
 | `https://local.eidas.swedenconnect.se/test-client/eidas` | A public sector SP that requests the PRID attribute. |
 | `https://local.eidas.swedenconnect.se/test-client/eidas-private` | A private sector SP. The connector sends `SPType` private to the country. |
 | `https://local.eidas.swedenconnect.se/test-client/eidas-attributes` | A public sector SP that also requests attributes beyond the eIDAS minimum data set, such as birth name, place of birth, address, e-mail and phone number. |
+
+**RPs:**
+
+| Client ID | Description |
+| :--- | :--- |
+| `https://local.eidas.swedenconnect.se:12040/eidas-oidc` | A public sector RP. The connector configuration gives it the `https://id.swedenconnect.se/tm-prop/public-body` trust mark. |
+| `https://local.eidas.swedenconnect.se:12040/eidas-oidc-private` | A private sector RP. The connector sends `SPType` private to the country. |
 
 **URLs:**
 
@@ -217,10 +237,10 @@ The keys are committed to the repository, so a fresh clone runs without extra st
 | `config/common/tls.jks` | The TLS key of `local.eidas.swedenconnect.se`, used by all services. The certificate is `config/common/tls.crt`. |
 | `config/common/trust.jks` | The trust store of all services, holding the TLS certificate. |
 | `config/metadata-aggregator/metadata-signing.jks` | The metadata signing key of the aggregator. The certificate is `config/common/aggregator-metadata-signing.crt`. |
-| `config/connector/connector-keys.jks` | The keys of the connector: `idp-sign`, `idp-encrypt`, `sp-sign`, `sp-encrypt` and `metadata-sign`. The certificate of the metadata signing key is `config/common/connector-metadata-signing.crt`. |
+| `config/connector/connector-keys.jks` | The keys of the connector: `idp-sign` (also used by the OpenID Provider), `idp-encrypt`, `sp-sign`, `sp-encrypt` and `metadata-sign`. The certificate of the metadata signing key is `config/common/connector-metadata-signing.crt`. |
 | `config/simulator/simulator-keys.jks` | The metadata signing key of the simulator (`metadata`), and the keys of each country (`<country>-sign` and, for some countries, `<country>-encrypt`). The type and size of the key of a country are the same as in the production metadata. The certificate of the metadata signing key is `config/common/simulator-metadata-signing.crt`. |
 | `config/test-my-eid/sp-keys.jks` | The SAML keys of Test my eID. |
-| `config/test-client/sp-keys.jks` | The SAML keys of the test client. |
+| `config/test-client/sp-keys.jks` | The SAML keys of the test client. The `sign` key is also the key of its RPs. |
 
 To generate new keys, run:
 

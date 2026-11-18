@@ -56,6 +56,9 @@ services:
         condition: service_healthy
       eidas-simulator:
         condition: service_healthy
+      # The connector reads the keys of the OpenID Connect clients from the test client at startup.
+      test-client:
+        condition: service_healthy
     ports:
       - "12010:8443"
       - "12011:8444"

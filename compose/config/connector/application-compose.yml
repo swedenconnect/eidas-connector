@@ -7,6 +7,9 @@
 #
 # The connector keeps its state in memory, Redis is not used.
 #
+# The OpenID Provider is enabled, with the two Relying Parties of the test client as configured clients. OpenID
+# Federation is not used.
+#
 # TEST CREDENTIALS ONLY: the key stores are committed to the repository and the password is "secret".
 #
 
@@ -101,6 +104,33 @@ authn-server:
         bundle: idp-encrypt
       metadata-sign:
         bundle: metadata-sign
+  oidc:
+    enabled: true
+    subject-identifier:
+      secret: compose-subject-secret
+    # The SAML signing key is used to keep the setup small. A deployment uses keys of its own.
+    keys:
+      signing:
+        - credential:
+            bundle: idp-sign
+    clients:
+      - client-id: https://local.eidas.swedenconnect.se:12040/eidas-oidc
+        trust-mark-types:
+          - https://id.swedenconnect.se/tm-prop/public-body
+        metadata: >
+          {"client_name#sv": "Sweden Connect Test-RP eIDAS", "client_name#en": "Sweden Connect Test RP eIDAS",
+           "logo_uri": "https://local.eidas.swedenconnect.se:12040/eidas-oidc/logo.svg",
+           "redirect_uris": ["https://local.eidas.swedenconnect.se:12040/oidc/redirect/eidas-oidc"],
+           "token_endpoint_auth_method": "private_key_jwt",
+           "jwks_uri": "https://local.eidas.swedenconnect.se:12040/eidas-oidc/jwks"}
+      - client-id: https://local.eidas.swedenconnect.se:12040/eidas-oidc-private
+        metadata: >
+          {"client_name#sv": "Sweden Connect Test-RP eIDAS (privat)",
+           "client_name#en": "Sweden Connect Test RP eIDAS (private)",
+           "logo_uri": "https://local.eidas.swedenconnect.se:12040/eidas-oidc-private/logo.svg",
+           "redirect_uris": ["https://local.eidas.swedenconnect.se:12040/oidc/redirect/eidas-oidc-private"],
+           "token_endpoint_auth_method": "private_key_jwt",
+           "jwks_uri": "https://local.eidas.swedenconnect.se:12040/eidas-oidc-private/jwks"}
 
 logging:
   level:
