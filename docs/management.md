@@ -80,7 +80,7 @@ The Health-endpoint should be invoked periodically in order to monitor the "heal
 - `WARNING` - The application is running, but at least one of the health-components have issued a warning, that should be paid attention to.
 - `UNKNOWN` - Health status could not be reported.
 
-:exclamation: Simple monitoring services that can not interpret the body of the health-call, should at least trigger on the HTTP status, where 200 means `UP` and 50X, meaning "not ok".
+❗ Simple monitoring services that can not interpret the body of the health-call, should at least trigger on the HTTP status, where 200 means `UP` and 50X, meaning "not ok".
 
 Apart from Spring's standard health components<sup>1</sup>, the eIDAS Connector delivers health information about the components described below.
 

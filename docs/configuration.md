@@ -125,7 +125,7 @@ By defining an environment variable where the same setting is in uppercase lette
 export SPRING_SSL_BUNDLE_JKS_CONNECTOR_KEYSTORE_PASSWORD=secret
 ```
 
-:exclamation: If the application setting contains a hyphen (`-`) this is ignored when transforming to environment variable format. So, the setting `foo-bar.value` is translated into `FOOBAR_VALUE`.
+❗ If the application setting contains a hyphen (`-`) this is ignored when transforming to environment variable format. So, the setting `foo-bar.value` is translated into `FOOBAR_VALUE`.
 
 **Java Start-up Parameters**
 
@@ -239,7 +239,7 @@ spring:
 
 Example of how a JKS containing trusted certificates are configured.
 
-:point_right: If no certificate trust is specified, the default trust list from the Java environment will be used.
+👉 If no certificate trust is specified, the default trust list from the Java environment will be used.
 
 <a name="credential-bundles"></a>
 ### 2.3. Credential Bundles
@@ -280,7 +280,7 @@ The above example illustrates how we can configure credentials both from key sto
 
 The bundle can later be referenced in the configuration where a specific credential is needed.
 
-:raised_hand: Go to the [Credentials Support](https://docs.swedenconnect.se/credentials-support/#credential-bundles-and-configuration-support) pages to read more about the configuration of credentials bundles and how a PKCS#11 credential is set up. This resource also describes "credential monitoring" which is important when HSM:s are being used.
+✋ Go to the [Credentials Support](https://docs.swedenconnect.se/credentials-support/#credential-bundles-and-configuration-support) pages to read more about the configuration of credentials bundles and how a PKCS#11 credential is set up. This resource also describes "credential monitoring" which is important when HSM:s are being used.
 
 <a name="web-server-settings"></a>
 ### 2.4. Web Server Settings
@@ -393,7 +393,7 @@ with Spring Boot's own `spring.data.redis.*` settings.
 
 The above example illustrates how we use a [SSL Trust Bundle](#configuring-certificate-trust) for the TLS connection against the Redis server.
 
-:raised_hand: When the OpenID Provider is enabled, the authorization codes, the access tokens and the used client
+✋ When the OpenID Provider is enabled, the authorization codes, the access tokens and the used client
 assertions are also kept where `authn-server.storage.type` says. The token and UserInfo calls from a Relying Party do
 not carry the user's session, so a deployment with several instances needs Redis, or sticky sessions that send these
 calls to the instance that issued the code.
@@ -401,7 +401,7 @@ calls to the instance that issued the code.
 For details about Redis configuration, see [Running several nodes](https://docs.swedenconnect.se/spring-authentication-server/configuration.html#running-several-nodes)
 in the Spring Authentication Server documentation.
 
-:raised_hand: Redisson is not supported. A deployment that used the Redisson settings in earlier versions of the
+✋ Redisson is not supported. A deployment that used the Redisson settings in earlier versions of the
 connector configures the connection with the `spring.data.redis.*` settings instead, see
 [Migration from eIDAS Connector 2.1.0](migration-from-2.1.0.html).
 
@@ -494,9 +494,9 @@ By default, the management endpoints are exposed under `/actuator/<endpoint>`. T
 
 See the [Management using the Actuator](https://docs.swedenconnect.se/eidas-connector/management.html) page for a description of each exposed management endpoint.
 
-:raised_hand: Redis is available in the classpath. The base configuration turns the Redis health check off (`management.health.redis.enabled: false`). If you are using Redis, set it to `true`.
+✋ Redis is available in the classpath. The base configuration turns the Redis health check off (`management.health.redis.enabled: false`). If you are using Redis, set it to `true`.
 
-:exclamation: Make sure not to expose the management endpoints publicly. See [Building and Deploying the eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/installation.html) for deployment details.
+❗ Make sure not to expose the management endpoints publicly. See [Building and Deploying the eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/installation.html) for deployment details.
 
 <a name="saml-identity-provider-configuration"></a>
 ## 3. SAML Identity Provider Configuration
@@ -515,12 +515,12 @@ The default IdP configuration can be viewed under the `authn-server`-key in the 
 
 - `audit.*` - Audit configuration for the application. See [Audit Logging Configuration](#audit-logging-configuration) below.
 
-:raised_hand: The base configuration turns off the subject identifier secret for SAML
+✋ The base configuration turns off the subject identifier secret for SAML
 (`authn-server.saml.subject-identifier.secret` is empty), so that the persistent `NameID`s are the same as those
 issued by earlier versions of the connector. The authentication server logs a warning about this at startup. Do not
 assign a secret unless all Service Providers should get new `NameID`s for their users.
 
-:raised_hand: The base configuration sets `authn-server.supports-user-message` to `true`, so that the connector
+✋ The base configuration sets `authn-server.supports-user-message` to `true`, so that the connector
 displays user messages, see [User Message Extension in SAML Authentication Requests](https://docs.swedenconnect.se/technical-framework/latest/18_-_User_Message_Extension_in_SAML_Authentication_Requests.html).
 Plain text and Markdown messages are displayed. HTML messages are not displayed. A request that holds both a user
 message and a sign message is rejected.
@@ -559,7 +559,7 @@ See [Service Provider metadata](https://docs.swedenconnect.se/spring-authenticat
 
 - The web page https://eid.svelegtest.se/mdreg/home contains URL:s and certificates for the Sweden Connect Sandbox environment.
 
-:point_right: The IdP is only interested in Service Provider metadata, so make sure to use the URL:s exposing SP metadata only.
+👉 The IdP is only interested in Service Provider metadata, so make sure to use the URL:s exposing SP metadata only.
 
 <a name="credentials-configuration"></a>
 ### 3.2. Credentials Configuration
@@ -574,7 +574,7 @@ The IdP uses PKI credentials (private keys and certificates) in the following sc
 
 See [Credentials](https://docs.swedenconnect.se/spring-authentication-server/configuration.html#credentials) of the [Configuration](https://docs.swedenconnect.se/spring-authentication-server/configuration.html) page for details on how to configure each credential.
 
-:point_right: It is possible to use the same credential for several purposes, and by assigning the `authn-server.saml.credentials.default-credential.*` property, this will be used if a specific purpose is not assigned.
+👉 It is possible to use the same credential for several purposes, and by assigning the `authn-server.saml.credentials.default-credential.*` property, this will be used if a specific purpose is not assigned.
 
 Example where the [Credential Bundles](#credential-bundles) are referenced (this is the recommended way of configuring credentials):
 
@@ -733,9 +733,9 @@ authn-server:
 
 The references PKCS#11 configuration file should be formatted according to [PKCS#11 Reference Guide](https://docs.oracle.com/en/java/javase/17/security/pkcs11-reference-guide1.html).
 
-:point_right: If the certificate is accessible from the HSM, it does not need to be configured.
+👉 If the certificate is accessible from the HSM, it does not need to be configured.
 
-:raised_hand: Also note how we configure monitoring of the HSM credential. This will periodically test, and if connection against the HSM has been lost, reload the credential. Read more about monitoring of credentials [here](https://docs.swedenconnect.se/credentials-support/#monitoring).
+✋ Also note how we configure monitoring of the HSM credential. This will periodically test, and if connection against the HSM has been lost, reload the credential. Read more about monitoring of credentials [here](https://docs.swedenconnect.se/credentials-support/#monitoring).
 
 
 <a name="audit-logging-configuration"></a>
@@ -785,7 +785,7 @@ audit:
 
 When using Redis for audit logging, Spring's Redis support must also be configured, see section [2.5](#redis-configuration), [Redis Configuration](#redis-configuration).
 
-:grey_exclamation: See also the page [Swedish eIDAS Connector Audit Logging](https://docs.swedenconnect.se/eidas-connector/audit.html) for a full reference for all audit events produced by the eIDAS Connector.
+❕ See also the page [Swedish eIDAS Connector Audit Logging](https://docs.swedenconnect.se/eidas-connector/audit.html) for a full reference for all audit events produced by the eIDAS Connector.
 
 <a name="audit-logging-to-syslog"></a>
 #### 3.3.1. Audit Logging to Syslog
@@ -927,16 +927,14 @@ the discovery document. The scopes and claims are declared by the connector and 
 
 - `authn-server.oidc.enabled` - Set to `true` to enable the OpenID Provider.
 
-- `authn-server.oidc.issuer` - The issuer. It defaults to the base URL, `https://<domain><context path>`, for example
-`https://connector.eidas.swedenconnect.se/idp`. The discovery document is then published at
-`/idp/.well-known/openid-configuration`, and the endpoints under `/idp/oidc`.
+- `authn-server.oidc.issuer` - The issuer, which is also the entity identifier of the OpenID Provider in the federation. It defaults to the base URL, `https://<domain><context path>`. The Entity Configuration is published at the issuer followed by `/.well-known/openid-federation`.
 
 - `authn-server.oidc.subject-identifier.secret` - The secret that the `sub` claim is computed from. Required.
 
-:exclamation: The issuer is the entity identifier of the OpenID Provider in the federation, and the secret decides the
+❗ The issuer is the entity identifier of the OpenID Provider in the federation, and the secret decides the
 `sub` of every user. Neither can be changed once Relying Parties use the OpenID Provider.
 
-:raised_hand: The secret for SAML is empty in the base configuration, so that the SAML `NameID`s are the same as in
+✋ The secret for SAML is empty in the base configuration, so that the SAML `NameID`s are the same as in
 earlier versions, see [SAML Identity Provider Configuration](#saml-identity-provider-configuration). It is not used for
 OpenID Connect.
 

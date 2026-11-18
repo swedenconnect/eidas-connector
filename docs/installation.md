@@ -45,7 +45,7 @@
 
 This document discusses how the eIDAS Connector is built and gives examples of how it can be deployed.
 
-:grey_exclamation: Detailed knowledge of the role of the eIDAS Connector within both the domestic and the eIDAS-federation will be required, but this information is not provided here.
+❕ Detailed knowledge of the role of the eIDAS Connector within both the domestic and the eIDAS-federation will be required, but this information is not provided here.
 
 <a name="building-from-source"></a>
 ## 2. Building from Source
@@ -217,9 +217,9 @@ Next, Sweden Connect/Digg operations need to be involved to publish the metadata
 <a name="registering-the-openid-provider"></a>
 ### 6.3. Registering the OpenID Provider
 
-If the OpenID Provider is enabled, see [OpenID Provider Configuration](configuration.html#openid-provider-configuration), its entity configuration is published at `https://<domain>/idp/.well-known/openid-federation`, and its discovery document at `https://<domain>/idp/.well-known/openid-configuration`.
+If the OpenID Provider is enabled, see [OpenID Provider Configuration](configuration.html#openid-provider-configuration), its Entity Configuration is published at the issuer followed by `/.well-known/openid-federation`. The issuer defaults to the base URL of the connector, `https://<domain><context path>`.
 
-The OpenID Provider is registered under the OP registration intermediate of the Sweden Connect federation, after a compliance audit by the Federation Operator, see [Sweden Connect - OpenID Federation Rules](https://docs.swedenconnect.se/federation/oidf-rules.html). The trust mark `https://id.swedenconnect.se/loa/eidas` is also applied for. The issuer, `https://<domain>/idp`, is the entity identifier in the federation and cannot be changed afterwards.
+The OpenID Provider is registered under the OP registration intermediate of the Sweden Connect federation, after a compliance audit by the Federation Operator, see [Sweden Connect - OpenID Federation Rules](https://docs.swedenconnect.se/federation/oidf-rules.html). The trust mark `https://id.swedenconnect.se/loa/eidas` is also applied for. The issuer is the entity identifier in the federation and cannot be changed afterwards.
 
 
 ---

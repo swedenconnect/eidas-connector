@@ -10,8 +10,6 @@ The Swedish eIDAS Connector is an Open Source component, and is being used as an
 
 The Swedish eIDAS Connector is a [Spring Boot](https://spring.io/projects/spring-boot) application built on top of the [Spring Authentication Server](https://docs.swedenconnect.se/spring-authentication-server) library. It acts as a SAML Identity Provider and an OpenID Provider in the [Sweden Connect](https://www.swedenconnect.se) federation, and as a SAML Service Provider against the eIDAS federation.
 
-- [The OpenID Provider of the Swedish eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/openid-provider.html) - What an OpenID Connect Relying Party can ask for.
-
 - [Release Notes](https://docs.swedenconnect.se/eidas-connector/release-notes.html)
 
 - [Migration from eIDAS Connector 2.1.0](https://docs.swedenconnect.se/eidas-connector/migration-from-2.1.0.html) - What operators need to change when upgrading a deployment from version 2.1.0.
@@ -29,6 +27,8 @@ The following resources are available for information about configuration, deplo
 - [Management using the Actuator](https://docs.swedenconnect.se/eidas-connector/management.html) - The Spring Boot [Actuator Endpoints](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html) can be used for supervision of the application. This resource supplies information of relevant endpoints for management and supervision of the Swedish eIDAS Connector.
 
 - [eIDAS Connector Provisional Identifier (PRID) Calculation](https://docs.swedenconnect.se/eidas-connector/prid.html) - Description of how to configure the Provisional Identifier Calculation for the different countries that are connected to the Swedish eIDAS Connector. Also, see the [eIDAS Constructed Attributes Specification for the Swedish eID Framework](https://docs.swedenconnect.se/technical-framework/latest/11_-_eIDAS_Constructed_Attributes_Specification_for_the_Swedish_eID_Framework.html).
+
+- [The OpenID Provider of the Swedish eIDAS Connector](https://docs.swedenconnect.se/eidas-connector/openid-provider.html) - A document that is given as the official `service_documentation` for the eIDAS Connect OP. It descrived what an OpenID Connect Relying Party can ask for and how to integrate against the connector OP.
 
 ---
 
