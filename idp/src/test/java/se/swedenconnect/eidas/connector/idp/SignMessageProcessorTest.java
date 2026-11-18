@@ -16,11 +16,11 @@
 package se.swedenconnect.eidas.connector.idp;
 
 import org.junit.jupiter.api.Test;
-import org.opensaml.saml.saml2.core.StatusCode;
+import se.swedenconnect.eidas.connector.authn.EidasAuthenticationError;
+import se.swedenconnect.spring.authnserver.error.AuthenticationErrorException;
 import se.swedenconnect.spring.authnserver.message.GenericSignMessage;
 import se.swedenconnect.spring.authnserver.message.LocalizedMessage;
 import se.swedenconnect.spring.authnserver.message.MessageMimeType;
-import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
 
 import java.util.List;
 
@@ -40,12 +40,10 @@ class SignMessageProcessorTest {
         List.of(LocalizedMessage.ofText(null, "<b>Hello</b>")), MessageMimeType.TEXT_HTML, true, null);
 
     assertThatThrownBy(() -> SignMessageProcessor.assertSupported(message))
-        .isInstanceOfSatisfying(SamlErrorStatusException.class, e -> {
-          assertThat(e.getStatus().statusCode()).isEqualTo(StatusCode.REQUESTER);
-          assertThat(e.getStatus().subStatusCode()).isEqualTo(StatusCode.REQUEST_UNSUPPORTED);
-        });
+        .isInstanceOfSatisfying(AuthenticationErrorException.class, e ->
+            assertThat(e.getError()).isEqualTo(EidasAuthenticationError.SIGN_MESSAGE_NOT_SUPPORTED));
     assertThatThrownBy(() -> SignMessageProcessor.toDisplayMessage(message, "sv"))
-        .isInstanceOf(SamlErrorStatusException.class);
+        .isInstanceOf(AuthenticationErrorException.class);
   }
 
   @Test

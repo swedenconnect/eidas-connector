@@ -17,12 +17,11 @@ package se.swedenconnect.eidas.connector.idp;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.opensaml.saml.saml2.core.StatusCode;
-import se.swedenconnect.eidas.connector.authn.SamlErrors;
+import se.swedenconnect.eidas.connector.authn.EidasAuthenticationError;
+import se.swedenconnect.spring.authnserver.error.AuthenticationErrorException;
 import se.swedenconnect.spring.authnserver.message.GenericSignMessage;
 import se.swedenconnect.spring.authnserver.message.LocalizedMessage;
 import se.swedenconnect.spring.authnserver.message.MessageMimeType;
-import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
 
 /**
  * Prepares sign messages for display. The connector displays plain text and Markdown sign messages. HTML is never
@@ -36,13 +35,14 @@ public final class SignMessageProcessor {
    * Asserts that a sign message can be displayed, that is, that it is plain text or Markdown.
    *
    * @param signMessage the sign message, may be {@code null}
-   * @throws SamlErrorStatusException {@code Requester} / {@code RequestUnsupported} if the message is HTML
+   * @throws AuthenticationErrorException {@link EidasAuthenticationError#SIGN_MESSAGE_NOT_SUPPORTED} if the message
+   *     is HTML
    */
-  public static void assertSupported(final @Nullable GenericSignMessage signMessage) throws SamlErrorStatusException {
+  public static void assertSupported(final @Nullable GenericSignMessage signMessage)
+      throws AuthenticationErrorException {
     if (signMessage != null && signMessage.getMimeType() == MessageMimeType.TEXT_HTML) {
-      throw SamlErrors.errorWithMessageCode(StatusCode.REQUESTER, StatusCode.REQUEST_UNSUPPORTED,
-          SamlErrors.SIGN_MESSAGE_MESSAGE_CODE,
-          "eIDAS Connector does not support display of HTML SignMessages");
+      throw new AuthenticationErrorException(EidasAuthenticationError.SIGN_MESSAGE_NOT_SUPPORTED,
+          "eIDAS Connector does not support display of HTML sign messages");
     }
   }
 
@@ -53,11 +53,11 @@ public final class SignMessageProcessor {
    * @param signMessage the sign message, may be {@code null}
    * @param language the language of the page
    * @return the message to display as HTML, or {@code null} if there is no message
-   * @throws SamlErrorStatusException if the message is HTML
+   * @throws AuthenticationErrorException if the message is HTML
    */
   public static @Nullable String toDisplayMessage(
       final @Nullable GenericSignMessage signMessage, final @NonNull String language)
-      throws SamlErrorStatusException {
+      throws AuthenticationErrorException {
     if (signMessage == null) {
       return null;
     }

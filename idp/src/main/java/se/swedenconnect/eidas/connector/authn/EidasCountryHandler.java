@@ -16,7 +16,6 @@
 package se.swedenconnect.eidas.connector.authn;
 
 import org.jspecify.annotations.NonNull;
-import org.opensaml.saml.saml2.core.StatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,7 @@ import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
 import se.swedenconnect.spring.authnserver.attributes.GenericRequestedAttribute;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
-import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
+import se.swedenconnect.spring.authnserver.error.AuthenticationErrorException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,10 +99,10 @@ public class EidasCountryHandler {
    *
    * @param token the input token
    * @return a {@link SelectableCountries}
-   * @throws SamlErrorStatusException for SAML error responses
+   * @throws AuthenticationErrorException if no requested country is available
    */
   public @NonNull SelectableCountries getSelectableCountries(final @NonNull UserAuthenticationInputToken token)
-      throws SamlErrorStatusException {
+      throws AuthenticationErrorException {
 
     // First see if the authentication request pointed out specific country/countries.
     //
@@ -130,14 +129,14 @@ public class EidasCountryHandler {
       if (filteredRequestedCountries.isEmpty()) {
         final String msg = String.format("Country/countries %s not available for authentication", requestedCountries);
         log.info("{} [{}]", msg, token.getLogString());
-        throw SamlErrors.error(StatusCode.REQUESTER, StatusCode.NO_AVAILABLE_IDP, msg);
+        throw new AuthenticationErrorException(EidasAuthenticationError.NO_AVAILABLE_COUNTRY, msg);
       }
       else if (filteredRequestedCountries.size() == 1 && requestedCountries.size() == 1) {
         if (!filteredRequestedCountries.getFirst().canAuthenticate()) {
           final String msg = String.format("Can not send request to %s - it does not support requested authn context",
               filteredRequestedCountries.getFirst().country());
           log.info("{} [{}]", msg, token.getLogString());
-          throw SamlErrors.error(StatusCode.REQUESTER, StatusCode.NO_AVAILABLE_IDP, msg);
+          throw new AuthenticationErrorException(EidasAuthenticationError.NO_AVAILABLE_COUNTRY, msg);
         }
         return new SelectableCountries(filteredRequestedCountries, false);
       }

@@ -22,7 +22,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.AuthnRequest;
-import org.opensaml.saml.saml2.core.StatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,9 +50,9 @@ import se.swedenconnect.spring.authnserver.audit.AuthnEventPublisher;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 import se.swedenconnect.spring.authnserver.authentication.provider.redirect.AbstractAuthenticationController;
 import se.swedenconnect.spring.authnserver.authentication.provider.redirect.RedirectForAuthenticationToken;
+import se.swedenconnect.spring.authnserver.error.AuthenticationErrorException;
 import se.swedenconnect.spring.authnserver.error.CommonUnrecoverableError;
 import se.swedenconnect.spring.authnserver.error.UnrecoverableErrorException;
-import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
 
 import java.util.Optional;
 
@@ -264,8 +263,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
       return modelAndView;
     }
-    catch (final SamlErrorStatusException e) {
-      return this.completeWithError(request, e);
+    catch (final AuthenticationErrorException e) {
+      return this.complete(request, e);
     }
   }
 
@@ -329,7 +328,7 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       if (!selectableCountries.isAllowed(selectedCountry)) {
         log.info("Selected country '{}' is not allowed by the request {} [{}]",
             selectedCountry, selectableCountries.getAllowedCountries(), inputToken.getLogString());
-        throw SamlErrors.error(StatusCode.REQUESTER, StatusCode.REQUEST_DENIED,
+        throw new AuthenticationErrorException(EidasAuthenticationError.REQUEST_DENIED,
             "Selected country %s is not allowed for the request".formatted(selectedCountry));
       }
 
@@ -355,8 +354,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
         return new ModelAndView("redirect:" + authnRequest.getSendUrl());
       }
     }
-    catch (final SamlErrorStatusException e) {
-      return this.completeWithError(httpRequest, e);
+    catch (final AuthenticationErrorException e) {
+      return this.complete(httpRequest, e);
     }
   }
 
@@ -393,8 +392,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       //
       return this.completeAuthentication(httpRequest, httpResponse, token, false, false);
     }
-    catch (final SamlErrorStatusException e) {
-      return this.completeWithError(httpRequest, e);
+    catch (final AuthenticationErrorException e) {
+      return this.complete(httpRequest, e);
     }
   }
 
@@ -482,8 +481,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     try {
       this.getProvider().assertPrincipalSelection(inputToken, token);
     }
-    catch (final SamlErrorStatusException e) {
-      return this.completeWithError(httpRequest, e);
+    catch (final AuthenticationErrorException e) {
+      return this.complete(httpRequest, e);
     }
 
     return this.complete(httpRequest, token);
@@ -579,8 +578,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
       return modelAndView;
     }
-    catch (final SamlErrorStatusException e) {
-      return this.completeWithError(httpRequest, e);
+    catch (final AuthenticationErrorException e) {
+      return this.complete(httpRequest, e);
     }
   }
 
@@ -612,9 +611,8 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
       log.debug("User did not consent to signing [{}]", inputToken.getLogString());
       this.eventPublisher.publishEvent(new SignatureConsentEvent(inputToken, token, false));
 
-      return this.completeWithError(httpRequest, SamlErrors.errorWithMessageCode(StatusCode.RESPONDER,
-          SamlErrors.CANCEL_STATUS_CODE, SamlErrors.REJECT_SIGNATURE_MESSAGE_CODE,
-          "User did not consent to signature"));
+      return this.complete(httpRequest, new AuthenticationErrorException(
+          EidasAuthenticationError.SIGNATURE_REJECTED, "User did not consent to signature"));
     }
     else {
       log.info("Unknown action parameter {} [{}]", action, inputToken.getLogString());
@@ -630,23 +628,12 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     return super.complete(request, authentication);
   }
 
-  /**
-   * Completes the authentication with a SAML error that is reported to the Swedish SP.
-   *
-   * @param request the HTTP servlet request
-   * @param error the error
-   * @return a redirect to the resume path
-   */
-  protected @NonNull ModelAndView completeWithError(final @NonNull HttpServletRequest request,
-      final @NonNull SamlErrorStatusException error) {
-    return this.complete(request, new EidasAuthenticationErrorToken(error));
-  }
-
   /** {@inheritDoc} */
   @Override
-  protected @NonNull ModelAndView cancel(final @NonNull HttpServletRequest request) {
+  protected @NonNull ModelAndView complete(final @NonNull HttpServletRequest request,
+      final @NonNull AuthenticationErrorException error) {
     this.getProvider().removeEidasAuthenticationToken(request);
-    return super.cancel(request);
+    return super.complete(request, error);
   }
 
   /**

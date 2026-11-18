@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.util.StringUtils;
 import se.swedenconnect.eidas.connector.attributes.EidasAttributeConverter;
 import se.swedenconnect.eidas.connector.authn.idm.IdmClient;
@@ -42,7 +40,6 @@ import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.eidas.connector.authn.sp.AuthnContextClassRefMapper;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequest;
 import se.swedenconnect.eidas.connector.authn.sp.EidasAuthnRequestGenerator;
-import se.swedenconnect.eidas.connector.authn.sp.EidasResponseValidationException;
 import se.swedenconnect.eidas.connector.events.BeforeEidasAuthenticationEvent;
 import se.swedenconnect.eidas.connector.events.ErrorEidasResponseEvent;
 import se.swedenconnect.eidas.connector.events.IdentityMatchingErrorEvent;
@@ -73,12 +70,12 @@ import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthentic
 import se.swedenconnect.spring.authnserver.authentication.provider.redirect.AbstractUserRedirectAuthenticationProvider;
 import se.swedenconnect.spring.authnserver.authentication.provider.redirect.RedirectForAuthenticationToken;
 import se.swedenconnect.spring.authnserver.authentication.provider.redirect.ResumedAuthenticationToken;
+import se.swedenconnect.spring.authnserver.error.AuthenticationError;
 import se.swedenconnect.spring.authnserver.error.AuthenticationErrorException;
 import se.swedenconnect.spring.authnserver.error.CommonUnrecoverableError;
 import se.swedenconnect.spring.authnserver.error.UnrecoverableErrorException;
 import se.swedenconnect.spring.authnserver.message.GenericSignMessage;
 import se.swedenconnect.spring.authnserver.message.GenericUserMessage;
-import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
 import se.swedenconnect.spring.authnserver.sso.RequestedAttributesSsoVoter;
 
 import java.io.Serializable;
@@ -224,9 +221,9 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     final GenericUserMessage userMessage = token.getAuthnRequirements().getUserMessage();
     final GenericSignMessage signMessage = token.getAuthnRequirements().getSignMessage();
     if (userMessage != null && signMessage != null) {
-      log.info("Request holds both a UserMessage and a SignMessage - rejecting [{}]", token.getLogString());
-      throw SamlErrors.error(StatusCode.REQUESTER, StatusCode.REQUEST_UNSUPPORTED,
-          "UserMessage and SignMessage must not both be given");
+      log.info("Request holds both a user message and a sign message - rejecting [{}]", token.getLogString());
+      throw new AuthenticationErrorException(EidasAuthenticationError.REQUEST_UNSUPPORTED,
+          "A user message and a sign message must not both be given");
     }
     SignMessageProcessor.assertSupported(signMessage);
     if (userMessage != null && !UserMessageProcessor.isDisplayable(userMessage)) {
@@ -243,13 +240,6 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   @Override
   protected @NonNull UserAuthentication createUserAuthentication(final @NonNull ResumedAuthenticationToken token)
       throws AuthenticationErrorException {
-
-    if (token.getAuthnToken() instanceof final EidasAuthenticationErrorToken errorToken) {
-      // An authentication that ends in an error must not let the next request through ...
-      //
-      clearSessionAuthentication(token.getServletRequest());
-      throw errorToken.getError();
-    }
     final EidasAuthenticationToken eidasToken = (EidasAuthenticationToken) Objects.requireNonNull(
         token.getAuthnToken(), "No authentication token available");
 
@@ -285,13 +275,13 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param samlResponse the SAML response
    * @param relayState the RelayState variable
    * @return an {@link EidasAuthenticationToken}
-   * @throws SamlErrorStatusException for errors that are reported to the Swedish SP
+   * @throws AuthenticationErrorException for errors that are reported to the requester
    * @throws UnrecoverableErrorException if there is no matching authentication request in the session
    */
   public @NonNull EidasAuthenticationToken processSamlResponse(final @NonNull HttpServletRequest httpRequest,
       final @NonNull UserAuthenticationInputToken inputToken, final @Nullable String samlResponse,
       final @Nullable String relayState)
-      throws SamlErrorStatusException, UnrecoverableErrorException {
+      throws AuthenticationErrorException, UnrecoverableErrorException {
 
     try {
       // First get hold of the corresponding authentication request ...
@@ -325,7 +315,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
         eidasToken.setSwedishEidAuthnContextClassRef(AuthnContextClassRefMapper.calculateReturnAuthnContextUri(
             eidasAuthnContextUri, inputToken.getAuthnRequirements().getAuthnContextRequirements()));
       }
-      catch (final SamlErrorStatusException e) {
+      catch (final AuthenticationErrorException e) {
         this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(inputToken, e.getMessage()));
         throw e;
       }
@@ -369,7 +359,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
         this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(inputToken, e.getMessage()));
 
-        throw SamlErrors.error(StatusCode.RESPONDER, StatusCode.AUTHN_FAILED, "Failed to create PRID attribute", e);
+        throw new AuthenticationErrorException(EidasAuthenticationError.PRID_FAILURE,
+            "Failed to create PRID attribute", e);
       }
 
       return eidasToken;
@@ -385,10 +376,11 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       // a text telling that the failure was received from the foreign service.
       //
       final Status status = e.getStatus();
-      throw SamlErrors.error(
-          Optional.ofNullable(status.getStatusCode()).map(StatusCode::getValue).orElse(StatusCode.RESPONDER),
-          Optional.ofNullable(status.getStatusCode()).map(StatusCode::getStatusCode).map(StatusCode::getValue)
-              .orElse(StatusCode.AUTHN_FAILED),
+      throw new AuthenticationErrorException(
+          EidasAuthenticationError.foreignStatus(
+              Optional.ofNullable(status.getStatusCode()).map(StatusCode::getValue).orElse(StatusCode.RESPONDER),
+              Optional.ofNullable(status.getStatusCode()).map(StatusCode::getStatusCode).map(StatusCode::getValue)
+                  .orElse(StatusCode.AUTHN_FAILED)),
           Optional.ofNullable(status.getStatusMessage())
               .map(StatusMessage::getValue)
               .map("Failure received from foreign service: %s"::formatted)
@@ -400,13 +392,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
       this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(inputToken, e.getMessage(), e.getResponse()));
 
-      if (e instanceof final EidasResponseValidationException eidasError) {
-        throw eidasError.getError();
-      }
-      else {
-        final String msg = "Validation failure of response from foreign service: %s".formatted(e.getMessage());
-        throw SamlErrors.error(StatusCode.REQUESTER, StatusCode.REQUEST_DENIED, msg, e);
-      }
+      final String msg = "Validation failure of response from foreign service: %s".formatted(e.getMessage());
+      throw new AuthenticationErrorException(EidasAuthenticationError.REQUEST_DENIED, msg, e);
     }
   }
 
@@ -467,11 +454,11 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    *
    * @param inputToken the input token
    * @param token the eIDAS authentication token
-   * @throws SamlErrorStatusException for assertion errors
+   * @throws AuthenticationErrorException for assertion errors
    */
   public void assertPrincipalSelection(
       final @NonNull UserAuthenticationInputToken inputToken, final @NonNull EidasAuthenticationToken token)
-      throws SamlErrorStatusException {
+      throws AuthenticationErrorException {
 
     // Only assert for signing user ...
     //
@@ -518,7 +505,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
         }
       }
     }
-    catch (final SamlErrorStatusException e) {
+    catch (final AuthenticationErrorException e) {
       this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(inputToken, e.getMessage()));
       throw e;
     }
@@ -588,11 +575,11 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param psValue the value from the request (principal selection)
    * @param friendlyName the friendly name (for logging)
    * @param values the authenticated values
-   * @throws SamlErrorStatusException for mismatches
+   * @throws AuthenticationErrorException for mismatches
    */
   private static void checkPrincipalSelectionValue(
       final String psName, final String psValue, final String friendlyName, final List<String> values)
-      throws SamlErrorStatusException {
+      throws AuthenticationErrorException {
 
     if (values == null || values.isEmpty()) {
       return;
@@ -600,7 +587,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     if (!values.contains(psValue)) {
       log.info("PrincipalSelection for attribute '{}' specified value '{}', but authenticated value was {}",
           psName, psValue, values);
-      throw SamlErrors.error(StatusCode.RESPONDER, StatusCode.UNKNOWN_PRINCIPAL,
+      throw new AuthenticationErrorException(AuthenticationError.UNKNOWN_PRINCIPAL,
           "%s attribute from authentication does not match %s attribute from request"
               .formatted(friendlyName, friendlyName));
     }
@@ -613,19 +600,19 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param country the recipient country
    * @param token the redirect token of the authentication
    * @return an {@code AuthnRequest}
-   * @throws SamlErrorStatusException for errors generating the request
+   * @throws AuthenticationErrorException for errors generating the request
    */
   public @NonNull RequestHttpObject<AuthnRequest> generateAuthnRequest(
       final @NonNull HttpServletRequest httpServletRequest, final @NonNull String country,
-      final @NonNull RedirectForAuthenticationToken token) throws SamlErrorStatusException {
+      final @NonNull RedirectForAuthenticationToken token) throws AuthenticationErrorException {
 
     final UserAuthenticationInputToken inputToken = token.getAuthnInputToken();
 
     final CountryMetadata countryMetadata = this.metadataProvider.getCountry(country);
     if (countryMetadata == null) {
-      final String msg = "No services available for selected country";
       log.error("No metadata found for country '{}'", country);
-      throw SamlErrors.error(StatusCode.RESPONDER, StatusCode.NO_AVAILABLE_IDP, msg);
+      throw new AuthenticationErrorException(EidasAuthenticationError.NO_COUNTRY_METADATA,
+          "No services available for selected country");
     }
 
     try {
@@ -653,18 +640,16 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     catch (final RequestGenerationException e) {
       log.error("Failed to generate AuthnRequest for '{}' - {} [{}]", country, e.getMessage(),
           inputToken.getLogString(), e);
-      throw SamlErrors.errorWithMessageCode(StatusCode.RESPONDER, StatusCode.AUTHN_FAILED,
-          "authn-server.error.authn-failed", "Failed to generate AuthnRequest");
+      throw new AuthenticationErrorException(AuthenticationError.AUTHN_FAILED, "Failed to generate AuthnRequest", e);
     }
   }
 
   /**
-   * Supports {@link EidasAuthenticationToken} and {@link EidasAuthenticationErrorToken}.
+   * Supports {@link EidasAuthenticationToken}.
    */
   @Override
   public boolean supportsUserAuthenticationToken(final @Nullable Authentication authentication) {
-    return authentication instanceof EidasAuthenticationToken
-        || authentication instanceof EidasAuthenticationErrorToken;
+    return authentication instanceof EidasAuthenticationToken;
   }
 
   /** {@inheritDoc} */
@@ -790,18 +775,6 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   private static String getTokenSessionKey(final HttpServletRequest httpRequest) {
     return "%s.%s".formatted(EIDAS_AUTHNTOKEN_SESSION_KEY,
         Optional.ofNullable(RedirectForAuthenticationToken.getAuthnId(httpRequest)).orElse(""));
-  }
-
-  /**
-   * Removes the authentication that is saved in the session for single sign-on.
-   *
-   * @param httpRequest the HTTP servlet request, may be {@code null}
-   */
-  private static void clearSessionAuthentication(final HttpServletRequest httpRequest) {
-    SecurityContextHolder.clearContext();
-    Optional.ofNullable(httpRequest)
-        .map(r -> r.getSession(false))
-        .ifPresent(s -> s.removeAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY));
   }
 
 }

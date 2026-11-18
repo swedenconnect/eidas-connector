@@ -20,14 +20,14 @@ import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
-import org.opensaml.saml.saml2.core.StatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.swedenconnect.eidas.connector.authn.SamlErrors;
+import se.swedenconnect.eidas.connector.authn.EidasAuthenticationError;
 import se.swedenconnect.opensaml.eidas.common.EidasConstants;
 import se.swedenconnect.opensaml.saml2.core.build.RequestedAuthnContextBuilder;
 import se.swedenconnect.opensaml.sweid.saml2.authn.LevelOfAssuranceUris;
-import se.swedenconnect.spring.authnserver.saml.error.SamlErrorStatusException;
+import se.swedenconnect.spring.authnserver.error.AuthenticationError;
+import se.swedenconnect.spring.authnserver.error.AuthenticationErrorException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,11 +56,11 @@ public class AuthnContextClassRefMapper {
    * @param supportedEidasUris the AuthnContextClassRef URI:s supported by the foreign IdP
    * @param requestedSwedishUris the AuthnContextClassRef URI:s requsted by the Swedish SP
    * @return a {@link RequestedAuthnContext}
-   * @throws SamlErrorStatusException if no match is found
+   * @throws AuthenticationErrorException if no match is found
    */
   public static @NonNull RequestedAuthnContext calculateRequestedAuthnContext(
       final @NonNull List<String> supportedEidasUris, final @NonNull List<String> requestedSwedishUris)
-      throws SamlErrorStatusException {
+      throws AuthenticationErrorException {
 
     final SwedishRequestedUris requested = new SwedishRequestedUris(requestedSwedishUris);
     final EidasUris supported = new EidasUris(supportedEidasUris);
@@ -95,10 +95,10 @@ public class AuthnContextClassRefMapper {
    * @param eidasUri the eIDAS AuthnContext URI from the assertion
    * @param requestedSwedishUris the requested Swedish URI:s (exact matching)
    * @return the Swedish URI to use in the Swedish assertion
-   * @throws SamlErrorStatusException for processing errors
+   * @throws AuthenticationErrorException for processing errors
    */
   public static @NonNull String calculateReturnAuthnContextUri(final @Nullable String eidasUri,
-      final @NonNull List<String> requestedSwedishUris) throws SamlErrorStatusException {
+      final @NonNull List<String> requestedSwedishUris) throws AuthenticationErrorException {
 
     if (EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF.equals(eidasUri)
         && requestedSwedishUris.contains(EIDAS_TEST_AUTHN_CONTEXT_CLASS_REF)) {
@@ -144,7 +144,7 @@ public class AuthnContextClassRefMapper {
           final String msg = "Could not map %s to any of the requested AuthnContext URI:s %s"
               .formatted(eidasUri, requestedSwedishUris);
           log.error(msg);
-          return SamlErrors.noAuthnContext(msg);
+          return new AuthenticationErrorException(AuthenticationError.NO_AUTHN_CONTEXT, msg);
         });
   }
 
@@ -153,14 +153,14 @@ public class AuthnContextClassRefMapper {
    *
    * @param eidasUri the received URI
    * @param requestedContext the {@link RequestedAuthnContext}
-   * @throws SamlErrorStatusException for errors
+   * @throws AuthenticationErrorException for errors
    */
   public static void assertReturnedAuthnContextUri(final @Nullable String eidasUri,
-      final @NonNull RequestedAuthnContext requestedContext) throws SamlErrorStatusException {
+      final @NonNull RequestedAuthnContext requestedContext) throws AuthenticationErrorException {
 
     if (eidasUri == null) {
       final String msg = "Invalid assertion received from foreign IdP - No AuthnContextClassRef present";
-      throw SamlErrors.error(StatusCode.RESPONDER, StatusCode.NO_AUTHN_CONTEXT, msg);
+      throw new AuthenticationErrorException(EidasAuthenticationError.INVALID_AUTHN_CONTEXT, msg);
     }
 
     if (requestedContext.getComparison() == AuthnContextComparisonTypeEnumeration.MINIMUM) {
@@ -169,7 +169,7 @@ public class AuthnContextClassRefMapper {
         if (!EidasConstants.EIDAS_LOA_HIGH.equals(eidasUri)) {
           final String msg = String.format("Unexpected AuthnContextClassRef received - requested minimum %s but got %s",
               requested, eidasUri);
-          throw SamlErrors.error(StatusCode.RESPONDER, StatusCode.NO_AUTHN_CONTEXT, msg);
+          throw new AuthenticationErrorException(EidasAuthenticationError.INVALID_AUTHN_CONTEXT, msg);
         }
       }
       else if (EidasConstants.EIDAS_LOA_SUBSTANTIAL.equals(requested)) {
@@ -177,7 +177,7 @@ public class AuthnContextClassRefMapper {
             || EidasConstants.EIDAS_LOA_SUBSTANTIAL.equals(eidasUri))) {
           final String msg = String.format("Unexpected AuthnContextClassRef received - requested minimum %s but got %s",
               requested, eidasUri);
-          throw SamlErrors.error(StatusCode.RESPONDER, StatusCode.NO_AUTHN_CONTEXT, msg);
+          throw new AuthenticationErrorException(EidasAuthenticationError.INVALID_AUTHN_CONTEXT, msg);
         }
       }
       else if (EidasConstants.EIDAS_LOA_LOW.equals(requested)) {
@@ -186,13 +186,13 @@ public class AuthnContextClassRefMapper {
         if (!allowed.contains(eidasUri)) {
           final String msg = String.format("Unexpected AuthnContextClassRef received - requested minimum %s but got %s",
               requested, eidasUri);
-          throw SamlErrors.error(StatusCode.RESPONDER, StatusCode.NO_AUTHN_CONTEXT, msg);
+          throw new AuthenticationErrorException(EidasAuthenticationError.INVALID_AUTHN_CONTEXT, msg);
         }
       }
       else {
         final String msg = "Unexpected RequestedAuthnContext sent - %s".formatted(requested);
         log.error(msg);
-        throw SamlErrors.noAuthnContext(msg);
+        throw new AuthenticationErrorException(AuthenticationError.NO_AUTHN_CONTEXT, msg);
       }
     }
     else {  // exact
@@ -226,7 +226,7 @@ public class AuthnContextClassRefMapper {
       if (!requested.contains(eidasUri)) {
         final String msg = String.format("Unexpected AuthnContextClassRef received - requested any of %s but got %s",
             requestedContext.getAuthnContextClassRefs().stream().map(AuthnContextClassRef::getURI).toList(), eidasUri);
-        throw SamlErrors.error(StatusCode.RESPONDER, StatusCode.NO_AUTHN_CONTEXT, msg);
+        throw new AuthenticationErrorException(EidasAuthenticationError.INVALID_AUTHN_CONTEXT, msg);
       }
     }
   }
@@ -494,17 +494,17 @@ public class AuthnContextClassRefMapper {
      *
      * @param requested the requested Swedish URI:s
      * @return {@link RequestedAuthnContext}
-     * @throws SamlErrorStatusException if no match is found
+     * @throws AuthenticationErrorException if no match is found
      */
     public @NonNull RequestedAuthnContext getRequestedAuthnContext(final @NonNull SwedishRequestedUris requested)
-        throws SamlErrorStatusException {
+        throws AuthenticationErrorException {
 
       final MatchResult result = this.getRequestedAuthnContextMatch(requested);
       if (result.value() == 0) {
         // We should never end up here since a country should not be selectable if canAuthenticate
         // returns false. But we need to handle this ...
         //
-        throw SamlErrors.noAuthnContext("Requested authentication context(s) not supported");
+        throw new AuthenticationErrorException(AuthenticationError.NO_AUTHN_CONTEXT, "Requested authentication context(s) not supported");
       }
 
       if ((result.value() & SwedishRequestedUris.TEST) == SwedishRequestedUris.TEST) {
