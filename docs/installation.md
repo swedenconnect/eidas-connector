@@ -36,6 +36,8 @@
     
     6.2. [Publishing Service Provider Metadata to eIDAS](#publishing-service-provider-metadata-to-eidas)
 
+    6.3. [Registering the OpenID Provider](#registering-the-openid-provider)
+
 ---
 
 <a name="overview"></a>
@@ -211,6 +213,13 @@ Depending on which environment/federation the metadata is to be published, the s
 To obtain the SAML metadata for the SP part of the eIDAS Connector, open the URL `https://<domain>/idp/metadata/sp` in a browser and save the metadata in an XML-file.
 
 Next, Sweden Connect/Digg operations need to be involved to publish the metadata for the eIDAS federation. The distribution of metadata among the eIDAS countries is a manual process and requires many steps (outside of the scope for this document).
+
+<a name="registering-the-openid-provider"></a>
+### 6.3. Registering the OpenID Provider
+
+If the OpenID Provider is enabled, see [OpenID Provider Configuration](configuration.html#openid-provider-configuration), its entity configuration is published at `https://<domain>/idp/.well-known/openid-federation`, and its discovery document at `https://<domain>/idp/.well-known/openid-configuration`.
+
+The OpenID Provider is registered under the OP registration intermediate of the Sweden Connect federation, after a compliance audit by the Federation Operator, see [Sweden Connect - OpenID Federation Rules](https://docs.swedenconnect.se/federation/oidf-rules.html). The trust mark `https://id.swedenconnect.se/loa/eidas` is also applied for. The issuer, `https://<domain>/idp`, is the entity identifier in the federation and cannot be changed afterwards.
 
 
 ---

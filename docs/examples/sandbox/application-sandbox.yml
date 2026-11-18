@@ -66,6 +66,24 @@ credential:
         key:
           alias: encrypt
           key-password: <hidden>
+      oidc-sign:
+        store:
+          location: file:${CONNECTOR_DIRECTORY}/credentials/oidc-keys.jks
+          password: <hidden>
+          type: JKS
+        name: "OpenID Provider Signing"
+        key:
+          alias: sign
+          key-password: <hidden>
+      oidc-federation:
+        store:
+          location: file:${CONNECTOR_DIRECTORY}/credentials/oidc-keys.jks
+          password: <hidden>
+          type: JKS
+        name: "OpenID Federation Signing"
+        key:
+          alias: federation
+          key-password: <hidden>
 
 connector:
   domain: con.sandbox.swedenconnect.se
@@ -125,6 +143,34 @@ authn-server:
           key:
             alias: old-encrypt
             key-password: secret
+  oidc:
+    enabled: true
+    subject-identifier:
+      secret: <hidden>
+    keys:
+      signing:
+        - credential:
+            bundle: oidc-sign
+    federation:
+      enabled: true
+      authority-hints:
+        - https://fed.sandbox.swedenconnect.se/im-reg-sc-op
+      keys:
+        - credential:
+            bundle: oidc-federation
+      entity-configuration-lifetime: 7d
+      trust-marks:
+        - type: https://id.swedenconnect.se/loa/eidas
+          issuer: https://fed.sandbox.swedenconnect.se/tmi-loa
+          jwks: file:${CONNECTOR_DIRECTORY}/oidc/tmi-loa-jwks.json
+      trust-anchor:
+        entity-id: https://fed.sandbox.swedenconnect.se/trustanchor
+        jwks: file:${CONNECTOR_DIRECTORY}/oidc/trust-anchor-jwks.json
+      clients:
+        trust-mark-issuers:
+          - type: https://id.swedenconnect.se/tm-prop/public-body
+            issuer: https://fed.sandbox.swedenconnect.se/tmi-contracts
+            jwks: file:${CONNECTOR_DIRECTORY}/oidc/tmi-contracts-jwks.json
 
 audit:
   repository:

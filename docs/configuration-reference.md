@@ -18,9 +18,28 @@ under `authn-server.saml.*`.
 
 The base configuration of the connector, see
 [application.yml](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/resources/application.yml),
-assigns the SAML endpoints, the IdP metadata, the single sign-on policy and turns off the subject identifier secret
-for SAML, so that the connector behaves as earlier versions did. See
+assigns the SAML endpoints, the IdP metadata and the single sign-on time limit, and turns off the subject identifier
+secret for SAML, so that the `NameID`s are the same as in earlier versions. See
 [Migration from eIDAS Connector 2.1.0](migration-from-2.1.0.html).
+
+<a name="openid-provider-configuration"></a>
+## OpenID Provider Configuration
+
+The OpenID Provider is configured under `authn-server.oidc.*`, see
+[The OpenID Provider](https://docs.swedenconnect.se/spring-authentication-server/configuration.html#the-openid-provider)
+in the [Spring Authentication Server](https://docs.swedenconnect.se/spring-authentication-server) documentation, and
+[OpenID Provider Configuration](configuration.html#openid-provider-configuration).
+
+The base configuration of the connector sets the following:
+
+| Property | Value |
+| :--- | :--- |
+| `authn-server.oidc.enabled` | `false` |
+| `authn-server.oidc.ui-locales` | `sv`, `en` |
+| `authn-server.oidc.discovery.additional-parameters.service_documentation` | `https://docs.swedenconnect.se/eidas-connector/openid-provider.html` |
+
+A deployment that enables the OpenID Provider must also set `authn-server.oidc.subject-identifier.secret` and
+`authn-server.oidc.keys.signing`, and either `authn-server.oidc.federation.*` or `authn-server.oidc.clients`.
 
 <a name="eidas-connector-configuration"></a>
 ## eIDAS Connector Configuration

@@ -74,6 +74,16 @@
 
     4.4. [Identity Matching Configuration](#identity-matching-configuration)
 
+5. [**OpenID Provider Configuration**](#openid-provider-configuration)
+
+    5.1. [Enabling the OpenID Provider](#enabling-the-openid-provider)
+
+    5.2. [OpenID Provider Keys](#openid-provider-keys)
+
+    5.3. [Configured Clients](#configured-clients)
+
+    5.4. [OpenID Federation](#openid-federation)
+
 ---
 
 <a name="overview"></a>
@@ -383,6 +393,11 @@ with Spring Boot's own `spring.data.redis.*` settings.
 
 The above example illustrates how we use a [SSL Trust Bundle](#configuring-certificate-trust) for the TLS connection against the Redis server.
 
+:raised_hand: When the OpenID Provider is enabled, the authorization codes, the access tokens and the used client
+assertions are also kept where `authn-server.storage.type` says. The token and UserInfo calls from a Relying Party do
+not carry the user's session, so a deployment with several instances needs Redis, or sticky sessions that send these
+calls to the instance that issued the code.
+
 For details about Redis configuration, see [Running several nodes](https://docs.swedenconnect.se/spring-authentication-server/configuration.html#running-several-nodes)
 in the Spring Authentication Server documentation.
 
@@ -472,7 +487,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: info, health, metrics, loggers, refreshprid, logfile, auditevents
+        include: info, health, metrics, loggers, refreshprid, auditevents, clients
 ```
 
 By default, the management endpoints are exposed under `/actuator/<endpoint>`. This can be changed using the `management.endpoints.web.base-path` setting.
@@ -891,6 +906,147 @@ connector:
       credential:
         bundle: idp-oauth2
 ```
+
+<a name="openid-provider-configuration"></a>
+## 5. OpenID Provider Configuration
+
+The connector is also an OpenID Provider in the Sweden Connect federation. Users who are authenticated through
+OpenID Connect are authenticated at the foreign eIDAS nodes in the same way as for SAML. The OpenID Provider is
+configured under `authn-server.oidc`, see
+[The OpenID Provider](https://docs.swedenconnect.se/spring-authentication-server/configuration.html#the-openid-provider)
+in the Spring Authentication Server documentation. This section covers the settings that a deployment of the connector
+needs. What a Relying Party can ask for is described in
+[The OpenID Provider of the Swedish eIDAS Connector](openid-provider.html).
+
+The base configuration, [application.yml](https://github.com/swedenconnect/eidas-connector/blob/master/idp/src/main/resources/application.yml),
+turns the OpenID Provider off, publishes `sv` and `en` as `ui_locales_supported`, and gives `service_documentation` in
+the discovery document. The scopes and claims are declared by the connector and need no configuration.
+
+<a name="enabling-the-openid-provider"></a>
+### 5.1. Enabling the OpenID Provider
+
+- `authn-server.oidc.enabled` - Set to `true` to enable the OpenID Provider.
+
+- `authn-server.oidc.issuer` - The issuer. It defaults to the base URL, `https://<domain><context path>`, for example
+`https://connector.eidas.swedenconnect.se/idp`. The discovery document is then published at
+`/idp/.well-known/openid-configuration`, and the endpoints under `/idp/oidc`.
+
+- `authn-server.oidc.subject-identifier.secret` - The secret that the `sub` claim is computed from. Required.
+
+:exclamation: The issuer is the entity identifier of the OpenID Provider in the federation, and the secret decides the
+`sub` of every user. Neither can be changed once Relying Parties use the OpenID Provider.
+
+:raised_hand: The secret for SAML is empty in the base configuration, so that the SAML `NameID`s are the same as in
+earlier versions, see [SAML Identity Provider Configuration](#saml-identity-provider-configuration). It is not used for
+OpenID Connect.
+
+<a name="openid-provider-keys"></a>
+### 5.2. OpenID Provider Keys
+
+The keys that sign ID tokens and UserInfo responses are given under `authn-server.oidc.keys.signing`. Use keys of
+their own, apart from the SAML credentials. Decryption keys, for encrypted request objects, are optional. The keys are
+given as [Credential Bundles](#credential-bundles).
+
+```yaml
+authn-server:
+  oidc:
+    keys:
+      signing:
+        - credential:
+            bundle: oidc-sign
+```
+
+<a name="configured-clients"></a>
+### 5.3. Configured Clients
+
+In the Sweden Connect federation, the Relying Parties are resolved through OpenID Federation, see
+[OpenID Federation](#openid-federation) below. A Relying Party may also be configured under
+`authn-server.oidc.clients`, for example for local testing or for a bilateral agreement, see
+[Clients](https://docs.swedenconnect.se/spring-authentication-server/configuration.html#oidc-clients).
+
+A configured client that belongs to the public sector is given the trust mark type
+`https://id.swedenconnect.se/tm-prop/public-body` under `trust-mark-types`. Without it, the foreign country is told that
+the request comes from the private sector.
+
+```yaml
+authn-server:
+  oidc:
+    clients:
+      - client-id: https://rp.example.com
+        trust-mark-types:
+          - https://id.swedenconnect.se/tm-prop/public-body
+        metadata: >
+          {"client_name#sv": "Exempeltjänsten", "client_name#en": "The Example Service",
+           "logo_uri": "https://rp.example.com/logo.svg",
+           "redirect_uris": ["https://rp.example.com/callback"],
+           "token_endpoint_auth_method": "private_key_jwt", "jwks_uri": "https://rp.example.com/jwks"}
+```
+
+<a name="openid-federation"></a>
+### 5.4. OpenID Federation
+
+The OpenID Provider is a member of the Sweden Connect federation, see
+[Sweden Connect - OpenID Federation Structure](https://docs.swedenconnect.se/federation/oidf-structure.html) for the
+entity identifiers and the trust anchor keys of each environment. The settings are:
+
+- `authn-server.oidc.federation.enabled` - `true`.
+
+- `authn-server.oidc.federation.authority-hints` - The OP registration intermediate, `https://fed.swedenconnect.se/im-reg-sc-op` in production.
+
+- `authn-server.oidc.federation.keys` - The federation keys, as credential bundles.
+
+- `authn-server.oidc.federation.trust-marks` - The trust mark `https://id.swedenconnect.se/loa/eidas`, issued by the
+LoA trust mark issuer. It allows the OpenID Provider to issue the eIDAS authentication contexts.
+
+- `authn-server.oidc.federation.trust-anchor` - The entity identifier and the keys of the trust anchor.
+
+- `authn-server.oidc.federation.clients.trust-mark-issuers` - The issuer of the
+`https://id.swedenconnect.se/tm-prop/public-body` trust mark. A Relying Party that does not hold the trust mark in
+its entity configuration is checked with the issuer. The answer that a Relying Party has no trust mark is kept for
+`authn-server.oidc.federation.clients.cache.trust-mark-not-found-time-to-live` (1 hour by default).
+
+- `authn-server.oidc.federation.entity-configuration-lifetime` - The federation rules recommend 7 days. The default is 1
+day. Both are allowed.
+
+Every Relying Party that the federation resolves is accepted.
+
+**Example for the production environment:**
+
+```yaml
+authn-server:
+  oidc:
+    enabled: true
+    subject-identifier:
+      secret: <secret>
+    keys:
+      signing:
+        - credential:
+            bundle: oidc-sign
+    federation:
+      enabled: true
+      authority-hints:
+        - https://fed.swedenconnect.se/im-reg-sc-op
+      keys:
+        - credential:
+            bundle: oidc-federation
+      entity-configuration-lifetime: 7d
+      trust-marks:
+        - type: https://id.swedenconnect.se/loa/eidas
+          issuer: https://fed.swedenconnect.se/tmi-loa
+          jwks: file:/opt/connector/oidc/tmi-loa-jwks.json
+      trust-anchor:
+        entity-id: https://fed.swedenconnect.se/trustanchor
+        jwks: file:/opt/connector/oidc/trust-anchor-jwks.json
+      clients:
+        trust-mark-issuers:
+          - type: https://id.swedenconnect.se/tm-prop/public-body
+            issuer: https://fed.swedenconnect.se/tmi-contracts
+            jwks: file:/opt/connector/oidc/tmi-contracts-jwks.json
+```
+
+The descriptive metadata of the OpenID Provider, such as `display_name`, `logo_uri` and `contacts`, is taken from
+`authn-server.entity-information`, which is also used for SAML. The federation requires `logo_uri` to be an HTTPS URL
+and `contacts` to hold an e-mail address.
 
 ---
 

@@ -22,6 +22,8 @@
 
     3.4. [Identity Matching Health](#identity-matching-health)
 
+    3.5. [OpenID Provider Health](#openid-provider-health)
+
 4. [**The Info Endpoint**](#the-info-endpoint)
 
     4.1. [Country Information](#country-information)
@@ -32,6 +34,8 @@
 
 5. [**The PRID Configuration Refresh Endpoint**](#the-prid-configuration-refresh-endpoint)
 
+6. [**The Clients Endpoint**](#the-clients-endpoint)
+
 ---
 
 <a name="introduction"></a>
@@ -41,8 +45,7 @@ The Spring Boot [Actuator Endpoints](https://docs.spring.io/spring-boot/referenc
 
 The connector is built on the [Spring Authentication Server](https://docs.swedenconnect.se/spring-authentication-server), which adds its own Actuator support, see
 [Monitoring and managing the server](https://docs.swedenconnect.se/spring-authentication-server/management.html). The base configuration of the connector exposes the
-endpoints `info`, `health`, `metrics`, `loggers`, `refreshprid` and `auditevents`. The `clients` endpoint of the
-authentication server is not exposed by default.
+endpoints `info`, `health`, `metrics`, `loggers`, `refreshprid`, `auditevents` and `clients`.
 
 <a name="accessing-audit-logs"></a>
 ## 2. Accessing Audit Logs
@@ -189,6 +192,17 @@ See [Credential Monitoring Health Endpoint](https://docs.swedenconnect.se/creden
 
 **Description:** Health indicator for checking the connectivity against the Identity Matching Service.
 
+<a name="openid-provider-health"></a>
+### 3.5. OpenID Provider Health
+
+**Keys:** `oidc-trust-marks` and `oidc-federation`
+
+**Description:** Added by the Spring Authentication Server when the OpenID Provider is enabled. `oidc-trust-marks`
+reports the trust marks of the OpenID Provider, and `oidc-federation` the federation services that the OpenID Provider
+calls, such as the resolver and the trust mark issuers. A missing trust mark or a federation service that cannot be
+reached gives `WARNING`, which the connector maps to HTTP 503. See
+[The health endpoint](https://docs.swedenconnect.se/spring-authentication-server/management.html#the-health-endpoint).
+
 <a name="the-info-endpoint"></a>
 ## 4. The Info Endpoint
 
@@ -273,6 +287,15 @@ Service Providers they hold and the time of their last update. See
 As its output, the endpoint will respond with a status and a list of the policy configuration, see [4.2](#current-prid-policy-configuration) above.
 
 Make sure to inspect the result of the call, since the endpoint will analyze the newly updated PRID configuration file, and it it detects any errors report these.
+
+<a name="the-clients-endpoint"></a>
+## 6. The Clients Endpoint
+
+**Path:** `/actuator/clients`
+
+**Description:** Added by the Spring Authentication Server. Lists the SAML Service Providers and the OpenID Connect
+Relying Parties that the connector knows, with their metadata. The endpoint is read-only by default. See
+[The clients endpoint](https://docs.swedenconnect.se/spring-authentication-server/management.html#the-clients-endpoint).
 
 ---
 

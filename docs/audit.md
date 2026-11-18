@@ -29,8 +29,8 @@ All audit events have the common structure of spring-audit-support, see
 Swedish Service Provider to the response sent back. Not present for system events.
 
 - `principal` - The "owner" of the entry. Depending on the type of audit event this is either
-"eidas-connector" for system events or the ID SAML Service Provider that requested user authentication
-(user events).
+"eidas-connector" for system events or the identity of the requester of the user authentication (user events), the
+SAML entityID of a Service Provider or the `client_id` of an OpenID Connect Relying Party.
 
 - `data` - Auditing data that is specific to the type of audit event.
 
@@ -80,10 +80,16 @@ authentication starts.
 - `authn_user_authenticated` - The user has been authenticated. This can also be a re-use of a previously performed
 authentication (SSO). In those cases this is reflected in the audit data.
 
-- `authn_success_response` - A successful SAML response is sent. This means that the request has been processed, the
-user authenticated and a SAML assertion created.
+- `authn_authorization_response` - OpenID Connect only. The authorization code has been issued and is sent to the
+Relying Party.
 
-- `authn_error_response` - An error SAML response is sent. The error can represent a bad request or that the user
+- `authn_success_response` - A successful response is sent. For SAML, the request has been processed, the user
+authenticated and a SAML assertion created. For OpenID Connect, the Relying Party has redeemed the authorization code
+at the token endpoint and the ID token has been issued.
+
+- `authn_userinfo_delivered` - OpenID Connect only. A UserInfo response has been sent to the Relying Party.
+
+- `authn_error_response` - An error response is sent. The error can represent a bad request or that the user
 authentication failed. This event is also used to signal that the user cancelled the operation.
 
 - `authn_unrecoverable_error` - An error that cannot be reported back to the Service Provider. The error is displayed in
@@ -94,9 +100,9 @@ spring-audit-support also logs the `system_started` and `system_shutdown` events
 
 Common for all User Audit Events is that the authentication data contains the following items:
 
-- `sp-entity-id` - The "owner" of the entry. This will always the the SAML entityID of the Service Provider that requested authentication. If not available, `unknown` is used.
+- `sp-entity-id` - The "owner" of the entry. This is the SAML entityID of the Service Provider, or the `client_id` of the OpenID Connect Relying Party, that requested authentication. If not available, `unknown` is used.
   
-- `authn-request-id` - The ID of the authentication request that is being processed (`AuthnRequest`). If not available, `unknown` is used.
+- `authn-request-id` - The ID of the authentication request that is being processed (`AuthnRequest`). An OpenID Connect authentication request has no ID, so `unknown` is used. The `correlation_id` ties the events of one authentication together for both protocols.
 
 ### Before Foreign Authentication
 
@@ -163,7 +169,8 @@ Common for all User Audit Events is that the authentication data contains the fo
 
 **Description:** Logged when a successful SAML response is sent to the Swedish Service Provider, that is, when the
 authentication succeeded overall. It holds the response and the assertion that was sent, with the add-on that the
-peer country is logged as well.
+peer country is logged as well. The event is only logged for SAML. For OpenID Connect, the `authn_success_response`
+event of the authentication server is logged.
 
 **Audit data:** `saml-response` - See [SAML Response Data](#saml-response-data).
 

@@ -62,7 +62,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: info, health, metrics, loggers, refreshprid, auditevents
+        include: info, health, metrics, loggers, refreshprid, auditevents, clients
 
 logging:
   include-application-name: false
@@ -283,6 +283,9 @@ authn-server:
     ui-locales:
       - sv
       - en
+    discovery:
+      additional-parameters:
+        service_documentation: https://docs.swedenconnect.se/eidas-connector/openid-provider.html
 
 #
 # Audit logging. See https://docs.swedenconnect.se/spring-audit-support/configuration.html.
