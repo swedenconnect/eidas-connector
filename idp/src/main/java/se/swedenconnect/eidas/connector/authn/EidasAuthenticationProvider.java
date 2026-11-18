@@ -81,7 +81,6 @@ import se.swedenconnect.spring.authnserver.message.GenericSignMessage;
 import se.swedenconnect.spring.authnserver.message.GenericUserMessage;
 import se.swedenconnect.spring.authnserver.oidc.scope.BuiltInScopes;
 import se.swedenconnect.spring.authnserver.saml.authnrequest.Saml2AuthnRequestData;
-import se.swedenconnect.spring.authnserver.sso.RequestedAttributesSsoVoter;
 
 import java.io.Serializable;
 import java.security.cert.X509Certificate;
@@ -225,10 +224,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
     super(AUTHN_PATH, RESUME_PATH);
 
-    // The connector lets a previous authentication be reused also when another set of attributes is requested,
-    // and never for a signature service ...
+    // A previous authentication is never reused for a signature service, and only for the requested country ...
     //
-    this.getSsoVoters().removeIf(RequestedAttributesSsoVoter.class::isInstance);
     this.getSsoVoters().add(new SignServiceSsoVoter());
     this.getSsoVoters().add(new EidasSsoVoter());
 

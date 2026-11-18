@@ -171,6 +171,10 @@ class AuthenticationFlowTest {
 
   private static final String SP_ACS = "https://sp.example.com/acs";
 
+  private static final String OTHER_SP_ENTITY_ID = "https://other.example.com";
+
+  private static final String OTHER_SP_ACS = "https://other.example.com/acs";
+
   private static final String SIGN_SP_ENTITY_ID = "https://sign.example.com";
 
   private static final String SIGN_SP_ACS = "https://sign.example.com/acs";
@@ -657,6 +661,44 @@ class AuthenticationFlowTest {
   }
 
   @Test
+  void testSsoForSameServiceProvider() throws Exception {
+    final Browser session = new Browser();
+    this.authenticate(session);
+
+    final MvcResult result = this.postAuthnRequest(session, SP_ENTITY_ID, SP_ACS, null, null,
+        r -> r.setIsPassive(true));
+    assertThat(toResponse(result).getStatus().getStatusCode().getValue()).isEqualTo(StatusCode.SUCCESS);
+  }
+
+  @Test
+  void testNoSsoForOtherServiceProvider() throws Exception {
+    final Browser session = new Browser();
+    this.authenticate(session);
+
+    final MvcResult result = this.postAuthnRequest(session, OTHER_SP_ENTITY_ID, OTHER_SP_ACS, null, null,
+        r -> r.setIsPassive(true));
+    assertThat(toResponse(result).getStatus().getStatusCode().getStatusCode().getValue())
+        .isEqualTo(StatusCode.NO_PASSIVE);
+  }
+
+  @Test
+  void testNoSsoForOtherAttributes() throws Exception {
+    final Browser session = new Browser();
+    this.authenticate(session);
+
+    // The same SP asks for fewer attributes ...
+    //
+    final MvcResult result = this.postAuthnRequest(session, SP_ENTITY_ID, SP_ACS, null, null, r -> {
+      r.setIsPassive(true);
+      final RequestedAttributes attributes = (RequestedAttributes) r.getExtensions()
+          .getUnknownXMLObjects(RequestedAttributes.DEFAULT_ELEMENT_NAME).getFirst();
+      attributes.getRequestedAttributes().removeIf(a -> a.getName().contains("eJusticeNaturalPersonRole"));
+    });
+    assertThat(toResponse(result).getStatus().getStatusCode().getStatusCode().getValue())
+        .isEqualTo(StatusCode.NO_PASSIVE);
+  }
+
+  @Test
   void testMarkdownSignMessage() throws Exception {
     final Browser session = new Browser();
     final String authnId = authnId(this.postAuthnRequest(session, SIGN_SP_ENTITY_ID, SIGN_SP_ACS,
@@ -754,6 +796,22 @@ class AuthenticationFlowTest {
     assertThat(view(result).getViewName()).isEqualTo("error/idp");
     assertThat(view(result).getModel())
         .containsEntry("idpErrorMessageCode", "authn-server.error.unrecoverable.session");
+  }
+
+  /**
+   * Runs a successful authentication for the SP.
+   */
+  private void authenticate(final Browser session) throws Exception {
+    final String authnPath = this.sendAuthnRequest(session);
+    final String authnId = authnPath.substring(authnPath.indexOf('=') + 1);
+    final AuthnRequest eidasRequest = this.selectCountry(session, authnId);
+    final MvcResult foreignResponse = this.mockMvc.perform(post(REQUEST_BASE_URL + "/extauth/saml2/post")
+            .contextPath("/idp").with(session)
+            .param("SAMLResponse", encode(this.eidasResponse(eidasRequest, successStatus(), true)))
+            .param("RelayState", "sp-relay"))
+        .andDo(session).andReturn();
+    final Response response = this.resume(session, foreignResponse.getResponse().getRedirectedUrl());
+    assertThat(response.getStatus().getStatusCode().getValue()).isEqualTo(StatusCode.SUCCESS);
   }
 
   private String sendAuthnRequest(final Browser session) throws Exception {
@@ -1046,6 +1104,7 @@ class AuthenticationFlowTest {
     final EntitiesDescriptor entities =
         (EntitiesDescriptor) XMLObjectSupport.buildXMLObject(EntitiesDescriptor.DEFAULT_ELEMENT_NAME);
     entities.getEntityDescriptors().add(spMetadata(SP_ENTITY_ID, SP_ACS, null));
+    entities.getEntityDescriptors().add(spMetadata(OTHER_SP_ENTITY_ID, OTHER_SP_ACS, null));
     entities.getEntityDescriptors().add(spMetadata(SIGN_SP_ENTITY_ID, SIGN_SP_ACS,
         EntityCategoryConstants.SERVICE_TYPE_CATEGORY_SIGSERVICE.getUri()));
     return entities;

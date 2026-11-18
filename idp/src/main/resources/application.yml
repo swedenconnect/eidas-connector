@@ -148,12 +148,11 @@ authn-server:
   base-url: ${connector.base-url}
   supports-user-message: true
   #
-  # Single sign-on as in earlier versions of the connector: an authentication may be reused by any Service Provider
-  # for 60 minutes.
+  # Single sign-on: an authentication may be reused for 60 minutes, only by the Service Provider or Relying Party
+  # that it was made for.
   #
   sso:
     time-limit: 60m
-    same-requester-required: false
   entity-information:
     ui-info:
       display-names:

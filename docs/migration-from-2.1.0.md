@@ -59,9 +59,6 @@ has been converted, so most deployments only need to rename the settings of thei
 - `authn-server.saml.subject-identifier.secret` is empty, so that the persistent `NameID`s are computed as before, see
   [Section 6.3](#persistent-nameid).
 
-- `authn-server.sso.same-requester-required` is `false`, so that single sign-on works across Service Providers as
-  before, see [Section 6.1](#single-sign-on).
-
 - `connector.eidas.entity-id` defaults to `${authn-server.base-url}/metadata/sp`, which gives the same value as before.
 
 - `spring.application.name` is `eidas-connector`. It is required by the audit logging.
@@ -220,14 +217,16 @@ The connector does not configure any requester acceptance rules.
 <a name="single-sign-on"></a>
 ### 6.1. Single sign-on
 
-Single sign-on works as before: a previous authentication may be reused for 60 minutes, by any Service Provider, under
-an authentication context that the new request accepts. It is never reused for a signature service, never when the
-request asks for another country than the one the user authenticated at, and never after a signature consent.
+A previous authentication may be reused for 60 minutes, under an authentication context that the new request
+accepts. It is never reused for a signature service, never when the request asks for another country than the one the
+user authenticated at, and never after a signature consent.
 
-The library's default is to only reuse an authentication for the Service Provider that it was made for. The base
-configuration sets `authn-server.sso.same-requester-required` to `false` to keep the earlier behaviour. The library
-also refuses single sign-on when a Service Provider asks for another set of attributes than the original
-authentication was made for. The connector turns that rule off.
+Two rules are new, and follow the defaults of the library and the OpenID Connect Profile for Sweden Connect:
+
+- An authentication is only reused for the Service Provider that it was made for. Earlier, any Service Provider could
+  reuse it.
+- An authentication is not reused when the Service Provider asks for another set of attributes than the original
+  authentication was made for.
 
 One thing is new: an authentication that ends in an error, for example when the user cancels, removes any earlier
 authentication from the session. The next request then authenticates the user again.

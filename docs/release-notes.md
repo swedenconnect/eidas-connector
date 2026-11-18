@@ -30,6 +30,10 @@
 
 * The Swedish texts for the "Continue" and "Return to the service" buttons were wrong. This has been fixed.
 
+* The connector is also an OpenID Provider in the Sweden Connect federation. It is turned off by default. See [#250](https://github.com/swedenconnect/eidas-connector/issues/250).
+
+* Single sign-on has changed. An authentication is now only reused for the Service Provider that it was made for, and not when the Service Provider asks for other attributes than in the first authentication. See [#250](https://github.com/swedenconnect/eidas-connector/issues/250).
+
 * The country that the user was sent to was not checked against the countries that the authentication request allowed. A posted country that is not allowed is now rejected, and a country from the session that is not allowed is ignored. See [#270](https://github.com/swedenconnect/eidas-connector/issues/270).
 
 ### Version 2.1.0
