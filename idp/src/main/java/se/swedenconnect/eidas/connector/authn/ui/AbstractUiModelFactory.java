@@ -15,18 +15,19 @@
  */
 package se.swedenconnect.eidas.connector.authn.ui;
 
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Predicate;
-
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.i18n.LocaleContextHolder;
-
-import se.swedenconnect.eidas.connector.authn.SamlRequestData;
+import se.swedenconnect.eidas.connector.authn.RequesterLookup;
 import se.swedenconnect.eidas.connector.authn.ui.BaseUiModel.SpInfo;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
+import se.swedenconnect.spring.authnserver.registry.Logo;
+import se.swedenconnect.spring.authnserver.registry.RequesterRecord;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * Abstract factory bean for creating UI model objects.
@@ -43,16 +44,21 @@ public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
   /** The accessibility URL. */
   private final @NonNull String accessibilityUrl;
 
+  /** For getting the display name and logotype of the requester. */
+  private final @NonNull RequesterLookup requesterLookup;
+
   /**
    * Constructor.
    *
    * @param languageHandler the UI language handler
    * @param accessibilityUrl the accessibility URL
+   * @param requesterLookup for getting the display name and logotype of the requester
    */
   public AbstractUiModelFactory(final @NonNull UiLanguageHandler languageHandler,
-      final @NonNull String accessibilityUrl) {
+      final @NonNull String accessibilityUrl, final @NonNull RequesterLookup requesterLookup) {
     this.languageHandler = Objects.requireNonNull(languageHandler, "languageHandler must not be null");
     this.accessibilityUrl = Objects.requireNonNull(accessibilityUrl, "accessibilityUrl must not be null");
+    this.requesterLookup = Objects.requireNonNull(requesterLookup, "requesterLookup must not be null");
   }
 
   /**
@@ -75,18 +81,27 @@ public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
     return this.languageHandler;
   }
 
-  private SpInfo createSpInfo(final UserAuthenticationInputToken token) {
+  /**
+   * Creates the display name and logotype of the requester, a SAML Service Provider or an OpenID Connect Relying
+   * Party, from its record in the client registry.
+   *
+   * @param token the input token
+   * @return a {@link SpInfo}
+   */
+  private @NonNull SpInfo createSpInfo(final @NonNull UserAuthenticationInputToken token) {
 
-    final Locale locale = LocaleContextHolder.getLocale();
-
-    final ServiceProviderUiInfo spUiInfo = new ServiceProviderUiInfo(SamlRequestData.getSpMetadata(token));
-    final SpInfo model = new EidasUiModel.SpInfo();
+    final SpInfo model = new SpInfo();
+    final RequesterRecord record = this.requesterLookup.getRecord(token);
+    if (record == null) {
+      return model;
+    }
+    final String language = LocaleContextHolder.getLocale().getLanguage();
 
     // First the display name ...
-    String spDisplayName = spUiInfo.getDisplayName(locale.getLanguage());
+    String spDisplayName = record.getDisplayName(language);
     if (spDisplayName == null) {
       for (final Language lang : this.languageHandler.getOtherLanguages()) {
-        spDisplayName = spUiInfo.getDisplayNames().get(lang.getTag());
+        spDisplayName = record.getDisplayName(lang.getTag());
         if (spDisplayName != null) {
           break;
         }
@@ -95,35 +110,45 @@ public abstract class AbstractUiModelFactory<T extends BaseUiModel> {
     model.setDisplayName(spDisplayName);
 
     // Now, get the logotype ...
-    // Try to find something larger than 80px and less than 120px first
+    // Try to find something larger than 80px and less than 120px in the page language first
     //
-    model.setLogoUrl(Optional.ofNullable(spUiInfo.getLogotype(findBestSize(locale.getLanguage())))
-        .map(ServiceProviderUiInfo.Logotype::getUrl)
-        .orElseGet(() -> Optional.ofNullable(spUiInfo.getLogotype(findBestSize()))
-            .map(ServiceProviderUiInfo.Logotype::getUrl)
-            .orElseGet(() -> Optional.ofNullable(spUiInfo.getLogotype((l) -> true))
-                .map(ServiceProviderUiInfo.Logotype::getUrl)
-                .orElse(null))));
+    model.setLogoUrl(Optional.ofNullable(findLogo(record, hasLanguage(language).and(hasBestSize())))
+        .or(() -> Optional.ofNullable(findLogo(record, hasBestSize())))
+        .or(() -> Optional.ofNullable(findLogo(record, l -> true)))
+        .map(Logo::url)
+        .orElse(null));
 
     return model;
   }
 
-  private static Predicate<ServiceProviderUiInfo.Logotype> findBestSize(final String languageTag) {
-    return (logo) -> {
-      if (logo.getLanguage() == null) {
-        return false;
-      }
-      return findBestSize().test(logo);
-    };
+  /**
+   * Gets the first logotype of the requester that matches the predicate.
+   *
+   * @param record the requester record
+   * @param predicate the predicate
+   * @return a {@link Logo}, or {@code null}
+   */
+  private static @Nullable Logo findLogo(final @NonNull RequesterRecord record, final @NonNull Predicate<Logo> predicate) {
+    return record.logos().stream().filter(predicate).findFirst().orElse(null);
   }
 
-  private static Predicate<ServiceProviderUiInfo.Logotype> findBestSize() {
-    return (logo) -> {
-      if (logo.getHeight() == null) {
-        return false;
-      }
-      return logo.getHeight() > 80 && logo.getHeight() < 120;
-    };
+  /**
+   * Predicate telling whether a logotype is for the given language.
+   *
+   * @param language the language
+   * @return a predicate
+   */
+  private static @NonNull Predicate<Logo> hasLanguage(final @NonNull String language) {
+    return logo -> logo.language() != null && language.equals(logo.getPrimaryLanguage());
+  }
+
+  /**
+   * Predicate telling whether a logotype is higher than 80 and lower than 120 pixels.
+   *
+   * @return a predicate
+   */
+  private static @NonNull Predicate<Logo> hasBestSize() {
+    return logo -> logo.height() != null && logo.height() > 80 && logo.height() < 120;
   }
 
 }

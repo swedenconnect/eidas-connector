@@ -76,6 +76,7 @@ import se.swedenconnect.spring.authnserver.error.CommonUnrecoverableError;
 import se.swedenconnect.spring.authnserver.error.UnrecoverableErrorException;
 import se.swedenconnect.spring.authnserver.message.GenericSignMessage;
 import se.swedenconnect.spring.authnserver.message.GenericUserMessage;
+import se.swedenconnect.spring.authnserver.saml.authnrequest.Saml2AuthnRequestData;
 import se.swedenconnect.spring.authnserver.sso.RequestedAttributesSsoVoter;
 
 import java.io.Serializable;
@@ -145,6 +146,9 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   /** The Identity Matching client. */
   private final @NonNull IdmClient idmClient;
 
+  /** Looks up the requester in the client registry. */
+  private final @NonNull RequesterLookup requesterLookup;
+
   /** Supported LoA URI:s. */
   private final @NonNull List<String> supportedLoas;
 
@@ -167,6 +171,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    * @param attributeConverter for converting eIDAS attributes into the attributes released to the Swedish SP
    * @param pridService the PRID service bean
    * @param idmClient the Identity Matching client
+   * @param requesterLookup looks up the requester in the client registry
    * @param supportedLoas supported LoA URI:s
    * @param entityCategories the entity categories
    * @param pingWhitelist the whitelisted SP:s that are allowed to send ping requests
@@ -180,6 +185,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       final @NonNull EidasAttributeConverter attributeConverter,
       final @NonNull PridService pridService,
       final @NonNull IdmClient idmClient,
+      final @NonNull RequesterLookup requesterLookup,
       final @NonNull List<String> supportedLoas,
       final @NonNull List<String> entityCategories,
       final @Nullable List<String> pingWhitelist) {
@@ -204,6 +210,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     this.attributeConverter = Objects.requireNonNull(attributeConverter, "attributeConverter must not be null");
     this.pridService = Objects.requireNonNull(pridService, "pridService must not be null");
     this.idmClient = Objects.requireNonNull(idmClient, "idmClient must not be null");
+    this.requesterLookup = Objects.requireNonNull(requesterLookup, "requesterLookup must not be null");
     this.supportedLoas = Collections.unmodifiableList(
         Objects.requireNonNull(supportedLoas, "supportedLoas must not be null"));
     this.entityCategories = Collections.unmodifiableList(
@@ -449,66 +456,67 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   }
 
   /**
-   * Asserts that any identity attributes given as "principal selections" in the request is valid given authenticated
-   * attributes. This is only done for signature services.
+   * Asserts that the user matches the attribute values that the requester asked for. It is called before the user is
+   * asked to consent to a signature, so that a sign message is never shown to another user than the one that the
+   * requester asked for.
+   * <p>
+   * The requested values are compared with the values of the user. A requested personal identity number or
+   * coordination number is compared with the number that Identity Matching gave. An attribute that the user does not
+   * have is not compared. A mismatch fails the authentication if the values are essential, or if the requester is a
+   * signature service. Otherwise it is logged.
+   * </p>
    *
    * @param inputToken the input token
    * @param token the eIDAS authentication token
-   * @throws AuthenticationErrorException for assertion errors
+   * @throws AuthenticationErrorException {@link AuthenticationError#UNKNOWN_PRINCIPAL} if the user does not match
    */
-  public void assertPrincipalSelection(
+  public void assertRequestedValues(
       final @NonNull UserAuthenticationInputToken inputToken, final @NonNull EidasAuthenticationToken token)
       throws AuthenticationErrorException {
 
-    // Only assert for signing user ...
-    //
-    if (!SignServiceSsoVoter.isSignatureService(inputToken.getAuthnRequirements())) {
-      return;
-    }
+    final boolean signatureService = SignServiceSsoVoter.isSignatureService(inputToken.getAuthnRequirements());
 
-    try {
-      for (final GenericRequestedAttribute requested : inputToken.getAuthnRequirements().getRequestedAttributes()) {
-        if (requested.getRequestedValues().isEmpty()) {
-          continue;
-        }
-        final String psValue = String.valueOf(requested.getRequestedValues().getFirst());
-        final String id = requested.getIdentifier();
-
-        if (AttributeIdentifiers.PERSONAL_IDENTITY_NUMBER.equals(id)
-            || AttributeIdentifiers.COORDINATION_NUMBER.equals(id)
-            || AttributeIdentifiers.MAPPED_PERSONAL_IDENTITY_NUMBER.equals(id)
-            || AttributeIdentifiers.MAPPED_COORDINATION_NUMBER.equals(id)) {
-
-          final List<String> values = new ArrayList<>();
-          Optional.ofNullable(token.getAttribute(AttributeIdentifiers.MAPPED_PERSONAL_IDENTITY_NUMBER))
-              .ifPresent(a -> values.addAll(a.getStringValues()));
-          Optional.ofNullable(token.getAttribute(AttributeIdentifiers.MAPPED_COORDINATION_NUMBER))
-              .ifPresent(a -> values.addAll(a.getStringValues()));
-
-          checkPrincipalSelectionValue(id, psValue,
-              se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PERSONAL_IDENTITY_NUMBER,
-              values);
-        }
-        else if (AttributeIdentifiers.PRID.equals(id)) {
-          checkPrincipalSelectionValue(id, psValue,
-              se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_PRID,
-              Optional.ofNullable(token.getAttribute(AttributeIdentifiers.PRID))
-                  .map(GenericAttribute::getStringValues)
-                  .orElse(null));
-        }
-        else if (AttributeIdentifiers.EIDAS_PERSON_IDENTIFIER.equals(id)) {
-          checkPrincipalSelectionValue(id, psValue,
-              se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants.ATTRIBUTE_FRIENDLY_NAME_EIDAS_PERSON_IDENTIFIER,
-              Optional.ofNullable(token.getAttribute(AttributeIdentifiers.EIDAS_PERSON_IDENTIFIER))
-                  .map(GenericAttribute::getStringValues)
-                  .orElse(null));
-        }
+    for (final GenericRequestedAttribute requested : inputToken.getAuthnRequirements().getRequestedAttributes()) {
+      if (requested.getRequestedValues().isEmpty()) {
+        continue;
       }
+      final String id = requested.getIdentifier();
+      final List<Serializable> values = getUserValues(id, token);
+      if (values.isEmpty() || !Collections.disjoint(values, requested.getRequestedValues())) {
+        continue;
+      }
+      if (requested.isRequestedValuesEssential() || signatureService) {
+        log.info("The authenticated user does not match the requested values of attribute '{}' [{}]",
+            id, inputToken.getLogString());
+        final String msg = "The authenticated user does not match the requested values of attribute '%s'"
+            .formatted(id);
+        this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(inputToken, msg));
+        throw new AuthenticationErrorException(AuthenticationError.UNKNOWN_PRINCIPAL, msg);
+      }
+      log.info("The authenticated user does not match the voluntary requested values of attribute '{}' - "
+          + "proceeding [{}]", id, inputToken.getLogString());
     }
-    catch (final AuthenticationErrorException e) {
-      this.eventPublisher.publishEvent(new ResponseProcessingErrorEvent(inputToken, e.getMessage()));
-      throw e;
+  }
+
+  /**
+   * Gets the values of the user to compare with the requested values of an attribute. For a personal identity number
+   * or a coordination number, these are the numbers that Identity Matching gave.
+   *
+   * @param id the attribute identifier
+   * @param token the eIDAS authentication token
+   * @return the values, empty if the user does not have the attribute
+   */
+  private static @NonNull List<Serializable> getUserValues(
+      final @NonNull String id, final @NonNull EidasAuthenticationToken token) {
+    final List<String> ids = AttributeIdentifiers.PERSONAL_IDENTITY_NUMBER.equals(id)
+        || AttributeIdentifiers.COORDINATION_NUMBER.equals(id)
+        ? List.of(AttributeIdentifiers.MAPPED_PERSONAL_IDENTITY_NUMBER, AttributeIdentifiers.MAPPED_COORDINATION_NUMBER)
+        : List.of(id);
+    final List<Serializable> values = new ArrayList<>();
+    for (final String i : ids) {
+      Optional.ofNullable(token.getAttribute(i)).ifPresent(a -> values.addAll(a.getValues()));
     }
+    return values;
   }
 
   /**
@@ -569,31 +577,6 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   }
 
   /**
-   * Checks principal selection values against authenticated values.
-   *
-   * @param psName the principal selection attribute name
-   * @param psValue the value from the request (principal selection)
-   * @param friendlyName the friendly name (for logging)
-   * @param values the authenticated values
-   * @throws AuthenticationErrorException for mismatches
-   */
-  private static void checkPrincipalSelectionValue(
-      final String psName, final String psValue, final String friendlyName, final List<String> values)
-      throws AuthenticationErrorException {
-
-    if (values == null || values.isEmpty()) {
-      return;
-    }
-    if (!values.contains(psValue)) {
-      log.info("PrincipalSelection for attribute '{}' specified value '{}', but authenticated value was {}",
-          psName, psValue, values);
-      throw new AuthenticationErrorException(AuthenticationError.UNKNOWN_PRINCIPAL,
-          "%s attribute from authentication does not match %s attribute from request"
-              .formatted(friendlyName, friendlyName));
-    }
-  }
-
-  /**
    * Generates an authentication request for the given country.
    *
    * @param httpServletRequest the HTTP servlet request
@@ -616,12 +599,17 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
     }
 
     try {
-      final String relayState = Optional.ofNullable(SamlRequestData.getRelayState(inputToken))
+      // A SAML request passes on the RelayState of the Swedish SP, and other requests get a random RelayState ...
+      //
+      final String relayState = Optional.ofNullable(
+              inputToken.getProtocolRequestData() instanceof final Saml2AuthnRequestData samlData
+                  ? samlData.responseAttributes().relayState()
+                  : null)
           .filter(StringUtils::hasText)
           .orElseGet(() -> UUID.randomUUID().toString());
 
-      final RequestHttpObject<AuthnRequest> authnRequest =
-          this.authnRequestGenerator.generateAuthnRequest(countryMetadata, inputToken, relayState);
+      final RequestHttpObject<AuthnRequest> authnRequest = this.authnRequestGenerator.generateAuthnRequest(
+          countryMetadata, inputToken, relayState, this.requesterLookup.isPublicSector(inputToken));
 
       // Add event ...
       //
@@ -631,9 +619,8 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       // Save request in session ...
       //
       httpServletRequest.getSession().setAttribute(EIDAS_AUTHNREQUEST_SESSION_KEY,
-          new EidasAuthnRequest(authnRequest.getRequest(), relayState,
-              SamlRequestData.getAuthnRequest(inputToken).getID(), countryMetadata.getCountryCode(),
-              token.getAuthnId()));
+          new EidasAuthnRequest(authnRequest.getRequest(), relayState, inputToken.getRequestId(),
+              countryMetadata.getCountryCode(), token.getAuthnId()));
 
       return authnRequest;
     }

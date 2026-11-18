@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 import se.swedenconnect.eidas.connector.authn.metadata.EuMetadataProvider;
 import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
 import se.swedenconnect.spring.authnserver.attributes.GenericRequestedAttribute;
+import se.swedenconnect.spring.authnserver.authentication.AuthenticationRequirements;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 import se.swedenconnect.spring.authnserver.error.AuthenticationErrorException;
 
@@ -153,30 +154,52 @@ public class EidasCountryHandler {
   }
 
   /**
-   * Checks the AuthnRequest to see if the SP has requested a specific country.
+   * Checks the request to see if the requester has requested a specific country.
    *
    * @param token the input
    * @return a list of country codes (possibly empty)
    */
   public static @NonNull List<String> getRequestedCountries(final @NonNull UserAuthenticationInputToken token) {
+    return getRequestedCountries(token.getAuthnRequirements(), token.getLogString());
+  }
 
-    // First check PrincipalSelection extension. A country given there is a requested c attribute holding values.
+  /**
+   * Checks the requirements to see if the requester has requested a specific country.
+   * <p>
+   * A country is requested as a requested attribute holding values, either the SAML {@code c} attribute of a
+   * {@code PrincipalSelection}, or the {@code https://id.swedenconnect.se/claim/eidasCountry} claim of an OpenID
+   * Connect {@code claims} parameter. Otherwise, a country is requested as an authentication provider, a SAML
+   * {@code IDPList} entry or an OpenID Connect {@code authnProvider}, holding a URI beginning with
+   * {@value #COUNTRY_URI_PREFIX}.
+   * </p>
+   *
+   * @param requirements the authentication requirements
+   * @param logString the log string of the request
+   * @return a list of country codes (possibly empty)
+   */
+  public static @NonNull List<String> getRequestedCountries(
+      final @NonNull AuthenticationRequirements requirements, final @NonNull String logString) {
+
+    // First check requested country attributes holding values ...
     //
-    final List<String> principalSelection = token.getAuthnRequirements().getRequestedAttributes().stream()
-        .filter(a -> Objects.equals(AttributeIdentifiers.COUNTRY, a.getIdentifier()))
+    final List<String> requestedValues = requirements.getRequestedAttributes().stream()
+        .filter(a -> Objects.equals(AttributeIdentifiers.COUNTRY, a.getIdentifier())
+            || Objects.equals(AttributeIdentifiers.EIDAS_COUNTRY, a.getIdentifier()))
         .map(GenericRequestedAttribute::getRequestedValues)
         .flatMap(List::stream)
         .filter(String.class::isInstance)
         .map(String.class::cast)
+        .map(String::toUpperCase)
+        .distinct()
         .toList();
-    if (!principalSelection.isEmpty()) {
-      return principalSelection;
+    if (!requestedValues.isEmpty()) {
+      return requestedValues;
     }
 
-    // Check scoping in AuthnRequest ...
+    // Check the requested authentication providers ...
     //
     final List<String> countries = new ArrayList<>();
-    for (final String providerId : token.getAuthnRequirements().getRequestedAuthnProviders()) {
+    for (final String providerId : requirements.getRequestedAuthnProviders()) {
       if (providerId == null) {
         continue;
       }
@@ -186,11 +209,11 @@ public class EidasCountryHandler {
           countries.add(country.toUpperCase());
         }
         else {
-          log.warn("Bad value for IDPEntry ({}) in AuthnRequest [{}]", providerId, token.getLogString());
+          log.info("Bad value for requested authentication provider ({}) [{}]", providerId, logString);
         }
       }
       else {
-        log.info("Unrecognized IDPEntry ({}) in AuthnRequest [{}]", providerId, token.getLogString());
+        log.info("Unrecognized requested authentication provider ({}) [{}]", providerId, logString);
       }
     }
     return countries;

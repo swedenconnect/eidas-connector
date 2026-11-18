@@ -32,6 +32,8 @@ import se.swedenconnect.opensaml.saml2.metadata.build.RequestedAttributeBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.SPSSODescriptorBuilder;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryConstants;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.ServiceEntityCategory;
+import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
+import se.swedenconnect.spring.authnserver.attributes.GenericRequestedAttribute;
 
 import java.util.Arrays;
 import java.util.List;
@@ -62,6 +64,34 @@ class EidasRequestedAttributesBuilderTest extends OpenSamlTestBase {
     final List<RequestedAttribute> result = this.builder.build(authnRequest(), spMetadata(null), true);
     assertThat(names(result)).containsExactlyElementsOf(MINIMUM_DATASET);
     assertThat(result).allMatch(RequestedAttribute::isRequired);
+  }
+
+  @Test
+  void testGenericRequestedAttributes() {
+    final List<GenericRequestedAttribute> requested = List.of(
+        GenericRequestedAttribute.of(AttributeIdentifiers.SURNAME, true),
+        GenericRequestedAttribute.of(AttributeIdentifiers.COUNTRY),
+        GenericRequestedAttribute.of(AttributeIdentifiers.STREET_ADDRESS),
+        GenericRequestedAttribute.of(AttributeIdentifiers.COUNTRY_OF_CITIZENSHIP),
+        GenericRequestedAttribute.of(AttributeIdentifiers.PLACE_OF_BIRTH),
+        GenericRequestedAttribute.of(AttributeIdentifiers.PLACE_OF_BIRTH_LOCALITY),
+        GenericRequestedAttribute.of(AttributeIdentifiers.PRID));
+
+    final List<RequestedAttribute> result = this.builder.build(requested, true);
+    assertThat(names(result)).containsExactly(
+        AttributeConstants.EIDAS_CURRENT_FAMILY_NAME_ATTRIBUTE_NAME,
+        AttributeConstants.EIDAS_CURRENT_ADDRESS_ATTRIBUTE_NAME,
+        AttributeConstants.EIDAS_COUNTRY_OF_RESIDENCE_ATTRIBUTE_NAME,
+        AttributeConstants.EIDAS_NATIONALITY_ATTRIBUTE_NAME,
+        AttributeConstants.EIDAS_PLACE_OF_BIRTH_ATTRIBUTE_NAME,
+        AttributeConstants.EIDAS_TOWN_OF_BIRTH_ATTRIBUTE_NAME,
+        AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME,
+        AttributeConstants.EIDAS_CURRENT_GIVEN_NAME_ATTRIBUTE_NAME,
+        AttributeConstants.EIDAS_DATE_OF_BIRTH_ATTRIBUTE_NAME);
+    assertThat(result.stream().filter(RequestedAttribute::isRequired).map(RequestedAttribute::getName))
+        .containsExactlyInAnyOrderElementsOf(MINIMUM_DATASET);
+
+    assertThat(this.builder.build(List.of(), false)).isEmpty();
   }
 
   @Test

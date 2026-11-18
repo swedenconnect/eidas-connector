@@ -24,6 +24,7 @@ import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.util.WebUtils;
 import se.swedenconnect.eidas.connector.authn.EidasCountryHandler.SelectableCountry;
+import se.swedenconnect.eidas.connector.authn.RequesterLookup;
 import se.swedenconnect.eidas.connector.config.CookieGenerator;
 import se.swedenconnect.eidas.connector.config.UiConfigurationProperties.Language;
 import se.swedenconnect.eidas.connector.idp.UserMessageProcessor;
@@ -57,13 +58,15 @@ public class EidasUiModelFactory extends AbstractUiModelFactory<EidasUiModel> {
    *
    * @param languageHandler the UI language handler
    * @param accessibilityUrl the accessibility URL
+   * @param requesterLookup for getting the display name and logotype of the requester
    * @param messageSource the message source
    * @param idmServiceUrl the IdM service URL
+   * @param idmHideBannerCookieGenerator cookie generator for controlling whether the IdM banner should be hidden
    */
   public EidasUiModelFactory(final @NonNull UiLanguageHandler languageHandler, final @NonNull String accessibilityUrl,
-      final @NonNull MessageSource messageSource, final @Nullable String idmServiceUrl,
-      final @NonNull CookieGenerator idmHideBannerCookieGenerator) {
-    super(languageHandler, accessibilityUrl);
+      final @NonNull RequesterLookup requesterLookup, final @NonNull MessageSource messageSource,
+      final @Nullable String idmServiceUrl, final @NonNull CookieGenerator idmHideBannerCookieGenerator) {
+    super(languageHandler, accessibilityUrl, requesterLookup);
     this.messageSource = messageSource;
     this.idmServiceUrl = idmServiceUrl;
     this.idmHideBannerCookieGenerator = idmHideBannerCookieGenerator;

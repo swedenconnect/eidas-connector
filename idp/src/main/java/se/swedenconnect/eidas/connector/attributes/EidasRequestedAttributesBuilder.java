@@ -24,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.swedenconnect.opensaml.eidas.ext.RequestedAttribute;
 import se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants;
+import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
+import se.swedenconnect.spring.authnserver.attributes.GenericRequestedAttribute;
 import se.swedenconnect.spring.authnserver.saml.attributes.SamlRequestedAttribute;
 import se.swedenconnect.spring.authnserver.saml.attributes.eidas.EidasAttributeTemplate;
 import se.swedenconnect.spring.authnserver.saml.attributes.eidas.EidasNaturalPersonAttributes;
@@ -42,9 +44,9 @@ import java.util.Objects;
 
 /**
  * Works out the eIDAS requested attributes of an eIDAS authentication request from what a Swedish Service Provider
- * requested.
+ * or Relying Party requested.
  * <p>
- * The rules are:
+ * The rules for a SAML Service Provider are:
  * </p>
  * <ul>
  * <li>The attributes that the Service Provider requests in its metadata or in the {@code RequestedAttributes}
@@ -56,6 +58,10 @@ import java.util.Objects;
  * <li>Only the attributes of the eIDAS minimum data set are marked as required.</li>
  * <li>The minimum data set is always requested when asked for.</li>
  * </ul>
+ * <p>
+ * For an OpenID Connect Relying Party, the generic requested attributes, given by the requested scopes and claims, are
+ * mapped to their eIDAS counterparts. Only the attributes of the eIDAS minimum data set are marked as required.
+ * </p>
  *
  * @author Martin Lindström
  */
@@ -100,6 +106,45 @@ public class EidasRequestedAttributesBuilder {
     EIDAS_TEMPLATES.put(EidasNaturalPersonAttributes.TOWN_OF_BIRTH.name(), EidasNaturalPersonAttributes.TOWN_OF_BIRTH);
     EIDAS_TEMPLATES.put(EidasNaturalPersonAttributes.COUNTRY_OF_BIRTH.name(),
         EidasNaturalPersonAttributes.COUNTRY_OF_BIRTH);
+  }
+
+  /** The eIDAS attributes for each generic attribute that a Relying Party may request. */
+  private static final Map<String, List<EidasAttributeTemplate>> GENERIC_TEMPLATES = new LinkedHashMap<>();
+
+  static {
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.EIDAS_PERSON_IDENTIFIER,
+        List.of(EidasNaturalPersonAttributes.PERSON_IDENTIFIER));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.SURNAME, List.of(EidasNaturalPersonAttributes.CURRENT_FAMILY_NAME));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.GIVEN_NAME, List.of(EidasNaturalPersonAttributes.CURRENT_GIVEN_NAME));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.DATE_OF_BIRTH, List.of(EidasNaturalPersonAttributes.DATE_OF_BIRTH));
+    for (final String id : List.of(AttributeIdentifiers.BIRTH_NAME, AttributeIdentifiers.BIRTH_FAMILY_NAME,
+        AttributeIdentifiers.BIRTH_GIVEN_NAME, AttributeIdentifiers.BIRTH_MIDDLE_NAME)) {
+      GENERIC_TEMPLATES.put(id, List.of(EidasNaturalPersonAttributes.BIRTH_NAME));
+    }
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.PLACE_OF_BIRTH, List.of(EidasNaturalPersonAttributes.PLACE_OF_BIRTH));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.PLACE_OF_BIRTH_COUNTRY,
+        List.of(EidasNaturalPersonAttributes.COUNTRY_OF_BIRTH));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.PLACE_OF_BIRTH_LOCALITY,
+        List.of(EidasNaturalPersonAttributes.TOWN_OF_BIRTH));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.COUNTRY_OF_CITIZENSHIP,
+        List.of(EidasNaturalPersonAttributes.NATIONALITY));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.COUNTRY_OF_RESIDENCE,
+        List.of(EidasNaturalPersonAttributes.COUNTRY_OF_RESIDENCE));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.COUNTRY,
+        List.of(EidasNaturalPersonAttributes.CURRENT_ADDRESS, EidasNaturalPersonAttributes.COUNTRY_OF_RESIDENCE));
+    for (final String id : List.of(AttributeIdentifiers.FORMATTED_ADDRESS, AttributeIdentifiers.STREET_ADDRESS,
+        AttributeIdentifiers.POST_OFFICE_BOX, AttributeIdentifiers.POSTAL_CODE, AttributeIdentifiers.LOCALITY,
+        AttributeIdentifiers.REGION, AttributeIdentifiers.EIDAS_ADDRESS_PO_BOX,
+        AttributeIdentifiers.EIDAS_ADDRESS_LOCATOR_DESIGNATOR, AttributeIdentifiers.EIDAS_ADDRESS_LOCATOR_NAME,
+        AttributeIdentifiers.EIDAS_ADDRESS_AREA, AttributeIdentifiers.EIDAS_ADDRESS_THOROUGHFARE,
+        AttributeIdentifiers.EIDAS_ADDRESS_POST_NAME, AttributeIdentifiers.EIDAS_ADDRESS_ADMIN_UNIT_FIRST_LINE,
+        AttributeIdentifiers.EIDAS_ADDRESS_ADMIN_UNIT_SECOND_LINE, AttributeIdentifiers.EIDAS_ADDRESS_POST_CODE)) {
+      GENERIC_TEMPLATES.put(id, List.of(EidasNaturalPersonAttributes.CURRENT_ADDRESS));
+    }
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.TELEPHONE_NUMBER, List.of(EidasNaturalPersonAttributes.PHONE_NUMBER));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.MOBILE_NUMBER, List.of(EidasNaturalPersonAttributes.PHONE_NUMBER));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.EMAIL, List.of(EidasNaturalPersonAttributes.EMAIL_ADDRESS));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.GENDER, List.of(EidasNaturalPersonAttributes.GENDER));
   }
 
   /** The processors for the attributes that the Service Provider requests explicitly. */
@@ -171,6 +216,34 @@ public class EidasRequestedAttributesBuilder {
       }
     }
     return eidasAttributes;
+  }
+
+  /**
+   * Works out the eIDAS requested attributes from generic requested attributes. This is used for OpenID Connect, where
+   * the requested scopes and claims give the generic requested attributes.
+   *
+   * @param requestedAttributes the generic requested attributes
+   * @param includeMinimumDataSet whether the eIDAS minimum data set should always be requested
+   * @return the eIDAS requested attributes
+   */
+  public @NonNull List<RequestedAttribute> build(final @NonNull List<GenericRequestedAttribute> requestedAttributes,
+      final boolean includeMinimumDataSet) {
+
+    final List<EidasAttributeTemplate> templates = new ArrayList<>();
+    for (final GenericRequestedAttribute requested : requestedAttributes) {
+      final List<EidasAttributeTemplate> mapped = GENERIC_TEMPLATES.get(requested.getIdentifier());
+      if (mapped == null) {
+        log.trace("Requested attribute '{}' has no eIDAS counterpart", requested.getIdentifier());
+        continue;
+      }
+      mapped.stream().filter(t -> !templates.contains(t)).forEach(templates::add);
+    }
+    if (includeMinimumDataSet) {
+      NATURAL_PERSON_MINIMUM_DATASET.stream().filter(t -> !templates.contains(t)).forEach(templates::add);
+    }
+    return templates.stream()
+        .map(t -> createRequestedAttribute(t, NATURAL_PERSON_MINIMUM_DATASET.contains(t)))
+        .toList();
   }
 
   /**

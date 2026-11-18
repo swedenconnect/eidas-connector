@@ -42,8 +42,8 @@ public class EidasAuthnRequest implements Serializable {
   /** The relay state. */
   private final @Nullable String relayState;
 
-  /** The AuthnRequest ID of the associated request (i.e., the request from the Swedish SP). */
-  private final @NonNull String associatedRequestId;
+  /** The ID of the associated request (i.e., the request from the Swedish SP), if the protocol has one. */
+  private final @Nullable String associatedRequestId;
 
   /** The country code for the recipient country. */
   private final @NonNull String country;
@@ -56,17 +56,18 @@ public class EidasAuthnRequest implements Serializable {
    *
    * @param authnRequest the authentication request
    * @param relayState the relay state (may be {@code null})
-   * @param associatedRequestId the AuthnRequest ID of the associated request (i.e., the request from the Swedish SP)
+   * @param associatedRequestId the ID of the associated request (i.e., the request from the Swedish SP), or
+   *     {@code null} if the protocol has no request ID
    * @param country the country code for the recipient country
    * @param authnId the identifier of the authentication in progress that the request was sent for
    */
   public EidasAuthnRequest(
       final @NonNull AuthnRequest authnRequest, final @Nullable String relayState,
-      final @NonNull String associatedRequestId, final @NonNull String country, final @NonNull String authnId) {
+      final @Nullable String associatedRequestId, final @NonNull String country, final @NonNull String authnId) {
     this.authnRequest = new SerializableOpenSamlObject<>(
         Objects.requireNonNull(authnRequest, "authnRequest must not be null"));
     this.relayState = relayState;
-    this.associatedRequestId = Objects.requireNonNull(associatedRequestId, "associatedRequestId must not be null");
+    this.associatedRequestId = associatedRequestId;
     this.country = Objects.requireNonNull(country, "country must not be null");
     this.authnId = Objects.requireNonNull(authnId, "authnId must not be null");
   }
@@ -90,11 +91,11 @@ public class EidasAuthnRequest implements Serializable {
   }
 
   /**
-   * Gets the AuthnRequest ID of the associated request (i.e., the request from the Swedish SP).
+   * Gets the ID of the associated request (i.e., the request from the Swedish SP).
    *
-   * @return associated AuthnRequest ID
+   * @return associated request ID, or {@code null} if the protocol has no request ID
    */
-  public @NonNull String getAssociatedRequestId() {
+  public @Nullable String getAssociatedRequestId() {
     return this.associatedRequestId;
   }
 

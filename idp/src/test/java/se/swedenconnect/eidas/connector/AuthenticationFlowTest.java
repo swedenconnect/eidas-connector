@@ -99,6 +99,8 @@ import se.swedenconnect.opensaml.saml2.metadata.build.KeyDescriptorBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.RequestedAttributeBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.SPSSODescriptorBuilder;
 import se.swedenconnect.opensaml.saml2.metadata.build.SingleSignOnServiceBuilder;
+import se.swedenconnect.opensaml.sweid.saml2.authn.psc.PrincipalSelection;
+import se.swedenconnect.opensaml.sweid.saml2.authn.psc.build.MatchValueBuilder;
 import se.swedenconnect.opensaml.sweid.saml2.authn.umsg.UserMessage;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryConstants;
 import se.swedenconnect.opensaml.sweid.saml2.signservice.dss.Message;
@@ -459,6 +461,35 @@ class AuthenticationFlowTest {
         .decrypt(response.getEncryptedAssertions().getFirst(), Assertion.class);
     assertThat(assertion.getAttributeStatements().getFirst().getAttributes().stream().map(Attribute::getName))
         .contains("urn:oid:1.2.752.201.3.14");
+  }
+
+  @Test
+  void testSignatureServiceWithOtherPrincipal() throws Exception {
+    final Browser session = new Browser();
+    final MvcResult request = this.postAuthnRequest(session, SIGN_SP_ENTITY_ID, SIGN_SP_ACS,
+        signMessage(SignMessageMimeTypeEnum.TEXT, "I approve"), null, authnRequest -> {
+          final PrincipalSelection principalSelection =
+              (PrincipalSelection) XMLObjectSupport.buildXMLObject(PrincipalSelection.DEFAULT_ELEMENT_NAME);
+          principalSelection.getMatchValues().add(MatchValueBuilder.builder()
+              .name("urn:oid:1.2.752.201.3.7").value("XA/SE/0000000000").build());
+          authnRequest.getExtensions().getUnknownXMLObjects().add(principalSelection);
+        });
+    final String authnId = authnId(request);
+    final AuthnRequest eidasRequest = this.selectCountry(session, authnId);
+
+    // The user does not match the requested principal, so no sign message is displayed ...
+    //
+    final MvcResult foreignResponse = this.mockMvc.perform(post(REQUEST_BASE_URL + "/extauth/saml2/post")
+            .contextPath("/idp").with(session)
+            .param("SAMLResponse", encode(this.eidasResponse(eidasRequest, successStatus(), true)))
+            .param("RelayState", "sp-relay"))
+        .andDo(session).andReturn();
+    assertThat(foreignResponse.getResponse().getRedirectedUrl()).isEqualTo("/idp/resume?authnId=" + authnId);
+
+    final Response response = this.resume(session, foreignResponse.getResponse().getRedirectedUrl());
+    assertThat(response.getStatus().getStatusCode().getValue()).isEqualTo(StatusCode.REQUESTER);
+    assertThat(response.getStatus().getStatusCode().getStatusCode().getValue())
+        .isEqualTo(StatusCode.UNKNOWN_PRINCIPAL);
   }
 
   @Test

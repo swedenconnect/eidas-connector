@@ -29,6 +29,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
+import se.swedenconnect.eidas.connector.authn.RequesterLookup;
 import se.swedenconnect.eidas.connector.authn.ui.EidasUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.IdmUiModelFactory;
 import se.swedenconnect.eidas.connector.authn.ui.SignUiModelFactory;
@@ -181,11 +182,14 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * Gets the {@link EidasUiModelFactory} bean
    *
    * @param uiLanguageHandler the language handler
+   * @param requesterLookup for getting the display name and logotype of the requester
    * @return a {@link EidasUiModelFactory}
    */
   @Bean
-  @NonNull EidasUiModelFactory eidasUiModelFactory(final @NonNull UiLanguageHandler uiLanguageHandler) {
-    return new EidasUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl(), this.messageSource,
+  @NonNull EidasUiModelFactory eidasUiModelFactory(final @NonNull UiLanguageHandler uiLanguageHandler,
+      final @NonNull RequesterLookup requesterLookup) {
+    return new EidasUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl(), requesterLookup,
+        this.messageSource,
         Optional.ofNullable(this.idm).map(IdmProperties::getServiceUrl).orElse(null),
         this.idmHideBannerCookieGenerator());
   }
@@ -194,22 +198,26 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
    * Gets the {@link SignUiModelFactory} bean.
    *
    * @param uiLanguageHandler the language handler
+   * @param requesterLookup for getting the display name and logotype of the requester
    * @return a {@link SignUiModelFactory}
    */
   @Bean
-  @NonNull SignUiModelFactory signUiModelFactory(final @NonNull UiLanguageHandler uiLanguageHandler) {
-    return new SignUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl());
+  @NonNull SignUiModelFactory signUiModelFactory(final @NonNull UiLanguageHandler uiLanguageHandler,
+      final @NonNull RequesterLookup requesterLookup) {
+    return new SignUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl(), requesterLookup);
   }
 
   /**
    * Gets the {@link IdmUiModelFactory} bean.
    *
    * @param uiLanguageHandler the language handler
+   * @param requesterLookup for getting the display name and logotype of the requester
    * @return an {@link IdmUiModelFactory}
    */
   @Bean
-  @NonNull IdmUiModelFactory idmUiModelFactory(final @NonNull UiLanguageHandler uiLanguageHandler) {
-    return new IdmUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl());
+  @NonNull IdmUiModelFactory idmUiModelFactory(final @NonNull UiLanguageHandler uiLanguageHandler,
+      final @NonNull RequesterLookup requesterLookup) {
+    return new IdmUiModelFactory(uiLanguageHandler, this.ui.getAccessibilityUrl(), requesterLookup);
   }
 
   /**

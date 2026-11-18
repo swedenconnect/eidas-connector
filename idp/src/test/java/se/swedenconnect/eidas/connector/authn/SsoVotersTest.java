@@ -16,6 +16,7 @@
 package se.swedenconnect.eidas.connector.authn;
 
 import org.junit.jupiter.api.Test;
+import se.oidc.nimbus.claims.ScopeConstants;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryConstants;
 import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
 import se.swedenconnect.spring.authnserver.attributes.GenericAttribute;
@@ -24,6 +25,7 @@ import se.swedenconnect.spring.authnserver.authentication.AuthenticationProtocol
 import se.swedenconnect.spring.authnserver.authentication.AuthenticationRequirements;
 import se.swedenconnect.spring.authnserver.authentication.Requester;
 import se.swedenconnect.spring.authnserver.authentication.UserAuthentication;
+import se.swedenconnect.spring.authnserver.oidc.authentication.OidcAuthenticationRequirements;
 import se.swedenconnect.spring.authnserver.saml.authentication.SamlAuthenticationRequirements;
 import se.swedenconnect.spring.authnserver.sso.SsoDecision;
 
@@ -70,6 +72,16 @@ class SsoVotersTest {
     assertThat(voter.vote(previous("DE"), other, REQUESTER, List.of()).vote())
         .isEqualTo(SsoDecision.Vote.ABSTAIN);
     assertThat(SignServiceSsoVoter.isSignatureService(new AuthenticationRequirements())).isFalse();
+
+    final OidcAuthenticationRequirements signApproval = new OidcAuthenticationRequirements();
+    signApproval.setScopes(List.of("openid", ScopeConstants.SIGN_APPROVAL.getValue()));
+    assertThat(voter.vote(previous("DE"), signApproval, REQUESTER, List.of()).vote())
+        .isEqualTo(SsoDecision.Vote.DENY);
+    assertThat(SignServiceSsoVoter.isSignatureService(signApproval)).isTrue();
+
+    final OidcAuthenticationRequirements oidcOther = new OidcAuthenticationRequirements();
+    oidcOther.setScopes(List.of("openid", ScopeConstants.SIGN.getValue()));
+    assertThat(SignServiceSsoVoter.isSignatureService(oidcOther)).isFalse();
   }
 
   private static AuthenticationRequirements requirements(final String... providers) {

@@ -20,6 +20,7 @@ import org.jspecify.annotations.Nullable;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -45,6 +46,7 @@ import se.swedenconnect.eidas.connector.audit.EidasSuccessResponseAuditPublisher
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationController;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationProvider;
 import se.swedenconnect.eidas.connector.authn.EidasAuthnFlowFilter;
+import se.swedenconnect.eidas.connector.authn.RequesterLookup;
 import se.swedenconnect.eidas.connector.authn.idm.DefaultIdmClient;
 import se.swedenconnect.eidas.connector.authn.idm.IdmClient;
 import se.swedenconnect.eidas.connector.authn.idm.NoopIdmClient;
@@ -66,6 +68,7 @@ import se.swedenconnect.security.credential.config.properties.PkiCredentialConfi
 import se.swedenconnect.security.credential.factory.PkiCredentialFactory;
 import se.swedenconnect.spring.audit.transform.EventTransformer;
 import se.swedenconnect.spring.authnserver.autoconfigure.AuthnServerConfigurationProperties;
+import se.swedenconnect.spring.authnserver.autoconfigure.ConfiguredAuthnServer;
 import se.swedenconnect.spring.authnserver.autoconfigure.saml.SamlCredentialConfiguration;
 import se.swedenconnect.spring.authnserver.config.AuthnServerConfigurerAdapter;
 import se.swedenconnect.spring.authnserver.saml.config.Saml2IdpConfigurer;
@@ -326,6 +329,19 @@ public class ConnectorConfiguration {
     }
   }
 
+  /**
+   * Creates the {@link RequesterLookup} bean, which looks up the requester in the client registry of the server.
+   *
+   * @param configuredServer gives the configured server
+   * @return a {@link RequesterLookup}
+   */
+  @Bean
+  @NonNull RequesterLookup requesterLookup(final @NonNull ObjectProvider<ConfiguredAuthnServer> configuredServer) {
+    return new RequesterLookup(() -> Optional.ofNullable(configuredServer.getIfAvailable())
+        .map(ConfiguredAuthnServer::getClientRegistry)
+        .orElse(null));
+  }
+
   @Bean
   @NonNull EidasAuthenticationProvider eidasAuthenticationProvider(
       final @NonNull ApplicationEventPublisher eventPublisher,
@@ -335,10 +351,12 @@ public class ConnectorConfiguration {
       final @NonNull EuMetadataProvider euMetadataProvider,
       final @NonNull EidasAttributeConverter attributeConverter,
       final @NonNull PridService pridService,
-      final @NonNull IdmClient idmClient) {
+      final @NonNull IdmClient idmClient,
+      final @NonNull RequesterLookup requesterLookup) {
     return new EidasAuthenticationProvider(this.baseUrl,
         eventPublisher, metadata, authnRequestGenerator, eidasResponseProcessor, euMetadataProvider,
-        attributeConverter, pridService, idmClient, this.connectorProperties.getIdp().getSupportedLoas(),
+        attributeConverter, pridService, idmClient, requesterLookup,
+        this.connectorProperties.getIdp().getSupportedLoas(),
         this.connectorProperties.getIdp().getEntityCategories(), this.connectorProperties.getIdp().getPingWhitelist());
   }
 

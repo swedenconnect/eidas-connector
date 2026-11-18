@@ -24,7 +24,6 @@ import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.swedenconnect.eidas.connector.attributes.EidasRequestedAttributesBuilder;
-import se.swedenconnect.eidas.connector.authn.SamlRequestData;
 import se.swedenconnect.eidas.connector.authn.metadata.CountryMetadata;
 import se.swedenconnect.eidas.connector.authn.metadata.MetadataFunctions;
 import se.swedenconnect.eidas.connector.config.EidasAuthenticationProperties;
@@ -40,12 +39,11 @@ import se.swedenconnect.opensaml.saml2.request.AuthnRequestGenerator;
 import se.swedenconnect.opensaml.saml2.request.AuthnRequestGeneratorContext;
 import se.swedenconnect.opensaml.saml2.request.RequestGenerationException;
 import se.swedenconnect.opensaml.saml2.request.RequestHttpObject;
-import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryConstants;
 import se.swedenconnect.opensaml.xmlsec.config.SecurityConfiguration;
 import se.swedenconnect.security.credential.PkiCredential;
 import se.swedenconnect.security.credential.opensaml.OpenSamlCredential;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
-import se.swedenconnect.spring.authnserver.saml.authentication.SamlAuthenticationRequirements;
+import se.swedenconnect.spring.authnserver.saml.authnrequest.Saml2AuthnRequestData;
 
 import java.util.Collections;
 import java.util.List;
@@ -111,27 +109,24 @@ public class EidasAuthnRequestGenerator extends AbstractAuthnRequestGenerator {
    * @param country the country metadata
    * @param token the input token for the authentication requested by the Swedish SP
    * @param relayState the RelayState to use
+   * @param publicSector whether the Swedish SP belongs to the public sector
    * @return a {@link RequestHttpObject}
    * @throws RequestGenerationException for errors generating the {@code AuthnRequest}
    */
   public @NonNull RequestHttpObject<AuthnRequest> generateAuthnRequest(final @NonNull CountryMetadata country,
-      final @NonNull UserAuthenticationInputToken token, final @Nullable String relayState)
-      throws RequestGenerationException {
+      final @NonNull UserAuthenticationInputToken token, final @Nullable String relayState,
+      final boolean publicSector) throws RequestGenerationException {
 
-    // Is this a public or private SP?
-    //
-    final List<String> entityCategories = token.getAuthnRequirements() instanceof final SamlAuthenticationRequirements r
-        ? r.getEntityCategories()
-        : Collections.emptyList();
-    final SPTypeEnumeration spType =
-        entityCategories.contains(EntityCategoryConstants.SERVICE_TYPE_CATEGORY_PRIVATE_SECTOR_SP.getUri())
-            ? SPTypeEnumeration.PRIVATE
-            : SPTypeEnumeration.PUBLIC;
+    final SPTypeEnumeration spType = publicSector ? SPTypeEnumeration.PUBLIC : SPTypeEnumeration.PRIVATE;
 
-    // Map requested attributes from Swedish eID format to eIDAS format ...
+    // Map requested attributes from Swedish eID format to eIDAS format. For SAML, the request and the metadata of the
+    // SP are used. For OpenID Connect, the requested attributes that the scopes and claims give are used ...
     //
-    final List<RequestedAttribute> requestedAttributes = this.requestedAttributesBuilder.build(
-        SamlRequestData.getAuthnRequest(token), SamlRequestData.getSpMetadata(token), true);
+    final List<RequestedAttribute> requestedAttributes =
+        token.getProtocolRequestData() instanceof final Saml2AuthnRequestData samlData
+            ? this.requestedAttributesBuilder.build(
+                samlData.getAuthnRequest(), samlData.responseAttributes().getPeerMetadata(), true)
+            : this.requestedAttributesBuilder.build(token.getAuthnRequirements().getRequestedAttributes(), true);
 
     // Set up a context ...
     //

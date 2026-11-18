@@ -18,6 +18,7 @@ package se.swedenconnect.eidas.connector.authn.ui;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.i18n.LocaleContextHolder;
 import se.swedenconnect.eidas.connector.authn.EidasAuthenticationToken;
+import se.swedenconnect.eidas.connector.authn.RequesterLookup;
 import se.swedenconnect.eidas.connector.authn.ui.SignUiModel.UserInfo;
 import se.swedenconnect.eidas.connector.idp.SignMessageProcessor;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
@@ -34,9 +35,11 @@ public class SignUiModelFactory extends AbstractUiModelFactory<SignUiModel> {
    *
    * @param languageHandler the UI language handler
    * @param accessibilityUrl the accessibility URL
+   * @param requesterLookup for getting the display name and logotype of the requester
    */
-  public SignUiModelFactory(final @NonNull UiLanguageHandler languageHandler, final @NonNull String accessibilityUrl) {
-    super(languageHandler, accessibilityUrl);
+  public SignUiModelFactory(final @NonNull UiLanguageHandler languageHandler, final @NonNull String accessibilityUrl,
+      final @NonNull RequesterLookup requesterLookup) {
+    super(languageHandler, accessibilityUrl, requesterLookup);
   }
 
   /**

@@ -466,6 +466,15 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     }
 
     if (!signConsentProcessed) {
+      // Before a sign message is displayed, we assert that the user matches what the requester asked for ...
+      //
+      try {
+        this.getProvider().assertRequestedValues(inputToken, token);
+      }
+      catch (final AuthenticationErrorException e) {
+        return this.complete(httpRequest, e);
+      }
+
       if (signatureService) {
         log.debug("User '{}' has performed authentication given a request from a SignService. "
             + "Directing to signature consent dialogue ... [{}]", token.getPrincipal(), token.getLogString());
@@ -473,16 +482,6 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
         this.getProvider().saveEidasAuthenticationToken(httpRequest, token);
         return this.signConsentPage(httpRequest, httpResponse, null);
       }
-    }
-
-    // OK, we are done communicating with the user. As a final step, we assert any potential
-    // requirements on the authenticating/signing user.
-    //
-    try {
-      this.getProvider().assertPrincipalSelection(inputToken, token);
-    }
-    catch (final AuthenticationErrorException e) {
-      return this.complete(httpRequest, e);
     }
 
     return this.complete(httpRequest, token);

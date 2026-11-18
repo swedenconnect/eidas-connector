@@ -16,10 +16,12 @@
 package se.swedenconnect.eidas.connector.authn;
 
 import org.jspecify.annotations.NonNull;
+import se.oidc.nimbus.claims.ScopeConstants;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryConstants;
 import se.swedenconnect.spring.authnserver.authentication.AuthenticationRequirements;
 import se.swedenconnect.spring.authnserver.authentication.Requester;
 import se.swedenconnect.spring.authnserver.authentication.UserAuthentication;
+import se.swedenconnect.spring.authnserver.oidc.authentication.OidcAuthenticationRequirements;
 import se.swedenconnect.spring.authnserver.saml.authentication.SamlAuthenticationRequirements;
 import se.swedenconnect.spring.authnserver.sso.SsoDecision;
 import se.swedenconnect.spring.authnserver.sso.SsoDenialReason;
@@ -46,16 +48,22 @@ public class SignServiceSsoVoter implements SsoVoter {
   }
 
   /**
-   * Tells whether the requirements come from a signature service, that is, a Service Provider that declares the
-   * signature service entity category.
+   * Tells whether the requirements come from a signature service, that is, a SAML Service Provider that declares the
+   * signature service entity category, or an OpenID Connect Relying Party that requests the
+   * {@code https://id.oidc.se/scope/signApproval} scope.
    *
    * @param requirements the authentication requirements
    * @return {@code true} if the requester is a signature service, and {@code false} otherwise
    */
   public static boolean isSignatureService(final @NonNull AuthenticationRequirements requirements) {
-    return requirements instanceof final SamlAuthenticationRequirements samlRequirements
-        && samlRequirements.getEntityCategories()
-        .contains(EntityCategoryConstants.SERVICE_TYPE_CATEGORY_SIGSERVICE.getUri());
+    if (requirements instanceof final SamlAuthenticationRequirements samlRequirements) {
+      return samlRequirements.getEntityCategories()
+          .contains(EntityCategoryConstants.SERVICE_TYPE_CATEGORY_SIGSERVICE.getUri());
+    }
+    if (requirements instanceof final OidcAuthenticationRequirements oidcRequirements) {
+      return oidcRequirements.getScopes().contains(ScopeConstants.SIGN_APPROVAL.getValue());
+    }
+    return false;
   }
 
 }
