@@ -71,6 +71,7 @@ import se.swedenconnect.spring.authnserver.autoconfigure.AuthnServerConfiguratio
 import se.swedenconnect.spring.authnserver.autoconfigure.ConfiguredAuthnServer;
 import se.swedenconnect.spring.authnserver.autoconfigure.saml.SamlCredentialConfiguration;
 import se.swedenconnect.spring.authnserver.config.AuthnServerConfigurerAdapter;
+import se.swedenconnect.spring.authnserver.oidc.attributes.OidcAttributeMapping;
 import se.swedenconnect.spring.authnserver.saml.config.Saml2IdpConfigurer;
 
 import java.security.cert.X509Certificate;
@@ -170,6 +171,17 @@ public class ConnectorConfiguration {
             .responsePage(responsePage)
             .assertionCustomizer(auditPublisher.assertionCustomizer())
             .responseCustomizer(auditPublisher.responseCustomizer())));
+  }
+
+  /**
+   * Gets the OpenID Connect attribute mapping of the connector, which replaces the default mapping of the OpenID
+   * Provider.
+   *
+   * @return an {@link OidcAttributeMapping}
+   */
+  @Bean
+  @NonNull OidcAttributeMapping oidcAttributeMapping() {
+    return ConnectorAttributes.createOidcAttributeMapping();
   }
 
   /**

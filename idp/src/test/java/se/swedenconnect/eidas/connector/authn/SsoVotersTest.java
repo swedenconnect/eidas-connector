@@ -20,6 +20,7 @@ import se.oidc.nimbus.claims.ScopeConstants;
 import se.swedenconnect.opensaml.sweid.saml2.metadata.entitycategory.EntityCategoryConstants;
 import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
 import se.swedenconnect.spring.authnserver.attributes.GenericAttribute;
+import se.swedenconnect.spring.authnserver.attributes.GenericRequestedAttribute;
 import se.swedenconnect.spring.authnserver.authentication.AuthenticatedUser;
 import se.swedenconnect.spring.authnserver.authentication.AuthenticationProtocol;
 import se.swedenconnect.spring.authnserver.authentication.AuthenticationRequirements;
@@ -56,6 +57,16 @@ class SsoVotersTest {
         List.of()).vote()).isEqualTo(SsoDecision.Vote.DENY);
     assertThat(voter.vote(previous(null), requirements(EidasCountryHandler.COUNTRY_URI_PREFIX + "FR"), REQUESTER,
         List.of()).vote()).isEqualTo(SsoDecision.Vote.ABSTAIN);
+
+    // The country of an IDPEntry is in lower case ...
+    assertThat(voter.vote(previous, requirements(EidasCountryHandler.COUNTRY_URI_PREFIX + "de"), REQUESTER,
+        List.of()).vote()).isEqualTo(SsoDecision.Vote.ALLOW);
+
+    // The eidasCountry claim with a value ...
+    final AuthenticationRequirements claim = new AuthenticationRequirements();
+    claim.setRequestedAttributes(List.of(
+        new GenericRequestedAttribute(AttributeIdentifiers.EIDAS_COUNTRY, true, List.of("FR"), null)));
+    assertThat(voter.vote(previous, claim, REQUESTER, List.of()).vote()).isEqualTo(SsoDecision.Vote.DENY);
   }
 
   @Test
@@ -93,7 +104,7 @@ class SsoVotersTest {
   private static UserAuthentication previous(final String country) {
     final List<GenericAttribute<?>> attributes = country != null
         ? List.of(GenericAttribute.of(AttributeIdentifiers.PRID, "DE:123"),
-        GenericAttribute.of(AttributeIdentifiers.COUNTRY, country))
+        GenericAttribute.of(AttributeIdentifiers.EIDAS_COUNTRY, country))
         : List.of(GenericAttribute.of(AttributeIdentifiers.PRID, "DE:123"));
     return new UserAuthentication(new AuthenticatedUser(attributes, AttributeIdentifiers.PRID,
         "http://id.elegnamnden.se/loa/1.0/eidas-sub", Instant.now(), "127.0.0.1"));

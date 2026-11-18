@@ -21,6 +21,7 @@ import org.opensaml.core.xml.schema.XSString;
 import org.opensaml.saml.saml2.core.Attribute;
 import se.swedenconnect.eidas.connector.OpenSamlTestBase;
 import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
+import se.swedenconnect.opensaml.eidas.ext.attributes.BirthNameType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.CountryOfBirthType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentAddressType;
 import se.swedenconnect.opensaml.eidas.ext.attributes.CurrentFamilyNameType;
@@ -98,6 +99,24 @@ class EidasAttributeConverterTest extends OpenSamlTestBase {
     assertThat(released).containsEntry(
         se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants.ATTRIBUTE_NAME_SN,
         List.of("Παπαδόπουλος"));
+  }
+
+  @Test
+  void testBirthName() {
+    final List<GenericAttribute<?>> attributes = this.converter.toGenericAttributes(List.of(
+        birthName("  Anna   Maria Eriksson ")));
+    assertThat(attributes).contains(
+        GenericAttribute.of(AttributeIdentifiers.BIRTH_FAMILY_NAME, "Eriksson"),
+        GenericAttribute.of(AttributeIdentifiers.BIRTH_GIVEN_NAME, "Anna Maria"));
+
+    // SAML releases the full birth name ...
+    assertThat(this.toSaml(attributes)).containsEntry(
+        se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants.ATTRIBUTE_NAME_BIRTH_NAME,
+        List.of("Anna   Maria Eriksson"));
+
+    final List<GenericAttribute<?>> single = this.converter.toGenericAttributes(List.of(birthName("Eriksson")));
+    assertThat(single).contains(GenericAttribute.of(AttributeIdentifiers.BIRTH_FAMILY_NAME, "Eriksson"));
+    assertThat(identifiers(single)).doesNotContain(AttributeIdentifiers.BIRTH_GIVEN_NAME);
   }
 
   @Test
@@ -246,6 +265,12 @@ class EidasAttributeConverterTest extends OpenSamlTestBase {
         AttributeBuilder.createValueObject(PersonIdentifierType.TYPE_NAME, PersonIdentifierType.class);
     value.setValue(id);
     return AttributeBuilder.builder(AttributeConstants.EIDAS_PERSON_IDENTIFIER_ATTRIBUTE_NAME).value(value).build();
+  }
+
+  private static Attribute birthName(final String name) {
+    final BirthNameType value = AttributeBuilder.createValueObject(BirthNameType.TYPE_NAME, BirthNameType.class);
+    value.setValue(name);
+    return AttributeBuilder.builder(AttributeConstants.EIDAS_BIRTH_NAME_ATTRIBUTE_NAME).value(value).build();
   }
 
   private static Attribute dateOfBirth(final LocalDate date) {

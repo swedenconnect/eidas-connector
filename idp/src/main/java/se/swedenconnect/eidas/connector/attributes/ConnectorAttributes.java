@@ -21,7 +21,9 @@ import se.swedenconnect.opensaml.eidas.ext.attributes.AttributeConstants;
 import se.swedenconnect.opensaml.saml2.attribute.AttributeTemplate;
 import se.swedenconnect.spring.authnserver.attributes.AttributeDefinition;
 import se.swedenconnect.spring.authnserver.attributes.AttributeDefinitionRegistry;
+import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
 import se.swedenconnect.spring.authnserver.attributes.DefaultAttributeDefinitionRegistry;
+import se.swedenconnect.spring.authnserver.oidc.attributes.OidcAttributeMapping;
 import se.swedenconnect.spring.authnserver.saml.attributes.SamlAttributeMapping;
 import se.swedenconnect.spring.authnserver.saml.attributes.eidas.EidasAttributeTemplate;
 import se.swedenconnect.spring.authnserver.saml.attributes.eidas.EidasNaturalPersonAttributes;
@@ -30,8 +32,8 @@ import se.swedenconnect.spring.authnserver.saml.attributes.mapping.SamlFromProto
 import se.swedenconnect.spring.authnserver.saml.attributes.mapping.SamlToProtocolMapper;
 
 /**
- * The generic attributes that the connector adds to those of the authentication server, and the SAML mapping that
- * handles them.
+ * The generic attributes that the connector adds to those of the authentication server, and the SAML and OpenID
+ * Connect mappings that handle them.
  * <p>
  * A Swedish Service Provider may request {@code eJusticeNaturalPersonRole}, {@code TownOfBirth} and
  * {@code CountryOfBirth} by their eIDAS attribute names. Such an attribute is passed on in the eIDAS request, and the
@@ -77,12 +79,21 @@ public final class ConnectorAttributes {
   /**
    * Creates the SAML attribute mapping of the connector. It holds the built-in mappers of the authentication server,
    * and the mappers for the attributes of the connector.
+   * <p>
+   * The connector holds the country of the foreign node as {@link AttributeIdentifiers#EIDAS_COUNTRY}, which is
+   * released as the {@code c} attribute. A requested {@code c} attribute is therefore mapped to both
+   * {@link AttributeIdentifiers#COUNTRY} and {@link AttributeIdentifiers#EIDAS_COUNTRY}, since only requested
+   * attributes are released.
+   * </p>
    *
    * @return a {@link SamlAttributeMapping}
    */
   public static @NonNull SamlAttributeMapping createSamlAttributeMapping() {
     final SamlAttributeMapping mapping = new SamlAttributeMapping(createAttributeDefinitionRegistry());
 
+    mapping.getFromProtocolMapping().register(new SamlFromProtocolMapper(
+        se.swedenconnect.opensaml.sweid.saml2.attribute.AttributeConstants.ATTRIBUTE_NAME_C,
+        AttributeIdentifiers.COUNTRY, AttributeIdentifiers.EIDAS_COUNTRY));
     mapping.getFromProtocolMapping().register(new SamlFromProtocolMapper(
         EJUSTICE_NATURAL_PERSON_ROLE_TEMPLATE.name(), EJUSTICE_NATURAL_PERSON_ROLE));
     mapping.getFromProtocolMapping().register(new SamlFromProtocolMapper(
@@ -98,6 +109,19 @@ public final class ConnectorAttributes {
     mapping.getToProtocolMapping().register(
         new EidasToProtocolMapper(EIDAS_COUNTRY_OF_BIRTH, EidasNaturalPersonAttributes.COUNTRY_OF_BIRTH));
 
+    return mapping;
+  }
+
+  /**
+   * Creates the OpenID Connect attribute mapping of the connector. It holds the built-in mappers of the authentication
+   * server, and a mapper from the eIDAS {@code CountryOfResidence} attribute to the {@code address} claim. The
+   * attributes of the connector that have SAML mappers have no claims.
+   *
+   * @return an {@link OidcAttributeMapping}
+   */
+  public static @NonNull OidcAttributeMapping createOidcAttributeMapping() {
+    final OidcAttributeMapping mapping = new OidcAttributeMapping(createAttributeDefinitionRegistry());
+    mapping.getToProtocolMapping().register(new CountryOfResidenceToClaimMapper());
     return mapping;
   }
 

@@ -35,6 +35,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,6 +55,8 @@ import java.util.Objects;
  * <li>{@code TownOfBirth} and {@code CountryOfBirth} give the place of birth, {@code "town, country"}, only when the
  * assertion holds no {@code PlaceOfBirth}. They are also kept as they are, for a Service Provider that requested
  * them by their eIDAS names.</li>
+ * <li>{@code BirthName} is also split into a family name, the last word, and given names, the words before it, for
+ * OpenID Connect. SAML releases the full birth name.</li>
  * <li>{@code eJusticeNaturalPersonRole} is kept with all its values.</li>
  * <li>Attributes that the connector does not know are left out.</li>
  * </ul>
@@ -97,6 +100,9 @@ public class EidasAttributeConverter {
       final String identifier = STRING_ATTRIBUTES.get(name);
       if (identifier != null) {
         addString(attributes, identifier, getValue(eidasAttribute));
+        if (AttributeIdentifiers.BIRTH_NAME.equals(identifier)) {
+          addBirthNameParts(attributes, getValue(eidasAttribute));
+        }
       }
       else if (AttributeConstants.EIDAS_DATE_OF_BIRTH_ATTRIBUTE_NAME.equals(name)) {
         final String value = getValue(eidasAttribute);
@@ -148,6 +154,26 @@ public class EidasAttributeConverter {
       }
     }
     return attributes;
+  }
+
+  /**
+   * Splits the eIDAS {@code BirthName} into a family name and given names, on a best effort basis, since OpenID Connect
+   * releases the birth name in parts. The last word becomes the family name and the words before it the given names.
+   * A name of one word gives a family name only.
+   *
+   * @param attributes the list to add to
+   * @param birthName the birth name, may be {@code null}
+   */
+  private static void addBirthNameParts(final List<GenericAttribute<?>> attributes, final String birthName) {
+    if (birthName == null || birthName.isBlank()) {
+      return;
+    }
+    final String[] words = birthName.strip().split("\\s+");
+    addString(attributes, AttributeIdentifiers.BIRTH_FAMILY_NAME, words[words.length - 1]);
+    if (words.length > 1) {
+      addString(attributes, AttributeIdentifiers.BIRTH_GIVEN_NAME,
+          String.join(" ", Arrays.copyOf(words, words.length - 1)));
+    }
   }
 
   /**

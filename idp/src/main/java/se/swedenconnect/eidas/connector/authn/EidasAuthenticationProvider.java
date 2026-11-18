@@ -15,6 +15,7 @@
  */
 package se.swedenconnect.eidas.connector.authn;
 
+import com.nimbusds.openid.connect.sdk.OIDCScopeValue;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.jspecify.annotations.NonNull;
@@ -31,6 +32,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
+import se.oidc.nimbus.claims.ScopeConstants;
 import se.swedenconnect.eidas.connector.attributes.EidasAttributeConverter;
 import se.swedenconnect.eidas.connector.authn.idm.IdmClient;
 import se.swedenconnect.eidas.connector.authn.idm.IdmException;
@@ -65,6 +67,7 @@ import se.swedenconnect.spring.authnserver.attributes.GenericAttribute;
 import se.swedenconnect.spring.authnserver.attributes.GenericRequestedAttribute;
 import se.swedenconnect.spring.authnserver.attributes.SwedishIdentityNumbers;
 import se.swedenconnect.spring.authnserver.authentication.AuthenticatedUser;
+import se.swedenconnect.spring.authnserver.authentication.AuthenticationProtocol;
 import se.swedenconnect.spring.authnserver.authentication.UserAuthentication;
 import se.swedenconnect.spring.authnserver.authentication.provider.UserAuthenticationInputToken;
 import se.swedenconnect.spring.authnserver.authentication.provider.redirect.AbstractUserRedirectAuthenticationProvider;
@@ -76,6 +79,7 @@ import se.swedenconnect.spring.authnserver.error.CommonUnrecoverableError;
 import se.swedenconnect.spring.authnserver.error.UnrecoverableErrorException;
 import se.swedenconnect.spring.authnserver.message.GenericSignMessage;
 import se.swedenconnect.spring.authnserver.message.GenericUserMessage;
+import se.swedenconnect.spring.authnserver.oidc.scope.BuiltInScopes;
 import se.swedenconnect.spring.authnserver.saml.authnrequest.Saml2AuthnRequestData;
 import se.swedenconnect.spring.authnserver.sso.RequestedAttributesSsoVoter;
 
@@ -118,6 +122,35 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
 
   /** The session key prefix for where we store the eIDAS authentication token. */
   public static final @NonNull String EIDAS_AUTHNTOKEN_SESSION_KEY = EidasAuthenticationToken.class.getName();
+
+  /**
+   * The attributes that the connector delivers, which give the OpenID Connect claims that it supports. The attributes
+   * from Identity Matching are added when it is active.
+   */
+  private static final @NonNull List<String> SUPPORTED_ATTRIBUTES = List.of(
+      AttributeIdentifiers.EIDAS_PERSON_IDENTIFIER, AttributeIdentifiers.SURNAME, AttributeIdentifiers.GIVEN_NAME,
+      AttributeIdentifiers.DATE_OF_BIRTH, AttributeIdentifiers.BIRTH_FAMILY_NAME, AttributeIdentifiers.BIRTH_GIVEN_NAME,
+      AttributeIdentifiers.PLACE_OF_BIRTH, AttributeIdentifiers.PLACE_OF_BIRTH_COUNTRY,
+      AttributeIdentifiers.PLACE_OF_BIRTH_LOCALITY, AttributeIdentifiers.COUNTRY_OF_CITIZENSHIP,
+      AttributeIdentifiers.COUNTRY_OF_RESIDENCE, AttributeIdentifiers.EIDAS_ADDRESS_PO_BOX,
+      AttributeIdentifiers.EIDAS_ADDRESS_LOCATOR_DESIGNATOR, AttributeIdentifiers.EIDAS_ADDRESS_LOCATOR_NAME,
+      AttributeIdentifiers.EIDAS_ADDRESS_AREA, AttributeIdentifiers.EIDAS_ADDRESS_THOROUGHFARE,
+      AttributeIdentifiers.EIDAS_ADDRESS_POST_NAME, AttributeIdentifiers.EIDAS_ADDRESS_ADMIN_UNIT_FIRST_LINE,
+      AttributeIdentifiers.EIDAS_ADDRESS_ADMIN_UNIT_SECOND_LINE, AttributeIdentifiers.EIDAS_ADDRESS_POST_CODE,
+      AttributeIdentifiers.TELEPHONE_NUMBER, AttributeIdentifiers.EMAIL, AttributeIdentifiers.GENDER,
+      AttributeIdentifiers.EIDAS_COUNTRY, AttributeIdentifiers.PRID, AttributeIdentifiers.PRID_PERSISTENCE,
+      AttributeIdentifiers.TRANSACTION_IDENTIFIER, AttributeIdentifiers.AUTHENTICATION_EVIDENCE,
+      AttributeIdentifiers.AUTHENTICATION_PROVIDER);
+
+  /** The attributes that Identity Matching gives. */
+  private static final @NonNull List<String> IDM_ATTRIBUTES = List.of(
+      AttributeIdentifiers.MAPPED_PERSONAL_IDENTITY_NUMBER, AttributeIdentifiers.MAPPED_COORDINATION_NUMBER,
+      AttributeIdentifiers.IDENTITY_BINDING);
+
+  /** The OpenID Connect scopes that the connector offers. The IdM scope is added when Identity Matching is active. */
+  private static final @NonNull List<String> SUPPORTED_SCOPES = List.of(
+      BuiltInScopes.EIDAS_NATURAL_PERSON_IDENTITY.getValue(), ScopeConstants.NATURAL_PERSON_INFO.getValue(),
+      OIDCScopeValue.PROFILE.getValue(), ScopeConstants.SIGN_APPROVAL.getValue());
 
   /** The event publisher. */
   private final @NonNull ApplicationEventPublisher eventPublisher;
@@ -332,10 +365,10 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
       this.attributeConverter.toGenericAttributes(eidasToken.getEidasAttributes())
           .forEach(eidasToken::addAttribute);
 
-      // Add country attribute ...
+      // Add the country of the foreign eIDAS node. SAML releases it as the c attribute ...
       //
       eidasToken.addAttribute(
-          GenericAttribute.of(AttributeIdentifiers.COUNTRY, eidasToken.getAuthnRequest().getCountry()));
+          GenericAttribute.of(AttributeIdentifiers.EIDAS_COUNTRY, eidasToken.getAuthnRequest().getCountry()));
 
       // Add the ID of the assertion as a transactionIdentifier attribute ...
       //
@@ -529,6 +562,25 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   }
 
   /**
+   * Tells whether the IdM record should be looked up for the request. For SAML, it always is. An OpenID Connect
+   * Relying Party gets the IdM record only when it asks for the claims that it gives, or asks for a personal identity
+   * number or coordination number holding values.
+   *
+   * @param token the input token
+   * @return {@code true} if the IdM record should be looked up, and {@code false} otherwise
+   */
+  public boolean isIdmRequested(final @NonNull UserAuthenticationInputToken token) {
+    if (token.getRequester().protocol() != AuthenticationProtocol.OIDC) {
+      return true;
+    }
+    return token.getAuthnRequirements().getRequestedAttributes().stream()
+        .anyMatch(a -> IDM_ATTRIBUTES.contains(a.getIdentifier())
+            || (!a.getRequestedValues().isEmpty()
+            && (AttributeIdentifiers.PERSONAL_IDENTITY_NUMBER.equals(a.getIdentifier())
+            || AttributeIdentifiers.COORDINATION_NUMBER.equals(a.getIdentifier()))));
+  }
+
+  /**
    * Checks if the user identified by the authentication token has an IdM record.
    *
    * @param token the authentication token
@@ -682,6 +734,34 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
   @Override
   public @NonNull List<String> getEntityCategories() {
     return this.entityCategories;
+  }
+
+  /**
+   * Gets the attributes that the connector delivers. The attributes from Identity Matching are included when it is
+   * active.
+   */
+  @Override
+  public @NonNull List<String> getSupportedAttributes() {
+    if (!this.isIdmActive()) {
+      return SUPPORTED_ATTRIBUTES;
+    }
+    final List<String> attributes = new ArrayList<>(SUPPORTED_ATTRIBUTES);
+    attributes.addAll(IDM_ATTRIBUTES);
+    return attributes;
+  }
+
+  /**
+   * Gets the OpenID Connect scopes that the connector offers. The {@code eidasSwedishIdentity} scope is included when
+   * Identity Matching is active.
+   */
+  @Override
+  public @NonNull List<String> getSupportedScopes() {
+    if (!this.isIdmActive()) {
+      return SUPPORTED_SCOPES;
+    }
+    final List<String> scopes = new ArrayList<>(SUPPORTED_SCOPES);
+    scopes.add(BuiltInScopes.EIDAS_SWEDISH_IDENTITY.getValue());
+    return scopes;
   }
 
   /**

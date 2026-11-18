@@ -416,7 +416,14 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
     final boolean signatureService = SignServiceSsoVoter.isSignatureService(inputToken.getAuthnRequirements());
 
     if (!idmProcessed) {
-      if (this.getProvider().isIdmActive()) {
+      if (!this.getProvider().isIdmActive()) {
+        log.trace("IdM feature is not active - no IdM record will be queried");
+      }
+      else if (!this.getProvider().isIdmRequested(inputToken)) {
+        log.debug("The requester has not asked for the IdM claims - no IdM record will be queried [{}]",
+            token.getLogString());
+      }
+      else {
 
         // Before we check whether the user has an IdM record, we check if the IdM consent cookie has been set.
         // If so, it means that we have already checked the IdM status in this session (and possibly prompted
@@ -460,9 +467,6 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
           this.idmHideBannerCookieGenerator.addCookie("false", httpResponse);
         }
       }
-    }
-    else {
-      log.trace("IdM feature is not active - no IdM record will be queried");
     }
 
     if (!signConsentProcessed) {

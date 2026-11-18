@@ -16,7 +16,6 @@
 package se.swedenconnect.eidas.connector.authn;
 
 import org.jspecify.annotations.NonNull;
-import org.springframework.util.StringUtils;
 import se.swedenconnect.spring.authnserver.attributes.AttributeIdentifiers;
 import se.swedenconnect.spring.authnserver.attributes.GenericAttribute;
 import se.swedenconnect.spring.authnserver.authentication.AuthenticationRequirements;
@@ -27,7 +26,6 @@ import se.swedenconnect.spring.authnserver.sso.SsoDenialReason;
 import se.swedenconnect.spring.authnserver.sso.SsoVoter;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -44,19 +42,15 @@ public class EidasSsoVoter implements SsoVoter {
       final @NonNull AuthenticationRequirements requirements, final @NonNull Requester requester,
       final @NonNull List<String> allowedAuthnContexts) {
 
-    final List<String> requestedCountries = requirements.getRequestedAuthnProviders().stream()
-        .filter(Objects::nonNull)
-        .filter(p -> p.startsWith(EidasCountryHandler.COUNTRY_URI_PREFIX))
-        .map(p -> p.substring(EidasCountryHandler.COUNTRY_URI_PREFIX.length()))
-        .filter(StringUtils::hasText)
-        .toList();
+    final List<String> requestedCountries =
+        EidasCountryHandler.getRequestedCountries(requirements, requester.toString());
 
     if (requestedCountries.isEmpty()) {
       return SsoDecision.allow();
     }
 
     final String previousCountry = Optional.ofNullable(
-            previousAuthentication.getAuthenticatedUser().getAttribute(AttributeIdentifiers.COUNTRY))
+            previousAuthentication.getAuthenticatedUser().getAttribute(AttributeIdentifiers.EIDAS_COUNTRY))
         .map(GenericAttribute::getStringValues)
         .filter(v -> !v.isEmpty())
         .map(List::getFirst)
