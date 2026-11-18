@@ -70,6 +70,28 @@ public class EidasCountryHandler {
    * and we may skip the selection UI.
    */
   public record SelectableCountries(@NonNull List<SelectableCountry> countries, boolean displaySelection) {
+
+    /**
+     * Tells whether a country is one of the selectable countries, and can authenticate the user.
+     *
+     * @param country the country code
+     * @return {@code true} if the country may be used for the authentication, and {@code false} otherwise
+     */
+    public boolean isAllowed(final @NonNull String country) {
+      return this.countries.stream().anyMatch(c -> c.canAuthenticate() && c.country().equals(country));
+    }
+
+    /**
+     * Gets the codes of the countries that can authenticate the user.
+     *
+     * @return a list of country codes
+     */
+    public @NonNull List<String> getAllowedCountries() {
+      return this.countries.stream()
+          .filter(SelectableCountry::canAuthenticate)
+          .map(SelectableCountry::country)
+          .toList();
+    }
   }
 
   /**

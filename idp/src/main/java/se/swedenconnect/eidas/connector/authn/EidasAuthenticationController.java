@@ -205,27 +205,34 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
             Optional.ofNullable(selectedCountry).orElse("none"), token.getLogString());
       }
 
-      // The first step is to prompt the user for which country to direct to.
-
-      // If the request is made by a signature service and the selected country is known, we skip
-      // the "select country" view.
-      //
-      if (SignServiceSsoVoter.isSignatureService(token.getAuthnRequirements()) && selectedCountry != null) {
-        if (signalEvent) {
-          log.info("Request is from a signature service. Will default to previously selected country: '{}' [{}]",
-              selectedCountry, token.getLogString());
-
-          this.eventPublisher.publishEvent(new BeforeCountrySelectionEvent(
-              token, selectedCountry, NoDisplayReason.SIGN_SERVICE_COUNTRY_FROM_SESSION));
-        }
-
-        return this.continueWithCountry(request, response, redirectToken, selectedCountry);
-      }
-
       // Get a listing of all countries to display ...
       //
       final EidasCountryHandler.SelectableCountries selectableCountries =
           this.countryHandler.getSelectableCountries(token);
+
+      // The first step is to prompt the user for which country to direct to.
+
+      // If the request is made by a signature service and the selected country is known, we skip
+      // the "select country" view. A country from the session that the request does not allow is ignored.
+      //
+      if (SignServiceSsoVoter.isSignatureService(token.getAuthnRequirements()) && selectedCountry != null) {
+        if (selectableCountries.isAllowed(selectedCountry)) {
+          if (signalEvent) {
+            log.info("Request is from a signature service. Will default to previously selected country: '{}' [{}]",
+                selectedCountry, token.getLogString());
+
+            this.eventPublisher.publishEvent(new BeforeCountrySelectionEvent(
+                token, selectedCountry, NoDisplayReason.SIGN_SERVICE_COUNTRY_FROM_SESSION));
+          }
+
+          return this.continueWithCountry(request, response, redirectToken, selectedCountry);
+        }
+        if (signalEvent) {
+          log.info("Request is from a signature service, but previously selected country '{}' is not allowed by "
+              + "the request {} - ignoring it [{}]",
+              selectedCountry, selectableCountries.getAllowedCountries(), token.getLogString());
+        }
+      }
 
       if (!selectableCountries.displaySelection()) {
         // If request contained only one country, we skip the country selection ...
@@ -314,6 +321,17 @@ public class EidasAuthenticationController extends AbstractAuthenticationControl
 
     try {
       log.debug("User selected country '{}' [{}]", selectedCountry, inputToken.getLogString());
+
+      // Assert that the request allows the selected country ...
+      //
+      final EidasCountryHandler.SelectableCountries selectableCountries =
+          this.countryHandler.getSelectableCountries(inputToken);
+      if (!selectableCountries.isAllowed(selectedCountry)) {
+        log.info("Selected country '{}' is not allowed by the request {} [{}]",
+            selectedCountry, selectableCountries.getAllowedCountries(), inputToken.getLogString());
+        throw SamlErrors.error(StatusCode.REQUESTER, StatusCode.REQUEST_DENIED,
+            "Selected country %s is not allowed for the request".formatted(selectedCountry));
+      }
 
       // Generate AuthnRequest
       //

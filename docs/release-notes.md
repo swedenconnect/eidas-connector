@@ -30,6 +30,8 @@
 
 * The Swedish texts for the "Continue" and "Return to the service" buttons were wrong. This has been fixed.
 
+* The country that the user was sent to was not checked against the countries that the authentication request allowed. A posted country that is not allowed is now rejected, and a country from the session that is not allowed is ignored. See [#270](https://github.com/swedenconnect/eidas-connector/issues/270).
+
 ### Version 2.1.0
 
 **Release date:** 2026-05-05

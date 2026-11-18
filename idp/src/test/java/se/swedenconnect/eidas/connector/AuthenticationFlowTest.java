@@ -179,6 +179,13 @@ class AuthenticationFlowTest {
 
   private static final String COUNTRY = "XA";
 
+  /** A country that only supports eIDAS low. */
+  private static final String LOW_COUNTRY = "XB";
+
+  private static final String OTHER_COUNTRY = "XC";
+
+  private static final String OTHER_COUNTRY_SSO = "https://idp.xc.example.com/sso";
+
   private static final String PERSON_IDENTIFIER = "XA/SE/1234567890";
 
   private static final String LOA_SUB = "http://id.elegnamnden.se/loa/1.0/eidas-sub";
@@ -644,6 +651,72 @@ class AuthenticationFlowTest {
   }
 
   @Test
+  void testCountryNotRequestedIsRejected() throws Exception {
+    final Browser session = new Browser();
+    final String authnId = authnId(this.postAuthnRequest(session, SP_ENTITY_ID, SP_ACS, null, null,
+        requestCountry(COUNTRY)));
+
+    final MvcResult result = this.postCountry(session, authnId, OTHER_COUNTRY);
+    assertRequestDenied(this.resume(session, result.getResponse().getRedirectedUrl()));
+  }
+
+  @Test
+  void testCountryThatCannotAuthenticateIsRejected() throws Exception {
+    final Browser session = new Browser();
+    final String authnId = authnId(this.postAuthnRequest(session, SP_ENTITY_ID, SP_ACS, null));
+
+    final MvcResult result = this.postCountry(session, authnId, LOW_COUNTRY);
+    assertRequestDenied(this.resume(session, result.getResponse().getRedirectedUrl()));
+  }
+
+  @Test
+  void testUnknownCountryIsRejected() throws Exception {
+    final Browser session = new Browser();
+    final String authnId = authnId(this.postAuthnRequest(session, SP_ENTITY_ID, SP_ACS, null));
+
+    final MvcResult result = this.postCountry(session, authnId, "ZZ");
+    assertRequestDenied(this.resume(session, result.getResponse().getRedirectedUrl()));
+  }
+
+  @Test
+  void testSessionCountryNotRequestedIsIgnored() throws Exception {
+    final Browser session = new Browser();
+
+    // A first request from the signature service, where the user selects another country ...
+    //
+    final String firstAuthnId = authnId(this.postAuthnRequest(session, SIGN_SP_ENTITY_ID, SIGN_SP_ACS,
+        signMessage(SignMessageMimeTypeEnum.TEXT, "I approve")));
+    final MvcResult first = this.postCountry(session, firstAuthnId, OTHER_COUNTRY);
+    assertThat(view(first).getModel()).containsEntry("action", OTHER_COUNTRY_SSO);
+
+    // The next request asks for a country. The country from the session is not used ...
+    //
+    final String authnId = authnId(this.postAuthnRequest(session, SIGN_SP_ENTITY_ID, SIGN_SP_ACS,
+        signMessage(SignMessageMimeTypeEnum.TEXT, "I approve"), null, requestCountry(COUNTRY)));
+    final MvcResult result = this.mockMvc.perform(get(REQUEST_BASE_URL + "/extauth").contextPath("/idp")
+        .param("authnId", authnId).with(session)).andDo(session).andReturn();
+    assertThat(view(result).getViewName()).isEqualTo("post-request");
+    assertThat(view(result).getModel()).containsEntry("action", FOREIGN_SSO);
+  }
+
+  @Test
+  void testSessionCountryThatCannotAuthenticateIsIgnored() throws Exception {
+    final Browser session = new Browser();
+    session.cookies.put("selectedCountrySession", new Cookie("selectedCountrySession", LOW_COUNTRY));
+
+    final String authnId = authnId(this.postAuthnRequest(session, SIGN_SP_ENTITY_ID, SIGN_SP_ACS,
+        signMessage(SignMessageMimeTypeEnum.TEXT, "I approve")));
+    final MvcResult result = this.mockMvc.perform(get(REQUEST_BASE_URL + "/extauth").contextPath("/idp")
+        .param("authnId", authnId).with(session)).andDo(session).andReturn();
+    assertThat(view(result).getViewName()).isEqualTo("country-select");
+  }
+
+  private static void assertRequestDenied(final Response response) {
+    assertThat(response.getStatus().getStatusCode().getValue()).isEqualTo(StatusCode.REQUESTER);
+    assertThat(response.getStatus().getStatusCode().getStatusCode().getValue()).isEqualTo(StatusCode.REQUEST_DENIED);
+  }
+
+  @Test
   void testResponseWithoutSession() throws Exception {
     final MvcResult result = this.mockMvc.perform(post(REQUEST_BASE_URL + "/extauth/saml2/post").contextPath("/idp")
         .param("SAMLResponse", "foo")).andReturn();
@@ -764,13 +837,18 @@ class AuthenticationFlowTest {
   }
 
   private AuthnRequest selectCountry(final Browser session, final String authnId) throws Exception {
-    final MvcResult result = this.mockMvc.perform(post(REQUEST_BASE_URL + "/extauth/proxyauth").contextPath("/idp")
-        .param("authnId", authnId).param("selectedCountry", COUNTRY).with(session)).andDo(session).andReturn();
+    final MvcResult result = this.postCountry(session, authnId, COUNTRY);
     assertThat(view(result).getViewName()).isEqualTo("post-request");
     assertThat(view(result).getModel()).containsEntry("action", FOREIGN_SSO);
     return (AuthnRequest) XMLObjectSupport.unmarshallFromInputStream(
         Objects.requireNonNull(org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport.getParserPool()),
         new ByteArrayInputStream(Base64.getDecoder().decode((String) view(result).getModel().get("SAMLRequest"))));
+  }
+
+  private MvcResult postCountry(final Browser session, final String authnId, final String country)
+      throws Exception {
+    return this.mockMvc.perform(post(REQUEST_BASE_URL + "/extauth/proxyauth").contextPath("/idp")
+        .param("authnId", authnId).param("selectedCountry", country).with(session)).andDo(session).andReturn();
   }
 
   private Response resume(final Browser session, final String resumePath) throws Exception {
@@ -983,15 +1061,30 @@ class AuthenticationFlowTest {
   }
 
   private static EntitiesDescriptor euMetadata() throws Exception {
-    final NodeCountry nodeCountry = (NodeCountry) XMLObjectSupport.buildXMLObject(NodeCountry.DEFAULT_ELEMENT_NAME);
-    nodeCountry.setNodeCountry(COUNTRY);
+    final EntitiesDescriptor entities =
+        (EntitiesDescriptor) XMLObjectSupport.buildXMLObject(EntitiesDescriptor.DEFAULT_ELEMENT_NAME);
+    entities.getEntityDescriptors().add(countryMetadata(COUNTRY, FOREIGN_IDP, FOREIGN_SSO,
+        "http://eidas.europa.eu/LoA/low", EIDAS_SUBSTANTIAL, "http://eidas.europa.eu/LoA/high"));
 
-    final EntityDescriptor idp = EntityDescriptorBuilder.builder()
-        .entityID(FOREIGN_IDP)
+    // A country that cannot authenticate at the level of assurance requested by the tests, and another country ...
+    //
+    entities.getEntityDescriptors().add(countryMetadata(LOW_COUNTRY, "https://idp.xb.example.com",
+        "https://idp.xb.example.com/sso", "http://eidas.europa.eu/LoA/low"));
+    entities.getEntityDescriptors().add(countryMetadata(OTHER_COUNTRY, "https://idp.xc.example.com",
+        OTHER_COUNTRY_SSO, EIDAS_SUBSTANTIAL));
+    return entities;
+  }
+
+  private static EntityDescriptor countryMetadata(final String country, final String entityId, final String sso,
+      final String... loas) throws Exception {
+    final NodeCountry nodeCountry = (NodeCountry) XMLObjectSupport.buildXMLObject(NodeCountry.DEFAULT_ELEMENT_NAME);
+    nodeCountry.setNodeCountry(country);
+
+    return EntityDescriptorBuilder.builder()
+        .entityID(entityId)
         .extensions(ExtensionsBuilder.builder()
             .extension(EntityAttributesBuilder.builder()
-                .assuranceCertificationAttribute("http://eidas.europa.eu/LoA/low", EIDAS_SUBSTANTIAL,
-                    "http://eidas.europa.eu/LoA/high")
+                .assuranceCertificationAttribute(loas)
                 .build())
             .build())
         .ssoDescriptor(IDPSSODescriptorBuilder.builder()
@@ -1003,15 +1096,10 @@ class AuthenticationFlowTest {
             .extensions(ExtensionsBuilder.builder().extension(nodeCountry).build())
             .singleSignOnServices(SingleSignOnServiceBuilder.builder()
                 .binding(SAMLConstants.SAML2_POST_BINDING_URI)
-                .location(FOREIGN_SSO)
+                .location(sso)
                 .build())
             .build())
         .build();
-
-    final EntitiesDescriptor entities =
-        (EntitiesDescriptor) XMLObjectSupport.buildXMLObject(EntitiesDescriptor.DEFAULT_ELEMENT_NAME);
-    entities.getEntityDescriptors().add(idp);
-    return entities;
   }
 
   private static KeyPair generateKey() throws Exception {
