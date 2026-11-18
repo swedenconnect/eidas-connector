@@ -11,6 +11,9 @@ connector:
     credentials:
       default-credential:
         bundle: connector
+  idp:
+    ping-whitelist:
+      - https://rp.example.com
 
 authn-server:
   saml:
@@ -18,6 +21,19 @@ authn-server:
     credentials:
       default-credential:
         bundle: connector
+  #
+  # The clients are given by the test.
+  #
+  oidc:
+    enabled: true
+    subject-identifier:
+      secret: test-subject-secret
+    keys:
+      signing:
+        - credential:
+            bundle: connector
+    client-authentication-methods:
+      - client_secret_basic
 
 logging:
   level:
