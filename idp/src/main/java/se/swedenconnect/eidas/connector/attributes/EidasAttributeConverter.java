@@ -57,6 +57,9 @@ import java.util.Objects;
  * them by their eIDAS names.</li>
  * <li>{@code BirthName} is also split into a family name, the last word, and given names, the words before it, for
  * OpenID Connect. SAML releases the full birth name.</li>
+ * <li>A display name, the given name followed by the family name, is added when both are present. It is only released
+ * to a requester that asks for it, the SAML {@code displayName} attribute or the OpenID Connect {@code name}
+ * claim.</li>
  * <li>{@code eJusticeNaturalPersonRole} is kept with all its values.</li>
  * <li>Attributes that the connector does not know are left out.</li>
  * </ul>
@@ -153,7 +156,38 @@ public class EidasAttributeConverter {
         log.debug("No mapping exists for eIDAS attribute '{}' - ignored", name);
       }
     }
+    addDisplayName(attributes);
     return attributes;
+  }
+
+  /**
+   * Adds a display name, the given name followed by the family name, when both are present.
+   *
+   * @param attributes the attributes to add to
+   */
+  private static void addDisplayName(final List<GenericAttribute<?>> attributes) {
+    final String givenName = getString(attributes, AttributeIdentifiers.GIVEN_NAME);
+    final String surname = getString(attributes, AttributeIdentifiers.SURNAME);
+    if (givenName != null && surname != null) {
+      addString(attributes, AttributeIdentifiers.DISPLAY_NAME, givenName + " " + surname);
+    }
+  }
+
+  /**
+   * Gets the string value of an attribute among the converted attributes.
+   *
+   * @param attributes the converted attributes
+   * @param identifier the attribute identifier
+   * @return the value, or {@code null} if the attribute is not present
+   */
+  private static String getString(final List<GenericAttribute<?>> attributes, final String identifier) {
+    return attributes.stream()
+        .filter(a -> identifier.equals(a.getIdentifier()))
+        .map(GenericAttribute::getStringValues)
+        .filter(v -> !v.isEmpty())
+        .map(List::getFirst)
+        .findFirst()
+        .orElse(null);
   }
 
   /**

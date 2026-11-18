@@ -102,6 +102,19 @@ class EidasAttributeConverterTest extends OpenSamlTestBase {
   }
 
   @Test
+  void testDisplayName() {
+    final List<GenericAttribute<?>> attributes = this.converter.toGenericAttributes(List.of(
+        transliterated(CurrentGivenNameType.class, AttributeConstants.EIDAS_CURRENT_GIVEN_NAME_ATTRIBUTE_NAME, "Kalle"),
+        transliterated(CurrentFamilyNameType.class, AttributeConstants.EIDAS_CURRENT_FAMILY_NAME_ATTRIBUTE_NAME,
+            "Kula")));
+    assertThat(attributes).contains(GenericAttribute.of(AttributeIdentifiers.DISPLAY_NAME, "Kalle Kula"));
+
+    assertThat(identifiers(this.converter.toGenericAttributes(List.of(
+        transliterated(CurrentGivenNameType.class, AttributeConstants.EIDAS_CURRENT_GIVEN_NAME_ATTRIBUTE_NAME,
+            "Kalle"))))).doesNotContain(AttributeIdentifiers.DISPLAY_NAME);
+  }
+
+  @Test
   void testBirthName() {
     final List<GenericAttribute<?>> attributes = this.converter.toGenericAttributes(List.of(
         birthName("  Anna   Maria Eriksson ")));

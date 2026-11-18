@@ -642,7 +642,8 @@ abstract class AbstractAuthenticationFlowTest {
                     RequestedAttributeBuilder.builder("urn:oid:1.3.6.1.5.5.7.9.1").isRequired(false).build(),
                     RequestedAttributeBuilder.builder("urn:oid:1.3.6.1.5.5.7.9.3").isRequired(false).build(),
                     RequestedAttributeBuilder.builder("urn:oid:1.3.6.1.5.5.7.9.2").isRequired(false).build(),
-                    RequestedAttributeBuilder.builder("urn:oid:2.5.4.6").isRequired(false).build())
+                    RequestedAttributeBuilder.builder("urn:oid:2.5.4.6").isRequired(false).build(),
+                    RequestedAttributeBuilder.builder("urn:oid:2.16.840.1.113730.3.1.241").isRequired(false).build())
                 .build())
             .build())
         .build();

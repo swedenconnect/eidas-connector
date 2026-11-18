@@ -128,7 +128,7 @@ public class EidasAuthenticationProvider extends AbstractUserRedirectAuthenticat
    */
   private static final @NonNull List<String> SUPPORTED_ATTRIBUTES = List.of(
       AttributeIdentifiers.EIDAS_PERSON_IDENTIFIER, AttributeIdentifiers.SURNAME, AttributeIdentifiers.GIVEN_NAME,
-      AttributeIdentifiers.DATE_OF_BIRTH, AttributeIdentifiers.BIRTH_FAMILY_NAME, AttributeIdentifiers.BIRTH_GIVEN_NAME,
+      AttributeIdentifiers.DISPLAY_NAME, AttributeIdentifiers.DATE_OF_BIRTH, AttributeIdentifiers.BIRTH_FAMILY_NAME, AttributeIdentifiers.BIRTH_GIVEN_NAME,
       AttributeIdentifiers.PLACE_OF_BIRTH, AttributeIdentifiers.PLACE_OF_BIRTH_COUNTRY,
       AttributeIdentifiers.PLACE_OF_BIRTH_LOCALITY, AttributeIdentifiers.COUNTRY_OF_CITIZENSHIP,
       AttributeIdentifiers.COUNTRY_OF_RESIDENCE, AttributeIdentifiers.EIDAS_ADDRESS_PO_BOX,

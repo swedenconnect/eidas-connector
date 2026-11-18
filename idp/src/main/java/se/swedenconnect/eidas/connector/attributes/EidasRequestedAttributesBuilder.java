@@ -116,6 +116,8 @@ public class EidasRequestedAttributesBuilder {
         List.of(EidasNaturalPersonAttributes.PERSON_IDENTIFIER));
     GENERIC_TEMPLATES.put(AttributeIdentifiers.SURNAME, List.of(EidasNaturalPersonAttributes.CURRENT_FAMILY_NAME));
     GENERIC_TEMPLATES.put(AttributeIdentifiers.GIVEN_NAME, List.of(EidasNaturalPersonAttributes.CURRENT_GIVEN_NAME));
+    GENERIC_TEMPLATES.put(AttributeIdentifiers.DISPLAY_NAME, List.of(EidasNaturalPersonAttributes.CURRENT_GIVEN_NAME,
+        EidasNaturalPersonAttributes.CURRENT_FAMILY_NAME));
     GENERIC_TEMPLATES.put(AttributeIdentifiers.DATE_OF_BIRTH, List.of(EidasNaturalPersonAttributes.DATE_OF_BIRTH));
     for (final String id : List.of(AttributeIdentifiers.BIRTH_NAME, AttributeIdentifiers.BIRTH_FAMILY_NAME,
         AttributeIdentifiers.BIRTH_GIVEN_NAME, AttributeIdentifiers.BIRTH_MIDDLE_NAME)) {

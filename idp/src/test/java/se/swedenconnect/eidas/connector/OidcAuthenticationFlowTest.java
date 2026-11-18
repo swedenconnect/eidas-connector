@@ -36,6 +36,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import se.oidc.nimbus.claims.ParameterConstants;
 import se.oidc.nimbus.signrequest.SignRequest;
 import se.oidc.nimbus.usermessage.UserMessage;
+import se.swedenconnect.eidas.connector.audit.ConnectorAuditEvents;
 import se.swedenconnect.eidas.connector.authn.ui.EidasUiModel;
 import se.swedenconnect.eidas.connector.authn.ui.SignUiModel;
 import se.swedenconnect.opensaml.eidas.ext.SPType;
@@ -92,7 +93,7 @@ class OidcAuthenticationFlowTest extends AbstractAuthenticationFlowTest {
         SIGN_APPROVAL);
     assertThat(JSONObjectUtils.getStringList(discovery, "claims_supported")).contains(
         "https://id.swedenconnect.se/claim/prid", "https://id.swedenconnect.se/claim/pridPersistence",
-        PERSON_IDENTIFIER_CLAIM, EIDAS_COUNTRY_CLAIM, "family_name", "given_name", "birthdate", "gender",
+        PERSON_IDENTIFIER_CLAIM, EIDAS_COUNTRY_CLAIM, "family_name", "given_name", "name", "birthdate", "gender",
         "birth_family_name", "birth_given_name", "place_of_birth", "nationalities", "address", "txn");
     assertThat(JSONObjectUtils.getStringList(discovery, "claims_supported"))
         .doesNotContain("https://id.swedenconnect.se/claim/mappedPersonalIdentityNumber");
@@ -104,7 +105,7 @@ class OidcAuthenticationFlowTest extends AbstractAuthenticationFlowTest {
   void testAuthentication() throws Exception {
     final Browser session = new Browser();
     final Map<String, String> params = authzParams(RP_CLIENT_ID, RP_REDIRECT_URI,
-        "openid " + EIDAS_NATURAL_PERSON_IDENTITY);
+        "openid " + EIDAS_NATURAL_PERSON_IDENTITY + " https://id.oidc.se/scope/naturalPersonInfo");
     params.put("claims", """
         {"userinfo": {"%s": null, "address": null}}""".formatted(EIDAS_COUNTRY_CLAIM));
     params.put("ui_locales", "en");
@@ -148,6 +149,30 @@ class OidcAuthenticationFlowTest extends AbstractAuthenticationFlowTest {
     assertThat(userInfo).containsEntry("sub", idToken.getSubject());
     assertThat(userInfo).containsEntry(PERSON_IDENTIFIER_CLAIM, PERSON_IDENTIFIER);
     assertThat(userInfo).containsEntry(EIDAS_COUNTRY_CLAIM, COUNTRY);
+    assertThat(userInfo).containsEntry("name", "Kalle Kula");
+
+    // The audit events of the connector belong to the same flow as those of the authentication server, also the
+    // events of the token and UserInfo calls ...
+    //
+    final List<se.swedenconnect.spring.audit.AuditEvent> events = this.auditEventRepository.find(null, null, null)
+        .stream()
+        .filter(se.swedenconnect.spring.audit.AuditEvent.class::isInstance)
+        .map(se.swedenconnect.spring.audit.AuditEvent.class::cast)
+        .filter(e -> e.getCorrelationId() != null)
+        .toList();
+    final String correlationId = events.stream()
+        .filter(e -> "authn_userinfo_delivered".equals(e.getType()))
+        .reduce((first, second) -> second)
+        .map(e -> e.getCorrelationId().getValue())
+        .orElseThrow();
+    assertThat(events.stream()
+        .filter(e -> correlationId.equals(e.getCorrelationId().getValue()))
+        .map(se.swedenconnect.spring.audit.AuditEvent::getType)
+        .toList()).contains(
+        "authn_request_received", "authn_request_accepted",
+        ConnectorAuditEvents.CONNECTOR_BEFORE_SAML_REQUEST, ConnectorAuditEvents.CONNECTOR_SUCCESS_RESPONSE,
+        "authn_user_authenticated", "authn_authorization_response", "authn_success_response",
+        "authn_userinfo_delivered");
   }
 
   @Test

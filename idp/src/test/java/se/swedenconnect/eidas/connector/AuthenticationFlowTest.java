@@ -138,6 +138,7 @@ class AuthenticationFlowTest extends AbstractAuthenticationFlowTest {
     assertThat(attributes).containsOnly(
         Map.entry("urn:oid:2.5.4.4", List.of("Kula")),
         Map.entry("urn:oid:2.5.4.42", List.of("Kalle")),
+        Map.entry("urn:oid:2.16.840.1.113730.3.1.241", List.of("Kalle Kula")),
         Map.entry("urn:oid:1.3.6.1.5.5.7.9.1", List.of("1969-03-17")),
         Map.entry("urn:oid:1.3.6.1.5.5.7.9.3", List.of("M")),
         Map.entry("urn:oid:1.3.6.1.5.5.7.9.2", List.of("Enköping, SE")),
